@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — Jessica Ocampo Fisioterapeuta</title>
+<link rel="icon" href="Logo/4.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Cormorant+Garamond:ital,wght@0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D0D0D;--s1:#111111;--s2:#1A1A1A;--s3:#222222;
+  --primary:#7EDDD0;--primary-h:#A8EDE7;
+  --text:#F0EDE6;--muted:#8A8578;
+  --border:rgba(126,221,208,.18);--glow:rgba(126,221,208,.22);
+  --font-h:'Cormorant Garamond',serif;--font-b:'DM Sans',sans-serif;--font-m:'DM Mono',monospace;
+  --r:10px;--tr:.2s ease;
+  --ok:#4ade80;--warn:#fbbf24;--err:#f87171;--info:#60a5fa;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--primary);border-radius:99px}
+
+/* ══════════════════════════════════════════
+   LOGIN SCREEN
+══════════════════════════════════════════ */
+#loginScreen{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);z-index:1000;
+}
+.login-card{
+  background:var(--s1);border:1px solid var(--border);border-radius:16px;
+  padding:48px 40px;width:100%;max-width:400px;text-align:center;
+  box-shadow:0 0 60px var(--glow);
+}
+.login-card img{margin-bottom:28px}
+.login-card h1{font-family:var(--font-h);font-size:1.6rem;font-weight:600;margin-bottom:8px}
+.login-card p{color:var(--muted);font-size:.9rem;margin-bottom:28px}
+.login-input{
+  width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:var(--font-b);font-size:.95rem;
+  padding:12px 16px;margin-bottom:16px;outline:none;transition:var(--tr);
+}
+.login-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--glow)}
+.login-btn{
+  width:100%;background:var(--primary);color:#0D0D0D;font-family:var(--font-b);
+  font-size:.95rem;font-weight:600;padding:13px;border:none;border-radius:8px;
+  cursor:pointer;transition:var(--tr);letter-spacing:.03em;
+}
+.login-btn:hover{background:var(--primary-h)}
+.login-err{color:var(--err);font-size:.85rem;margin-top:12px;display:none}
+
+/* ══════════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════════ */
+#adminApp{display:none;min-height:100vh}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  position:fixed;top:0;left:0;height:100vh;width:220px;
+  background:var(--s1);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;gap:4px;padding:24px 12px;
+  z-index:100;transition:var(--tr);overflow-y:auto;
+}
+.sb-logo{padding:0 8px 20px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.sb-logo img{height:36px}
+.sb-link{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;
+  color:var(--muted);font-size:.88rem;font-weight:500;cursor:pointer;
+  border:none;background:none;text-align:left;width:100%;transition:var(--tr);
+  text-decoration:none;
+}
+.sb-link svg{flex-shrink:0;opacity:.7}
+.sb-link:hover{background:var(--s2);color:var(--text)}
+.sb-link.active{background:rgba(126,221,208,.1);color:var(--primary);border:1px solid var(--border)}
+.sb-link.active svg{opacity:1}
+.sb-sep{height:1px;background:var(--border);margin:8px 0}
+.sb-signout{margin-top:auto;color:var(--err) !important}
+.sb-signout:hover{background:rgba(248,113,113,.08) !important}
+
+/* ── MAIN CONTENT ── */
+#mainContent{
+  margin-left:220px;padding:32px 36px;min-height:100vh;
+}
+
+/* ── HEADER ── */
+.page-header{margin-bottom:32px}
+.page-title{font-family:var(--font-h);font-size:1.9rem;font-weight:600;line-height:1.2}
+.page-title em{color:var(--primary);font-style:italic}
+.page-sub{color:var(--muted);font-size:.9rem;margin-top:6px}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{
+  background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px 22px;transition:var(--tr);
+}
+.stat-card:hover{border-color:var(--primary);box-shadow:0 0 20px var(--glow)}
+.stat-label{font-size:.78rem;color:var(--muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.stat-val{font-family:var(--font-h);font-size:2.2rem;font-weight:600;color:var(--primary);line-height:1}
+.stat-desc{font-size:.8rem;color:var(--muted);margin-top:4px}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:24px}
+.card-title{font-family:var(--font-h);font-size:1.2rem;font-weight:600;margin-bottom:18px}
+.card+.card{margin-top:20px}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--s2)}
+th{
+  padding:11px 14px;text-align:left;font-family:var(--font-m);font-size:.75rem;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.07em;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+td{
+  padding:11px 14px;font-size:.88rem;border-bottom:1px solid rgba(126,221,208,.06);
+  vertical-align:middle;
+}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(126,221,208,.03)}
+
+/* ── STATUS CHIPS ── */
+.chip{
+  display:inline-block;padding:3px 10px;border-radius:99px;
+  font-family:var(--font-m);font-size:.72rem;font-weight:500;
+}
+.chip-ok  {background:rgba(74,222,128,.12);color:var(--ok);border:1px solid rgba(74,222,128,.25)}
+.chip-warn{background:rgba(251,191,36,.12);color:var(--warn);border:1px solid rgba(251,191,36,.25)}
+.chip-err {background:rgba(248,113,113,.12);color:var(--err);border:1px solid rgba(248,113,113,.25)}
+.chip-info{background:rgba(96,165,250,.12);color:var(--info);border:1px solid rgba(96,165,250,.25)}
+
+/* ── ACTION BTNS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
+  border-radius:6px;font-family:var(--font-b);font-size:.82rem;font-weight:500;
+  cursor:pointer;border:1px solid transparent;transition:var(--tr);white-space:nowrap;
+}
+.btn-teal{background:var(--primary);color:#0D0D0D;border-color:var(--primary)}
+.btn-teal:hover{background:var(--primary-h)}
+.btn-ghost{background:transparent;color:var(--muted);border-color:var(--border)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-err{background:transparent;color:var(--err);border-color:rgba(248,113,113,.3)}
+.btn-err:hover{background:rgba(248,113,113,.08)}
+.btn-wa{background:transparent;color:#4ade80;border-color:rgba(74,222,128,.3)}
+.btn-wa:hover{background:rgba(74,222,128,.08)}
+.btn-sm{padding:5px 10px;font-size:.78rem}
+
+/* ── FORM FIELDS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid.g3{grid-template-columns:1fr 1fr 1fr}
+.form-grid.g1{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:.8rem;color:var(--muted);font-family:var(--font-m)}
+.field input,.field select,.field textarea{
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 14px;
+  outline:none;transition:var(--tr);width:100%;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--primary);box-shadow:0 0 0 3px var(--glow);
+}
+.field select{cursor:pointer}
+.field textarea{resize:vertical;min-height:80px}
+.field input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.5)}
+
+/* ── TIMELINE TODAY ── */
+.timeline{display:flex;flex-direction:column;gap:10px}
+.tl-item{
+  display:flex;gap:14px;align-items:flex-start;padding:14px 16px;
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  transition:var(--tr);
+}
+.tl-item:hover{border-color:rgba(126,221,208,.35)}
+.tl-time{font-family:var(--font-m);font-size:.85rem;color:var(--primary);min-width:52px;padding-top:2px}
+.tl-body{flex:1}
+.tl-name{font-size:.9rem;font-weight:500}
+.tl-serv{font-size:.8rem;color:var(--muted);margin-top:2px}
+.tl-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+
+/* ── BLOQUEOS LIST ── */
+.block-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.block-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;background:var(--s2);border:1px solid rgba(248,113,113,.2);border-radius:8px;
+}
+.block-info{font-size:.85rem}
+.block-date{font-family:var(--font-m);color:var(--err);font-size:.78rem}
+.block-reason{color:var(--muted);font-size:.8rem;margin-top:2px}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.filter-bar input,.filter-bar select{
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:8px 12px;
+  outline:none;transition:var(--tr);
+}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--primary)}
+.filter-bar input{min-width:200px}
+
+/* ── MODAL ── */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;
+  display:none;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(4px);
+}
+.modal-bg.open{display:flex}
+.modal{
+  background:var(--s1);border:1px solid var(--border);border-radius:16px;
+  padding:32px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;
+  box-shadow:0 0 60px var(--glow);
+}
+.modal-title{font-family:var(--font-h);font-size:1.4rem;font-weight:600;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+
+/* ── LOADING ── */
+.spinner{
+  width:22px;height:22px;border:2px solid rgba(126,221,208,.2);
+  border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-wrap{display:flex;align-items:center;justify-content:center;padding:60px;gap:14px;color:var(--muted)}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty svg{opacity:.3;margin-bottom:12px}
+.empty p{font-size:.9rem}
+
+/* ── MOBILE TOPBAR ── */
+#topbar{
+  display:none;position:fixed;top:0;left:0;right:0;height:56px;
+  background:var(--s1);border-bottom:1px solid var(--border);z-index:99;
+  align-items:center;padding:0 16px;gap:12px;
+}
+#topbar img{height:30px}
+#menuBtn{background:none;border:none;cursor:pointer;color:var(--text);margin-left:auto}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none;
+}
+.toast-msg{
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  padding:12px 18px;font-size:.85rem;display:flex;align-items:center;gap:10px;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);animation:slideIn .25s ease;
+}
+.toast-msg.ok  {border-color:rgba(74,222,128,.4);color:var(--ok)}
+.toast-msg.err {border-color:rgba(248,113,113,.4);color:var(--err)}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+
+/* ── PACIENTES ── */
+.pac-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(126,221,208,.1);border:1px solid var(--border);
+  font-family:var(--font-m);font-size:.75rem;color:var(--primary);font-weight:600;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .form-grid.g3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:700px){
+  #sidebar{transform:translateX(-100%);transition:.3s ease}
+  #sidebar.open{transform:none}
+  #topbar{display:flex}
+  #mainContent{margin-left:0;padding:80px 16px 24px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .form-grid,.form-grid.g3{grid-template-columns:1fr}
+  .filter-bar{flex-direction:column;align-items:stretch}
+  .filter-bar input,.filter-bar select{min-width:0}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+  .login-card{padding:32px 24px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── TOAST ── -->
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     LOGIN
+══════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <img src="Logo/3.png" height="44" alt="Jessica Ocampo Fisioterapeuta">
+    <h1>Panel de Administración</h1>
+    <p>Acceso exclusivo para Jessica Ocampo Fisioterapeuta</p>
+    <input class="login-input" type="password" id="pwInput" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Ingresar</button>
+    <p class="login-err" id="loginErr">Contraseña incorrecta. Inténtalo de nuevo.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADMIN APP
+══════════════════════════════════════════ -->
+<div id="adminApp">
+
+  <!-- Mobile topbar -->
+  <div id="topbar">
+    <img src="Logo/3.png" alt="Logo">
+    <button id="menuBtn" onclick="toggleSidebar()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="sb-logo"><img src="Logo/3.png" alt="Logo"></div>
+
+    <button class="sb-link active" id="sb-dashboard" onclick="showView('dashboard')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+
+    <button class="sb-link" id="sb-agenda" onclick="showView('agenda')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Agenda
+    </button>
+
+    <button class="sb-link" id="sb-nueva" onclick="showView('nueva')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Nueva Cita
+    </button>
+
+    <button class="sb-link" id="sb-bloquear" onclick="showView('bloquear')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      Bloquear Horario
+    </button>
+
+    <div class="sb-sep"></div>
+
+    <button class="sb-link" id="sb-pacientes" onclick="showView('pacientes')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Pacientes
+    </button>
+
+    <div class="sb-sep"></div>
+
+    <button class="sb-link sb-signout" onclick="logout()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Cerrar sesión
+    </button>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="mainContent">
+
+    <!-- ── DASHBOARD ── -->
+    <section id="vDashboard">
+      <div class="page-header">
+        <h1 class="page-title">Bienvenida, <em>Jessica</em></h1>
+        <p class="page-sub" id="dashDate"></p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Citas hoy</div>
+          <div class="stat-val" id="stHoy">—</div>
+          <div class="stat-desc">sesiones programadas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Esta semana</div>
+          <div class="stat-val" id="stSemana">—</div>
+          <div class="stat-desc">citas esta semana</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Este mes</div>
+          <div class="stat-val" id="stMes">—</div>
+          <div class="stat-desc">citas este mes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total pacientes</div>
+          <div class="stat-val" id="stPacientes">—</div>
+          <div class="stat-desc">pacientes únicos</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-title">Citas de hoy</div>
+          <div class="timeline" id="tlHoy">
+            <div class="loading-wrap"><div class="spinner"></div> Cargando...</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Próximas citas (7 días)</div>
+          <div class="timeline" id="tlProximas">
+            <div class="loading-wrap"><div class="spinner"></div> Cargando...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AGENDA ── -->
+    <section id="vAgenda" style="display:none">
+      <div class="page-header">
+        <h1 class="page-title"><em>Agenda</em> completa</h1>
+        <p class="page-sub">Todas las citas registradas</p>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="fSearch" placeholder="Buscar por nombre o servicio..." oninput="renderAgenda()">
+        <select id="fStatus" onchange="renderAgenda()">
+          <option value="">Todos los estados</option>
+          <option value="Confirmada">Confirmada</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Atendida">Atendida</option>
+          <option value="Cancelada">Cancelada</option>
+        </select>
+        <select id="fMod" onchange="renderAgenda()">
+          <option value="">Todas las modalidades</option>
+          <option value="Presencial">Presencial</option>
+          <option value="Domicilio">Domicilio</option>
+        </select>
+        <input type="date" id="fDesde" onchange="renderAgenda()" title="Desde">
+        <input type="date" id="fHasta" onchange="renderAgenda()" title="Hasta">
+        <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Limpiar</button>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha · Hora</th>
+              <th>Paciente</th>
+              <th>Servicio</th>
+              <th>Modalidad</th>
+              <th>Valor</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="agendaTbody">
+            <tr><td colspan="7"><div class="loading-wrap"><div class="spinner"></div> Cargando...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── NUEVA CITA (ADMIN) ── -->
+    <section id="vNueva" style="display:none">
+      <div class="page-header">
+        <h1 class="page-title"><em>Nueva cita</em> manual</h1>
+        <p class="page-sub">Como administrador puedes agendar sin restricción de horario ni buffer de domicilio</p>
+      </div>
+      <div class="card" style="max-width:640px">
+        <div class="form-grid">
+          <div class="field">
+            <label>Nombre del paciente *</label>
+            <input type="text" id="ncName" placeholder="Nombre completo">
+          </div>
+          <div class="field">
+            <label>Teléfono *</label>
+            <input type="tel" id="ncPhone" placeholder="+57 300 000 0000">
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="ncEmail" placeholder="correo@email.com">
+          </div>
+          <div class="field">
+            <label>Servicio *</label>
+            <select id="ncService">
+              <option value="">Selecciona un servicio</option>
+              <option value="Descarga Muscular — Cuello y Espalda">Descarga Muscular — Cuello y Espalda</option>
+              <option value="Descarga Muscular — Piernas">Descarga Muscular — Piernas</option>
+              <option value="Descarga Muscular Completa">Descarga Muscular Completa</option>
+              <option value="Valoración Funcional">Valoración Funcional</option>
+              <option value="Readaptación Funcional">Readaptación Funcional</option>
+              <option value="Sesiones en Gimnasio">Sesiones en Gimnasio</option>
+              <option value="Jornada Empresarial">Jornada Empresarial</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Modalidad *</label>
+            <select id="ncMod" onchange="toggleNcAddress()">
+              <option value="Presencial">Presencial</option>
+              <option value="Domicilio">Domicilio</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Fecha *</label>
+            <input type="date" id="ncDate">
+          </div>
+          <div class="field">
+            <label>Hora *</label>
+            <select id="ncTime">
+              <option value="07:00">07:00</option><option value="08:00">08:00</option>
+              <option value="09:00">09:00</option><option value="10:00">10:00</option>
+              <option value="11:00">11:00</option><option value="12:00">12:00</option>
+              <option value="13:00">13:00</option><option value="14:00">14:00</option>
+              <option value="15:00">15:00</option><option value="16:00">16:00</option>
+              <option value="17:00">17:00</option><option value="18:00">18:00</option>
+              <option value="19:00">19:00</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Precio (para registro)</label>
+            <input type="text" id="ncPrice" placeholder="$75.000">
+          </div>
+        </div>
+        <div class="field" id="ncAddrWrap" style="display:none;margin-top:16px">
+          <label>Dirección domicilio</label>
+          <input type="text" id="ncAddress" placeholder="Dirección completa">
+        </div>
+        <div class="field" style="margin-top:16px">
+          <label>Notas adicionales</label>
+          <textarea id="ncNotes" placeholder="Observaciones, indicaciones..."></textarea>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:10px">
+          <button class="btn btn-teal" onclick="submitAdminBooking()" id="ncSubmitBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 8v4l3 3"/></svg>
+            Crear cita
+          </button>
+          <button class="btn btn-ghost" onclick="clearNuevaCita()">Limpiar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── BLOQUEAR HORARIO ── -->
+    <section id="vBloquear" style="display:none">
+      <div class="page-header">
+        <h1 class="page-title"><em>Bloquear</em> horario</h1>
+        <p class="page-sub">Bloquea rangos de tiempo para que los pacientes no puedan agendar en esos horarios</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start">
+        <div class="card">
+          <div class="card-title">Nuevo bloqueo</div>
+          <div class="form-grid g1">
+            <div class="field">
+              <label>Fecha *</label>
+              <input type="date" id="blDate">
+            </div>
+            <div class="field">
+              <label>Hora inicio *</label>
+              <select id="blStart">
+                <option value="07:00">07:00</option><option value="08:00">08:00</option>
+                <option value="09:00">09:00</option><option value="10:00">10:00</option>
+                <option value="11:00">11:00</option><option value="12:00">12:00</option>
+                <option value="13:00">13:00</option><option value="14:00">14:00</option>
+                <option value="15:00">15:00</option><option value="16:00">16:00</option>
+                <option value="17:00">17:00</option><option value="18:00">18:00</option>
+                <option value="19:00">19:00</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Hora fin *</label>
+              <select id="blEnd">
+                <option value="08:00">08:00</option><option value="09:00">09:00</option>
+                <option value="10:00">10:00</option><option value="11:00">11:00</option>
+                <option value="12:00">12:00</option><option value="13:00">13:00</option>
+                <option value="14:00">14:00</option><option value="15:00">15:00</option>
+                <option value="16:00">16:00</option><option value="17:00">17:00</option>
+                <option value="18:00">18:00</option><option value="19:00">19:00</option>
+                <option value="20:00">20:00</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Motivo (opcional)</label>
+              <input type="text" id="blReason" placeholder="Ej: Viaje, cita médica, descanso...">
+            </div>
+          </div>
+          <button class="btn btn-teal" style="margin-top:16px;width:100%" onclick="doBlock()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            Bloquear horario
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Bloqueos activos</div>
+          <div class="block-list" id="blockList">
+            <div class="loading-wrap"><div class="spinner"></div> Cargando...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PACIENTES ── -->
+    <section id="vPacientes" style="display:none">
+      <div class="page-header">
+        <h1 class="page-title">Base de <em>pacientes</em></h1>
+        <p class="page-sub">Historial de todos los pacientes registrados desde la página web</p>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="pSearch" placeholder="Buscar por nombre, teléfono o email..." oninput="renderPacientes()">
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Paciente</th>
+              <th>Teléfono</th>
+              <th>Email</th>
+              <th>Sesiones</th>
+              <th>Última cita</th>
+              <th>Servicio más frecuente</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="pacientesTbody">
+            <tr><td colspan="7"><div class="loading-wrap"><div class="spinner"></div> Cargando...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── MODAL DETALLE CITA ── -->
+<div class="modal-bg" id="modalDetalle">
+  <div class="modal">
+    <div class="modal-title">Detalle de la cita</div>
+    <div id="modalDetalleContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalDetalle')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL HISTORIAL PACIENTE ── -->
+<div class="modal-bg" id="modalHistorial">
+  <div class="modal">
+    <div class="modal-title" id="modalHistorialTitle">Historial del paciente</div>
+    <div id="modalHistorialContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalHistorial')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzUND0LRXUfCt5ZcXz5xo_boEdMM7ckp7MTI9SVznDNVHdNu9j0cMlcM6rDqoGCcy2I/exec';
+
+let TOKEN  = sessionStorage.getItem('adminToken') || '';
+let allData = {citas: [], bloqueos: []};
+
+// ── LOGIN ──
+async function doLogin() {
+  const pw  = document.getElementById('pwInput').value.trim();
+  const btn = document.getElementById('loginBtn');
+  if (!pw) return;
+  btn.textContent = 'Verificando...'; btn.disabled = true;
+  try {
+    const r = await fetch(APPS_SCRIPT_URL + '?action=adminData&token=' + encodeURIComponent(pw));
+    const d = await r.json();
+    if (d.ok) {
+      TOKEN = pw;
+      sessionStorage.setItem('adminToken', pw);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminApp').style.display   = 'block';
+      allData = d;
+      initDashboard();
+    } else {
+      document.getElementById('loginErr').style.display = 'block';
+    }
+  } catch(e) {
+    document.getElementById('loginErr').textContent = 'Error de conexión. Revisa tu internet.';
+    document.getElementById('loginErr').style.display = 'block';
+  }
+  btn.textContent = 'Ingresar'; btn.disabled = false;
+}
+
+function logout() {
+  sessionStorage.removeItem('adminToken');
+  location.reload();
+}
+
+// Auto-login si tiene sesión guardada
+window.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  if (TOKEN) {
+    const btn = document.getElementById('loginBtn');
+    try {
+      const r = await fetch(APPS_SCRIPT_URL + '?action=adminData&token=' + encodeURIComponent(TOKEN));
+      const d = await r.json();
+      if (d.ok) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminApp').style.display   = 'block';
+        allData = d;
+        initDashboard();
+        return;
+      }
+    } catch(e) {}
+    sessionStorage.removeItem('adminToken');
+  }
+});
+
+// ── SIDEBAR / NAV ──
+function showView(v) {
+  ['dashboard','agenda','nueva','bloquear','pacientes'].forEach(id => {
+    document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1)).style.display = 'none';
+    document.getElementById('sb-' + id).classList.remove('active');
+  });
+  document.getElementById('v' + v.charAt(0).toUpperCase() + v.slice(1)).style.display = 'block';
+  document.getElementById('sb-' + v).classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+
+  if (v === 'agenda')    renderAgenda();
+  if (v === 'bloquear')  renderBloqueos();
+  if (v === 'pacientes') renderPacientes();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ── HELPERS ──
+function today() {
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+function pad(n) { return n < 10 ? '0'+n : ''+n; }
+
+function fmtDate(s) {
+  if (!s) return '—';
+  const [y,m,d] = s.split('-');
+  return new Date(+y, +m-1, +d).toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'});
+}
+
+function chipState(st) {
+  if (st === 'Confirmada') return '<span class="chip chip-ok">Confirmada</span>';
+  if (st === 'Pendiente')  return '<span class="chip chip-warn">Pendiente</span>';
+  if (st === 'Atendida')   return '<span class="chip chip-info">Atendida</span>';
+  if (st === 'Cancelada')  return '<span class="chip chip-err">Cancelada</span>';
+  return '<span class="chip chip-warn">' + (st||'—') + '</span>';
+}
+
+function waLink(tel, nombre, fecha, hora, serv) {
+  const t = (tel||'').replace(/\D/g,'');
+  const phone = t.length <= 10 ? '57'+t : t;
+  const msg = 'Hola ' + nombre + ', te recuerdo tu cita de ' + serv + ' el ' + fecha + ' a las ' + hora + '. - Jessica Ocampo Fisioterapeuta';
+  return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+}
+
+function toast(msg, type='ok') {
+  const t = document.createElement('div');
+  t.className = 'toast-msg ' + type;
+  t.textContent = msg;
+  document.getElementById('toast').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+async function reload() {
+  try {
+    const r = await fetch(APPS_SCRIPT_URL + '?action=adminData&token=' + encodeURIComponent(TOKEN));
+    const d = await r.json();
+    if (d.ok) allData = d;
+  } catch(e) {}
+}
+
+// ── DASHBOARD ──
+function initDashboard() {
+  const todayStr = today();
+  const now  = new Date();
+  const wd   = now.getDay();
+  const startW = new Date(now); startW.setDate(now.getDate() - wd + (wd===0?-6:1));
+  const endW   = new Date(startW); endW.setDate(startW.getDate()+6);
+  const m    = now.getMonth()+1;
+  const y    = now.getFullYear();
+
+  const citas = allData.citas.filter(c => c.estado !== 'Cancelada');
+
+  const hoy    = citas.filter(c => c.fecha === todayStr).length;
+  const semana = citas.filter(c => { const [cy,cm,cd]=c.fecha.split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; }).length;
+  const mes    = citas.filter(c => { const [cy,cm]=c.fecha.split('-'); return +cm===m && +cy===y; }).length;
+  const pacs   = new Set(citas.map(c => c.telefono || c.email)).size;
+
+  document.getElementById('stHoy').textContent      = hoy;
+  document.getElementById('stSemana').textContent   = semana;
+  document.getElementById('stMes').textContent      = mes;
+  document.getElementById('stPacientes').textContent = pacs;
+
+  // Timeline hoy
+  const citasHoy = allData.citas.filter(c => c.fecha === todayStr).sort((a,b) => a.hora.localeCompare(b.hora));
+  const tlHoy = document.getElementById('tlHoy');
+  if (citasHoy.length === 0) {
+    tlHoy.innerHTML = '<div class="empty"><p>No hay citas hoy</p></div>';
+  } else {
+    tlHoy.innerHTML = citasHoy.map(c => `
+      <div class="tl-item">
+        <div class="tl-time">${c.hora}</div>
+        <div class="tl-body">
+          <div class="tl-name">${c.nombre} ${chipState(c.estado)}</div>
+          <div class="tl-serv">${c.servicio} · ${c.modalidad} · ${c.precio}</div>
+          <div class="tl-actions">
+            <a href="${waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio)}" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>
+            <button class="btn btn-ghost btn-sm" onclick="changeStatus('${c.id}','Atendida')">Marcar atendida</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Proximas citas (7 dias excluyendo hoy)
+  const tm = new Date(); tm.setDate(tm.getDate()+1);
+  const in7 = new Date(); in7.setDate(in7.getDate()+7);
+  const proximas = allData.citas
+    .filter(c => { if(c.estado==='Cancelada') return false; const [y2,m2,d2]=c.fecha.split('-'); const dt=new Date(+y2,+m2-1,+d2); return dt>=tm && dt<=in7; })
+    .sort((a,b) => (a.fecha+a.hora).localeCompare(b.fecha+b.hora))
+    .slice(0, 8);
+
+  const tlP = document.getElementById('tlProximas');
+  if (proximas.length === 0) {
+    tlP.innerHTML = '<div class="empty"><p>No hay citas en los próximos 7 días</p></div>';
+  } else {
+    tlP.innerHTML = proximas.map(c => `
+      <div class="tl-item">
+        <div class="tl-time" style="min-width:80px">${fmtDate(c.fecha)}<br><small style="color:var(--muted)">${c.hora}</small></div>
+        <div class="tl-body">
+          <div class="tl-name">${c.nombre}</div>
+          <div class="tl-serv">${c.servicio} · ${c.modalidad}</div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+// ── AGENDA ──
+function renderAgenda() {
+  const search = (document.getElementById('fSearch').value||'').toLowerCase();
+  const fSt    = document.getElementById('fStatus').value;
+  const fMod   = document.getElementById('fMod').value;
+  const fDesde = document.getElementById('fDesde').value;
+  const fHasta = document.getElementById('fHasta').value;
+
+  let citas = [...allData.citas].sort((a,b) => (b.fecha+b.hora).localeCompare(a.fecha+a.hora));
+
+  if (search) citas = citas.filter(c => (c.nombre+c.servicio+c.email+c.telefono).toLowerCase().includes(search));
+  if (fSt)    citas = citas.filter(c => c.estado === fSt);
+  if (fMod)   citas = citas.filter(c => c.modalidad === fMod);
+  if (fDesde) citas = citas.filter(c => c.fecha >= fDesde);
+  if (fHasta) citas = citas.filter(c => c.fecha <= fHasta);
+
+  const tbody = document.getElementById('agendaTbody');
+  if (citas.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><p>No se encontraron citas</p></div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = citas.map(c => `
+    <tr>
+      <td><span style="font-family:var(--font-m);font-size:.8rem">${fmtDate(c.fecha)}</span><br><small style="color:var(--muted)">${c.hora}</small></td>
+      <td><strong>${c.nombre}</strong><br><small style="color:var(--muted)">${c.telefono||''}</small></td>
+      <td style="font-size:.82rem">${c.servicio}</td>
+      <td><span class="chip ${c.modalidad==='Domicilio'?'chip-info':'chip-ok'}" style="font-size:.7rem">${c.modalidad}</span></td>
+      <td style="font-family:var(--font-m);color:var(--primary);font-size:.82rem">${c.precio}</td>
+      <td>
+        <select class="btn btn-ghost btn-sm" onchange="changeStatus('${c.id}',this.value)" style="cursor:pointer">
+          <option ${c.estado==='Confirmada'?'selected':''}>Confirmada</option>
+          <option ${c.estado==='Pendiente'?'selected':''}>Pendiente</option>
+          <option ${c.estado==='Atendida'?'selected':''}>Atendida</option>
+          <option ${c.estado==='Cancelada'?'selected':''}>Cancelada</option>
+        </select>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
+          <a href="${waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio)}" target="_blank" class="btn btn-wa btn-sm">WA</a>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function clearFilters() {
+  ['fSearch','fDesde','fHasta'].forEach(id => document.getElementById(id).value='');
+  ['fStatus','fMod'].forEach(id => document.getElementById(id).selectedIndex=0);
+  renderAgenda();
+}
+
+async function changeStatus(id, status) {
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=updateStatus&token=${encodeURIComponent(TOKEN)}&id=${id}&status=${status}`);
+    const d = await r.json();
+    if (d.ok) {
+      const cita = allData.citas.find(c => c.id === id);
+      if (cita) cita.estado = status;
+      toast('Estado actualizado: ' + status);
+      initDashboard();
+      renderAgenda();
+    } else toast('Error al actualizar', 'err');
+  } catch(e) { toast('Error de conexión', 'err'); }
+}
+
+function verDetalle(id) {
+  const c = allData.citas.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('modalDetalleContent').innerHTML = `
+    <div style="display:grid;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${row('Paciente', c.nombre)} ${row('Teléfono', c.telefono)}
+        ${row('Email', c.email||'—')} ${row('Servicio', c.servicio)}
+        ${row('Fecha', fmtDate(c.fecha) + ' · ' + c.hora)} ${row('Modalidad', c.modalidad)}
+        ${row('Valor', c.precio)} ${row('Estado', c.estado)}
+        ${c.direccion ? row('Dirección', c.direccion) : ''}
+        ${c.notas ? row('Notas del paciente', c.notas, true) : ''}
+        ${c.notaAdmin ? row('Nota admin', c.notaAdmin, true) : ''}
+        ${row('Registrada el', c.fechaReg)}
+        ${row('ID cita', c.id)}
+      </div>
+      <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap">
+        <a href="${waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio)}" target="_blank" class="btn btn-wa">Enviar WhatsApp</a>
+        ${c.email ? `<a href="mailto:${c.email}" class="btn btn-ghost">Enviar Email</a>` : ''}
+      </div>
+    </div>`;
+  openModal('modalDetalle');
+}
+
+function row(label, val, full=false) {
+  const span = full ? 'grid-column:1/-1' : '';
+  return `<div style="${span}"><div style="font-size:.75rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">${label}</div><div style="font-size:.9rem">${val}</div></div>`;
+}
+
+// ── BLOQUEAR ──
+function renderBloqueos() {
+  const bl = document.getElementById('blockList');
+  const today = allData.bloqueos.filter(b => b.fecha >= today);
+  if (!allData.bloqueos.length) {
+    bl.innerHTML = '<div class="empty"><p>No hay bloqueos activos</p></div>';
+    return;
+  }
+  bl.innerHTML = allData.bloqueos.map((b,i) => `
+    <div class="block-item">
+      <div class="block-info">
+        <div class="block-date">${fmtDate(b.fecha)} · ${b.inicio} — ${b.fin}</div>
+        <div class="block-reason">${b.motivo||'Sin motivo'}</div>
+      </div>
+      <button class="btn btn-err btn-sm" onclick="doUnblock('${b.fecha}','${b.inicio}')">Eliminar</button>
+    </div>`).join('');
+}
+
+async function doBlock() {
+  const date  = document.getElementById('blDate').value;
+  const start = document.getElementById('blStart').value;
+  const end   = document.getElementById('blEnd').value;
+  const reason= document.getElementById('blReason').value;
+  if (!date||!start||!end) { toast('Completa fecha, hora inicio y fin','err'); return; }
+  if (start >= end) { toast('La hora de fin debe ser mayor al inicio','err'); return; }
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=block&token=${encodeURIComponent(TOKEN)}&date=${date}&startTime=${start}&endTime=${end}&reason=${encodeURIComponent(reason||'Bloqueado')}`);
+    const d = await r.json();
+    if (d.ok) {
+      allData.bloqueos.push({fecha:date, inicio:start, fin:end, motivo:reason||'Bloqueado'});
+      toast('Horario bloqueado correctamente');
+      renderBloqueos();
+      document.getElementById('blDate').value = '';
+      document.getElementById('blReason').value = '';
+    } else toast('Error al bloquear', 'err');
+  } catch(e) { toast('Error de conexión','err'); }
+}
+
+async function doUnblock(date, startTime) {
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=unblock&token=${encodeURIComponent(TOKEN)}&date=${date}&startTime=${startTime}`);
+    const d = await r.json();
+    if (d.ok) {
+      allData.bloqueos = allData.bloqueos.filter(b => !(b.fecha===date && b.inicio===startTime));
+      toast('Bloqueo eliminado');
+      renderBloqueos();
+    } else toast('Error al eliminar','err');
+  } catch(e) { toast('Error de conexión','err'); }
+}
+
+// ── NUEVA CITA (ADMIN) ──
+function toggleNcAddress() {
+  const m = document.getElementById('ncMod').value;
+  document.getElementById('ncAddrWrap').style.display = m==='Domicilio' ? 'block' : 'none';
+}
+
+async function submitAdminBooking() {
+  const name  = document.getElementById('ncName').value.trim();
+  const phone = document.getElementById('ncPhone').value.trim();
+  const serv  = document.getElementById('ncService').value;
+  const mod   = document.getElementById('ncMod').value;
+  const date  = document.getElementById('ncDate').value;
+  const time  = document.getElementById('ncTime').value;
+  if (!name||!phone||!serv||!date||!time) { toast('Completa los campos obligatorios (*)','err'); return; }
+
+  const btn = document.getElementById('ncSubmitBtn');
+  btn.textContent = 'Creando...'; btn.disabled = true;
+
+  const data = {
+    name, phone,
+    email: document.getElementById('ncEmail').value.trim(),
+    service: serv, modality: mod, date, time,
+    priceP: document.getElementById('ncPrice').value || 'A convenir',
+    priceD: document.getElementById('ncPrice').value || 'A convenir',
+    address: document.getElementById('ncAddress').value.trim(),
+    notes:   document.getElementById('ncNotes').value.trim()
+  };
+
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=adminBook&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(data))}`);
+    const d = await r.json();
+    if (d.ok) {
+      toast('Cita creada exitosamente');
+      clearNuevaCita();
+      await reload();
+      initDashboard();
+    } else toast('Error: ' + (d.error||''), 'err');
+  } catch(e) { toast('Error de conexión','err'); }
+
+  btn.textContent = 'Crear cita'; btn.disabled = false;
+}
+
+function clearNuevaCita() {
+  ['ncName','ncPhone','ncEmail','ncPrice','ncAddress','ncNotes'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('ncService').selectedIndex=0;
+  document.getElementById('ncMod').value='Presencial';
+  document.getElementById('ncDate').value='';
+  document.getElementById('ncAddrWrap').style.display='none';
+}
+
+// ── PACIENTES ──
+function renderPacientes() {
+  const search = (document.getElementById('pSearch').value||'').toLowerCase();
+  const map = {};
+  allData.citas.forEach(c => {
+    const key = c.telefono || c.email || c.nombre;
+    if (!map[key]) map[key] = {nombre:c.nombre, telefono:c.telefono, email:c.email, sesiones:0, ultima:'', servicios:{}};
+    map[key].sesiones++;
+    if (c.fecha > map[key].ultima) {
+      map[key].ultima = c.fecha;
+      map[key].ultimaHora = c.hora;
+    }
+    map[key].servicios[c.servicio] = (map[key].servicios[c.servicio]||0)+1;
+  });
+
+  let pacs = Object.values(map);
+  if (search) pacs = pacs.filter(p => (p.nombre+p.telefono+p.email).toLowerCase().includes(search));
+  pacs.sort((a,b) => b.sesiones - a.sesiones);
+
+  const tbody = document.getElementById('pacientesTbody');
+  if (!pacs.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><p>No hay pacientes registrados</p></div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = pacs.map(p => {
+    const topServ = Object.entries(p.servicios).sort((a,b)=>b[1]-a[1])[0]||['—',0];
+    const initials= p.nombre.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2);
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="pac-badge">${initials}</div><strong>${p.nombre}</strong></div></td>
+      <td style="font-family:var(--font-m);font-size:.82rem">${p.telefono||'—'}</td>
+      <td style="font-size:.82rem;color:var(--muted)">${p.email||'—'}</td>
+      <td><span class="chip chip-ok">${p.sesiones}</span></td>
+      <td style="font-size:.82rem">${fmtDate(p.ultima)}</td>
+      <td style="font-size:.82rem;color:var(--muted)">${topServ[0]}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="verHistorial('${encodeURIComponent(p.nombre)}')">Historial</button>
+          ${p.telefono ? `<a href="${waLink(p.telefono,p.nombre,'','','')}" target="_blank" class="btn btn-wa btn-sm">WA</a>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function verHistorial(encodedNombre) {
+  const nombre = decodeURIComponent(encodedNombre);
+  const citas = allData.citas.filter(c => c.nombre === nombre).sort((a,b) => (b.fecha+b.hora).localeCompare(a.fecha+a.hora));
+  document.getElementById('modalHistorialTitle').textContent = 'Historial: ' + nombre;
+  document.getElementById('modalHistorialContent').innerHTML = `
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">${citas.length} cita(s) registrada(s)</p>
+    ${citas.map(c => `
+    <div style="padding:12px;background:var(--s2);border-radius:8px;margin-bottom:8px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:var(--font-m);font-size:.82rem;color:var(--primary)">${fmtDate(c.fecha)} · ${c.hora}</span>
+        ${chipState(c.estado)}
+      </div>
+      <div style="font-size:.88rem;margin-top:4px">${c.servicio} · ${c.modalidad} · ${c.precio}</div>
+      ${c.notas ? `<div style="font-size:.8rem;color:var(--muted);margin-top:4px">${c.notas}</div>` : ''}
+    </div>`).join('')}`;
+  openModal('modalHistorial');
+}
+
+// ── MODALS ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+</script>
+</body>
+</html>

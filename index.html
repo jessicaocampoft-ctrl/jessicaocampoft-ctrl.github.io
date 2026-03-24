@@ -961,6 +961,9 @@
     }
     .bk-time:hover { border-color: rgba(126,221,208,0.4); color: var(--text); }
     .bk-time.selected { border-color: var(--primary); color: var(--primary); background: rgba(126,221,208,0.1); }
+    .bk-time.taken { opacity:.35; cursor:not-allowed; border-color:rgba(248,113,113,.2); color:var(--text-muted); pointer-events:none; }
+    .bk-time.checking { opacity:.4; pointer-events:none; animation: pulse .8s ease infinite alternate; }
+    @keyframes pulse { from{opacity:.3} to{opacity:.6} }
     /* Step 3 – Personal data */
     .bk-fields {
       display: grid;
@@ -1765,7 +1768,32 @@
 
     function checkStep2() {
       bk.date = document.getElementById('bkDate').value;
+      if (bk.date) loadAvailability(bk.date);
       document.getElementById('btnStep2').disabled = !(bk.date && bk.time);
+    }
+
+    function loadAvailability(date) {
+      // Reset slots
+      bk.time = '';
+      document.querySelectorAll('.bk-time').forEach(t => {
+        t.classList.remove('selected','taken');
+        t.classList.add('checking');
+      });
+      document.getElementById('btnStep2').disabled = true;
+
+      fetch(APPS_SCRIPT_URL + '?action=availability&date=' + date)
+        .then(r => r.json())
+        .then(data => {
+          document.querySelectorAll('.bk-time').forEach(t => {
+            t.classList.remove('checking');
+            const slot = t.textContent.trim();
+            if (data.slots && data.slots[slot] === false) t.classList.add('taken');
+          });
+        })
+        .catch(() => {
+          // Si falla, simplemente muestra todos disponibles
+          document.querySelectorAll('.bk-time').forEach(t => t.classList.remove('checking'));
+        });
     }
 
     function checkStep3() {
