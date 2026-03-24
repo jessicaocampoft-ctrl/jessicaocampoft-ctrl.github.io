@@ -1925,6 +1925,7 @@
 
       function enc(v){ return encodeURIComponent(v||''); }
 
+      // Enviar en background — no-cors no permite leer respuesta de todas formas
       fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
@@ -1936,9 +1937,9 @@
           email: bk.email, address: bk.address,
           notes: bk.notes, priceP: bk.priceP, priceD: bk.priceD
         })
-      })
-      .then(() => showSuccess())
-      .catch(() => showError());
+      }).catch(() => {});
+      // Mostrar éxito de inmediato sin esperar al servidor
+      showSuccess();
     }
 
     function showSuccess() {

@@ -73,17 +73,21 @@ function createBooking(d, isAdmin) {
   event.addPopupReminder(30);
 
   // Guardar en Google Sheets
-  var id = 'C' + new Date().getTime();
-  var ss = getOrCreateSheet();
-  ss.getSheetByName('Citas').appendRow([
+  var id    = 'C' + new Date().getTime();
+  var ss    = getOrCreateSheet();
+  var cSheet = ss.getSheetByName('Citas');
+  var phoneClean = ('' + (d.phone||'')).replace(/\D/g,'');
+  cSheet.appendRow([
     id,
     new Date().toLocaleString('es-CO'),
-    d.name, d.phone, d.email,
+    d.name, phoneClean, d.email,
     d.service, d.modality,
     d.date, d.time, price,
     'Confirmada',
     d.address || '', d.notes || '', ''
   ]);
+  // Forzar columna Telefono como texto para evitar #ERROR! en Sheets
+  cSheet.getRange(cSheet.getLastRow(), 4).setNumberFormat('@').setValue(phoneClean);
 
   // Link de WhatsApp para Jessica
   var tel  = (d.phone || '').replace(/\D/g,'');
@@ -110,41 +114,95 @@ function createBooking(d, isAdmin) {
 }
 
 // -------------------------------------------------------------
-//  DISPONIBILIDAD
+//  HELPERS: normaliza valores que Sheets convierte a Date/numero
+// -------------------------------------------------------------
+function sd(v) {
+  if (!v) return '';
+  if (v instanceof Date) return fmtDate(v);
+  return ('' + v).split('T')[0];
+}
+function st(v) {
+  if (!v && v !== 0) return '00:00';
+  if (v instanceof Date) return pad(v.getHours()) + ':' + pad(v.getMinutes());
+  if (typeof v === 'number') {
+    var h = Math.floor(v * 24);
+    var m = Math.round((v * 24 - h) * 60);
+    return pad(h) + ':' + pad(m);
+  }
+  return '' + v;
+}
+
+// -------------------------------------------------------------
+//  DISPONIBILIDAD — lee Sheets + Calendario UNA sola vez
 // -------------------------------------------------------------
 function getAvailability(date) {
-  var slots = ['07:00','08:00','09:00','10:00','11:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
+  var SLOTS = ['07:00','08:00','09:00','10:00','11:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
   var result = {};
-  slots.forEach(function(s) {
-    result[s] = checkAvailability(date, s, 'Presencial').available;
+
+  // Leer Sheets una sola vez
+  var ss    = getOrCreateSheet();
+  var cRows = ss.getSheetByName('Citas').getDataRange().getValues();
+  var bRows = ss.getSheetByName('Bloqueos').getDataRange().getValues();
+
+  // Leer Google Calendar una sola vez para el dia completo
+  var dp = date.split('-');
+  var dayStart = new Date(+dp[0], +dp[1]-1, +dp[2], 0, 0, 0);
+  var dayEnd   = new Date(+dp[0], +dp[1]-1, +dp[2], 23, 59, 59);
+  var calEvents = [];
+  try { calEvents = CalendarApp.getDefaultCalendar().getEvents(dayStart, dayEnd); } catch(x) {}
+
+  SLOTS.forEach(function(s) {
+    var start  = parseDT(date, s);
+    var end60  = new Date(start.getTime() + 60 * 60000);
+    var ok     = true;
+
+    // 1. Google Calendar (eventos personales + citas existentes)
+    for (var k = 0; k < calEvents.length && ok; k++) {
+      var ev = calEvents[k];
+      if (ev.isAllDayEvent()) continue;
+      if (start < ev.getEndTime() && end60 > ev.getStartTime()) ok = false;
+    }
+
+    // 2. Citas en Sheets
+    for (var i = 1; i < cRows.length && ok; i++) {
+      var r = cRows[i];
+      if (r[10] === 'Cancelada') continue;
+      var rf = sd(r[7]);
+      if (rf !== date) continue;
+      var es = parseDT(rf, st(r[8]));
+      var em = r[6] === 'Domicilio' ? 90 : 60;
+      if (start < new Date(es.getTime() + em*60000) && end60 > es) ok = false;
+    }
+
+    // 3. Bloqueos
+    for (var j = 1; j < bRows.length && ok; j++) {
+      var b = bRows[j];
+      if (sd(b[0]) !== date) continue;
+      if (start < parseDT(date, st(b[2])) && end60 > parseDT(date, st(b[1]))) ok = false;
+    }
+
+    result[s] = ok;
   });
+
   return {ok: true, date: date, slots: result};
 }
 
 function checkAvailability(date, time, modality) {
-  var ss    = getOrCreateSheet();
   var start = parseDT(date, time);
   var mins  = modality === 'Domicilio' ? 90 : 60;
   var end   = new Date(start.getTime() + mins * 60000);
 
-  // Normaliza fechas/horas que Sheets puede convertir a Date u numero decimal
-  function sd(v) {
-    if (!v) return '';
-    if (v instanceof Date) return fmtDate(v);
-    return ('' + v).split('T')[0];
-  }
-  function st(v) {
-    if (!v && v !== 0) return '00:00';
-    if (v instanceof Date) return pad(v.getHours()) + ':' + pad(v.getMinutes());
-    if (typeof v === 'number') {
-      var h = Math.floor(v * 24);
-      var m = Math.round((v * 24 - h) * 60);
-      return pad(h) + ':' + pad(m);
+  // 1. Google Calendar — bloquear si hay cualquier evento personal
+  try {
+    var calEvents = CalendarApp.getDefaultCalendar().getEvents(start, end);
+    for (var k = 0; k < calEvents.length; k++) {
+      if (!calEvents[k].isAllDayEvent()) return {available: false, reason: 'Ese horario no esta disponible. Por favor elige otro.'};
     }
-    return '' + v;
-  }
+  } catch(x) {}
 
-  // Revisar citas existentes
+  var ss = getOrCreateSheet();
+
+  // 2. Citas existentes en Sheets
   var cRows = ss.getSheetByName('Citas').getDataRange().getValues();
   for (var i = 1; i < cRows.length; i++) {
     var r = cRows[i];
@@ -153,18 +211,15 @@ function checkAvailability(date, time, modality) {
     if (rf !== date) continue;
     var es = parseDT(rf, st(r[8]));
     var em = r[6] === 'Domicilio' ? 90 : 60;
-    var ee = new Date(es.getTime() + em * 60000);
-    if (start < ee && end > es) return {available: false, reason: 'Ese horario ya esta reservado. Por favor elige otro.'};
+    if (start < new Date(es.getTime() + em*60000) && end > es) return {available: false, reason: 'Ese horario ya esta reservado. Por favor elige otro.'};
   }
 
-  // Revisar bloqueos
+  // 3. Bloqueos
   var bRows = ss.getSheetByName('Bloqueos').getDataRange().getValues();
   for (var j = 1; j < bRows.length; j++) {
     var b = bRows[j];
     if (sd(b[0]) !== date) continue;
-    var bs = parseDT(date, st(b[1]));
-    var be = parseDT(date, st(b[2]));
-    if (start < be && end > bs) return {available: false, reason: 'Ese horario esta bloqueado.'};
+    if (start < parseDT(date, st(b[2])) && end > parseDT(date, st(b[1]))) return {available: false, reason: 'Ese horario esta bloqueado.'};
   }
 
   return {available: true};
