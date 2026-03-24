@@ -1780,7 +1780,7 @@
       document.querySelectorAll('.bk-time').forEach(t => t.classList.remove('selected'));
       el.classList.add('selected');
       bk.time = el.textContent.trim();
-      checkStep2();
+      document.getElementById('btnStep2').disabled = !(bk.date && bk.time);
     }
 
     function checkStep2() {
