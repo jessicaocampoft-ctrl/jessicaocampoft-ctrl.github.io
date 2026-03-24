@@ -1789,6 +1789,10 @@
       document.getElementById('btnStep2').disabled = !(bk.date && bk.time);
     }
 
+    function unlockSlots() {
+      document.querySelectorAll('.bk-time').forEach(t => t.classList.remove('checking'));
+    }
+
     function loadAvailability(date) {
       bk.time = '';
       document.getElementById('btnStep2').disabled = true;
@@ -1800,13 +1804,18 @@
         t.classList.add('checking');
       });
 
+      // Timeout de seguridad: si el API no responde en 4s, desbloquear slots
+      const timeout = setTimeout(unlockSlots, 4000);
+
       fetch(APPS_SCRIPT_URL + '?action=availability&date=' + date)
         .then(r => r.json())
         .then(data => {
+          clearTimeout(timeout);
           applyAvailability(data.slots || {});
         })
         .catch(() => {
-          document.querySelectorAll('.bk-time').forEach(t => t.classList.remove('checking'));
+          clearTimeout(timeout);
+          unlockSlots();
         });
     }
 
@@ -1990,6 +1999,7 @@
     window.selectTime = selectTime;
     window.checkStep2 = checkStep2;
     window.checkStep3 = checkStep3;
+    window.checkAndContinue = checkAndContinue;
     window.goStep = goStep;
     window.submitBooking = submitBooking;
     window.resetBooking = resetBooking;
