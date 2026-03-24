@@ -1750,10 +1750,8 @@
       bk.priceP   = el.dataset.priceP;
       bk.priceD   = el.dataset.priceD;
       document.getElementById('btnStep1').disabled = false;
-      // En móvil: avanzar automáticamente al paso 2 tras breve pausa
-      if (window.innerWidth < 768) {
-        setTimeout(() => goStep(2), 350);
-      }
+      // Avanzar automáticamente al paso 2 en cualquier dispositivo
+      setTimeout(() => goStep(2), 350);
     }
 
     function selectModality(m) {
