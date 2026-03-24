@@ -857,11 +857,16 @@ function chipState(st) {
 
 function waLink(tel, nombre, fecha, hora, serv) {
   const t = String(tel||'').replace(/\D/g,'');
-  if (!t || t.length < 7) return '#';
+  if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
   const fDate = normDate(fecha);
   const msg = 'Hola ' + nombre + ', te recuerdo tu cita de ' + serv + ' el ' + fDate + ' a las ' + hora + '. - Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+}
+function waBtn(tel, nombre, fecha, hora, serv, label) {
+  const url = waLink(tel, nombre, fecha, hora, serv);
+  if (!url) return '<span style="color:var(--muted);font-size:.75rem">Sin tel.</span>';
+  return '<a href="' + url + '" target="_blank" class="btn btn-wa' + (label==='WA'?' btn-sm':'') + '">' + (label||'WA') + '</a>';
 }
 
 function toast(msg, type='ok') {
@@ -915,7 +920,7 @@ function initDashboard() {
           <div class="tl-name">${c.nombre} ${chipState(c.estado)}</div>
           <div class="tl-serv">${c.servicio} · ${c.modalidad} · ${c.precio}</div>
           <div class="tl-actions">
-            <a href="${waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio)}" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>
+            ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp')}
             <button class="btn btn-ghost btn-sm" onclick="changeStatus('${c.id}','Atendida')">Marcar atendida</button>
           </div>
         </div>
@@ -985,7 +990,7 @@ function renderAgenda() {
       <td>
         <div style="display:flex;gap:6px">
           <button class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
-          <a href="${waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio)}" target="_blank" class="btn btn-wa btn-sm">WA</a>
+          ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WA')}
         </div>
       </td>
     </tr>`).join('');
@@ -1028,7 +1033,7 @@ function verDetalle(id) {
         ${row('ID cita', c.id)}
       </div>
       <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap">
-        <a href="${waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio)}" target="_blank" class="btn btn-wa">Enviar WhatsApp</a>
+        ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'Enviar WhatsApp')}
         ${c.email ? `<a href="mailto:${c.email}" class="btn btn-ghost">Enviar Email</a>` : ''}
       </div>
     </div>`;
@@ -1251,7 +1256,7 @@ function renderPacientes() {
       <td>
         <div style="display:flex;gap:6px">
           <button class="btn btn-ghost btn-sm" onclick="verHistorial('${encodeURIComponent(p.nombre)}')">Historial</button>
-          ${p.telefono ? `<a href="${waLink(p.telefono,p.nombre,'','','')}" target="_blank" class="btn btn-wa btn-sm">WA</a>` : ''}
+          ${waBtn(p.telefono,p.nombre,'','','','WA')}
         </div>
       </td>
     </tr>`;

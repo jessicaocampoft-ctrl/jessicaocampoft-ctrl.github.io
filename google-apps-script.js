@@ -270,7 +270,7 @@ function getAdminData() {
     citas.push({
       id: r[0], fechaReg: r[1],
       nombre: r[2],
-      telefono: (r[3] instanceof Error || r[3] === null || r[3] === undefined) ? '' : ('' + r[3]),
+      telefono: (function(){ var d=(r[3] instanceof Error||!r[3])?'':(''+r[3]).replace(/\D/g,''); return d.length>=7?d:''; })(),
       email: r[4],
       servicio: r[5], modalidad: r[6],
       fecha: (r[7] instanceof Date) ? fmtDate(r[7]) : (r[7] ? ('' + r[7]).split('T')[0] : ''),
