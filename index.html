@@ -1497,6 +1497,7 @@
                 A domicilio
               </button>
             </div>
+            <p style="font-size:0.78rem; color:var(--text-muted); font-style:italic; margin-bottom:20px;">* Sectores como Cerritos, Condina, Santa Rosa, etc. tienen recargo por desplazamiento.</p>
             <div class="bk-date-row">
               <div>
                 <label class="bk-field-label" for="bkDate">Fecha</label>
@@ -1751,6 +1752,7 @@
       document.getElementById('modP').classList.toggle('active', m === 'Presencial');
       document.getElementById('modD').classList.toggle('active', m === 'Domicilio');
       document.getElementById('addressWrap').style.display = m === 'Domicilio' ? 'block' : 'none';
+      document.getElementById('dominotice').style.display = m === 'Domicilio' ? 'block' : 'none';
       checkStep3();
     }
 
