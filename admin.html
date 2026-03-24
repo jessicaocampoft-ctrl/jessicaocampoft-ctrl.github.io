@@ -263,6 +263,29 @@ tr:hover td{background:rgba(126,221,208,.03)}
   font-family:var(--font-m);font-size:.75rem;color:var(--primary);font-weight:600;
 }
 
+/* ── CALENDARIO ── */
+.cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.cal-head-row{display:flex;border-bottom:2px solid var(--border)}
+.cal-hour-col{width:56px;flex-shrink:0}
+.cal-head-cell{flex:1;min-width:80px;text-align:center;padding:10px 4px 8px;font-size:.8rem;font-weight:600;border-left:1px solid var(--border)}
+.cal-head-cell.cal-today{background:rgba(27,191,176,.07);color:var(--primary)}
+.cal-head-day{font-size:.72rem;color:var(--muted);font-weight:400;display:block}
+.cal-body-row{display:flex;border-bottom:1px solid rgba(27,191,176,.08);min-height:60px}
+.cal-body-row:hover{background:rgba(27,191,176,.02)}
+.cal-time-cell{width:56px;flex-shrink:0;font-family:var(--font-m);font-size:.7rem;color:var(--muted);padding:4px 8px 0 0;text-align:right;transform:translateY(-9px)}
+.cal-day-cell{flex:1;min-width:80px;border-left:1px solid rgba(27,191,176,.08);padding:2px 3px;position:relative;min-height:60px}
+.cal-day-cell.cal-today{background:rgba(27,191,176,.04)}
+.cal-ev{border-radius:5px;padding:3px 6px;margin-bottom:2px;cursor:pointer;transition:.15s ease;overflow:hidden}
+.cal-ev:hover{opacity:.82;transform:scale(1.01)}
+.cal-ev-ok  {background:#d1faf6;color:#0d7a70;border-left:3px solid #1BBFB0}
+.cal-ev-warn{background:#fef3c7;color:#92400e;border-left:3px solid #d97706}
+.cal-ev-info{background:#dbeafe;color:#1e40af;border-left:3px solid #2563eb}
+.cal-ev-err {background:#fee2e2;color:#991b1b;border-left:3px solid #dc2626}
+.cal-ev-block{background:#f3f4f6;color:#6b7280;border-left:3px solid #9ca3af}
+.cal-ev-time{font-family:var(--font-m);font-size:.68rem;display:block}
+.cal-ev-name{font-size:.75rem;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-ev-serv{font-size:.7rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.75}
+
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
   .stats-grid{grid-template-columns:repeat(2,1fr)}
@@ -536,22 +559,39 @@ tr:hover td{background:rgba(126,221,208,.03)}
 
     <!-- ── GOOGLE CALENDAR ── -->
     <section id="vCalendario" style="display:none">
-      <div class="page-header">
-        <h1 class="page-title"><em>Google Calendar</em></h1>
-        <p class="page-sub">Vista en tiempo real de tu calendario — las citas agendadas desde la página aparecen aquí automáticamente</p>
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title"><em>Calendario</em> de citas</h1>
+          <p class="page-sub">Vista semanal de todas tus citas. Haz clic en cualquier cita para ver el detalle.</p>
+        </div>
+        <a href="https://calendar.google.com" target="_blank" class="btn btn-ghost" style="gap:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Abrir Google Calendar
+        </a>
       </div>
-      <div class="card" style="padding:0;overflow:hidden;border-radius:var(--r)">
-        <iframe
-          src="https://calendar.google.com/calendar/embed?src=jessica.ocampo.ft%40gmail.com&ctz=America%2FBogota&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0&showTz=0&mode=WEEK&bgcolor=%23ffffff&color=%237EDDD0"
-          style="border:none;width:100%;height:700px;display:block"
-          frameborder="0"
-          scrolling="no"
-          title="Google Calendar Jessica Ocampo">
-        </iframe>
+
+      <!-- Nav -->
+      <div class="cal-nav">
+        <button class="btn btn-ghost btn-sm" onclick="calPrev()">&#8592; Anterior</button>
+        <button class="btn btn-ghost btn-sm" onclick="calToday()">Hoy</button>
+        <button class="btn btn-ghost btn-sm" onclick="calNext()">Siguiente &#8594;</button>
+        <span id="calTitle" style="font-family:var(--font-h);font-size:1.1rem;font-weight:600;margin-left:8px"></span>
       </div>
-      <p style="font-size:.8rem;color:var(--muted);margin-top:12px;text-align:center">
-        Si no ves el calendario, asegúrate de que tu cuenta de Google Calendar sea pública o de haber iniciado sesión en Google en este navegador.
-      </p>
+
+      <!-- Leyenda -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+        <span style="font-size:.78rem;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#1BBFB0;display:inline-block"></span>Confirmada</span>
+        <span style="font-size:.78rem;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#d97706;display:inline-block"></span>Pendiente</span>
+        <span style="font-size:.78rem;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#2563eb;display:inline-block"></span>Atendida</span>
+        <span style="font-size:.78rem;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#dc2626;display:inline-block"></span>Cancelada</span>
+        <span style="font-size:.78rem;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#9ca3af;display:inline-block"></span>Bloqueado</span>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="overflow-x:auto">
+          <div id="calGrid" style="min-width:700px"></div>
+        </div>
+      </div>
     </section>
 
     <!-- ── BLOQUEAR HORARIO ── -->
@@ -737,9 +777,10 @@ function showView(v) {
   document.getElementById('sb-' + v).classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
 
-  if (v === 'agenda')    renderAgenda();
-  if (v === 'bloquear')  renderBloqueos();
-  if (v === 'pacientes') renderPacientes();
+  if (v === 'agenda')     renderAgenda();
+  if (v === 'bloquear')   renderBloqueos();
+  if (v === 'pacientes')  renderPacientes();
+  if (v === 'calendario') renderCalendar();
 }
 
 function toggleSidebar() {
@@ -1032,7 +1073,7 @@ async function submitAdminBooking() {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=adminBook&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(data))}`);
     const d = await r.json();
     if (d.ok) {
-      toast('Cita creada exitosamente');
+      toast('Cita creada y agregada a Google Calendar');
       clearNuevaCita();
       await reload();
       initDashboard();
@@ -1111,6 +1152,95 @@ function verHistorial(encodedNombre) {
       ${c.notas ? `<div style="font-size:.8rem;color:var(--muted);margin-top:4px">${c.notas}</div>` : ''}
     </div>`).join('')}`;
   openModal('modalHistorial');
+}
+
+// ── CALENDARIO ──
+let calWeekStart = getMonday(new Date());
+
+function getMonday(d) {
+  const dt = new Date(d);
+  const day = dt.getDay();
+  dt.setDate(dt.getDate() - (day === 0 ? 6 : day - 1));
+  dt.setHours(0,0,0,0);
+  return dt;
+}
+
+function calPrev()  { calWeekStart.setDate(calWeekStart.getDate()-7); renderCalendar(); }
+function calNext()  { calWeekStart.setDate(calWeekStart.getDate()+7); renderCalendar(); }
+function calToday() { calWeekStart = getMonday(new Date()); renderCalendar(); }
+
+function renderCalendar() {
+  const HOURS = [7,8,9,10,11,12,13,14,15,16,17,18,19];
+  const todayStr = today();
+
+  // Build 7 days of this week
+  const days = Array.from({length:7}, (_,i) => {
+    const d = new Date(calWeekStart);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+
+  // Title
+  const opts = {day:'numeric', month:'short'};
+  document.getElementById('calTitle').textContent =
+    days[0].toLocaleDateString('es-CO', opts) + ' — ' +
+    days[6].toLocaleDateString('es-CO', {day:'numeric', month:'short', year:'numeric'});
+
+  // Header row
+  const dayNames = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  let html = '<div class="cal-head-row">';
+  html += '<div class="cal-hour-col"></div>';
+  days.forEach((d,i) => {
+    const ds = fmtDate(d);
+    const isT = ds === todayStr;
+    html += `<div class="cal-head-cell ${isT?'cal-today':''}">
+      <span class="cal-head-day">${dayNames[i]}</span>
+      <strong style="font-size:1rem">${d.getDate()}</strong>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Body rows (one per hour)
+  HOURS.forEach(h => {
+    html += '<div class="cal-body-row">';
+    html += `<div class="cal-time-cell">${pad(h)}:00</div>`;
+    days.forEach(d => {
+      const ds = fmtDate(d);
+      const isT = ds === todayStr;
+      html += `<div class="cal-day-cell ${isT?'cal-today':''}">`;
+
+      // Citas en este día y hora
+      allData.citas.forEach(c => {
+        if (c.fecha !== ds) return;
+        const [ch] = c.hora.split(':').map(Number);
+        if (ch !== h) return;
+        const cls = c.estado==='Confirmada'?'cal-ev-ok':c.estado==='Atendida'?'cal-ev-info':c.estado==='Cancelada'?'cal-ev-err':'cal-ev-warn';
+        html += `<div class="cal-ev ${cls}" onclick="verDetalle('${c.id}')">
+          <span class="cal-ev-time">${c.hora} · ${c.modalidad==='Domicilio'?'Dom':'Pres'}</span>
+          <span class="cal-ev-name">${c.nombre}</span>
+          <span class="cal-ev-serv">${c.servicio.replace('Descarga Muscular','D.Musc.').replace('Readaptación','Readap.').replace('Valoración','Val.')}</span>
+        </div>`;
+      });
+
+      // Bloqueos en este día y hora
+      allData.bloqueos.forEach(b => {
+        if (b.fecha !== ds) return;
+        const [bh] = (b.inicio||'0:0').split(':').map(Number);
+        const [eh] = (b.fin||'0:0').split(':').map(Number);
+        if (h < bh || h >= eh) return;
+        html += `<div class="cal-ev cal-ev-block">
+          <span class="cal-ev-time">${b.inicio}–${b.fin}</span>
+          <span class="cal-ev-name">Bloqueado</span>
+          <span class="cal-ev-serv">${b.motivo||''}</span>
+        </div>`;
+      });
+
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+
+  document.getElementById('calGrid').innerHTML = html;
 }
 
 // ── MODALS ──
