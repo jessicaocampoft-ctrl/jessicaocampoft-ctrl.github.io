@@ -1789,34 +1789,21 @@
       document.getElementById('btnStep2').disabled = !(bk.date && bk.time);
     }
 
-    function unlockSlots() {
-      document.querySelectorAll('.bk-time').forEach(t => t.classList.remove('checking'));
-    }
-
     function loadAvailability(date) {
       bk.time = '';
       document.getElementById('btnStep2').disabled = true;
       const msg = document.getElementById('bkAvailMsg');
       msg.style.display = 'none';
 
+      // Limpiar selección y slots tomados — nunca bloquear los slots con checking
       document.querySelectorAll('.bk-time').forEach(t => {
-        t.classList.remove('selected','taken');
-        t.classList.add('checking');
+        t.classList.remove('selected','taken','checking');
       });
-
-      // Timeout de seguridad: si el API no responde en 4s, desbloquear slots
-      const timeout = setTimeout(unlockSlots, 4000);
 
       fetch(APPS_SCRIPT_URL + '?action=availability&date=' + date)
         .then(r => r.json())
-        .then(data => {
-          clearTimeout(timeout);
-          applyAvailability(data.slots || {});
-        })
-        .catch(() => {
-          clearTimeout(timeout);
-          unlockSlots();
-        });
+        .then(data => { applyAvailability(data.slots || {}); })
+        .catch(() => {}); // Si falla el API, todos los slots quedan disponibles
     }
 
     function applyAvailability(slots) {
