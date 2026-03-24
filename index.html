@@ -961,11 +961,23 @@
       cursor: pointer;
       transition: var(--transition);
     }
-    .bk-time:hover { border-color: rgba(126,221,208,0.4); color: var(--text); }
-    .bk-time.selected { border-color: var(--primary); color: var(--primary); background: rgba(126,221,208,0.1); }
-    .bk-time.taken { opacity:.35; cursor:not-allowed; border-color:rgba(248,113,113,.2); color:var(--text-muted); pointer-events:none; }
-    .bk-time.checking { opacity:.4; pointer-events:none; animation: pulse .8s ease infinite alternate; }
-    @keyframes pulse { from{opacity:.3} to{opacity:.6} }
+    .bk-time:hover { border-color: rgba(126,221,208,0.5); color: var(--text); background: rgba(126,221,208,0.04); }
+    .bk-time.selected { border-color: var(--primary); color: var(--primary); background: rgba(126,221,208,0.12); font-weight:600; }
+    .bk-time.taken {
+      cursor:not-allowed; pointer-events:none;
+      border-color:rgba(248,113,113,.25); color:rgba(248,113,113,.6);
+      background:rgba(248,113,113,.04); text-decoration:line-through; opacity:.7;
+    }
+    .bk-time.taken::after { content:'✕'; font-size:.6rem; display:block; margin-top:1px; }
+    .bk-time.checking { opacity:.35; pointer-events:none; animation: bkpulse .8s ease infinite alternate; }
+    @keyframes bkpulse { from{opacity:.25} to{opacity:.55} }
+    .bk-avail-msg {
+      font-size:.78rem; padding:8px 12px; border-radius:6px; margin-bottom:10px;
+      display:none;
+    }
+    .bk-avail-msg.ok  { background:rgba(126,221,208,.1); color:var(--primary); border:1px solid rgba(126,221,208,.2); }
+    .bk-avail-msg.warn{ background:rgba(248,113,113,.08); color:#f87171; border:1px solid rgba(248,113,113,.2); }
+    .bk-avail-msg.none{ background:rgba(248,113,113,.08); color:#f87171; border:1px solid rgba(248,113,113,.2); }
     /* Step 3 – Personal data */
     .bk-fields {
       display: grid;
@@ -1510,6 +1522,7 @@
               </div>
               <div>
                 <label class="bk-field-label">Hora</label>
+                <div id="bkAvailMsg" class="bk-avail-msg"></div>
                 <div class="bk-time-grid" id="timeGrid">
                   <span class="bk-time" onclick="selectTime(this)">07:00</span>
                   <span class="bk-time" onclick="selectTime(this)">08:00</span>
@@ -1531,7 +1544,7 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 Volver
               </button>
-              <button class="bk-btn-next" id="btnStep2" onclick="goStep(3)" disabled>
+              <button class="bk-btn-next" id="btnStep2" onclick="checkAndContinue()" disabled>
                 Continuar
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
@@ -1777,27 +1790,91 @@
     }
 
     function loadAvailability(date) {
-      // Reset slots
       bk.time = '';
+      document.getElementById('btnStep2').disabled = true;
+      const msg = document.getElementById('bkAvailMsg');
+      msg.style.display = 'none';
+
       document.querySelectorAll('.bk-time').forEach(t => {
         t.classList.remove('selected','taken');
         t.classList.add('checking');
       });
-      document.getElementById('btnStep2').disabled = true;
 
       fetch(APPS_SCRIPT_URL + '?action=availability&date=' + date)
         .then(r => r.json())
         .then(data => {
-          document.querySelectorAll('.bk-time').forEach(t => {
-            t.classList.remove('checking');
-            const slot = t.textContent.trim();
-            if (data.slots && data.slots[slot] === false) t.classList.add('taken');
-          });
+          applyAvailability(data.slots || {});
         })
         .catch(() => {
-          // Si falla, simplemente muestra todos disponibles
           document.querySelectorAll('.bk-time').forEach(t => t.classList.remove('checking'));
         });
+    }
+
+    function applyAvailability(slots) {
+      let available = 0, total = 0;
+      document.querySelectorAll('.bk-time').forEach(t => {
+        t.classList.remove('checking');
+        const slot = t.textContent.replace('✕','').trim();
+        total++;
+        if (slots[slot] === false) {
+          t.classList.add('taken');
+        } else {
+          available++;
+        }
+      });
+
+      const msg = document.getElementById('bkAvailMsg');
+      if (available === 0) {
+        msg.className = 'bk-avail-msg none';
+        msg.textContent = 'No hay horarios disponibles para esta fecha. Por favor elige otro día.';
+        msg.style.display = 'block';
+      } else if (available < total) {
+        msg.className = 'bk-avail-msg ok';
+        msg.textContent = available + ' horario' + (available > 1 ? 's' : '') + ' disponible' + (available > 1 ? 's' : '') + ' — los marcados con ✕ ya están reservados.';
+        msg.style.display = 'block';
+      } else {
+        msg.style.display = 'none';
+      }
+    }
+
+    // Verificación doble al hacer clic en Continuar
+    async function checkAndContinue() {
+      const btn = document.getElementById('btnStep2');
+      const origText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = 'Verificando...';
+
+      try {
+        const r = await fetch(APPS_SCRIPT_URL + '?action=availability&date=' + bk.date);
+        const data = await r.json();
+        const slots = data.slots || {};
+
+        if (slots[bk.time] === false) {
+          // Horario tomado — mostrar mensaje y recargar slots
+          applyAvailability(slots);
+          bk.time = '';
+
+          const msg = document.getElementById('bkAvailMsg');
+          msg.className = 'bk-avail-msg warn';
+          const freeSlots = Object.entries(slots).filter(([,v]) => v).map(([k]) => k);
+          msg.innerHTML = '⚠ Ese horario acaba de ser reservado por otra persona. '
+            + (freeSlots.length
+                ? 'Horarios disponibles: <strong>' + freeSlots.join(' · ') + '</strong>'
+                : 'No quedan horarios disponibles hoy.');
+          msg.style.display = 'block';
+          msg.scrollIntoView({behavior:'smooth', block:'nearest'});
+
+          btn.innerHTML = origText;
+          btn.disabled = true; // requiere elegir otro slot
+          return;
+        }
+      } catch(e) {
+        // Si falla la verificación, se permite continuar de todos modos
+      }
+
+      btn.innerHTML = origText;
+      btn.disabled = false;
+      goStep(3);
     }
 
     function checkStep3() {
