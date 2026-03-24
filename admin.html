@@ -828,9 +828,22 @@ function today() {
 }
 function pad(n) { return n < 10 ? '0'+n : ''+n; }
 
+// Returns "YYYY-MM-DD" from a Date object
+function toDateStr(d) {
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+// Normalizes any date value (Date object, ISO string, plain "YYYY-MM-DD") → "YYYY-MM-DD"
+function normDate(s) {
+  if (!s) return '';
+  if (s instanceof Date) return toDateStr(s);
+  return String(s).split('T')[0].trim();
+}
+// Human-readable display date from any date value
 function fmtDate(s) {
   if (!s) return '—';
-  const [y,m,d] = s.split('-');
+  const nd = normDate(s);
+  const [y,m,d] = nd.split('-');
+  if (!y || !m || !d || isNaN(+y)) return nd || '—';
   return new Date(+y, +m-1, +d).toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'});
 }
 
@@ -843,9 +856,11 @@ function chipState(st) {
 }
 
 function waLink(tel, nombre, fecha, hora, serv) {
-  const t = (tel||'').replace(/\D/g,'');
+  const t = String(tel||'').replace(/\D/g,'');
+  if (!t || t.length < 7) return '#';
   const phone = t.length <= 10 ? '57'+t : t;
-  const msg = 'Hola ' + nombre + ', te recuerdo tu cita de ' + serv + ' el ' + fecha + ' a las ' + hora + '. - Jessica Ocampo Fisioterapeuta';
+  const fDate = normDate(fecha);
+  const msg = 'Hola ' + nombre + ', te recuerdo tu cita de ' + serv + ' el ' + fDate + ' a las ' + hora + '. - Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
@@ -877,9 +892,9 @@ function initDashboard() {
 
   const citas = allData.citas.filter(c => c.estado !== 'Cancelada');
 
-  const hoy    = citas.filter(c => c.fecha === todayStr).length;
-  const semana = citas.filter(c => { const [cy,cm,cd]=c.fecha.split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; }).length;
-  const mes    = citas.filter(c => { const [cy,cm]=c.fecha.split('-'); return +cm===m && +cy===y; }).length;
+  const hoy    = citas.filter(c => normDate(c.fecha) === todayStr).length;
+  const semana = citas.filter(c => { const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; }).length;
+  const mes    = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; }).length;
   const pacs   = new Set(citas.map(c => c.telefono || c.email)).size;
 
   document.getElementById('stHoy').textContent      = hoy;
@@ -888,7 +903,7 @@ function initDashboard() {
   document.getElementById('stPacientes').textContent = pacs;
 
   // Timeline hoy
-  const citasHoy = allData.citas.filter(c => c.fecha === todayStr).sort((a,b) => a.hora.localeCompare(b.hora));
+  const citasHoy = allData.citas.filter(c => normDate(c.fecha) === todayStr).sort((a,b) => a.hora.localeCompare(b.hora));
   const tlHoy = document.getElementById('tlHoy');
   if (citasHoy.length === 0) {
     tlHoy.innerHTML = '<div class="empty"><p>No hay citas hoy</p></div>';
@@ -911,8 +926,8 @@ function initDashboard() {
   const tm = new Date(); tm.setDate(tm.getDate()+1);
   const in7 = new Date(); in7.setDate(in7.getDate()+7);
   const proximas = allData.citas
-    .filter(c => { if(c.estado==='Cancelada') return false; const [y2,m2,d2]=c.fecha.split('-'); const dt=new Date(+y2,+m2-1,+d2); return dt>=tm && dt<=in7; })
-    .sort((a,b) => (a.fecha+a.hora).localeCompare(b.fecha+b.hora))
+    .filter(c => { if(c.estado==='Cancelada') return false; const [y2,m2,d2]=normDate(c.fecha).split('-'); const dt=new Date(+y2,+m2-1,+d2); return dt>=tm && dt<=in7; })
+    .sort((a,b) => (normDate(a.fecha)+a.hora).localeCompare(normDate(b.fecha)+b.hora))
     .slice(0, 8);
 
   const tlP = document.getElementById('tlProximas');
@@ -938,13 +953,13 @@ function renderAgenda() {
   const fDesde = document.getElementById('fDesde').value;
   const fHasta = document.getElementById('fHasta').value;
 
-  let citas = [...allData.citas].sort((a,b) => (b.fecha+b.hora).localeCompare(a.fecha+a.hora));
+  let citas = [...allData.citas].sort((a,b) => (normDate(b.fecha)+b.hora).localeCompare(normDate(a.fecha)+a.hora));
 
   if (search) citas = citas.filter(c => (c.nombre+c.servicio+c.email+c.telefono).toLowerCase().includes(search));
   if (fSt)    citas = citas.filter(c => c.estado === fSt);
   if (fMod)   citas = citas.filter(c => c.modalidad === fMod);
-  if (fDesde) citas = citas.filter(c => c.fecha >= fDesde);
-  if (fHasta) citas = citas.filter(c => c.fecha <= fHasta);
+  if (fDesde) citas = citas.filter(c => normDate(c.fecha) >= fDesde);
+  if (fHasta) citas = citas.filter(c => normDate(c.fecha) <= fHasta);
 
   const tbody = document.getElementById('agendaTbody');
   if (citas.length === 0) {
@@ -1206,8 +1221,8 @@ function renderPacientes() {
     const key = c.telefono || c.email || c.nombre;
     if (!map[key]) map[key] = {nombre:c.nombre, telefono:c.telefono, email:c.email, sesiones:0, ultima:'', servicios:{}};
     map[key].sesiones++;
-    if (c.fecha > map[key].ultima) {
-      map[key].ultima = c.fecha;
+    if (normDate(c.fecha) > normDate(map[key].ultima)) {
+      map[key].ultima = normDate(c.fecha);
       map[key].ultimaHora = c.hora;
     }
     map[key].servicios[c.servicio] = (map[key].servicios[c.servicio]||0)+1;
@@ -1298,7 +1313,7 @@ function renderCalendar() {
   let html = '<div class="cal-head-row">';
   html += '<div class="cal-hour-col"></div>';
   days.forEach((d,i) => {
-    const ds = fmtDate(d);
+    const ds = toDateStr(d);
     const isT = ds === todayStr;
     html += `<div class="cal-head-cell ${isT?'cal-today':''}">
       <span class="cal-head-day">${dayNames[i]}</span>
@@ -1312,13 +1327,13 @@ function renderCalendar() {
     html += '<div class="cal-body-row">';
     html += `<div class="cal-time-cell">${pad(h)}:00</div>`;
     days.forEach(d => {
-      const ds = fmtDate(d);
+      const ds = toDateStr(d);
       const isT = ds === todayStr;
       html += `<div class="cal-day-cell ${isT?'cal-today':''}">`;
 
       // Citas en este día y hora
       allData.citas.forEach(c => {
-        if (c.fecha !== ds) return;
+        if (normDate(c.fecha) !== ds) return;
         const [ch] = c.hora.split(':').map(Number);
         if (ch !== h) return;
         const cls = c.estado==='Confirmada'?'cal-ev-ok':c.estado==='Atendida'?'cal-ev-info':c.estado==='Cancelada'?'cal-ev-err':'cal-ev-warn';
@@ -1331,7 +1346,7 @@ function renderCalendar() {
 
       // Bloqueos en este día y hora
       allData.bloqueos.forEach(b => {
-        if (b.fecha !== ds) return;
+        if (normDate(b.fecha) !== ds) return;
         const [bh] = (b.inicio||'0:0').split(':').map(Number);
         const [eh] = (b.fin||'0:0').split(':').map(Number);
         if (h < bh || h >= eh) return;

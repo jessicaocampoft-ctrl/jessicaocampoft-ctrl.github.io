@@ -196,9 +196,13 @@ function getAdminData() {
     var r = cRows[i];
     citas.push({
       id: r[0], fechaReg: r[1],
-      nombre: r[2], telefono: r[3], email: r[4],
+      nombre: r[2],
+      telefono: (r[3] instanceof Error || r[3] === null || r[3] === undefined) ? '' : ('' + r[3]),
+      email: r[4],
       servicio: r[5], modalidad: r[6],
-      fecha: r[7], hora: r[8], precio: r[9],
+      fecha: (r[7] instanceof Date) ? fmtDate(r[7]) : (r[7] ? ('' + r[7]).split('T')[0] : ''),
+      hora: (r[8] instanceof Date) ? (pad(r[8].getHours()) + ':' + pad(r[8].getMinutes())) : ('' + (r[8] || '')),
+      precio: r[9],
       estado: r[10], direccion: r[11], notas: r[12], notaAdmin: r[13]
     });
   }
@@ -207,7 +211,12 @@ function getAdminData() {
   var bloqueos = [];
   for (var j = 1; j < bRows.length; j++) {
     var b = bRows[j];
-    bloqueos.push({fecha: b[0], inicio: b[1], fin: b[2], motivo: b[3]});
+    bloqueos.push({
+      fecha: (b[0] instanceof Date) ? fmtDate(b[0]) : (b[0] ? ('' + b[0]).split('T')[0] : ''),
+      inicio: (b[1] instanceof Date) ? (pad(b[1].getHours()) + ':' + pad(b[1].getMinutes())) : ('' + (b[1] || '')),
+      fin: (b[2] instanceof Date) ? (pad(b[2].getHours()) + ':' + pad(b[2].getMinutes())) : ('' + (b[2] || '')),
+      motivo: b[3]
+    });
   }
 
   return {ok: true, citas: citas, bloqueos: bloqueos};
