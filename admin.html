@@ -9,13 +9,13 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0D0D0D;--s1:#111111;--s2:#1A1A1A;--s3:#222222;
-  --primary:#7EDDD0;--primary-h:#A8EDE7;
-  --text:#F0EDE6;--muted:#8A8578;
-  --border:rgba(126,221,208,.18);--glow:rgba(126,221,208,.22);
+  --bg:#F7F8FA;--s1:#FFFFFF;--s2:#F0F2F5;--s3:#E8EAED;
+  --primary:#1BBFB0;--primary-h:#17A89A;
+  --text:#1A1A2E;--muted:#6B7280;
+  --border:rgba(27,191,176,.18);--glow:rgba(27,191,176,.12);
   --font-h:'Cormorant Garamond',serif;--font-b:'DM Sans',sans-serif;--font-m:'DM Mono',monospace;
   --r:10px;--tr:.2s ease;
-  --ok:#4ade80;--warn:#fbbf24;--err:#f87171;--info:#60a5fa;
+  --ok:#16a34a;--warn:#d97706;--err:#dc2626;--info:#2563eb;
 }
 html{font-size:16px;scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
@@ -62,9 +62,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 /* ── SIDEBAR ── */
 #sidebar{
   position:fixed;top:0;left:0;height:100vh;width:220px;
-  background:var(--s1);border-right:1px solid var(--border);
+  background:#FFFFFF;border-right:1px solid #E5E7EB;
   display:flex;flex-direction:column;gap:4px;padding:24px 12px;
   z-index:100;transition:var(--tr);overflow-y:auto;
+  box-shadow:2px 0 12px rgba(0,0,0,.06);
 }
 .sb-logo{padding:0 8px 20px;border-bottom:1px solid var(--border);margin-bottom:8px}
 .sb-logo img{height:36px}

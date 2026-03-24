@@ -886,10 +886,12 @@
     }
     .bk-svc-price {
       font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--text-muted);
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--text);
+      opacity: 0.75;
     }
-    .bk-svc.selected .bk-svc-price { color: var(--primary); }
+    .bk-svc.selected .bk-svc-price { color: var(--primary); opacity: 1; }
     /* Step 2 – Modality + Date/Time */
     .bk-modality {
       display: flex;
@@ -1748,6 +1750,10 @@
       bk.priceP   = el.dataset.priceP;
       bk.priceD   = el.dataset.priceD;
       document.getElementById('btnStep1').disabled = false;
+      // En móvil: avanzar automáticamente al paso 2 tras breve pausa
+      if (window.innerWidth < 768) {
+        setTimeout(() => goStep(2), 350);
+      }
     }
 
     function selectModality(m) {
