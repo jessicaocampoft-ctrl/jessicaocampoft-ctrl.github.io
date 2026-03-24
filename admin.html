@@ -485,6 +485,27 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <p class="page-sub">Como administrador puedes agendar sin restricción de horario ni buffer de domicilio</p>
       </div>
       <div class="card" style="max-width:640px">
+
+        <!-- ── BUSCADOR PACIENTE EXISTENTE ── -->
+        <div class="field" style="margin-bottom:20px;position:relative">
+          <label style="font-size:.82rem;color:var(--primary);font-weight:600">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Buscar paciente existente
+          </label>
+          <input type="text" id="pacSearch"
+            placeholder="Escribe nombre o teléfono para autocompletar..."
+            oninput="searchPatient(this.value)"
+            autocomplete="off"
+            style="background:#f0faf9;border-color:rgba(27,191,176,.35)">
+          <div id="pacDropdown" style="
+            display:none;position:absolute;top:100%;left:0;right:0;z-index:200;
+            background:#fff;border:1px solid rgba(27,191,176,.3);border-radius:8px;
+            box-shadow:0 8px 24px rgba(0,0,0,.1);max-height:220px;overflow-y:auto;margin-top:4px">
+          </div>
+          <p style="font-size:.75rem;color:var(--muted);margin-top:5px">Si el paciente ya tiene citas previas, selecciónalo para llenar los datos automáticamente.</p>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin-bottom:20px">
+
         <div class="form-grid">
           <div class="field">
             <label>Nombre del paciente *</label>
@@ -1083,12 +1104,66 @@ async function submitAdminBooking() {
   btn.textContent = 'Crear cita'; btn.disabled = false;
 }
 
+// ── BUSCADOR PACIENTE ──
+function searchPatient(q) {
+  const dd = document.getElementById('pacDropdown');
+  if (!q || q.length < 2) { dd.style.display='none'; return; }
+
+  // Construir mapa de pacientes únicos desde allData.citas
+  const map = {};
+  allData.citas.forEach(c => {
+    const key = (c.telefono||'') + '|' + (c.nombre||'');
+    if (!map[key]) map[key] = {nombre:c.nombre, telefono:c.telefono, email:c.email, sesiones:0, ultimaDir:c.direccion||''};
+    map[key].sesiones++;
+    if (c.direccion) map[key].ultimaDir = c.direccion;
+  });
+
+  const term = q.toLowerCase();
+  const matches = Object.values(map).filter(p =>
+    (p.nombre||'').toLowerCase().includes(term) ||
+    (p.telefono||'').replace(/\D/g,'').includes(term.replace(/\D/g,''))
+  ).slice(0, 8);
+
+  if (!matches.length) { dd.style.display='none'; return; }
+
+  dd.innerHTML = matches.map(p => `
+    <div onclick="fillPatient(${JSON.stringify(p).replace(/"/g,'&quot;')})"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:.15s"
+      onmouseenter="this.style.background='#f0faf9'" onmouseleave="this.style.background=''">
+      <div style="font-weight:600;font-size:.88rem">${p.nombre}</div>
+      <div style="font-size:.78rem;color:#6B7280">${p.telefono||'Sin teléfono'} · ${p.email||'Sin email'} · ${p.sesiones} cita(s)</div>
+    </div>`).join('');
+  dd.style.display = 'block';
+}
+
+function fillPatient(p) {
+  document.getElementById('ncName').value    = p.nombre  || '';
+  document.getElementById('ncPhone').value   = p.telefono|| '';
+  document.getElementById('ncEmail').value   = p.email   || '';
+  if (p.ultimaDir) document.getElementById('ncAddress').value = p.ultimaDir;
+  document.getElementById('pacSearch').value = p.nombre + ' — ' + (p.telefono||'');
+  document.getElementById('pacDropdown').style.display = 'none';
+  toast('Datos de ' + p.nombre + ' cargados');
+}
+
+// Cerrar dropdown al hacer clic fuera
+document.addEventListener('click', e => {
+  if (!e.target.closest('#pacSearch') && !e.target.closest('#pacDropdown')) {
+    const dd = document.getElementById('pacDropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
+
 function clearNuevaCita() {
-  ['ncName','ncPhone','ncEmail','ncPrice','ncAddress','ncNotes'].forEach(id => document.getElementById(id).value='');
+  ['ncName','ncPhone','ncEmail','ncPrice','ncAddress','ncNotes','pacSearch'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
   document.getElementById('ncService').selectedIndex=0;
   document.getElementById('ncMod').value='Presencial';
   document.getElementById('ncDate').value='';
   document.getElementById('ncAddrWrap').style.display='none';
+  const dd = document.getElementById('pacDropdown');
+  if (dd) dd.style.display='none';
 }
 
 // ── PACIENTES ──
