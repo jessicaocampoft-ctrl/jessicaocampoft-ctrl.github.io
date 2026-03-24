@@ -521,7 +521,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
           </div>
           <div class="field">
             <label>Servicio *</label>
-            <select id="ncService">
+            <select id="ncService" onchange="autoFillPrice()">
               <option value="">Selecciona un servicio</option>
               <option value="Descarga Muscular — Cuello y Espalda">Descarga Muscular — Cuello y Espalda</option>
               <option value="Descarga Muscular — Piernas">Descarga Muscular — Piernas</option>
@@ -534,7 +534,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
           </div>
           <div class="field">
             <label>Modalidad *</label>
-            <select id="ncMod" onchange="toggleNcAddress()">
+            <select id="ncMod" onchange="toggleNcAddress(); autoFillPrice()">
               <option value="Presencial">Presencial</option>
               <option value="Domicilio">Domicilio</option>
             </select>
@@ -557,7 +557,20 @@ tr:hover td{background:rgba(126,221,208,.03)}
           </div>
           <div class="field">
             <label>Precio (para registro)</label>
-            <input type="text" id="ncPrice" placeholder="$75.000">
+            <select id="ncPrice">
+              <option value="">— Elige servicio y modalidad —</option>
+              <option value="$70.000">$70.000</option>
+              <option value="$75.000">$75.000</option>
+              <option value="$80.000">$80.000</option>
+              <option value="$85.000">$85.000</option>
+              <option value="$90.000">$90.000</option>
+              <option value="$95.000">$95.000</option>
+              <option value="$110.000">$110.000</option>
+              <option value="$125.000">$125.000</option>
+              <option value="Consultar">Consultar disponibilidad</option>
+              <option value="Propuesta personalizada">Propuesta personalizada</option>
+              <option value="A convenir">A convenir</option>
+            </select>
           </div>
         </div>
         <div class="field" id="ncAddrWrap" style="display:none;margin-top:16px">
@@ -1066,6 +1079,25 @@ async function doUnblock(date, startTime) {
 function toggleNcAddress() {
   const m = document.getElementById('ncMod').value;
   document.getElementById('ncAddrWrap').style.display = m==='Domicilio' ? 'block' : 'none';
+}
+
+function autoFillPrice() {
+  const serv = document.getElementById('ncService').value;
+  const mod  = document.getElementById('ncMod').value;
+  if (!serv) return;
+
+  const precios = {
+    'Descarga Muscular — Cuello y Espalda': { Presencial:'$75.000', Domicilio:'$90.000' },
+    'Descarga Muscular — Piernas':          { Presencial:'$75.000', Domicilio:'$90.000' },
+    'Descarga Muscular Completa':           { Presencial:'$110.000', Domicilio:'$125.000' },
+    'Valoración Funcional':                 { Presencial:'$80.000', Domicilio:'$95.000' },
+    'Readaptación Funcional':               { Presencial:'$70.000', Domicilio:'$85.000' },
+    'Sesiones en Gimnasio':                 { Presencial:'Consultar', Domicilio:'Consultar' },
+    'Jornada Empresarial':                  { Presencial:'Propuesta personalizada', Domicilio:'Propuesta personalizada' },
+  };
+
+  const precio = precios[serv] ? (precios[serv][mod] || precios[serv]['Presencial']) : '';
+  if (precio) document.getElementById('ncPrice').value = precio;
 }
 
 async function submitAdminBooking() {
