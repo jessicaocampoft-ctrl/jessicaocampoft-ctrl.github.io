@@ -127,13 +127,31 @@ function checkAvailability(date, time, modality) {
   var mins  = modality === 'Domicilio' ? 90 : 60;
   var end   = new Date(start.getTime() + mins * 60000);
 
+  // Normaliza fechas/horas que Sheets puede convertir a Date u numero decimal
+  function sd(v) {
+    if (!v) return '';
+    if (v instanceof Date) return fmtDate(v);
+    return ('' + v).split('T')[0];
+  }
+  function st(v) {
+    if (!v && v !== 0) return '00:00';
+    if (v instanceof Date) return pad(v.getHours()) + ':' + pad(v.getMinutes());
+    if (typeof v === 'number') {
+      var h = Math.floor(v * 24);
+      var m = Math.round((v * 24 - h) * 60);
+      return pad(h) + ':' + pad(m);
+    }
+    return '' + v;
+  }
+
   // Revisar citas existentes
   var cRows = ss.getSheetByName('Citas').getDataRange().getValues();
   for (var i = 1; i < cRows.length; i++) {
     var r = cRows[i];
     if (r[10] === 'Cancelada') continue;
-    if (r[7] !== date) continue;
-    var es = parseDT(r[7], r[8]);
+    var rf = sd(r[7]);
+    if (rf !== date) continue;
+    var es = parseDT(rf, st(r[8]));
     var em = r[6] === 'Domicilio' ? 90 : 60;
     var ee = new Date(es.getTime() + em * 60000);
     if (start < ee && end > es) return {available: false, reason: 'Ese horario ya esta reservado. Por favor elige otro.'};
@@ -143,9 +161,9 @@ function checkAvailability(date, time, modality) {
   var bRows = ss.getSheetByName('Bloqueos').getDataRange().getValues();
   for (var j = 1; j < bRows.length; j++) {
     var b = bRows[j];
-    if (b[0] !== date) continue;
-    var bs = parseDT(date, b[1]);
-    var be = parseDT(date, b[2]);
+    if (sd(b[0]) !== date) continue;
+    var bs = parseDT(date, st(b[1]));
+    var be = parseDT(date, st(b[2]));
     if (start < be && end > bs) return {available: false, reason: 'Ese horario esta bloqueado.'};
   }
 
@@ -238,10 +256,14 @@ function sendReminders() {
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i];
     if (r[10] === 'Cancelada') continue;
-    var fecha = r[7], nombre = r[2], tel = r[3], email = r[4];
-    var serv  = r[5], hora   = r[8], mod = r[6], precio = r[9];
-
-    var phone = tel.replace(/\D/g,'');
+    var fecha = (r[7] instanceof Date) ? fmtDate(r[7]) : ('' + (r[7]||'')).split('T')[0];
+    var nombre = r[2], email = r[4];
+    var serv  = r[5], mod = r[6], precio = r[9];
+    var hora  = (r[8] instanceof Date) ? (pad(r[8].getHours()) + ':' + pad(r[8].getMinutes())) :
+                (typeof r[8] === 'number') ? (pad(Math.floor(r[8]*24)) + ':' + pad(Math.round((r[8]*24%1)*60))) :
+                ('' + (r[8]||''));
+    var rawTel = (r[3] instanceof Error) ? '' : ('' + (r[3]||''));
+    var phone  = rawTel.replace(/\D/g,'');
     if (phone.length <= 10) phone = '57' + phone;
 
     if (fecha === tomorrow) {
