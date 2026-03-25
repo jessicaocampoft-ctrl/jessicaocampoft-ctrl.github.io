@@ -1075,9 +1075,11 @@ function renderAgenda() {
         </select>
       </td>
       <td>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
           ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WA')}
+          ${c.estado!=='Cancelada'?`<button class="btn btn-edit btn-sm" onclick="editarCita('${c.id}')" title="Editar">✏️</button>`:''}
+          ${c.estado!=='Cancelada'?`<button class="btn btn-danger btn-sm" onclick="cancelarCita('${c.id}','${c.nombre.replace(/'/g,"\\'")}')" title="Cancelar">🚫</button>`:''}
         </div>
       </td>
     </tr>`).join('');
