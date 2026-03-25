@@ -282,6 +282,11 @@ tr:hover td{background:rgba(126,221,208,.03)}
 .cal-ev-info{background:#dbeafe;color:#1e40af;border-left:3px solid #2563eb}
 .cal-ev-err {background:#fee2e2;color:#991b1b;border-left:3px solid #dc2626}
 .cal-ev-block{background:#f3f4f6;color:#6b7280;border-left:3px solid #9ca3af}
+.cal-ev-gcal {background:#f3e8ff;color:#6b21a8;border-left:3px solid #9333ea;cursor:default}
+.btn-danger{background:#dc2626;color:#fff;border:none}
+.btn-danger:hover{background:#b91c1c}
+.btn-edit{background:#f59e0b;color:#fff;border:none}
+.btn-edit:hover{background:#d97706}
 .cal-ev-time{font-family:var(--font-m);font-size:.68rem;display:block}
 .cal-ev-name{font-size:.75rem;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cal-ev-serv{font-size:.7rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.75}
@@ -743,6 +748,59 @@ tr:hover td{background:rgba(126,221,208,.03)}
   </div>
 </div>
 
+<!-- ── MODAL EDITAR CITA ── -->
+<div class="modal-bg" id="modalEditar">
+  <div class="modal">
+    <div class="modal-title">Editar cita</div>
+    <input type="hidden" id="editId">
+    <div class="form-grid g3" style="display:grid;gap:14px">
+      <div>
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Servicio</label>
+        <select id="editServicio" class="nc-input" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none">
+          <option>Descarga Muscular — Cuello y Espalda</option>
+          <option>Descarga Muscular — Piernas</option>
+          <option>Descarga Muscular Completa</option>
+          <option>Valoración Funcional</option>
+          <option>Readaptación Funcional</option>
+          <option>Sesiones en Gimnasio</option>
+          <option>Jornada Empresarial</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Modalidad</label>
+        <select id="editModalidad" class="nc-input" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none">
+          <option>Presencial</option>
+          <option>Domicilio</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Fecha</label>
+        <input type="date" id="editFecha" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none">
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Hora</label>
+        <select id="editHora" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none">
+          <option>07:00</option><option>08:00</option><option>09:00</option><option>10:00</option>
+          <option>11:00</option><option>13:00</option><option>14:00</option><option>15:00</option>
+          <option>16:00</option><option>17:00</option><option>18:00</option><option>19:00</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Valor</label>
+        <input type="text" id="editPrecio" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none" placeholder="$75.000">
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Notas del paciente</label>
+        <textarea id="editNotas" rows="2" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;resize:vertical" placeholder="Notas opcionales..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalEditar')">Cancelar</button>
+      <button class="btn btn-teal" id="editSaveBtn" onclick="guardarEdicion()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════════════════════
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzO-2QT0zB_KORrPLdPpBo8VlSaO_aMgJXMQhXqH81HfVz3KLXgbhdYjea-RHTED0H7/exec';
@@ -1019,23 +1077,29 @@ async function changeStatus(id, status) {
 function verDetalle(id) {
   const c = allData.citas.find(x => x.id === id);
   if (!c) return;
+  const esCancelada = c.estado === 'Cancelada';
   document.getElementById('modalDetalleContent').innerHTML = `
     <div style="display:grid;gap:12px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        ${row('Paciente', c.nombre)} ${row('Teléfono', c.telefono)}
+        ${row('Paciente', c.nombre)} ${row('Teléfono', c.telefono||'—')}
         ${row('Email', c.email||'—')} ${row('Servicio', c.servicio)}
         ${row('Fecha', fmtDate(c.fecha) + ' · ' + c.hora)} ${row('Modalidad', c.modalidad)}
-        ${row('Valor', c.precio)} ${row('Estado', c.estado)}
+        ${row('Valor', c.precio)} ${row('Estado', `<span class="chip ${chipState(c.estado)}">${c.estado}</span>`)}
         ${c.direccion ? row('Dirección', c.direccion) : ''}
         ${c.notas ? row('Notas del paciente', c.notas, true) : ''}
         ${c.notaAdmin ? row('Nota admin', c.notaAdmin, true) : ''}
-        ${row('Registrada el', c.fechaReg)}
         ${row('ID cita', c.id)}
       </div>
-      <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap">
-        ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'Enviar WhatsApp')}
-        ${c.email ? `<a href="mailto:${c.email}" class="btn btn-ghost">Enviar Email</a>` : ''}
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp confirmación')}
+        <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${c.telefono||''}','${c.nombre.replace(/'/g,"\\'")}','${c.servicio.replace(/'/g,"\\'")}')">💬 Seguimiento</button>
+        ${c.email ? `<a href="mailto:${c.email}" class="btn btn-ghost btn-sm">📧 Email</a>` : ''}
       </div>
+      ${!esCancelada ? `
+      <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:12px">
+        <button class="btn btn-edit btn-sm" onclick="editarCita('${c.id}')">✏️ Editar cita</button>
+        <button class="btn btn-danger btn-sm" onclick="cancelarCita('${c.id}','${c.nombre.replace(/'/g,"\\'")}')">🚫 Cancelar cita</button>
+      </div>` : ''}
     </div>`;
   openModal('modalDetalle');
 }
@@ -1043,6 +1107,93 @@ function verDetalle(id) {
 function row(label, val, full=false) {
   const span = full ? 'grid-column:1/-1' : '';
   return `<div style="${span}"><div style="font-size:.75rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">${label}</div><div style="font-size:.9rem">${val}</div></div>`;
+}
+
+// ── Cancelar cita (con confirmación) ──
+async function cancelarCita(id, nombre) {
+  if (!confirm(`¿Cancelar la cita de ${nombre}?\nEsto la marcará como Cancelada y eliminará el evento del calendario.`)) return;
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=cancelBooking&token=${encodeURIComponent(TOKEN)}&id=${id}`);
+    const d = await r.json();
+    if (d.ok) {
+      const cita = allData.citas.find(c => c.id === id);
+      if (cita) cita.estado = 'Cancelada';
+      toast('Cita cancelada. El horario ya está disponible.', 'ok');
+      closeModal('modalDetalle');
+      initDashboard();
+      renderAgenda();
+    } else toast('Error al cancelar: ' + (d.error||''), 'err');
+  } catch(e) { toast('Error de conexión', 'err'); }
+}
+
+// ── Abrir modal de edición con datos actuales ──
+function editarCita(id) {
+  const c = allData.citas.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('editId').value           = c.id;
+  document.getElementById('editFecha').value        = normDate(c.fecha);
+  document.getElementById('editPrecio').value       = c.precio || '';
+  document.getElementById('editNotas').value        = c.notas  || '';
+  // Seleccionar servicio
+  const ss = document.getElementById('editServicio');
+  for (let i = 0; i < ss.options.length; i++) if (ss.options[i].value === c.servicio) { ss.selectedIndex = i; break; }
+  // Seleccionar modalidad
+  document.getElementById('editModalidad').value = c.modality === 'Domicilio' ? 'Domicilio' : 'Presencial';
+  const editMod = document.getElementById('editModalidad');
+  for (let i = 0; i < editMod.options.length; i++) if (editMod.options[i].value === c.modalidad) { editMod.selectedIndex = i; break; }
+  // Seleccionar hora
+  const hs = document.getElementById('editHora');
+  for (let i = 0; i < hs.options.length; i++) if (hs.options[i].value === c.hora) { hs.selectedIndex = i; break; }
+  closeModal('modalDetalle');
+  openModal('modalEditar');
+}
+
+// ── Guardar los cambios de la edición ──
+async function guardarEdicion() {
+  const id       = document.getElementById('editId').value;
+  const servicio = document.getElementById('editServicio').value;
+  const modalidad= document.getElementById('editModalidad').value;
+  const fecha    = document.getElementById('editFecha').value;
+  const hora     = document.getElementById('editHora').value;
+  const precio   = document.getElementById('editPrecio').value.trim();
+  const notas    = document.getElementById('editNotas').value.trim();
+  if (!fecha) { toast('Selecciona una fecha', 'err'); return; }
+  const btn = document.getElementById('editSaveBtn');
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+  try {
+    const data = encodeURIComponent(JSON.stringify({id, servicio, modalidad, fecha, hora, precio, notas}));
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=editBooking&token=${encodeURIComponent(TOKEN)}&data=${data}`);
+    const d = await r.json();
+    if (d.ok) {
+      const cita = allData.citas.find(c => c.id === id);
+      if (cita) { cita.servicio=servicio; cita.modalidad=modalidad; cita.fecha=fecha; cita.hora=hora; cita.precio=precio; cita.notas=notas; }
+      toast('Cita actualizada correctamente');
+      closeModal('modalEditar');
+      initDashboard();
+      renderAgenda();
+      renderCalendar();
+    } else toast('Error al guardar: ' + (d.error||''), 'err');
+  } catch(e) { toast('Error de conexión', 'err'); }
+  btn.textContent = 'Guardar cambios'; btn.disabled = false;
+}
+
+// ── Mensaje de seguimiento WhatsApp personalizado ──
+function seguimientoWA(tel, nombre, servicio) {
+  const t = String(tel||'').replace(/\D/g,'');
+  if (!t || t.length < 7) { toast('Sin número de teléfono registrado', 'err'); return; }
+  const phone = t.length <= 10 ? '57'+t : t;
+  const s = servicio.toLowerCase();
+  let detalle;
+  if      (s.includes('descarga') && (s.includes('cuello') || s.includes('espalda'))) detalle = 'la sesión de descarga muscular en cuello y espalda';
+  else if (s.includes('descarga') && s.includes('pierna'))  detalle = 'la sesión de descarga muscular en piernas';
+  else if (s.includes('descarga')) detalle = 'la sesión de descarga muscular completa';
+  else if (s.includes('readapt'))  detalle = 'el proceso de readaptación funcional';
+  else if (s.includes('valorac'))  detalle = 'la valoración funcional';
+  else if (s.includes('gimnasio')) detalle = 'la sesión en el gimnasio';
+  else if (s.includes('empresa'))  detalle = 'la jornada empresarial';
+  else detalle = 'la sesión de ' + servicio.toLowerCase();
+  const msg = `Hola ${nombre}, ¿cómo estás? 😊 ¿Cómo te fue con ${detalle}? Espero que hayas sentido mejoría. Cualquier duda o molestia, con gusto te ayudo. - Jessica Ocampo Fisioterapeuta`;
+  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
 // ── BLOQUEAR ──
@@ -1224,11 +1375,12 @@ function renderPacientes() {
   const map = {};
   allData.citas.forEach(c => {
     const key = c.telefono || c.email || c.nombre;
-    if (!map[key]) map[key] = {nombre:c.nombre, telefono:c.telefono, email:c.email, sesiones:0, ultima:'', servicios:{}};
+    if (!map[key]) map[key] = {nombre:c.nombre, telefono:c.telefono, email:c.email, sesiones:0, ultima:'', ultimoServicio:'', servicios:{}};
     map[key].sesiones++;
     if (normDate(c.fecha) > normDate(map[key].ultima)) {
       map[key].ultima = normDate(c.fecha);
       map[key].ultimaHora = c.hora;
+      map[key].ultimoServicio = c.servicio;
     }
     map[key].servicios[c.servicio] = (map[key].servicios[c.servicio]||0)+1;
   });
@@ -1257,6 +1409,7 @@ function renderPacientes() {
         <div style="display:flex;gap:6px">
           <button class="btn btn-ghost btn-sm" onclick="verHistorial('${encodeURIComponent(p.nombre)}')">Historial</button>
           ${waBtn(p.telefono,p.nombre,'','','','WA')}
+          <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${p.telefono||''}','${p.nombre.replace(/'/g,"\\'")}','${(p.ultimoServicio||'').replace(/'/g,"\\'")}')">💬</button>
         </div>
       </td>
     </tr>`;
@@ -1296,27 +1449,35 @@ function calPrev()  { calWeekStart.setDate(calWeekStart.getDate()-7); renderCale
 function calNext()  { calWeekStart.setDate(calWeekStart.getDate()+7); renderCalendar(); }
 function calToday() { calWeekStart = getMonday(new Date()); renderCalendar(); }
 
-function renderCalendar() {
+let _calGCevents = []; // cache de eventos de Google Calendar
+
+async function renderCalendar() {
   const HOURS = [7,8,9,10,11,12,13,14,15,16,17,18,19];
   const todayStr = today();
 
-  // Build 7 days of this week
   const days = Array.from({length:7}, (_,i) => {
     const d = new Date(calWeekStart);
     d.setDate(d.getDate() + i);
     return d;
   });
 
-  // Title
+  // Título
   const opts = {day:'numeric', month:'short'};
   document.getElementById('calTitle').textContent =
     days[0].toLocaleDateString('es-CO', opts) + ' — ' +
     days[6].toLocaleDateString('es-CO', {day:'numeric', month:'short', year:'numeric'});
 
-  // Header row
+  // Obtener eventos personales de Google Calendar para esta semana
+  try {
+    const from = toDateStr(days[0]), to = toDateStr(days[6]);
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=getCalEvents&token=${encodeURIComponent(TOKEN)}&from=${from}&to=${to}`);
+    const d = await r.json();
+    if (d.ok) _calGCevents = d.events || [];
+  } catch(e) { _calGCevents = []; }
+
+  // Encabezado
   const dayNames = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-  let html = '<div class="cal-head-row">';
-  html += '<div class="cal-hour-col"></div>';
+  let html = '<div class="cal-head-row"><div class="cal-hour-col"></div>';
   days.forEach((d,i) => {
     const ds = toDateStr(d);
     const isT = ds === todayStr;
@@ -1327,16 +1488,15 @@ function renderCalendar() {
   });
   html += '</div>';
 
-  // Body rows (one per hour)
+  // Filas por hora
   HOURS.forEach(h => {
-    html += '<div class="cal-body-row">';
-    html += `<div class="cal-time-cell">${pad(h)}:00</div>`;
+    html += `<div class="cal-body-row"><div class="cal-time-cell">${pad(h)}:00</div>`;
     days.forEach(d => {
       const ds = toDateStr(d);
       const isT = ds === todayStr;
       html += `<div class="cal-day-cell ${isT?'cal-today':''}">`;
 
-      // Citas en este día y hora
+      // Citas del sistema
       allData.citas.forEach(c => {
         if (normDate(c.fecha) !== ds) return;
         const [ch] = c.hora.split(':').map(Number);
@@ -1349,7 +1509,7 @@ function renderCalendar() {
         </div>`;
       });
 
-      // Bloqueos en este día y hora
+      // Bloqueos
       allData.bloqueos.forEach(b => {
         if (normDate(b.fecha) !== ds) return;
         const [bh] = (b.inicio||'0:0').split(':').map(Number);
@@ -1357,8 +1517,26 @@ function renderCalendar() {
         if (h < bh || h >= eh) return;
         html += `<div class="cal-ev cal-ev-block">
           <span class="cal-ev-time">${b.inicio}–${b.fin}</span>
-          <span class="cal-ev-name">Bloqueado</span>
+          <span class="cal-ev-name">⛔ Bloqueado</span>
           <span class="cal-ev-serv">${b.motivo||''}</span>
+        </div>`;
+      });
+
+      // Eventos personales de Google Calendar
+      _calGCevents.forEach(ev => {
+        if (ev.fecha !== ds) return;
+        if (ev.allDay) {
+          if (h === 7) html += `<div class="cal-ev cal-ev-gcal" title="${ev.title}">
+            <span class="cal-ev-time">Todo el día</span>
+            <span class="cal-ev-name">📅 ${ev.title}</span>
+          </div>`;
+          return;
+        }
+        const [eh2] = (ev.hora||'0:0').split(':').map(Number);
+        if (eh2 !== h) return;
+        html += `<div class="cal-ev cal-ev-gcal" title="${ev.title}">
+          <span class="cal-ev-time">${ev.hora}${ev.horaFin?' — '+ev.horaFin:''}</span>
+          <span class="cal-ev-name">📅 ${ev.title}</span>
         </div>`;
       });
 

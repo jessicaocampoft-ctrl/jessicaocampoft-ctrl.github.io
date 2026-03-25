@@ -27,11 +27,14 @@ function doGet(e) {
     return js({ok: false, error: 'Sin permiso'});
   }
 
-  if (p.action === 'adminData')    return js(getAdminData());
-  if (p.action === 'block')        return js(doBlock(p));
-  if (p.action === 'unblock')      return js(doUnblock(p));
-  if (p.action === 'updateStatus') return js(doUpdateStatus(p));
-  if (p.action === 'adminBook')    return js(createBooking(JSON.parse(decodeURIComponent(p.data)), true));
+  if (p.action === 'adminData')     return js(getAdminData());
+  if (p.action === 'block')         return js(doBlock(p));
+  if (p.action === 'unblock')       return js(doUnblock(p));
+  if (p.action === 'updateStatus')  return js(doUpdateStatus(p));
+  if (p.action === 'adminBook')     return js(createBooking(JSON.parse(decodeURIComponent(p.data)), true));
+  if (p.action === 'getCalEvents')  return js(getCalendarEvents(p.from, p.to));
+  if (p.action === 'cancelBooking') return js(doCancelBooking(p.id));
+  if (p.action === 'editBooking')   return js(doEditBooking(JSON.parse(decodeURIComponent(p.data))));
 
   return txt('Jessica Ocampo Fisioterapeuta - Sistema activo');
 }
@@ -258,6 +261,89 @@ function doUpdateStatus(p) {
       if (p.note) sheet.getRange(i+1, 14).setValue(p.note);
       return {ok: true};
     }
+  }
+  return {ok: false, error: 'Cita no encontrada'};
+}
+
+// Devuelve eventos personales del Google Calendar (no citas) para un rango de fechas
+function getCalendarEvents(from, to) {
+  try {
+    var dp1 = from.split('-'), dp2 = to.split('-');
+    var start = new Date(+dp1[0], +dp1[1]-1, +dp1[2], 0, 0, 0);
+    var end   = new Date(+dp2[0], +dp2[1]-1, +dp2[2], 23, 59, 59);
+    var events = [];
+    CalendarApp.getDefaultCalendar().getEvents(start, end).forEach(function(ev) {
+      if (ev.getTitle().indexOf('[CITA]') === 0) return; // omitir citas del sistema
+      if (ev.isAllDayEvent()) {
+        events.push({title: ev.getTitle(), fecha: fmtDate(ev.getStartTime()), hora: 'Todo el día', allDay: true});
+      } else {
+        events.push({
+          title:   ev.getTitle(),
+          fecha:   fmtDate(ev.getStartTime()),
+          hora:    pad(ev.getStartTime().getHours()) + ':' + pad(ev.getStartTime().getMinutes()),
+          horaFin: pad(ev.getEndTime().getHours())   + ':' + pad(ev.getEndTime().getMinutes()),
+          allDay:  false
+        });
+      }
+    });
+    return {ok: true, events: events};
+  } catch(x) { return {ok: false, error: x.message, events: []}; }
+}
+
+// Cancela la cita y elimina el evento del Google Calendar
+function doCancelBooking(id) {
+  var ss   = getOrCreateSheet();
+  var rows = ss.getSheetByName('Citas').getDataRange().getValues();
+  var booking = null;
+  for (var i = 1; i < rows.length; i++) { if (rows[i][0] === id) { booking = rows[i]; break; } }
+  var result = doUpdateStatus({id: id, status: 'Cancelada'});
+  if (!result.ok) return result;
+  if (booking) {
+    try {
+      var fecha = sd(booking[7]);
+      var dp = fecha.split('-');
+      var dayStart = new Date(+dp[0], +dp[1]-1, +dp[2], 0, 0, 0);
+      var dayEnd   = new Date(+dp[0], +dp[1]-1, +dp[2], 23, 59, 59);
+      var calEvs = CalendarApp.getDefaultCalendar().getEvents(dayStart, dayEnd);
+      for (var k = 0; k < calEvs.length; k++) {
+        var t = calEvs[k].getTitle() || '';
+        if (t.indexOf('[CITA]') === 0 && t.indexOf(booking[2]) > -1) { calEvs[k].deleteEvent(); break; }
+      }
+    } catch(x) {}
+  }
+  return {ok: true};
+}
+
+// Edita una cita existente en Sheets y actualiza el evento del Calendar
+function doEditBooking(d) {
+  var sheet = getOrCreateSheet().getSheetByName('Citas');
+  var rows  = sheet.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (rows[i][0] !== d.id) continue;
+    var oldFecha = sd(rows[i][7]);
+    var oldHora  = st(rows[i][8]);
+    if (d.servicio)           sheet.getRange(i+1, 6).setValue(d.servicio);
+    if (d.modalidad)          sheet.getRange(i+1, 7).setValue(d.modalidad);
+    if (d.fecha)              sheet.getRange(i+1, 8).setValue(d.fecha);
+    if (d.hora)               sheet.getRange(i+1, 9).setValue(d.hora);
+    if (d.precio)             sheet.getRange(i+1, 10).setValue(d.precio);
+    if (d.notas !== undefined) sheet.getRange(i+1, 13).setValue(d.notas);
+    try {
+      var dp = oldFecha.split('-');
+      var dayS = new Date(+dp[0], +dp[1]-1, +dp[2], 0, 0, 0);
+      var dayE = new Date(+dp[0], +dp[1]-1, +dp[2], 23, 59, 59);
+      var calEvs = CalendarApp.getDefaultCalendar().getEvents(dayS, dayE);
+      for (var k = 0; k < calEvs.length; k++) {
+        var t = calEvs[k].getTitle() || '';
+        if (t.indexOf('[CITA]') === 0 && t.indexOf(rows[i][2]) > -1) {
+          var ns = parseDT(d.fecha || oldFecha, d.hora || oldHora);
+          calEvs[k].setTime(ns, new Date(ns.getTime() + 60*60000));
+          if (d.servicio) calEvs[k].setTitle('[CITA] ' + d.servicio + ' - ' + rows[i][2]);
+          break;
+        }
+      }
+    } catch(x) {}
+    return {ok: true};
   }
   return {ok: false, error: 'Cita no encontrada'};
 }
