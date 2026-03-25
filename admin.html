@@ -1401,23 +1401,35 @@ function clearNuevaCita() {
 }
 
 // ── PACIENTES ──
+let _pacs = []; // cache global para acceso por índice
+
 function renderPacientes() {
   const search = (document.getElementById('pSearch').value||'').toLowerCase();
   const map = {};
+
   allData.citas.forEach(c => {
-    const key = c.telefono || c.email || c.nombre;
-    if (!map[key]) map[key] = {nombre:c.nombre, telefono:c.telefono, email:c.email, sesiones:0, ultima:'', ultimoServicio:'', servicios:{}};
+    const phone  = (c.telefono||'').replace(/\D/g,'').slice(-10);
+    const email  = (c.email||'').toLowerCase().trim();
+    const nombre = (c.nombre||'').trim();
+    // Agrupa por: teléfono (10 dígitos) > email > nombre — evita duplicados
+    const key = phone.length >= 10 ? 'p:'+phone : (email ? 'e:'+email : 'n:'+nombre.toLowerCase());
+
+    if (!map[key]) map[key] = {nombre, telefono:'', email:'', sesiones:0, ultima:'', ultimoServicio:'', servicios:{}, nombres:[]};
+    if (!map[key].nombres.includes(nombre)) map[key].nombres.push(nombre);
+    if (phone.length >= 10 && !map[key].telefono) map[key].telefono = phone;
+    if (email && !map[key].email) map[key].email = email;
     map[key].sesiones++;
     if (normDate(c.fecha) > normDate(map[key].ultima)) {
       map[key].ultima = normDate(c.fecha);
-      map[key].ultimaHora = c.hora;
       map[key].ultimoServicio = c.servicio;
+      map[key].nombre = nombre; // usar el nombre más reciente
     }
     map[key].servicios[c.servicio] = (map[key].servicios[c.servicio]||0)+1;
   });
 
-  let pacs = Object.values(map);
-  if (search) pacs = pacs.filter(p => (p.nombre+p.telefono+p.email).toLowerCase().includes(search));
+  _pacs = Object.values(map);
+  let pacs = _pacs;
+  if (search) pacs = pacs.filter(p => (p.nombre+(p.telefono||'')+(p.email||'')).toLowerCase().includes(search));
   pacs.sort((a,b) => b.sesiones - a.sesiones);
 
   const tbody = document.getElementById('pacientesTbody');
@@ -1426,9 +1438,10 @@ function renderPacientes() {
     return;
   }
 
-  tbody.innerHTML = pacs.map(p => {
-    const topServ = Object.entries(p.servicios).sort((a,b)=>b[1]-a[1])[0]||['—',0];
-    const initials= p.nombre.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2);
+  tbody.innerHTML = pacs.map((p, i) => {
+    const topServ  = Object.entries(p.servicios).sort((a,b)=>b[1]-a[1])[0]||['—',0];
+    const initials = p.nombre.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2);
+    const idx      = _pacs.indexOf(p); // índice real en _pacs
     return `<tr>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="pac-badge">${initials}</div><strong>${p.nombre}</strong></div></td>
       <td style="font-family:var(--font-m);font-size:.82rem">${p.telefono||'—'}</td>
@@ -1437,12 +1450,12 @@ function renderPacientes() {
       <td style="font-size:.82rem">${fmtDate(p.ultima)}</td>
       <td style="font-size:.82rem;color:var(--muted)">${topServ[0]}</td>
       <td>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="verHistorial('${encodeURIComponent(p.nombre)}')">Historial</button>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="verHistorialPac(${idx})">Historial</button>
           ${waBtn(p.telefono,p.nombre,'','','','WA')}
           <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${p.telefono||''}','${p.nombre.replace(/'/g,"\\'")}','${(p.ultimoServicio||'').replace(/'/g,"\\'")}')">💬</button>
-          <button class="btn btn-edit btn-sm" onclick="editarPaciente('${p.nombre.replace(/'/g,"\\'")}','${p.telefono||''}','${p.email||''}')" title="Editar paciente">✏️</button>
-          <button class="btn btn-danger btn-sm" onclick="borrarPaciente('${p.nombre.replace(/'/g,"\\'")}',${p.sesiones})" title="Eliminar paciente">🗑️</button>
+          <button class="btn btn-edit btn-sm" onclick="editarPacienteIdx(${idx})">✏️ Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="borrarPaciente(${idx})">🗑️ Eliminar</button>
         </div>
       </td>
     </tr>`;
@@ -1452,6 +1465,18 @@ function renderPacientes() {
 function verHistorial(encodedNombre) {
   const nombre = decodeURIComponent(encodedNombre);
   const citas = allData.citas.filter(c => c.nombre === nombre).sort((a,b) => (b.fecha+b.hora).localeCompare(a.fecha+a.hora));
+  _renderHistorial(nombre, citas);
+}
+
+function verHistorialPac(idx) {
+  const p = _pacs[idx];
+  if (!p) return;
+  // Busca citas de TODOS los nombres del paciente (evita perdidas por duplicados)
+  const citas = allData.citas.filter(c => p.nombres.includes(c.nombre)).sort((a,b) => (b.fecha+b.hora).localeCompare(a.fecha+a.hora));
+  _renderHistorial(p.nombre, citas);
+}
+
+function _renderHistorial(nombre, citas) {
   document.getElementById('modalHistorialTitle').textContent = 'Historial: ' + nombre;
   document.getElementById('modalHistorialContent').innerHTML = `
     <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">${citas.length} cita(s) registrada(s)</p>
@@ -1468,8 +1493,17 @@ function verHistorial(encodedNombre) {
 }
 
 // ── EDITAR / BORRAR PACIENTE ──
-function editarPaciente(nombre, telefono, email) {
-  document.getElementById('epOldNombre').value = nombre;
+function editarPacienteIdx(idx) {
+  const p = _pacs[idx];
+  if (!p) return;
+  document.getElementById('epOldNombre').value = JSON.stringify(p.nombres); // guarda TODOS los nombres
+  document.getElementById('epNombre').value    = p.nombre;
+  document.getElementById('epTelefono').value  = p.telefono || '';
+  document.getElementById('epEmail').value     = p.email    || '';
+  openModal('modalEditarPaciente');
+}
+function editarPaciente(nombre, telefono, email) { // compatibilidad legacy
+  document.getElementById('epOldNombre').value = JSON.stringify([nombre]);
   document.getElementById('epNombre').value    = nombre;
   document.getElementById('epTelefono').value  = telefono;
   document.getElementById('epEmail').value     = email;
@@ -1477,41 +1511,47 @@ function editarPaciente(nombre, telefono, email) {
 }
 
 async function guardarPaciente() {
-  const oldNombre  = document.getElementById('epOldNombre').value;
-  const newNombre  = document.getElementById('epNombre').value.trim();
-  const telefono   = document.getElementById('epTelefono').value.trim();
-  const email      = document.getElementById('epEmail').value.trim();
+  const oldNombresRaw = document.getElementById('epOldNombre').value;
+  const newNombre     = document.getElementById('epNombre').value.trim();
+  const telefono      = document.getElementById('epTelefono').value.trim();
+  const email         = document.getElementById('epEmail').value.trim();
   if (!newNombre) { toast('El nombre no puede estar vacío', 'err'); return; }
   const btn = document.getElementById('epSaveBtn');
   btn.textContent = 'Guardando...'; btn.disabled = true;
   try {
-    const data = encodeURIComponent(JSON.stringify({oldNombre, newNombre, telefono, email}));
-    const r = await fetch(`${APPS_SCRIPT_URL}?action=editPatient&token=${encodeURIComponent(TOKEN)}&data=${data}`);
-    const d = await r.json();
-    if (d.ok) {
-      // Actualizar en memoria
-      allData.citas.forEach(c => {
-        if (c.nombre === oldNombre) { c.nombre = newNombre; c.telefono = telefono.replace(/\D/g,''); c.email = email; }
-      });
-      toast(`Paciente actualizado en ${d.updated} cita(s)`);
-      closeModal('modalEditarPaciente');
-      renderPacientes();
-    } else toast('Error: ' + (d.error||''), 'err');
+    let oldNombres = [];
+    try { oldNombres = JSON.parse(oldNombresRaw); } catch(e) { oldNombres = [oldNombresRaw]; }
+    let totalActualizado = 0;
+    for (const oldNombre of oldNombres) {
+      const data = encodeURIComponent(JSON.stringify({oldNombre, newNombre, telefono, email}));
+      const r = await fetch(`${APPS_SCRIPT_URL}?action=editPatient&token=${encodeURIComponent(TOKEN)}&data=${data}`);
+      const d = await r.json();
+      if (d.ok) totalActualizado += d.updated || 0;
+    }
+    // Actualizar en memoria
+    allData.citas.forEach(c => {
+      if (oldNombres.includes(c.nombre)) { c.nombre = newNombre; c.telefono = telefono.replace(/\D/g,''); c.email = email; }
+    });
+    toast(`Paciente actualizado en ${totalActualizado} cita(s)`);
+    closeModal('modalEditarPaciente');
+    renderPacientes();
   } catch(e) { toast('Error de conexión', 'err'); }
   btn.textContent = 'Guardar cambios'; btn.disabled = false;
 }
 
-async function borrarPaciente(nombre, sesiones) {
-  if (!confirm(`¿Eliminar a ${nombre} y sus ${sesiones} cita(s)?\n\nEsta acción no se puede deshacer.`)) return;
+async function borrarPaciente(idx) {
+  const p = _pacs[idx];
+  if (!p) return;
+  if (!confirm(`¿Eliminar a ${p.nombre} y sus ${p.sesiones} cita(s)?\n\nEsta acción no se puede deshacer.`)) return;
   try {
-    const r = await fetch(`${APPS_SCRIPT_URL}?action=deletePatient&token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(nombre)}`);
-    const d = await r.json();
-    if (d.ok) {
-      allData.citas = allData.citas.filter(c => c.nombre !== nombre);
-      toast(`${nombre} eliminado/a correctamente`);
-      renderPacientes();
-      initDashboard();
-    } else toast('Error: ' + (d.error||''), 'err');
+    // Borrar todos los nombres que usó este paciente
+    for (const nombre of p.nombres) {
+      await fetch(`${APPS_SCRIPT_URL}?action=deletePatient&token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(nombre)}`);
+    }
+    allData.citas = allData.citas.filter(c => !p.nombres.includes(c.nombre));
+    toast(`${p.nombre} eliminado/a correctamente`);
+    renderPacientes();
+    initDashboard();
   } catch(e) { toast('Error de conexión', 'err'); }
 }
 
