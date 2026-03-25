@@ -748,6 +748,35 @@ tr:hover td{background:rgba(126,221,208,.03)}
   </div>
 </div>
 
+<!-- ── MODAL EDITAR PACIENTE ── -->
+<div class="modal-bg" id="modalEditarPaciente">
+  <div class="modal">
+    <div class="modal-title">Editar paciente</div>
+    <input type="hidden" id="epOldNombre">
+    <div style="display:grid;gap:14px">
+      <div>
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Nombre completo</label>
+        <input type="text" id="epNombre" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none" placeholder="Nombre del paciente">
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Teléfono / WhatsApp</label>
+        <input type="tel" id="epTelefono" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none" placeholder="3136467945">
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Correo electrónico</label>
+        <input type="email" id="epEmail" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none" placeholder="correo@email.com">
+      </div>
+      <div style="background:#fef3c7;border-radius:8px;padding:10px 14px;font-size:.8rem;color:#92400e">
+        ⚠️ Esto actualizará el nombre, teléfono y email en <strong>todas</strong> las citas de este paciente.
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalEditarPaciente')">Cancelar</button>
+      <button class="btn btn-teal" id="epSaveBtn" onclick="guardarPaciente()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL EDITAR CITA ── -->
 <div class="modal-bg" id="modalEditar">
   <div class="modal">
@@ -1410,6 +1439,8 @@ function renderPacientes() {
           <button class="btn btn-ghost btn-sm" onclick="verHistorial('${encodeURIComponent(p.nombre)}')">Historial</button>
           ${waBtn(p.telefono,p.nombre,'','','','WA')}
           <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${p.telefono||''}','${p.nombre.replace(/'/g,"\\'")}','${(p.ultimoServicio||'').replace(/'/g,"\\'")}')">💬</button>
+          <button class="btn btn-edit btn-sm" onclick="editarPaciente('${p.nombre.replace(/'/g,"\\'")}','${p.telefono||''}','${p.email||''}')" title="Editar paciente">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="borrarPaciente('${p.nombre.replace(/'/g,"\\'")}',${p.sesiones})" title="Eliminar paciente">🗑️</button>
         </div>
       </td>
     </tr>`;
@@ -1432,6 +1463,54 @@ function verHistorial(encodedNombre) {
       ${c.notas ? `<div style="font-size:.8rem;color:var(--muted);margin-top:4px">${c.notas}</div>` : ''}
     </div>`).join('')}`;
   openModal('modalHistorial');
+}
+
+// ── EDITAR / BORRAR PACIENTE ──
+function editarPaciente(nombre, telefono, email) {
+  document.getElementById('epOldNombre').value = nombre;
+  document.getElementById('epNombre').value    = nombre;
+  document.getElementById('epTelefono').value  = telefono;
+  document.getElementById('epEmail').value     = email;
+  openModal('modalEditarPaciente');
+}
+
+async function guardarPaciente() {
+  const oldNombre  = document.getElementById('epOldNombre').value;
+  const newNombre  = document.getElementById('epNombre').value.trim();
+  const telefono   = document.getElementById('epTelefono').value.trim();
+  const email      = document.getElementById('epEmail').value.trim();
+  if (!newNombre) { toast('El nombre no puede estar vacío', 'err'); return; }
+  const btn = document.getElementById('epSaveBtn');
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+  try {
+    const data = encodeURIComponent(JSON.stringify({oldNombre, newNombre, telefono, email}));
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=editPatient&token=${encodeURIComponent(TOKEN)}&data=${data}`);
+    const d = await r.json();
+    if (d.ok) {
+      // Actualizar en memoria
+      allData.citas.forEach(c => {
+        if (c.nombre === oldNombre) { c.nombre = newNombre; c.telefono = telefono.replace(/\D/g,''); c.email = email; }
+      });
+      toast(`Paciente actualizado en ${d.updated} cita(s)`);
+      closeModal('modalEditarPaciente');
+      renderPacientes();
+    } else toast('Error: ' + (d.error||''), 'err');
+  } catch(e) { toast('Error de conexión', 'err'); }
+  btn.textContent = 'Guardar cambios'; btn.disabled = false;
+}
+
+async function borrarPaciente(nombre, sesiones) {
+  if (!confirm(`¿Eliminar a ${nombre} y sus ${sesiones} cita(s)?\n\nEsta acción no se puede deshacer.`)) return;
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=deletePatient&token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(nombre)}`);
+    const d = await r.json();
+    if (d.ok) {
+      allData.citas = allData.citas.filter(c => c.nombre !== nombre);
+      toast(`${nombre} eliminado/a correctamente`);
+      renderPacientes();
+      initDashboard();
+    } else toast('Error: ' + (d.error||''), 'err');
+  } catch(e) { toast('Error de conexión', 'err'); }
 }
 
 // ── CALENDARIO ──

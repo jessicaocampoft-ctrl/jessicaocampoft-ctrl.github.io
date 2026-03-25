@@ -35,6 +35,8 @@ function doGet(e) {
   if (p.action === 'getCalEvents')  return js(getCalendarEvents(p.from, p.to));
   if (p.action === 'cancelBooking') return js(doCancelBooking(p.id));
   if (p.action === 'editBooking')   return js(doEditBooking(JSON.parse(decodeURIComponent(p.data))));
+  if (p.action === 'deletePatient') return js(deletePatient(decodeURIComponent(p.nombre)));
+  if (p.action === 'editPatient')   return js(editPatient(JSON.parse(decodeURIComponent(p.data))));
 
   return txt('Jessica Ocampo Fisioterapeuta - Sistema activo');
 }
@@ -346,6 +348,32 @@ function doEditBooking(d) {
     return {ok: true};
   }
   return {ok: false, error: 'Cita no encontrada'};
+}
+
+// Elimina todos los registros de un paciente (por nombre)
+function deletePatient(nombre) {
+  var sheet = getOrCreateSheet().getSheetByName('Citas');
+  var rows  = sheet.getDataRange().getValues();
+  for (var i = rows.length - 1; i >= 1; i--) {
+    if (rows[i][2] === nombre) sheet.deleteRow(i + 1);
+  }
+  return {ok: true};
+}
+
+// Edita nombre, teléfono y email de todos los registros de un paciente
+function editPatient(d) {
+  // d = {oldNombre, newNombre, telefono, email}
+  var sheet = getOrCreateSheet().getSheetByName('Citas');
+  var rows  = sheet.getDataRange().getValues();
+  var count = 0;
+  for (var i = 1; i < rows.length; i++) {
+    if (rows[i][2] !== d.oldNombre) continue;
+    if (d.newNombre) sheet.getRange(i+1, 3).setValue(d.newNombre);
+    if (d.telefono !== undefined) sheet.getRange(i+1, 4).setNumberFormat('@').setValue((d.telefono||'').replace(/\D/g,''));
+    if (d.email    !== undefined) sheet.getRange(i+1, 5).setValue(d.email);
+    count++;
+  }
+  return {ok: true, updated: count};
 }
 
 function getAdminData() {
