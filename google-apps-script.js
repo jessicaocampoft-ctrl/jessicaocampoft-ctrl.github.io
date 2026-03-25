@@ -102,11 +102,13 @@ function createBooking(d, isAdmin) {
     buildEmailJessica(d, price) + '\n\n>> Confirmar al paciente por WhatsApp (1 clic):\n' + waLink + '\n\nID cita: ' + id
   );
 
-  // Confirmacion al cliente
+  // Confirmacion al cliente (HTML)
   if (d.email && d.email.indexOf('@') > 0) {
-    GmailApp.sendEmail(d.email,
-      'Solicitud de cita recibida - Jessica Ocampo Fisioterapeuta',
-      buildEmailCliente(d, price)
+    GmailApp.sendEmail(
+      d.email,
+      '✅ Cita confirmada — Jessica Ocampo Fisioterapeuta',
+      'Tu cita está confirmada. Si no puedes ver este correo, contáctanos al +57 313 646 7945.',
+      {htmlBody: buildEmailCliente(d, price), name: 'Jessica Ocampo Fisioterapeuta'}
     );
   }
 
@@ -299,6 +301,9 @@ function getAdminData() {
 //  RECORDATORIOS DIARIOS — ejecutar con trigger 7am
 // -------------------------------------------------------------
 function sendReminders() {
+  var diasSemana = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
   var ss   = getOrCreateSheet();
   var rows = ss.getSheetByName('Citas').getDataRange().getValues();
 
@@ -310,7 +315,7 @@ function sendReminders() {
 
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i];
-    if (r[10] === 'Cancelada') continue;
+    if (r[10] === 'Cancelada' || r[10] === 'Atendida') continue;
     var fecha = (r[7] instanceof Date) ? fmtDate(r[7]) : ('' + (r[7]||'')).split('T')[0];
     var nombre = r[2], email = r[4];
     var serv  = r[5], mod = r[6], precio = r[9];
@@ -322,27 +327,33 @@ function sendReminders() {
     if (phone.length <= 10) phone = '57' + phone;
 
     if (fecha === tomorrow) {
-      // Email recordatorio manana
       if (email && email.indexOf('@') > 0) {
-        GmailApp.sendEmail(email,
-          'Recordatorio: tu cita de manana - Jessica Ocampo Fisioterapeuta',
-          'Hola ' + nombre + ',\n\nTe recordamos que manana tienes cita:\n\n' +
-          'Servicio: ' + serv + '\nFecha: ' + fecha + '\nHora: ' + hora + '\nModalidad: ' + mod + '\nValor: ' + precio +
-          '\n\nPara cancelar o reprogramar escribe al +57 313 646 7945.\n\n- Jessica Ocampo Fisioterapeuta\njessicaocampoft-ctrl.github.io'
+        var dp = fecha.split('-');
+        var fObj = new Date(+dp[0], +dp[1]-1, +dp[2]);
+        var fechaLegible = diasSemana[fObj.getDay()] + ' ' + +dp[2] + ' de ' + meses[+dp[1]-1];
+        GmailApp.sendEmail(
+          email,
+          'Recordatorio: mañana tienes cita — Jessica Ocampo Fisioterapeuta',
+          'Este correo requiere un cliente de correo con soporte HTML.',
+          {htmlBody: buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, false),
+           name: 'Jessica Ocampo Fisioterapeuta'}
         );
       }
-      var msg1 = 'Hola ' + nombre + '! Te recuerdo que MANANA tienes cita de ' + serv + ' a las ' + hora + '. Cualquier cambio avisame! - Jessica';
+      var msg1 = 'Hola ' + nombre + '! Te recuerdo que mañana tienes cita de ' + serv + ' a las ' + hora + '. Cualquier cambio avísame! - Jessica';
       linksMañana.push(nombre + ' (' + hora + '): https://wa.me/' + phone + '?text=' + encodeURIComponent(msg1));
     }
 
     if (fecha === today) {
-      // Email recordatorio hoy
       if (email && email.indexOf('@') > 0) {
-        GmailApp.sendEmail(email,
-          'Recordatorio: tienes cita HOY - Jessica Ocampo Fisioterapeuta',
-          'Hola ' + nombre + ',\n\nTe recordamos que HOY tienes cita:\n\n' +
-          'Servicio: ' + serv + '\nHora: ' + hora + '\nModalidad: ' + mod +
-          '\n\nCualquier consulta: +57 313 646 7945\n\n- Jessica Ocampo Fisioterapeuta'
+        var dp2 = fecha.split('-');
+        var fObj2 = new Date(+dp2[0], +dp2[1]-1, +dp2[2]);
+        var fechaLegible2 = diasSemana[fObj2.getDay()] + ' ' + +dp2[2] + ' de ' + meses[+dp2[1]-1];
+        GmailApp.sendEmail(
+          email,
+          '⏰ Hoy tienes cita — Jessica Ocampo Fisioterapeuta',
+          'Este correo requiere un cliente de correo con soporte HTML.',
+          {htmlBody: buildReminderEmail(nombre, serv, fechaLegible2, hora, mod, precio, true),
+           name: 'Jessica Ocampo Fisioterapeuta'}
         );
       }
       var msg2 = 'Hola ' + nombre + '! Hoy tienes tu cita de ' + serv + ' a las ' + hora + '. Nos vemos! - Jessica';
@@ -350,11 +361,12 @@ function sendReminders() {
     }
   }
 
+  // Resumen diario para Jessica con links de WhatsApp 1-clic
   if (linksHoy.length > 0 || linksMañana.length > 0) {
-    var body = 'Recordatorios automaticos del dia ' + today + '\n\n';
-    if (linksHoy.length)   body += '== CITAS DE HOY (WhatsApp 1 clic) ==\n' + linksHoy.join('\n') + '\n\n';
-    if (linksMañana.length) body += '== CITAS DE MANANA (WhatsApp 1 clic) ==\n' + linksMañana.join('\n') + '\n';
-    GmailApp.sendEmail(JESSICA_EMAIL, 'Recordatorios de citas - ' + today, body);
+    var body = 'Recordatorios automáticos del día ' + today + '\n\n';
+    if (linksHoy.length)    body += '== CITAS DE HOY (WhatsApp 1 clic) ==\n' + linksHoy.join('\n') + '\n\n';
+    if (linksMañana.length) body += '== CITAS DE MAÑANA (WhatsApp 1 clic) ==\n' + linksMañana.join('\n') + '\n';
+    GmailApp.sendEmail(JESSICA_EMAIL, 'Resumen de citas - ' + today, body);
   }
 }
 
@@ -416,10 +428,65 @@ function buildEmailJessica(d, price) {
 }
 
 function buildEmailCliente(d, price) {
-  return 'Hola ' + d.name + ',\n\nTu solicitud de cita fue recibida.\n\n' +
-    'SERVICIO: '   + d.service  + '\nFecha: '     + d.date +
-    '\nHora: '     + d.time     + '\nModalidad: ' + d.modality + '\nValor: ' + price +
-    '\n\nJessica te confirmara tu cita pronto por WhatsApp al +57 313 646 7945.\n' +
-    'Si necesitas hacer algun cambio, escribele directamente.\n\n' +
-    '- Jessica Ocampo\nFisioterapeuta — Pereira, Colombia\njessicaocampoft-ctrl.github.io';
+  var diasSemana = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var dp = d.date.split('-');
+  var fechaObj = new Date(+dp[0], +dp[1]-1, +dp[2]);
+  var fechaLegible = diasSemana[fechaObj.getDay()] + ' ' + +dp[2] + ' de ' + meses[+dp[1]-1] + ' de ' + dp[0];
+
+  var html =
+    '<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">' +
+    '<div style="background:#0d9488;padding:28px 32px;text-align:center">' +
+    '<h1 style="color:#fff;margin:0;font-size:20px">✅ Cita Confirmada</h1>' +
+    '<p style="color:#ccfbf1;margin:6px 0 0;font-size:14px">Jessica Ocampo Fisioterapeuta</p>' +
+    '</div>' +
+    '<div style="padding:28px 32px">' +
+    '<p style="margin:0 0 20px;font-size:15px">Hola <strong>' + d.name + '</strong>,<br>tu cita está <strong>confirmada</strong>. Aquí están los detalles:</p>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:14px">' +
+    '<tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;width:120px">Servicio</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:600">' + d.service + '</td></tr>' +
+    '<tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280">Fecha</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:600">' + fechaLegible + '</td></tr>' +
+    '<tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280">Hora</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:600">' + d.time + '</td></tr>' +
+    '<tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280">Modalidad</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6">' + d.modality + (d.address ? ' — ' + d.address : '') + '</td></tr>' +
+    '<tr><td style="padding:10px 0;color:#6b7280">Valor</td><td style="padding:10px 0;font-weight:600">' + price + '</td></tr>' +
+    '</table>' +
+    '<div style="background:#f0fdf4;border-radius:8px;padding:14px 18px;margin:20px 0;font-size:13px;color:#166534">' +
+    '📅 Recibirás un recordatorio por correo el día anterior y el mismo día de tu cita.' +
+    '</div>' +
+    '<p style="font-size:13px;color:#6b7280;margin:0">¿Necesitas cancelar o cambiar? Escríbele directamente:<br>' +
+    '<a href="https://wa.me/573136467945" style="color:#0d9488">+57 313 646 7945 (WhatsApp)</a></p>' +
+    '</div>' +
+    '<div style="background:#f9fafb;padding:16px 32px;text-align:center;font-size:12px;color:#9ca3af">' +
+    'Jessica Ocampo Fisioterapeuta · Pereira, Colombia<br>' +
+    '<a href="https://jessicaocampoft-ctrl.github.io" style="color:#0d9488">jessicaocampoft-ctrl.github.io</a>' +
+    '</div></div>';
+
+  return html;
+}
+
+function buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, esHoy) {
+  var titulo = esHoy ? '⏰ Hoy tienes cita' : '📅 Recordatorio: mañana tienes cita';
+  var intro  = esHoy
+    ? '¡Hola <strong>' + nombre + '</strong>! Hoy es el día de tu cita. Aquí te recordamos los detalles:'
+    : 'Hola <strong>' + nombre + '</strong>, mañana tienes tu cita. Te recordamos los detalles:';
+
+  return '<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">' +
+    '<div style="background:' + (esHoy ? '#0284c7' : '#0d9488') + ';padding:24px 32px;text-align:center">' +
+    '<h1 style="color:#fff;margin:0;font-size:19px">' + titulo + '</h1>' +
+    '<p style="color:#e0f2fe;margin:6px 0 0;font-size:13px">Jessica Ocampo Fisioterapeuta</p>' +
+    '</div>' +
+    '<div style="padding:28px 32px">' +
+    '<p style="margin:0 0 20px;font-size:15px">' + intro + '</p>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:14px">' +
+    '<tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;width:120px">Servicio</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:600">' + serv + '</td></tr>' +
+    '<tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280">Fecha</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:600">' + fechaLegible + '</td></tr>' +
+    '<tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280">Hora</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:600">' + hora + '</td></tr>' +
+    '<tr><td style="padding:10px 0;color:#6b7280">Modalidad</td><td style="padding:10px 0">' + mod + '</td></tr>' +
+    (precio ? '<tr><td style="padding:10px 0;color:#6b7280">Valor</td><td style="padding:10px 0">' + precio + '</td></tr>' : '') +
+    '</table>' +
+    '<p style="font-size:13px;color:#6b7280;margin:20px 0 0">¿Necesitas cancelar o cambiar? Escríbele directamente:<br>' +
+    '<a href="https://wa.me/573136467945" style="color:#0d9488">+57 313 646 7945 (WhatsApp)</a></p>' +
+    '</div>' +
+    '<div style="background:#f9fafb;padding:16px 32px;text-align:center;font-size:12px;color:#9ca3af">' +
+    'Jessica Ocampo Fisioterapeuta · Pereira, Colombia' +
+    '</div></div>';
 }
