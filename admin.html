@@ -1115,7 +1115,7 @@ function verDetalle(id) {
         ${row('Paciente', c.nombre)} ${row('Teléfono', c.telefono||'—')}
         ${row('Email', c.email||'—')} ${row('Servicio', c.servicio)}
         ${row('Fecha', fmtDate(c.fecha) + ' · ' + c.hora)} ${row('Modalidad', c.modalidad)}
-        ${row('Valor', c.precio)} ${row('Estado', `<span class="chip ${chipState(c.estado)}">${c.estado}</span>`)}
+        ${row('Valor', c.precio)} ${row('Estado', chipState(c.estado))}
         ${c.direccion ? row('Dirección', c.direccion) : ''}
         ${c.notas ? row('Notas del paciente', c.notas, true) : ''}
         ${c.notaAdmin ? row('Nota admin', c.notaAdmin, true) : ''}
@@ -1619,6 +1619,7 @@ async function renderCalendar() {
 
       // Citas del sistema
       allData.citas.forEach(c => {
+        if (c.estado === 'Cancelada') return;
         if (normDate(c.fecha) !== ds) return;
         const [ch] = c.hora.split(':').map(Number);
         if (ch !== h) return;
