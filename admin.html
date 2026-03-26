@@ -1002,14 +1002,14 @@ function waLinkSeg(tel, nombre, serv) {
   const phone = t.length <= 10 ? '57'+t : t;
   const s = serv.toLowerCase();
   let det;
-  if      (s.includes('descarga') && (s.includes('cuello') || s.includes('espalda'))) det = 'la descarga muscular en cuello y espalda';
-  else if (s.includes('descarga') && s.includes('pierna'))  det = 'la descarga muscular en piernas';
-  else if (s.includes('descarga')) det = 'la descarga muscular';
-  else if (s.includes('readapt'))  det = 'el proceso de readaptacion funcional';
-  else if (s.includes('valorac'))  det = 'la valoracion funcional';
-  else if (s.includes('gimnasio')) det = 'la sesion de gimnasio';
-  else if (s.includes('empresa'))  det = 'la jornada empresarial';
-  else det = 'la sesion de ' + serv.toLowerCase();
+  if      (s.includes('descarga') && (s.includes('cuello') || s.includes('espalda'))) det = 'la sesión de descarga muscular en cuello y espalda';
+  else if (s.includes('descarga') && s.includes('pierna'))  det = 'la sesión de descarga muscular en piernas';
+  else if (s.includes('descarga')) det = 'la sesión de descarga muscular';
+  else if (s.includes('readapt'))  det = 'la sesión de readaptación funcional';
+  else if (s.includes('valorac'))  det = 'la sesión de valoración funcional';
+  else if (s.includes('gimnasio')) det = 'la sesión de gimnasio';
+  else if (s.includes('empresa'))  det = 'la sesión empresarial';
+  else det = 'la sesión de ' + serv.toLowerCase();
   const msg = 'Hola ' + nombre + ', espero que te encuentres bien. ¿Cómo te fue con ' + det + '? Quedo atenta a cualquier duda o molestia.\n\n- Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
