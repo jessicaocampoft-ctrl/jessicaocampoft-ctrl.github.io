@@ -1003,7 +1003,7 @@ function waLinkSeg(tel, nombre, serv) {
   else if (s.includes('gimnasio')) det = 'la sesion de gimnasio';
   else if (s.includes('empresa'))  det = 'la jornada empresarial';
   else det = 'la sesion de ' + serv.toLowerCase();
-  const msg = 'Hola ' + nombre + ', como te fue con ' + det + '? Espero que hayas sentido mejoria. Quedo atenta a cualquier duda o molestia.\n\n- Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + nombre + ', espero que te encuentres bien. ¿Cómo te fue con ' + det + '? Quedo atenta a cualquier duda o molestia.\n\n- Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
