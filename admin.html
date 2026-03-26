@@ -946,8 +946,12 @@ function chipState(st) {
   return '<span class="chip chip-warn">' + (st||'—') + '</span>';
 }
 
+function waNombre(nombre) {
+  return (nombre||'').split(' ')[0];
+}
+
 function waFechaES(fecha) {
-  const DIAS  = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+  const DIAS  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
   const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   const dp = normDate(fecha).split('-');
   if (dp.length < 3 || !dp[0]) return normDate(fecha);
@@ -967,7 +971,7 @@ function waLink(tel, nombre, fecha, hora, serv, precio, modalidad) {
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
   const lines = [
-    'Hola ' + nombre + ', aqui los detalles de tu cita confirmada:',
+    'Hola ' + waNombre(nombre) + ', aquí los detalles de tu cita confirmada:',
     '',
     'Servicio: ' + serv,
     'Fecha: ' + waFechaES(fecha) + ' a las ' + waAmPm(hora),
@@ -992,7 +996,7 @@ function waLinkRec(tel, nombre, fecha, hora, serv) {
   const t = String(tel||'').replace(/\D/g,'');
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
-  const msg = 'Hola ' + nombre + ', te recuerdo que tienes cita de ' + serv + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '.\n\n- Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + waNombre(nombre) + ', te recuerdo que tienes cita de ' + serv + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '.\n\n- Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
@@ -1010,7 +1014,7 @@ function waLinkSeg(tel, nombre, serv) {
   else if (s.includes('gimnasio')) det = 'la sesión de gimnasio';
   else if (s.includes('empresa'))  det = 'la sesión empresarial';
   else det = 'la sesión de ' + serv.toLowerCase();
-  const msg = 'Hola ' + nombre + ', espero que te encuentres bien. ¿Cómo te fue con ' + det + '? Quedo atenta a cualquier duda o molestia.\n\n- Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + waNombre(nombre) + ', espero que te encuentres bien. ¿Cómo te fue con ' + det + '? Quedo atenta a cualquier duda o molestia.\n\n- Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
