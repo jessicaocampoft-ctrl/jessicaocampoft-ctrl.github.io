@@ -532,13 +532,29 @@ tr:hover td{background:rgba(126,221,208,.03)}
             <label>Servicio *</label>
             <select id="ncService" onchange="autoFillPrice()">
               <option value="">Selecciona un servicio</option>
-              <option value="Descarga Muscular — Cuello y Espalda">Descarga Muscular — Cuello y Espalda</option>
-              <option value="Descarga Muscular — Piernas">Descarga Muscular — Piernas</option>
-              <option value="Descarga Muscular Completa">Descarga Muscular Completa</option>
-              <option value="Valoración Funcional">Valoración Funcional</option>
-              <option value="Readaptación Funcional">Readaptación Funcional</option>
-              <option value="Sesiones en Gimnasio">Sesiones en Gimnasio</option>
-              <option value="Jornada Empresarial">Jornada Empresarial</option>
+              <optgroup label="── Sesiones individuales ──">
+                <option value="Descarga Muscular — Cuello y Espalda">Descarga Muscular — Cuello y Espalda</option>
+                <option value="Descarga Muscular — Piernas">Descarga Muscular — Piernas</option>
+                <option value="Descarga Muscular Completa">Descarga Muscular Completa</option>
+                <option value="Valoración Funcional">Valoración Funcional</option>
+                <option value="Readaptación Funcional">Readaptación Funcional</option>
+              </optgroup>
+              <optgroup label="── Tu cuerpo sin dolor ──">
+                <option value="Plan Espalda Sin Dolor">Plan Espalda Sin Dolor</option>
+                <option value="Plan Alivio Profundo">Plan Alivio Profundo</option>
+                <option value="Plan Alivio en Casa">Plan Alivio en Casa</option>
+                <option value="Plan Dúo Mensual">Plan Dúo Mensual</option>
+              </optgroup>
+              <optgroup label="── Deportistas ──">
+                <option value="Plan Recarga">Plan Recarga</option>
+                <option value="Plan Avanza">Plan Avanza</option>
+                <option value="Plan Elite">Plan Elite</option>
+              </optgroup>
+              <optgroup label="── Readaptación funcional ──">
+                <option value="Plan Inicio">Plan Inicio</option>
+                <option value="Plan Avance">Plan Avance</option>
+                <option value="Plan Transforma">Plan Transforma</option>
+              </optgroup>
             </select>
           </div>
           <div class="field">
@@ -576,8 +592,23 @@ tr:hover td{background:rgba(126,221,208,.03)}
               <option value="$95.000">$95.000</option>
               <option value="$110.000">$110.000</option>
               <option value="$125.000">$125.000</option>
-              <option value="Consultar">Consultar disponibilidad</option>
-              <option value="Propuesta personalizada">Propuesta personalizada</option>
+              <option value="$135.000">$135.000</option>
+              <option value="$162.000">$162.000</option>
+              <option value="$210.000">$210.000</option>
+              <option value="$245.000">$245.000</option>
+              <option value="$294.000">$294.000</option>
+              <option value="$295.000">$295.000</option>
+              <option value="$350.000">$350.000</option>
+              <option value="$378.000">$378.000</option>
+              <option value="$410.000">$410.000</option>
+              <option value="$459.000">$459.000</option>
+              <option value="$476.000">$476.000</option>
+              <option value="$495.000">$495.000</option>
+              <option value="$560.000">$560.000</option>
+              <option value="$578.000">$578.000</option>
+              <option value="$580.000">$580.000</option>
+              <option value="$680.000">$680.000</option>
+              <option value="$690.000">$690.000</option>
               <option value="A convenir">A convenir</option>
             </select>
           </div>
@@ -607,10 +638,16 @@ tr:hover td{background:rgba(126,221,208,.03)}
           <h1 class="page-title"><em>Calendario</em> de citas</h1>
           <p class="page-sub">Vista semanal de todas tus citas. Haz clic en cualquier cita para ver el detalle.</p>
         </div>
-        <a href="https://calendar.google.com" target="_blank" class="btn btn-ghost" style="gap:8px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Abrir Google Calendar
-        </a>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="showView('nueva')" style="gap:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Nueva Cita
+          </button>
+          <a href="https://calendar.google.com" target="_blank" class="btn btn-ghost" style="gap:8px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Abrir Google Calendar
+          </a>
+        </div>
       </div>
 
       <!-- Nav -->
@@ -1347,13 +1384,21 @@ function autoFillPrice() {
   if (!serv) return;
 
   const precios = {
-    'Descarga Muscular — Cuello y Espalda': { Presencial:'$75.000', Domicilio:'$90.000' },
-    'Descarga Muscular — Piernas':          { Presencial:'$75.000', Domicilio:'$90.000' },
+    'Descarga Muscular — Cuello y Espalda': { Presencial:'$75.000',  Domicilio:'$90.000' },
+    'Descarga Muscular — Piernas':          { Presencial:'$75.000',  Domicilio:'$90.000' },
     'Descarga Muscular Completa':           { Presencial:'$110.000', Domicilio:'$125.000' },
-    'Valoración Funcional':                 { Presencial:'$80.000', Domicilio:'$95.000' },
-    'Readaptación Funcional':               { Presencial:'$70.000', Domicilio:'$85.000' },
-    'Sesiones en Gimnasio':                 { Presencial:'Consultar', Domicilio:'Consultar' },
-    'Jornada Empresarial':                  { Presencial:'Propuesta personalizada', Domicilio:'Propuesta personalizada' },
+    'Valoración Funcional':                 { Presencial:'$80.000',  Domicilio:'$95.000' },
+    'Readaptación Funcional':               { Presencial:'$70.000',  Domicilio:'$85.000' },
+    'Plan Espalda Sin Dolor':               { Presencial:'$135.000', Domicilio:'$162.000' },
+    'Plan Alivio Profundo':                 { Presencial:'$350.000', Domicilio:'$410.000' },
+    'Plan Alivio en Casa':                  { Presencial:'$295.000', Domicilio:'$295.000' },
+    'Plan Dúo Mensual':                     { Presencial:'$210.000', Domicilio:'$210.000' },
+    'Plan Recarga':                         { Presencial:'$245.000', Domicilio:'$294.000' },
+    'Plan Avanza':                          { Presencial:'$495.000', Domicilio:'$580.000' },
+    'Plan Elite':                           { Presencial:'$580.000', Domicilio:'$690.000' },
+    'Plan Inicio':                          { Presencial:'$378.000', Domicilio:'$459.000' },
+    'Plan Avance':                          { Presencial:'$476.000', Domicilio:'$578.000' },
+    'Plan Transforma':                      { Presencial:'$560.000', Domicilio:'$680.000' },
   };
 
   const precio = precios[serv] ? (precios[serv][mod] || precios[serv]['Presencial']) : '';
