@@ -946,23 +946,38 @@ function chipState(st) {
   return '<span class="chip chip-warn">' + (st||'—') + '</span>';
 }
 
-function waLink(tel, nombre, fecha, hora, serv) {
+function waFechaES(fecha) {
+  const DIAS  = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const dp = normDate(fecha).split('-');
+  if (dp.length < 3 || !dp[0]) return normDate(fecha);
+  const obj = new Date(+dp[0], +dp[1]-1, +dp[2]);
+  return DIAS[obj.getDay()] + ' ' + +dp[2] + ' de ' + MESES[+dp[1]-1];
+}
+
+function waLink(tel, nombre, fecha, hora, serv, precio) {
   const t = String(tel||'').replace(/\D/g,'');
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
-  const fDate = normDate(fecha);
-  const msg = [
-    'Hola ' + nombre + ', tu cita de ' + serv + ' queda confirmada para el ' + fDate + ' a las ' + hora + '.',
+  const lines = [
+    'Hola ' + nombre + ', aqui los detalles de tu cita confirmada:',
     '',
-    'Formas de pago:',
+    '*Servicio:* ' + serv,
+    '*Fecha:* ' + waFechaES(fecha) + ' a las ' + hora,
+  ];
+  if (precio) lines.push('*Valor a cancelar:* ' + precio);
+  lines.push(
+    '',
+    '*Formas de pago:*',
     'Bancolombia Ahorros: 91257857099',
     'Llave: 1010124692',
     'Nequi: 3136467945',
-    'A nombre de: Jessica Andrea Ocampo Barbosa',
+    'Titular: Jessica Andrea Ocampo Barbosa',
     '',
+    'Hasta pronto. Gracias por confiar en nuestros servicios.',
     '- Jessica Ocampo Fisioterapeuta'
-  ].join('\n');
-  return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+  );
+  return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(lines.join('\n'));
 }
 
 function waLinkRec(tel, nombre, fecha, hora, serv) {
@@ -992,8 +1007,8 @@ function waLinkSeg(tel, nombre, serv) {
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
-function waBtn(tel, nombre, fecha, hora, serv, label) {
-  const url = waLink(tel, nombre, fecha, hora, serv);
+function waBtn(tel, nombre, fecha, hora, serv, label, precio) {
+  const url = waLink(tel, nombre, fecha, hora, serv, precio);
   if (!url) return '<span style="color:var(--muted);font-size:.75rem">Sin tel.</span>';
   return '<a href="' + url + '" target="_blank" class="btn btn-wa' + (label==='WA'?' btn-sm':'') + '">' + (label||'WA') + '</a>';
 }
@@ -1049,7 +1064,7 @@ function initDashboard() {
           <div class="tl-name">${c.nombre} ${chipState(c.estado)}</div>
           <div class="tl-serv">${c.servicio} · ${c.modalidad} · ${c.precio}</div>
           <div class="tl-actions">
-            ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp')}
+            ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp',c.precio)}
             <button class="btn btn-ghost btn-sm" onclick="changeStatus('${c.id}','Atendida')">Marcar atendida</button>
           </div>
         </div>
@@ -1119,7 +1134,7 @@ function renderAgenda() {
       <td>
         <div style="display:flex;gap:4px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
-          ${(()=>{const u=waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio);return u?`<a href="${u}" target="_blank" class="btn btn-wa btn-sm" title="Confirmacion con info de pago">Conf.</a>`:'';})()}
+          ${(()=>{const u=waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,c.precio);return u?`<a href="${u}" target="_blank" class="btn btn-wa btn-sm" title="Confirmacion con info de pago">Conf.</a>`:'';})()}
           ${(()=>{const u=waLinkRec(c.telefono,c.nombre,c.fecha,c.hora,c.servicio);return u?`<a href="${u}" target="_blank" class="btn btn-wa-rec btn-sm" title="Recordatorio de cita">Rec.</a>`:'';})()}
           ${(()=>{const u=waLinkSeg(c.telefono,c.nombre,c.servicio);return u?`<a href="${u}" target="_blank" class="btn btn-wa-seg btn-sm" title="Seguimiento post-sesion">Seg.</a>`:'';})()}
           ${c.estado!=='Cancelada'?`<button class="btn btn-edit btn-sm" onclick="editarCita('${c.id}')" title="Editar">✏️</button>`:''}
@@ -1166,7 +1181,7 @@ function verDetalle(id) {
         ${row('ID cita', c.id)}
       </div>
       <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-        ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp confirmación')}
+        ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp confirmación',c.precio)}
         <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${c.telefono||''}','${c.nombre.replace(/'/g,"\\'")}','${c.servicio.replace(/'/g,"\\'")}')">💬 Seguimiento</button>
         ${c.email ? `<a href="mailto:${c.email}" class="btn btn-ghost btn-sm">📧 Email</a>` : ''}
       </div>
