@@ -150,6 +150,10 @@ tr:hover td{background:rgba(126,221,208,.03)}
 .btn-err:hover{background:rgba(248,113,113,.08)}
 .btn-wa{background:transparent;color:#4ade80;border-color:rgba(74,222,128,.3)}
 .btn-wa:hover{background:rgba(74,222,128,.08)}
+.btn-wa-rec{background:transparent;color:#60a5fa;border-color:rgba(96,165,250,.3)}
+.btn-wa-rec:hover{background:rgba(96,165,250,.08)}
+.btn-wa-seg{background:transparent;color:#a78bfa;border-color:rgba(167,139,250,.3)}
+.btn-wa-seg:hover{background:rgba(167,139,250,.08)}
 .btn-sm{padding:5px 10px;font-size:.78rem}
 
 /* ── FORM FIELDS ── */
@@ -947,9 +951,47 @@ function waLink(tel, nombre, fecha, hora, serv) {
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
   const fDate = normDate(fecha);
-  const msg = 'Hola ' + nombre + ', te recuerdo tu cita de ' + serv + ' el ' + fDate + ' a las ' + hora + '.\n\n💳 *Formas de pago:*\n• Bancolombia Ahorros: 91257857099\n• Llave: 1010124692\n• Nequi: 3136467945\n• A nombre de: Jessica Andrea Ocampo Barbosa\n\n- Jessica Ocampo Fisioterapeuta';
+  const msg = [
+    'Hola ' + nombre + ', tu cita de ' + serv + ' queda confirmada para el ' + fDate + ' a las ' + hora + '.',
+    '',
+    'Formas de pago:',
+    'Bancolombia Ahorros: 91257857099',
+    'Llave: 1010124692',
+    'Nequi: 3136467945',
+    'A nombre de: Jessica Andrea Ocampo Barbosa',
+    '',
+    '- Jessica Ocampo Fisioterapeuta'
+  ].join('\n');
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
+
+function waLinkRec(tel, nombre, fecha, hora, serv) {
+  const t = String(tel||'').replace(/\D/g,'');
+  if (!t || t.length < 7) return null;
+  const phone = t.length <= 10 ? '57'+t : t;
+  const fDate = normDate(fecha);
+  const msg = 'Hola ' + nombre + ', te recuerdo que tienes cita de ' + serv + ' el ' + fDate + ' a las ' + hora + '. Cualquier cambio avisame con anticipacion.\n\n- Jessica Ocampo Fisioterapeuta';
+  return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+}
+
+function waLinkSeg(tel, nombre, serv) {
+  const t = String(tel||'').replace(/\D/g,'');
+  if (!t || t.length < 7) return null;
+  const phone = t.length <= 10 ? '57'+t : t;
+  const s = serv.toLowerCase();
+  let det;
+  if      (s.includes('descarga') && (s.includes('cuello') || s.includes('espalda'))) det = 'la descarga muscular en cuello y espalda';
+  else if (s.includes('descarga') && s.includes('pierna'))  det = 'la descarga muscular en piernas';
+  else if (s.includes('descarga')) det = 'la descarga muscular';
+  else if (s.includes('readapt'))  det = 'el proceso de readaptacion funcional';
+  else if (s.includes('valorac'))  det = 'la valoracion funcional';
+  else if (s.includes('gimnasio')) det = 'la sesion de gimnasio';
+  else if (s.includes('empresa'))  det = 'la jornada empresarial';
+  else det = 'la sesion de ' + serv.toLowerCase();
+  const msg = 'Hola ' + nombre + ', como te fue con ' + det + '? Espero que hayas sentido mejoria. Quedo atenta a cualquier duda o molestia.\n\n- Jessica Ocampo Fisioterapeuta';
+  return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+}
+
 function waBtn(tel, nombre, fecha, hora, serv, label) {
   const url = waLink(tel, nombre, fecha, hora, serv);
   if (!url) return '<span style="color:var(--muted);font-size:.75rem">Sin tel.</span>';
@@ -1077,7 +1119,9 @@ function renderAgenda() {
       <td>
         <div style="display:flex;gap:4px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
-          ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WA')}
+          ${(()=>{const u=waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio);return u?`<a href="${u}" target="_blank" class="btn btn-wa btn-sm" title="Confirmacion con info de pago">Conf.</a>`:'';})()}
+          ${(()=>{const u=waLinkRec(c.telefono,c.nombre,c.fecha,c.hora,c.servicio);return u?`<a href="${u}" target="_blank" class="btn btn-wa-rec btn-sm" title="Recordatorio de cita">Rec.</a>`:'';})()}
+          ${(()=>{const u=waLinkSeg(c.telefono,c.nombre,c.servicio);return u?`<a href="${u}" target="_blank" class="btn btn-wa-seg btn-sm" title="Seguimiento post-sesion">Seg.</a>`:'';})()}
           ${c.estado!=='Cancelada'?`<button class="btn btn-edit btn-sm" onclick="editarCita('${c.id}')" title="Editar">✏️</button>`:''}
           ${c.estado!=='Cancelada'?`<button class="btn btn-danger btn-sm" onclick="cancelarCita('${c.id}','${c.nombre.replace(/'/g,"\\'")}')" title="Cancelar">🚫</button>`:''}
         </div>
@@ -1210,21 +1254,9 @@ async function guardarEdicion() {
 
 // ── Mensaje de seguimiento WhatsApp personalizado ──
 function seguimientoWA(tel, nombre, servicio) {
-  const t = String(tel||'').replace(/\D/g,'');
-  if (!t || t.length < 7) { toast('Sin número de teléfono registrado', 'err'); return; }
-  const phone = t.length <= 10 ? '57'+t : t;
-  const s = servicio.toLowerCase();
-  let detalle;
-  if      (s.includes('descarga') && (s.includes('cuello') || s.includes('espalda'))) detalle = 'la sesión de descarga muscular en cuello y espalda';
-  else if (s.includes('descarga') && s.includes('pierna'))  detalle = 'la sesión de descarga muscular en piernas';
-  else if (s.includes('descarga')) detalle = 'la sesión de descarga muscular completa';
-  else if (s.includes('readapt'))  detalle = 'el proceso de readaptación funcional';
-  else if (s.includes('valorac'))  detalle = 'la valoración funcional';
-  else if (s.includes('gimnasio')) detalle = 'la sesión en el gimnasio';
-  else if (s.includes('empresa'))  detalle = 'la jornada empresarial';
-  else detalle = 'la sesión de ' + servicio.toLowerCase();
-  const msg = `Hola ${nombre}, ¿cómo estás? 😊 ¿Cómo te fue con ${detalle}? Espero que hayas sentido mejoría. Cualquier duda o molestia, con gusto te ayudo. - Jessica Ocampo Fisioterapeuta`;
-  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+  const url = waLinkSeg(tel, nombre, servicio);
+  if (!url) { toast('Sin número de teléfono registrado', 'err'); return; }
+  window.open(url, '_blank');
 }
 
 // ── BLOQUEAR ──
