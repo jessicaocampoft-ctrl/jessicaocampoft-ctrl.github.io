@@ -955,6 +955,13 @@ function waFechaES(fecha) {
   return DIAS[obj.getDay()] + ' ' + +dp[2] + ' de ' + MESES[+dp[1]-1];
 }
 
+function waAmPm(hora) {
+  const [h, m] = hora.split(':').map(Number);
+  const ampm = h < 12 ? 'AM' : 'PM';
+  const h12 = h % 12 || 12;
+  return h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
+}
+
 function waLink(tel, nombre, fecha, hora, serv, precio) {
   const t = String(tel||'').replace(/\D/g,'');
   if (!t || t.length < 7) return null;
@@ -963,7 +970,7 @@ function waLink(tel, nombre, fecha, hora, serv, precio) {
     'Hola ' + nombre + ', aqui los detalles de tu cita confirmada:',
     '',
     'Servicio: ' + serv,
-    'Fecha: ' + waFechaES(fecha) + ' a las ' + hora,
+    'Fecha: ' + waFechaES(fecha) + ' a las ' + waAmPm(hora),
   ];
   if (precio) lines.push('Valor a cancelar: ' + precio);
   lines.push(
@@ -984,8 +991,7 @@ function waLinkRec(tel, nombre, fecha, hora, serv) {
   const t = String(tel||'').replace(/\D/g,'');
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
-  const fDate = normDate(fecha);
-  const msg = 'Hola ' + nombre + ', te recuerdo que tienes cita de ' + serv + ' el ' + fDate + ' a las ' + hora + '. Cualquier cambio avisame con anticipacion.\n\n- Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + nombre + ', te recuerdo que tienes cita de ' + serv + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '.\n\n- Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
