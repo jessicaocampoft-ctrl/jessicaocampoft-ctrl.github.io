@@ -952,7 +952,7 @@ function waFechaES(fecha) {
   const dp = normDate(fecha).split('-');
   if (dp.length < 3 || !dp[0]) return normDate(fecha);
   const obj = new Date(+dp[0], +dp[1]-1, +dp[2]);
-  return DIAS[obj.getDay()] + ' ' + +dp[2] + ' de ' + MESES[+dp[1]-1];
+  return DIAS[obj.getDay()] + ' ' + +dp[2] + ' de ' + MESES[+dp[1]-1] + ' de ' + dp[0];
 }
 
 function waAmPm(hora) {
