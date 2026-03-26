@@ -962,13 +962,13 @@ function waLink(tel, nombre, fecha, hora, serv, precio) {
   const lines = [
     'Hola ' + nombre + ', aqui los detalles de tu cita confirmada:',
     '',
-    '*Servicio:* ' + serv,
-    '*Fecha:* ' + waFechaES(fecha) + ' a las ' + hora,
+    'Servicio: ' + serv,
+    'Fecha: ' + waFechaES(fecha) + ' a las ' + hora,
   ];
-  if (precio) lines.push('*Valor a cancelar:* ' + precio);
+  if (precio) lines.push('Valor a cancelar: ' + precio);
   lines.push(
     '',
-    '*Formas de pago:*',
+    'Formas de pago:',
     'Bancolombia Ahorros: 91257857099',
     'Llave: 1010124692',
     'Nequi: 3136467945',
