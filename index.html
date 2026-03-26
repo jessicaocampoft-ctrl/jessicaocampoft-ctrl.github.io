@@ -276,7 +276,8 @@
       margin-bottom: 36px;
       max-width: 520px;
     }
-    .hero-buttons { display: flex; gap: 16px; margin-bottom: 48px; flex-wrap: wrap; }
+    .hero-buttons { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+    .hero-trust-note { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 36px; letter-spacing: 0.01em; }
     .btn-solid {
       display: inline-flex;
       align-items: center;
@@ -623,6 +624,140 @@
       transition: var(--transition);
     }
     .service-link:hover { color: var(--primary-hover); text-decoration: underline; }
+    .service-ideal {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: rgba(126,221,208,0.07);
+      border-left: 2px solid var(--primary);
+      padding: 8px 12px;
+      border-radius: 0 6px 6px 0;
+      margin-top: 2px;
+      flex: 1;
+    }
+    .service-ideal span { color: var(--primary); font-weight: 600; }
+    .service-card-cta { border-color: var(--primary); background: linear-gradient(135deg, var(--surface-2), rgba(126,221,208,0.06)); }
+
+    /* ── PAQUETES ── */
+    .packages { padding: 120px 0; background: var(--surface-1); }
+    .packages-header { text-align: center; margin-bottom: 72px; }
+    .packages-header h2 { font-size: clamp(2rem,4vw,2.8rem); }
+    .packages-category { margin-bottom: 72px; }
+    .packages-category-header { text-align: center; margin-bottom: 36px; }
+    .packages-category-header h3 { font-family: var(--font-heading); font-size: clamp(1.6rem,3vw,2.2rem); color: var(--text); margin-bottom: 8px; }
+    .packages-category-header p { color: var(--text-muted); font-size: 0.9rem; font-style: italic; }
+    .packages-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 20px; }
+    .plan-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: var(--transition);
+      position: relative;
+    }
+    .plan-card:hover { border-color: var(--primary); box-shadow: 0 0 30px var(--glow); transform: translateY(-4px); }
+    .plan-card.featured { background: #1C3A35; border-color: var(--primary); color: #fff; }
+    .plan-card.featured h4 { color: #fff; }
+    .plan-card.featured .plan-price-label { color: rgba(255,255,255,0.6); }
+    .plan-card.featured .plan-feature { color: rgba(255,255,255,0.85); }
+    .plan-card.featured .plan-savings { background: rgba(126,221,208,0.2); color: var(--primary); }
+    .plan-popular {
+      position: absolute;
+      top: -12px; right: 16px;
+      background: var(--primary);
+      color: #1A1A1A;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 100px;
+    }
+    .plan-name { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 600; }
+    .plan-prices { display: flex; gap: 10px; flex-wrap: wrap; }
+    .plan-price-chip {
+      display: flex;
+      flex-direction: column;
+      background: rgba(126,221,208,0.1);
+      border: 1px solid rgba(126,221,208,0.25);
+      border-radius: 10px;
+      padding: 8px 14px;
+      flex: 1;
+      min-width: 110px;
+    }
+    .plan-card.featured .plan-price-chip { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+    .plan-price-label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px; }
+    .plan-price-value { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: #2A7A72; }
+    .plan-card.featured .plan-price-value { color: var(--primary); }
+    .plan-features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+    .plan-feature { font-size: 0.83rem; color: var(--text-muted); padding-left: 18px; position: relative; }
+    .plan-feature::before { content: '✓'; position: absolute; left: 0; color: var(--primary); font-weight: 700; }
+    .plan-savings {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      background: rgba(126,221,208,0.1);
+      color: #2A7A72;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .plan-card-duo { grid-column: 1 / -1; }
+    .plan-note { text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 20px; }
+    .packages-divider { border: none; border-top: 1px solid var(--border); margin: 60px 0; }
+
+    /* ── CÓMO FUNCIONA ── */
+    .how { padding: 100px 0; }
+    .how-header { text-align: center; margin-bottom: 64px; }
+    .how-steps { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 32px; max-width: 900px; margin: 0 auto; }
+    .how-step { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .how-step-num {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .how-step h4 { font-family: var(--font-heading); font-size: 1.2rem; color: var(--text); }
+    .how-step p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+    .how-connector { display: none; }
+    @media (min-width: 640px) {
+      .how-steps { position: relative; }
+    }
+
+    /* ── INSTAGRAM CTA ── */
+    .ig-cta {
+      background: linear-gradient(135deg, rgba(126,221,208,0.08), rgba(126,221,208,0.03));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 48px;
+    }
+    .ig-cta-text h4 { font-family: var(--font-heading); font-size: 1.4rem; margin-bottom: 6px; }
+    .ig-cta-text p { font-size: 0.85rem; color: var(--text-muted); }
+    .ig-cta-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 100px;
+      text-decoration: none;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .ig-cta-btn:hover { opacity: 0.9; transform: translateY(-2px); }
 
     /* SVG Placeholder */
     .service-card-img .placeholder-svg {
@@ -1218,6 +1353,7 @@
       </a>
       <ul class="nav-links" id="navLinks">
         <li><a href="#servicios">Servicios</a></li>
+        <li><a href="#paquetes">Planes</a></li>
         <li><a href="#sobre-mi">Sobre mí</a></li>
         <li><a href="#agenda">Agenda</a></li>
         <li><a href="#contacto">Contacto</a></li>
@@ -1238,8 +1374,8 @@
             <span class="dot"></span>
             Fisioterapia · Pereira
           </div>
-          <h1>Tu cuerpo merece atención experta. <em>Vuelve a moverte bien.</em></h1>
-          <p class="hero-subtitle">Fisioterapia para todas las personas, en todas las etapas de la vida. Atención presencial, a domicilio y en gimnasios en Pereira y Dosquebradas.</p>
+          <h1>¿Llevas semanas con ese dolor que no se va? <em>Yo sé exactamente cómo ayudarte.</em></h1>
+          <p class="hero-subtitle">Fisioterapia real, con quien ha vivido las lesiones desde adentro. Atención presencial, a domicilio y en gimnasios en Pereira y Dosquebradas.</p>
           <div class="hero-buttons">
             <a href="https://wa.me/573136467945" target="_blank" rel="noopener" class="btn-solid">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -1247,6 +1383,7 @@
             </a>
             <a href="#servicios" class="btn-outline">Ver Servicios</a>
           </div>
+          <p class="hero-trust-note">✓ Respondo en menos de 1 hora por WhatsApp &nbsp;·&nbsp; ✓ Cupos limitados por semana</p>
           <div class="hero-stats">
             <div class="stat">
               <span class="stat-value">4+</span>
@@ -1321,7 +1458,8 @@
           </div>
           <div class="service-card-body">
             <h3>Descarga Muscular — Cuello y Espalda</h3>
-            <p>Libera la tensión cervical y dorsal acumulada</p>
+            <p>Libera la tensión cervical y dorsal acumulada por el estrés y las largas jornadas.</p>
+            <p class="service-ideal"><span>Ideal para:</span> personas que pasan horas frente al computador, conductores y quienes cargan tensión en el cuello y espalda sin darse cuenta.</p>
             <span class="service-price">Presencial $75.000 · Domicilio $90.000</span>
           </div>
         </div>
@@ -1333,7 +1471,8 @@
           </div>
           <div class="service-card-body">
             <h3>Descarga Muscular — Piernas</h3>
-            <p>Recupera tus miembros inferiores y alivia la fatiga muscular</p>
+            <p>Recupera tus miembros inferiores y alivia la fatiga muscular tras el entrenamiento o el día a día.</p>
+            <p class="service-ideal"><span>Ideal para:</span> deportistas, personas que trabajan de pie todo el día o que sienten las piernas pesadas y cansadas al final del día.</p>
             <span class="service-price">Presencial $75.000 · Domicilio $90.000</span>
           </div>
         </div>
@@ -1345,7 +1484,8 @@
           </div>
           <div class="service-card-body">
             <h3>Descarga Muscular Completa</h3>
-            <p>Tratamiento integral de todo el cuerpo</p>
+            <p>Tratamiento integral de todo el cuerpo para una recuperación profunda y total.</p>
+            <p class="service-ideal"><span>Ideal para:</span> quienes acumulan tensión en todo el cuerpo, necesitan un reset total o llevan semanas sin cuidarse como merecen.</p>
             <span class="service-price">Presencial $110.000 · Domicilio $125.000</span>
           </div>
         </div>
@@ -1357,7 +1497,8 @@
           </div>
           <div class="service-card-body">
             <h3>Valoración Funcional</h3>
-            <p>Evaluamos tu movimiento y diseñamos un plan a tu medida</p>
+            <p>Evaluamos tu movimiento y diseñamos un plan personalizado según tus necesidades.</p>
+            <p class="service-ideal"><span>Ideal para:</span> personas que sienten que algo no está bien, quieren prevenir lesiones o no saben por dónde empezar a cuidar su cuerpo.</p>
             <span class="service-price">Presencial $80.000 · Domicilio $95.000</span>
           </div>
         </div>
@@ -1369,64 +1510,236 @@
           </div>
           <div class="service-card-body">
             <h3>Readaptación Funcional</h3>
-            <p>Recuperación segura tras lesiones o cirugías</p>
+            <p>Recuperación progresiva y personalizada para volver a moverte sin miedo ni dolor.</p>
+            <p class="service-ideal"><span>Ideal para:</span> personas que tuvieron una lesión, cirugía o llevan tiempo con una molestia que no desaparece y quieren volver a su vida normal.</p>
             <span class="service-price">Presencial $70.000 · Domicilio $85.000</span>
           </div>
         </div>
 
-        <!-- Card 6 -->
-        <div class="service-card fade-up">
-          <div class="service-card-img">
-            <img src="Readaptacion%20Miguel.jpg" alt="Sesiones en gimnasio" loading="lazy">
-          </div>
-          <div class="service-card-body">
-            <h3>Sesiones en Gimnasio</h3>
-            <p>Atención grupal con equipos rotativos</p>
-            <span class="service-price">Consulta disponibilidad</span>
+        <!-- Card 6 — CTA Paquetes -->
+        <div class="service-card service-card-cta fade-up">
+          <div class="service-card-body" style="justify-content:center;align-items:center;text-align:center;gap:20px;padding:40px 24px;">
+            <span class="service-pill">Ahorra hasta $280.000</span>
+            <h3 style="font-size:1.4rem">Planes y Paquetes Mensuales</h3>
+            <p>Sesiones fijas, seguimiento continuo y descuentos reales. Diseñados para deportistas, recuperación y bienestar general.</p>
+            <a href="#paquetes" class="btn-solid" style="margin-top:8px;font-size:0.85rem;padding:12px 24px">Ver todos los planes</a>
           </div>
         </div>
 
-        <!-- Card 7 -->
-        <div class="service-card fade-up">
-          <div class="service-card-img">
-            <div class="placeholder-svg">
-              <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                <rect x="8" y="12" width="48" height="40" rx="6" stroke="rgba(126,221,208,0.3)" stroke-width="1.5"/>
-                <circle cx="32" cy="28" r="8" stroke="rgba(126,221,208,0.25)" stroke-width="1.5"/>
-                <path d="M16 44c0-8 7-12 16-12s16 4 16 12" stroke="rgba(126,221,208,0.2)" stroke-width="1.5"/>
-                <path d="M24 20l4-6h8l4 6" stroke="rgba(126,221,208,0.15)" stroke-width="1"/>
-              </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAQUETES -->
+  <section class="packages" id="paquetes">
+    <div class="container">
+      <div class="packages-header fade-up">
+        <div class="section-tag">Planes y Paquetes</div>
+        <h2><em>Más sesiones,</em> más ahorro</h2>
+        <p style="color:var(--text-muted);font-size:0.9rem;margin-top:12px">Diseñados para que tu recuperación sea continua, con seguimiento real y descuentos reales.</p>
+      </div>
+
+      <!-- Categoría 1: Descarga -->
+      <div class="packages-category fade-up">
+        <div class="packages-category-header">
+          <h3>Tu cuerpo, sin dolor</h3>
+          <p>Planes mensuales de descarga muscular · Descuento real</p>
+        </div>
+        <div class="packages-grid">
+          <div class="plan-card">
+            <div class="plan-name">Espalda Sin Dolor</div>
+            <div class="plan-prices">
+              <div class="plan-price-chip"><span class="plan-price-label">📍 En sitio</span><span class="plan-price-value">$135.000</span></div>
+              <div class="plan-price-chip"><span class="plan-price-label">🏠 Domicilio</span><span class="plan-price-value">$162.000</span></div>
+            </div>
+            <ul class="plan-features">
+              <li class="plan-feature">2 descargas Express × 50 min · cuello y espalda</li>
+              <li class="plan-feature">Fecha fija cada 15 días · cupo garantizado</li>
+              <li class="plan-feature">Rutina de mantenimiento para casa</li>
+            </ul>
+            <div class="plan-savings">Ahorras $15.000 sit. / $18.000 dom. · Válido 1,5 meses</div>
+          </div>
+          <div class="plan-card featured">
+            <span class="plan-popular">Más popular</span>
+            <div class="plan-name">Alivio Profundo</div>
+            <div class="plan-prices">
+              <div class="plan-price-chip"><span class="plan-price-label">📍 En sitio</span><span class="plan-price-value">$350.000</span></div>
+              <div class="plan-price-chip"><span class="plan-price-label">🏠 Domicilio</span><span class="plan-price-value">$410.000</span></div>
+            </div>
+            <ul class="plan-features">
+              <li class="plan-feature">2 descargas Full × 1h20 · zona más afectada</li>
+              <li class="plan-feature">2 readaptaciones funcionales × 40 min</li>
+              <li class="plan-feature">Valoración postural $80.000 incluida</li>
+              <li class="plan-feature">Seguimiento por WhatsApp</li>
+            </ul>
+            <div class="plan-savings">Ahorras $80.000 sit. / $90.000 dom. · Válido 1,5 meses</div>
+          </div>
+          <div class="plan-card">
+            <div class="plan-name">Alivio en Casa</div>
+            <div class="plan-prices">
+              <div class="plan-price-chip"><span class="plan-price-label">🏠 Solo domicilio</span><span class="plan-price-value">$295.000</span></div>
+            </div>
+            <ul class="plan-features">
+              <li class="plan-feature">2 descargas Express × 50 min · lumbar y cuello</li>
+              <li class="plan-feature">2 readaptaciones movilidad × 40 min</li>
+              <li class="plan-feature">Ritmo adaptado a tu cuerpo · seguimiento WhatsApp</li>
+            </ul>
+            <div class="plan-savings">Ahorras $55.000 dom. · Válido 1,5 meses · sujeto disponibilidad</div>
+          </div>
+          <div class="plan-card plan-card-duo" style="border-style:dashed">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+              <div>
+                <span class="service-pill" style="margin-bottom:8px">Oferta Dúo</span>
+                <div class="plan-name">Dúo Mensual · domicilio</div>
+                <p style="font-size:0.83rem;color:var(--text-muted);margin-top:6px">1 descarga Full × 1h20 por persona · mismo domicilio · sesiones consecutivas · única vez</p>
+              </div>
+              <div style="text-align:center">
+                <div style="font-family:var(--font-mono);font-size:1.5rem;font-weight:700;color:#2A7A72">$210.000 las dos</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">$105.000 c/u · $20.000 menos c/u</div>
+              </div>
             </div>
           </div>
-          <div class="service-card-body">
-            <h3>Jornadas Empresariales</h3>
-            <p>Bienestar físico para tu equipo de trabajo</p>
-            <span class="service-price">Solicita propuesta personalizada</span>
-          </div>
         </div>
+      </div>
 
-        <!-- Card 8 -->
-        <div class="service-card fade-up">
-          <div class="service-card-img">
-            <div class="placeholder-svg">
-              <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                <rect x="12" y="8" width="40" height="48" rx="6" stroke="rgba(126,221,208,0.3)" stroke-width="1.5"/>
-                <line x1="20" y1="20" x2="44" y2="20" stroke="rgba(126,221,208,0.2)" stroke-width="1.5"/>
-                <line x1="20" y1="28" x2="44" y2="28" stroke="rgba(126,221,208,0.15)" stroke-width="1.5"/>
-                <line x1="20" y1="36" x2="36" y2="36" stroke="rgba(126,221,208,0.12)" stroke-width="1.5"/>
-                <circle cx="40" cy="44" r="8" stroke="rgba(126,221,208,0.25)" stroke-width="1.5"/>
-                <path d="M37 44l2 2 4-4" stroke="rgba(126,221,208,0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+      <hr class="packages-divider">
+
+      <!-- Categoría 2: Deportistas -->
+      <div class="packages-category fade-up">
+        <div class="packages-category-header">
+          <h3>Entrena sin límites</h3>
+          <p>"Yo lo viví en competencia — sé exactamente cómo tratarlo."</p>
+        </div>
+        <div class="packages-grid">
+          <div class="plan-card">
+            <div class="plan-name">Plan Recarga</div>
+            <div class="plan-prices">
+              <div class="plan-price-chip"><span class="plan-price-label">📍 En sitio</span><span class="plan-price-value">$245.000</span></div>
+              <div class="plan-price-chip"><span class="plan-price-label">🏠 Domicilio</span><span class="plan-price-value">$294.000</span></div>
             </div>
+            <ul class="plan-features">
+              <li class="plan-feature">2 descargas Express × 50 min · zona afectada</li>
+              <li class="plan-feature">2 sesiones de readaptación funcional</li>
+              <li class="plan-feature">Pauta post-entrenamiento · seguimiento WhatsApp</li>
+            </ul>
+            <div class="plan-savings">Ahorras $45.000 sit. / $56.000 dom. · Válido 2 meses</div>
           </div>
-          <div class="service-card-body">
-            <span class="service-pill">Próximamente</span>
-            <h3>Paquetes Mensuales</h3>
-            <p>Sesiones fijas, seguimiento continuo y beneficios exclusivos</p>
-            <a href="https://wa.me/573136467945" target="_blank" rel="noopener" class="service-link">¿Quieres saber los beneficios? Escríbeme</a>
+          <div class="plan-card featured">
+            <span class="plan-popular">Más popular</span>
+            <div class="plan-name">Plan Avanza</div>
+            <div class="plan-prices">
+              <div class="plan-price-chip"><span class="plan-price-label">📍 En sitio</span><span class="plan-price-value">$495.000</span></div>
+              <div class="plan-price-chip"><span class="plan-price-label">🏠 Domicilio</span><span class="plan-price-value">$580.000</span></div>
+            </div>
+            <ul class="plan-features">
+              <li class="plan-feature">3 descargas Full × 1h20 · cuerpo completo</li>
+              <li class="plan-feature">3 sesiones de readaptación funcional</li>
+              <li class="plan-feature">Valoración funcional + plan preventivo + WhatsApp</li>
+            </ul>
+            <div class="plan-savings">Ahorras $125.000 sit. / $130.000 dom. · Válido 2 meses</div>
+          </div>
+          <div class="plan-card">
+            <div class="plan-name">Plan Elite</div>
+            <div class="plan-prices">
+              <div class="plan-price-chip"><span class="plan-price-label">📍 En sitio</span><span class="plan-price-value">$580.000</span></div>
+              <div class="plan-price-chip"><span class="plan-price-label">🏠 Domicilio</span><span class="plan-price-value">$690.000</span></div>
+            </div>
+            <ul class="plan-features">
+              <li class="plan-feature">4 descargas Full × 1h20 · cuerpo completo</li>
+              <li class="plan-feature">4 sesiones de readaptación funcional</li>
+              <li class="plan-feature">Protocolo por deporte · reporte mensual + WhatsApp</li>
+            </ul>
+            <div class="plan-savings">Ahorras $220.000 sit. / $280.000 dom. · Válido 2 meses</div>
           </div>
         </div>
+      </div>
 
+      <hr class="packages-divider">
+
+      <!-- Categoría 3: Readaptación -->
+      <div class="packages-category fade-up">
+        <div class="packages-category-header">
+          <h3>Recupera tu movimiento</h3>
+          <p>Readaptación funcional · Todos los perfiles</p>
+        </div>
+        <div class="packages-grid">
+          <div class="plan-card">
+            <div class="plan-name">Plan Inicio</div>
+            <div class="plan-prices">
+              <div class="plan-price-chip"><span class="plan-price-label">📍 En sitio</span><span class="plan-price-value">$378.000</span></div>
+              <div class="plan-price-chip"><span class="plan-price-label">🏠 Domicilio</span><span class="plan-price-value">$459.000</span></div>
+            </div>
+            <ul class="plan-features">
+              <li class="plan-feature">6 sesiones × 40 min · 1 por semana</li>
+              <li class="plan-feature">Ejercicio guiado y progresivo</li>
+              <li class="plan-feature">Para empezar a moverte sin dolor</li>
+            </ul>
+            <div class="plan-savings">Ahorras $42.000 sit. / $51.000 dom. · Válido 1 mes · -10%</div>
+          </div>
+          <div class="plan-card featured">
+            <span class="plan-popular">Más popular</span>
+            <div class="plan-name">Plan Avance</div>
+            <div class="plan-prices">
+              <div class="plan-price-chip"><span class="plan-price-label">📍 En sitio</span><span class="plan-price-value">$476.000</span></div>
+              <div class="plan-price-chip"><span class="plan-price-label">🏠 Domicilio</span><span class="plan-price-value">$578.000</span></div>
+            </div>
+            <ul class="plan-features">
+              <li class="plan-feature">8 sesiones × 40 min · 1 por semana</li>
+              <li class="plan-feature">Progresión documentada · seguimiento WhatsApp</li>
+              <li class="plan-feature">Para recuperarte y retomar tu ritmo</li>
+            </ul>
+            <div class="plan-savings">Ahorras $84.000 sit. / $102.000 dom. · Válido 1,5 meses · -15%</div>
+          </div>
+          <div class="plan-card">
+            <div class="plan-name">Plan Transforma</div>
+            <div class="plan-prices">
+              <div class="plan-price-chip"><span class="plan-price-label">📍 En sitio</span><span class="plan-price-value">$560.000</span></div>
+              <div class="plan-price-chip"><span class="plan-price-label">🏠 Domicilio</span><span class="plan-price-value">$680.000</span></div>
+            </div>
+            <ul class="plan-features">
+              <li class="plan-feature">10 sesiones × 40 min · 5 por mes</li>
+              <li class="plan-feature">Protocolo completo · sin recaídas · WhatsApp</li>
+              <li class="plan-feature">Para recuperarte de verdad · ritmo progresivo</li>
+            </ul>
+            <div class="plan-savings">Ahorras $140.000 sit. / $170.000 dom. · Válido 2 meses · -20%</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="plan-note fade-up">📍 En sitio &nbsp;·&nbsp; 🏠 Domicilio sujeto a disponibilidad &nbsp;·&nbsp; * Condina, Cerritos y alrededores tienen recargo adicional por desplazamiento</p>
+      <div style="text-align:center;margin-top:36px" class="fade-up">
+        <a href="https://wa.me/573136467945" target="_blank" rel="noopener" class="btn-solid">Escríbeme para reservar un plan</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÓMO FUNCIONA -->
+  <section class="how" id="como-funciona">
+    <div class="container">
+      <div class="how-header fade-up">
+        <div class="section-tag">Simple y rápido</div>
+        <h2><em>¿Cómo</em> funciona?</h2>
+        <p style="color:var(--text-muted);font-size:0.9rem;margin-top:12px">Desde que decides agendar hasta que llegas a tu sesión, son solo 3 pasos.</p>
+      </div>
+      <div class="how-steps">
+        <div class="how-step fade-up">
+          <div class="how-step-num">01</div>
+          <h4>Agenda en línea</h4>
+          <p>Elige tu servicio, fecha y hora directamente en la página. Toma menos de 2 minutos.</p>
+        </div>
+        <div class="how-step fade-up">
+          <div class="how-step-num">02</div>
+          <h4>Recibe confirmación</h4>
+          <p>Te confirmo la cita por WhatsApp o correo en menos de 1 hora. Sin filas, sin esperas.</p>
+        </div>
+        <div class="how-step fade-up">
+          <div class="how-step-num">03</div>
+          <h4>Llega y mejora</h4>
+          <p>Yo me encargo del resto. Cada sesión está diseñada para que sientas la diferencia desde el primer día.</p>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:52px" class="fade-up">
+        <a href="#agenda" class="btn-solid">Agendar ahora</a>
       </div>
     </div>
   </section>
@@ -1658,6 +1971,16 @@
           Agendar en línea
         </a>
         <p class="contact-note">También atiendo a domicilio en toda el área metropolitana de Pereira</p>
+      </div>
+      <div class="ig-cta fade-up">
+        <div class="ig-cta-text">
+          <h4>¿Quieres ver cómo trabajo?</h4>
+          <p>En mi Instagram comparto casos reales, ejercicios y consejos de fisioterapia que puedes aplicar hoy.</p>
+        </div>
+        <a href="https://instagram.com/jessicaocampofisio" target="_blank" rel="noopener" class="ig-cta-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          Ver @jessicaocampofisio
+        </a>
       </div>
     </div>
   </section>
