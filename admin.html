@@ -277,8 +277,10 @@ tr:hover td{background:rgba(126,221,208,.03)}
 .cal-body-row{display:flex;border-bottom:1px solid rgba(27,191,176,.08);min-height:60px}
 .cal-body-row:hover{background:rgba(27,191,176,.02)}
 .cal-time-cell{width:56px;flex-shrink:0;font-family:var(--font-m);font-size:.7rem;color:var(--muted);padding:4px 8px 0 0;text-align:right;transform:translateY(-9px)}
-.cal-day-cell{flex:1;min-width:80px;border-left:1px solid rgba(27,191,176,.08);padding:2px 3px;position:relative;min-height:60px}
+.cal-day-cell{flex:1;min-width:80px;border-left:1px solid rgba(27,191,176,.08);padding:2px 3px;position:relative;min-height:60px;cursor:pointer}
+.cal-day-cell:hover{background:rgba(27,191,176,.06)}
 .cal-day-cell.cal-today{background:rgba(27,191,176,.04)}
+.cal-day-cell.cal-today:hover{background:rgba(27,191,176,.09)}
 .cal-ev{border-radius:5px;padding:3px 6px;margin-bottom:2px;cursor:pointer;transition:.15s ease;overflow:hidden}
 .cal-ev:hover{opacity:.82;transform:scale(1.01)}
 .cal-ev-ok  {background:#d1faf6;color:#0d7a70;border-left:3px solid #1BBFB0}
@@ -1747,7 +1749,7 @@ async function renderCalendar() {
     days.forEach(d => {
       const ds = toDateStr(d);
       const isT = ds === todayStr;
-      html += `<div class="cal-day-cell ${isT?'cal-today':''}">`;
+      html += `<div class="cal-day-cell ${isT?'cal-today':''}" onclick="openNuevaCitaFromCal('${ds}',${h})">`;
 
       // Citas del sistema
       allData.citas.forEach(c => {
@@ -1756,7 +1758,7 @@ async function renderCalendar() {
         const [ch] = c.hora.split(':').map(Number);
         if (ch !== h) return;
         const cls = c.estado==='Confirmada'?'cal-ev-ok':c.estado==='Atendida'?'cal-ev-info':c.estado==='Cancelada'?'cal-ev-err':'cal-ev-warn';
-        html += `<div class="cal-ev ${cls}" onclick="verDetalle('${c.id}')">
+        html += `<div class="cal-ev ${cls}" onclick="event.stopPropagation();verDetalle('${c.id}')">`;
           <span class="cal-ev-time">${c.hora} · ${c.modalidad==='Domicilio'?'Dom':'Pres'}</span>
           <span class="cal-ev-name">${c.nombre}</span>
           <span class="cal-ev-serv">${c.servicio.replace('Descarga Muscular','D.Musc.').replace('Readaptación','Readap.').replace('Valoración','Val.')}</span>
@@ -1769,7 +1771,7 @@ async function renderCalendar() {
         const [bh] = (b.inicio||'0:0').split(':').map(Number);
         const [eh] = (b.fin||'0:0').split(':').map(Number);
         if (h < bh || h >= eh) return;
-        html += `<div class="cal-ev cal-ev-block">
+        html += `<div class="cal-ev cal-ev-block" onclick="event.stopPropagation()">
           <span class="cal-ev-time">${b.inicio}–${b.fin}</span>
           <span class="cal-ev-name">⛔ Bloqueado</span>
           <span class="cal-ev-serv">${b.motivo||''}</span>
@@ -1780,7 +1782,7 @@ async function renderCalendar() {
       _calGCevents.forEach(ev => {
         if (ev.fecha !== ds) return;
         if (ev.allDay) {
-          if (h === 7) html += `<div class="cal-ev cal-ev-gcal" title="${ev.title}">
+          if (h === 7) html += `<div class="cal-ev cal-ev-gcal" onclick="event.stopPropagation()" title="${ev.title}">
             <span class="cal-ev-time">Todo el día</span>
             <span class="cal-ev-name">📅 ${ev.title}</span>
           </div>`;
@@ -1788,7 +1790,7 @@ async function renderCalendar() {
         }
         const [eh2] = (ev.hora||'0:0').split(':').map(Number);
         if (eh2 !== h) return;
-        html += `<div class="cal-ev cal-ev-gcal" title="${ev.title}">
+        html += `<div class="cal-ev cal-ev-gcal" onclick="event.stopPropagation()" title="${ev.title}">
           <span class="cal-ev-time">${ev.hora}${ev.horaFin?' — '+ev.horaFin:''}</span>
           <span class="cal-ev-name">📅 ${ev.title}</span>
         </div>`;
@@ -1800,6 +1802,19 @@ async function renderCalendar() {
   });
 
   document.getElementById('calGrid').innerHTML = html;
+}
+
+function openNuevaCitaFromCal(dateStr, hour) {
+  showView('nueva');
+  document.getElementById('ncDate').value = dateStr;
+  const timeVal = pad(hour) + ':00';
+  const sel = document.getElementById('ncTime');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === timeVal) { sel.selectedIndex = i; break; }
+  }
+  // Scroll al inicio del formulario
+  const form = document.querySelector('.nc-form');
+  if (form) setTimeout(() => form.scrollIntoView({behavior:'smooth', block:'start'}), 80);
 }
 
 // ── MODALS ──
