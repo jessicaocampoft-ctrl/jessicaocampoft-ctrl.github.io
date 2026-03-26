@@ -530,15 +530,19 @@ tr:hover td{background:rgba(126,221,208,.03)}
           </div>
           <div class="field">
             <label>Servicio *</label>
-            <select id="ncService" onchange="autoFillPrice()">
+            <!-- Selector principal: sesiones + acceso a planes -->
+            <select id="ncServiceMain" onchange="onServiceMainChange()">
               <option value="">Selecciona un servicio</option>
-              <optgroup label="── Sesiones individuales ──">
-                <option value="Descarga Muscular — Cuello y Espalda">Descarga Muscular — Cuello y Espalda</option>
-                <option value="Descarga Muscular — Piernas">Descarga Muscular — Piernas</option>
-                <option value="Descarga Muscular Completa">Descarga Muscular Completa</option>
-                <option value="Valoración Funcional">Valoración Funcional</option>
-                <option value="Readaptación Funcional">Readaptación Funcional</option>
-              </optgroup>
+              <option value="Descarga Muscular — Cuello y Espalda">Descarga Muscular — Cuello y Espalda</option>
+              <option value="Descarga Muscular — Piernas">Descarga Muscular — Piernas</option>
+              <option value="Descarga Muscular Completa">Descarga Muscular Completa</option>
+              <option value="Valoración Funcional">Valoración Funcional</option>
+              <option value="Readaptación Funcional">Readaptación Funcional</option>
+              <option value="__planes__">Planes ▶</option>
+            </select>
+            <!-- Selector de planes (visible solo al elegir "Planes ▶") -->
+            <select id="ncServicePlan" onchange="onServicePlanChange()" style="display:none;margin-top:6px">
+              <option value="">Selecciona un plan</option>
               <optgroup label="── Tu cuerpo sin dolor ──">
                 <option value="Plan Espalda Sin Dolor">Plan Espalda Sin Dolor</option>
                 <option value="Plan Alivio Profundo">Plan Alivio Profundo</option>
@@ -556,6 +560,8 @@ tr:hover td{background:rgba(126,221,208,.03)}
                 <option value="Plan Transforma">Plan Transforma</option>
               </optgroup>
             </select>
+            <!-- Campo oculto que guarda el valor final del servicio -->
+            <input type="hidden" id="ncService">
           </div>
           <div class="field">
             <label>Modalidad *</label>
@@ -1378,6 +1384,26 @@ function toggleNcAddress() {
   document.getElementById('ncAddrWrap').style.display = m==='Domicilio' ? 'block' : 'none';
 }
 
+function onServiceMainChange() {
+  const val = document.getElementById('ncServiceMain').value;
+  const planSel = document.getElementById('ncServicePlan');
+  if (val === '__planes__') {
+    planSel.style.display = 'block';
+    planSel.selectedIndex = 0;
+    document.getElementById('ncService').value = '';
+  } else {
+    planSel.style.display = 'none';
+    document.getElementById('ncService').value = val;
+    autoFillPrice();
+  }
+}
+
+function onServicePlanChange() {
+  const val = document.getElementById('ncServicePlan').value;
+  document.getElementById('ncService').value = val;
+  autoFillPrice();
+}
+
 function autoFillPrice() {
   const serv = document.getElementById('ncService').value;
   const mod  = document.getElementById('ncMod').value;
@@ -1495,7 +1521,10 @@ function clearNuevaCita() {
   ['ncName','ncPhone','ncEmail','ncPrice','ncAddress','ncNotes','pacSearch'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value='';
   });
-  document.getElementById('ncService').selectedIndex=0;
+  document.getElementById('ncService').value='';
+  document.getElementById('ncServiceMain').selectedIndex=0;
+  const planSel = document.getElementById('ncServicePlan');
+  planSel.selectedIndex=0; planSel.style.display='none';
   document.getElementById('ncMod').value='Presencial';
   document.getElementById('ncDate').value='';
   document.getElementById('ncAddrWrap').style.display='none';
