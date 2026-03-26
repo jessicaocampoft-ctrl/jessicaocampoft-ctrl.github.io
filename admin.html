@@ -1758,7 +1758,7 @@ async function renderCalendar() {
         const [ch] = c.hora.split(':').map(Number);
         if (ch !== h) return;
         const cls = c.estado==='Confirmada'?'cal-ev-ok':c.estado==='Atendida'?'cal-ev-info':c.estado==='Cancelada'?'cal-ev-err':'cal-ev-warn';
-        html += `<div class="cal-ev ${cls}" onclick="event.stopPropagation();verDetalle('${c.id}')">`;
+        html += `<div class="cal-ev ${cls}" onclick="event.stopPropagation();verDetalle('${c.id}')">
           <span class="cal-ev-time">${c.hora} · ${c.modalidad==='Domicilio'?'Dom':'Pres'}</span>
           <span class="cal-ev-name">${c.nombre}</span>
           <span class="cal-ev-serv">${c.servicio.replace('Descarga Muscular','D.Musc.').replace('Readaptación','Readap.').replace('Valoración','Val.')}</span>
