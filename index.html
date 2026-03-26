@@ -1833,18 +1833,7 @@
                 <label class="bk-field-label">Hora</label>
                 <div id="bkAvailMsg" class="bk-avail-msg"></div>
                 <div class="bk-time-grid" id="timeGrid">
-                  <span class="bk-time" onclick="selectTime(this)">07:00</span>
-                  <span class="bk-time" onclick="selectTime(this)">08:00</span>
-                  <span class="bk-time" onclick="selectTime(this)">09:00</span>
-                  <span class="bk-time" onclick="selectTime(this)">10:00</span>
-                  <span class="bk-time" onclick="selectTime(this)">11:00</span>
-                  <span class="bk-time" onclick="selectTime(this)">13:00</span>
-                  <span class="bk-time" onclick="selectTime(this)">14:00</span>
-                  <span class="bk-time" onclick="selectTime(this)">15:00</span>
-                  <span class="bk-time" onclick="selectTime(this)">16:00</span>
-                  <span class="bk-time" onclick="selectTime(this)">17:00</span>
-                  <span class="bk-time" onclick="selectTime(this)">18:00</span>
-                  <span class="bk-time" onclick="selectTime(this)">19:00</span>
+                  <p style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;margin:0">Selecciona primero una fecha para ver los horarios disponibles.</p>
                 </div>
               </div>
             </div>
@@ -2101,9 +2090,56 @@
       document.getElementById('btnStep2').disabled = !(bk.date && bk.time);
     }
 
+    // Horarios de atención por día de semana (0=Dom,1=Lun,...,6=Sáb)
+    // Cada rango: {from:'HH:MM', to:'HH:MM'} — la última cita válida es "to"
+    const SCHEDULE = {
+      0: [],                                                        // Domingo cerrado
+      1: [{from:'08:00', to:'16:30'}],                             // Lunes
+      2: [{from:'08:00', to:'17:00'}],                             // Martes
+      3: [{from:'08:00', to:'17:00'}],                             // Miércoles
+      4: [{from:'08:00', to:'20:00'}],                             // Jueves
+      5: [{from:'08:00', to:'20:00'}],                             // Viernes
+      6: [{from:'07:00', to:'08:30'}, {from:'14:00', to:'17:00'}], // Sábado
+    };
+
+    function buildTimeSlots(dateStr) {
+      const d   = new Date(dateStr + 'T00:00:00');
+      const dow = d.getDay();
+      const ranges = SCHEDULE[dow] || [];
+      const grid = document.getElementById('timeGrid');
+      bk.time = '';
+
+      if (ranges.length === 0) {
+        grid.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;margin:0">Los domingos no hay servicio. Por favor elige otro día.</p>';
+        document.getElementById('btnStep2').disabled = true;
+        return false;
+      }
+
+      const pad2 = n => String(n).padStart(2,'0');
+      const slots = [];
+      ranges.forEach(({from, to}) => {
+        let [h, m] = from.split(':').map(Number);
+        const [th, tm] = to.split(':').map(Number);
+        while (h * 60 + m <= th * 60 + tm) {
+          slots.push(pad2(h) + ':' + pad2(m));
+          m += 30;
+          if (m >= 60) { h++; m -= 60; }
+        }
+      });
+
+      grid.innerHTML = slots.map(s =>
+        `<span class="bk-time" onclick="selectTime(this)">${s}</span>`
+      ).join('');
+      return true;
+    }
+
     function checkStep2() {
       bk.date = document.getElementById('bkDate').value;
-      if (bk.date) loadAvailability(bk.date);
+      bk.time = '';
+      if (bk.date) {
+        const ok = buildTimeSlots(bk.date);
+        if (ok) loadAvailability(bk.date);
+      }
       document.getElementById('btnStep2').disabled = !(bk.date && bk.time);
     }
 
@@ -2290,7 +2326,7 @@
       bk.service = bk.priceP = bk.priceD = bk.date = bk.time = bk.name = bk.phone = bk.email = bk.address = bk.notes = '';
       bk.modality = 'Presencial';
       document.querySelectorAll('.bk-svc').forEach(s => s.classList.remove('selected'));
-      document.querySelectorAll('.bk-time').forEach(t => t.classList.remove('selected'));
+      document.getElementById('timeGrid').innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;margin:0">Selecciona primero una fecha para ver los horarios disponibles.</p>';
       document.getElementById('bkDate').value = '';
       ['bkName','bkPhone','bkEmail','bkAddress','bkNotes'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('bkSuccess').classList.remove('active');
