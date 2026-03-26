@@ -947,7 +947,7 @@ function waLink(tel, nombre, fecha, hora, serv) {
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
   const fDate = normDate(fecha);
-  const msg = 'Hola ' + nombre + ', te recuerdo tu cita de ' + serv + ' el ' + fDate + ' a las ' + hora + '. - Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + nombre + ', te recuerdo tu cita de ' + serv + ' el ' + fDate + ' a las ' + hora + '.\n\n💳 *Formas de pago:*\n• Bancolombia Ahorros: 91257857099\n• Llave: 1010124692\n• Nequi: 3136467945\n• A nombre de: Jessica Andrea Ocampo Barbosa\n\n- Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 function waBtn(tel, nombre, fecha, hora, serv, label) {

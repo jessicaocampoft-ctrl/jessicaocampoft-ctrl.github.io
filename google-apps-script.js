@@ -566,6 +566,15 @@ function buildEmailCliente(d, price) {
     '<div style="background:#f0fdf4;border-radius:8px;padding:14px 18px;margin:20px 0;font-size:13px;color:#166534">' +
     '📅 Recibirás un recordatorio por correo el día anterior y el mismo día de tu cita.' +
     '</div>' +
+    '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:16px 18px;margin:16px 0">' +
+    '<p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#92400e">💳 Formas de pago</p>' +
+    '<table style="width:100%;font-size:13px;color:#44403c;border-collapse:collapse">' +
+    '<tr><td style="padding:4px 0;color:#78716c;width:110px">Bancolombia</td><td style="padding:4px 0;font-weight:600">Cta. Ahorros · 91257857099</td></tr>' +
+    '<tr><td style="padding:4px 0;color:#78716c">Llave</td><td style="padding:4px 0;font-weight:600">1010124692</td></tr>' +
+    '<tr><td style="padding:4px 0;color:#78716c">Nequi</td><td style="padding:4px 0;font-weight:600">3136467945</td></tr>' +
+    '<tr><td style="padding:4px 0;color:#78716c">A nombre de</td><td style="padding:4px 0">Jessica Andrea Ocampo Barbosa</td></tr>' +
+    '</table>' +
+    '</div>' +
     '<p style="font-size:13px;color:#6b7280;margin:0">¿Necesitas cancelar o cambiar? Escríbele directamente:<br>' +
     '<a href="https://wa.me/573136467945" style="color:#0d9488">+57 313 646 7945 (WhatsApp)</a></p>' +
     '</div>' +
@@ -597,7 +606,16 @@ function buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, esHoy
     '<tr><td style="padding:10px 0;color:#6b7280">Modalidad</td><td style="padding:10px 0">' + mod + '</td></tr>' +
     (precio ? '<tr><td style="padding:10px 0;color:#6b7280">Valor</td><td style="padding:10px 0">' + precio + '</td></tr>' : '') +
     '</table>' +
-    '<p style="font-size:13px;color:#6b7280;margin:20px 0 0">¿Necesitas cancelar o cambiar? Escríbele directamente:<br>' +
+    '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 18px;margin:16px 0">' +
+    '<p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#92400e">💳 Formas de pago</p>' +
+    '<table style="width:100%;font-size:13px;color:#44403c;border-collapse:collapse">' +
+    '<tr><td style="padding:3px 0;color:#78716c;width:110px">Bancolombia</td><td style="padding:3px 0;font-weight:600">Cta. Ahorros · 91257857099</td></tr>' +
+    '<tr><td style="padding:3px 0;color:#78716c">Llave</td><td style="padding:3px 0;font-weight:600">1010124692</td></tr>' +
+    '<tr><td style="padding:3px 0;color:#78716c">Nequi</td><td style="padding:3px 0;font-weight:600">3136467945</td></tr>' +
+    '<tr><td style="padding:3px 0;color:#78716c">A nombre de</td><td style="padding:3px 0">Jessica Andrea Ocampo Barbosa</td></tr>' +
+    '</table>' +
+    '</div>' +
+    '<p style="font-size:13px;color:#6b7280;margin:0">¿Necesitas cancelar o cambiar? Escríbele directamente:<br>' +
     '<a href="https://wa.me/573136467945" style="color:#0d9488">+57 313 646 7945 (WhatsApp)</a></p>' +
     '</div>' +
     '<div style="background:#f9fafb;padding:16px 32px;text-align:center;font-size:12px;color:#9ca3af">' +
