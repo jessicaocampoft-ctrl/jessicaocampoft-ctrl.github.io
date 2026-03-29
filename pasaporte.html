@@ -186,11 +186,31 @@
       Pereira · Dosquebradas
     </div>
   </div>
-  <p class="text-brand-mndk text-xs font-800 tracking-widest uppercase mb-1">Bienvenida ✦</p>
+  <p id="saludoLabel" class="text-brand-mndk text-xs font-800 tracking-widest uppercase mb-1">Bienvenida ✦</p>
   <h1 class="font-cormorant text-5xl font-700 italic leading-tight" style="color:#0A1A12;">
-    Tu ruta al<br><span style="color:#4BBFA3;">movimiento</span>
+    <span id="nombrePaciente"></span><br><span style="color:#4BBFA3;">movimiento</span>
   </h1>
 </header>
+
+<!-- Modal: ingresar nombre (solo si no viene en la URL) -->
+<div id="nombreModal" style="display:none; position:fixed; inset:0; z-index:80; background:rgba(10,26,18,.55); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); align-items:center; justify-content:center; padding:24px;">
+  <div class="card p-7 w-full max-w-xs mx-4 text-center">
+    <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:rgba(75,191,163,.12);">
+      <i data-lucide="user" class="w-6 h-6" style="color:#4BBFA3;"></i>
+    </div>
+    <p class="font-800 text-base mb-1" style="color:#0A1A12;">¿Cuál es tu nombre?</p>
+    <p class="text-xs font-500 mb-5" style="color:rgba(10,26,18,.40);">Para personalizar tu pasaporte</p>
+    <input id="nombreInput" type="text" placeholder="Ej: Sara Casas"
+      class="w-full rounded-2xl px-4 py-3 text-base font-600 mb-4"
+      style="border:1.5px solid #C3E5D8; background:#F3FAF7; color:#0A1A12; outline:none;"
+      onkeydown="if(event.key==='Enter') guardarNombre()">
+    <button type="button" onclick="guardarNombre()"
+      class="w-full py-3.5 rounded-2xl font-800 text-sm"
+      style="background:linear-gradient(135deg,#7DDFC3,#4BBFA3); color:#0A1A12;">
+      Abrir mi pasaporte →
+    </button>
+  </div>
+</div>
 
 <!-- Divider -->
 <div class="mx-5 h-px mb-5" style="background: linear-gradient(90deg, transparent, rgba(10,26,18,.10), transparent);"></div>
@@ -379,17 +399,61 @@
 
   // ─── CONFIGURACIÓN ───────────────────────────────────────────
   const ADMIN_PIN = '2610';   // ← Cambia este PIN (solo Jessica lo sabe)
-  const PASSPORT_KEY = 'jof_passport_v2';
-  const DESCARGA_KEY  = 'jof_descarga_v2';
-  const ADMIN_KEY     = 'jof_admin_session';
+  const ADMIN_KEY = 'jof_admin_session';
   // ─────────────────────────────────────────────────────────────
 
-  let passportState = JSON.parse(localStorage.getItem(PASSPORT_KEY) || '{}');
-  let descargaState  = JSON.parse(localStorage.getItem(DESCARGA_KEY)  || '{}');
+  // ─── IDENTIFICACIÓN DEL PACIENTE ─────────────────────────────
+  // Prioridad: 1) URL ?nombre=Sara+Casas  2) LocalStorage  3) Pide el nombre
+  function slugify(n) { return n.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9\-áéíóúñ]/g, ''); }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  let nombreUrl   = (urlParams.get('nombre') || '').trim();
+  let nombreGuardado = localStorage.getItem('jof_nombre_paciente') || '';
+  let nombrePaciente = nombreUrl || nombreGuardado || '';
+
+  function clavesPaciente(nombre) {
+    const slug = slugify(nombre) || 'anonimo';
+    return {
+      passport: 'jof_passport_' + slug,
+      descarga:  'jof_descarga_'  + slug,
+    };
+  }
+
+  let claves = clavesPaciente(nombrePaciente);
+
+  let passportState = JSON.parse(localStorage.getItem(claves.passport) || '{}');
+  let descargaState  = JSON.parse(localStorage.getItem(claves.descarga)  || '{}');
   let isAdmin = sessionStorage.getItem(ADMIN_KEY) === 'true';
 
-  function savePassport() { localStorage.setItem(PASSPORT_KEY, JSON.stringify(passportState)); }
-  function saveDescarga()  { localStorage.setItem(DESCARGA_KEY,  JSON.stringify(descargaState));  }
+  // Género: si el primer nombre termina en 'a' → Bienvenida, sino Bienvenido
+  function saludo(nombre) {
+    if (!nombre) return 'Bienvenida ✦';
+    const primero = nombre.trim().split(' ')[0].toLowerCase();
+    const esFemenino = primero.endsWith('a') && primero !== 'luca' && primero !== 'nicolas' && primero !== 'josua';
+    return (esFemenino ? 'Bienvenida' : 'Bienvenido') + ', ' + nombre.split(' ')[0] + ' ✦';
+  }
+
+  function aplicarNombre(nombre) {
+    nombrePaciente = nombre;
+    if (nombre) localStorage.setItem('jof_nombre_paciente', nombre);
+    claves = clavesPaciente(nombre);
+    passportState = JSON.parse(localStorage.getItem(claves.passport) || '{}');
+    descargaState  = JSON.parse(localStorage.getItem(claves.descarga)  || '{}');
+    document.getElementById('saludoLabel').textContent = saludo(nombre);
+    document.getElementById('nombrePaciente').textContent = 'Tu ruta al';
+    document.title = nombre ? 'Pasaporte de ' + nombre.split(' ')[0] + ' — Jessica Ocampo' : 'Pasaporte de Movimiento — Jessica Ocampo';
+    renderPassport(); renderDescarga(); applyAdminMode(isAdmin);
+  }
+
+  function guardarNombre() {
+    const val = document.getElementById('nombreInput').value.trim();
+    if (!val) return;
+    document.getElementById('nombreModal').style.display = 'none';
+    aplicarNombre(val);
+  }
+
+  function savePassport() { localStorage.setItem(claves.passport, JSON.stringify(passportState)); }
+  function saveDescarga()  { localStorage.setItem(claves.descarga,  JSON.stringify(descargaState));  }
 
   // ─── LOGO TAP (5 veces para abrir PIN) ───────────────────────
   let tapCount = 0, tapTimer = null;
@@ -555,9 +619,19 @@
   });
 
   // ─── INIT ─────────────────────────────────────────────────────
-  renderPassport();
-  renderDescarga();
-  applyAdminMode(isAdmin);
+  if (nombrePaciente) {
+    // Nombre conocido (URL o LocalStorage) → aplicar directo
+    aplicarNombre(nombrePaciente);
+    // Si vino en URL, guardarlo para próximas visitas sin URL
+    if (nombreUrl) localStorage.setItem('jof_nombre_paciente', nombreUrl);
+  } else {
+    // Sin nombre → mostrar modal de bienvenida
+    const modal = document.getElementById('nombreModal');
+    modal.style.display = 'flex';
+    document.getElementById('nombreInput').focus();
+    // Render inicial en blanco mientras espera
+    renderPassport(); renderDescarga(); applyAdminMode(isAdmin);
+  }
 </script>
 </body>
 </html>
