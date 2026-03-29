@@ -879,6 +879,35 @@
       .contact-cards { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
     }
 
+    /* ─── FAQ ─── */
+    .faq { padding: 80px 0; }
+    .faq-header { text-align: center; margin-bottom: 48px; }
+    .faq-grid { max-width: 760px; margin: 0 auto; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; cursor: pointer; font-size: .95rem; font-weight: 600; color: var(--text); gap: 16px; -webkit-user-select: none; user-select: none; }
+    .faq-q svg { flex-shrink: 0; transition: transform .3s ease; color: var(--primary); }
+    .faq-item.open .faq-q svg { transform: rotate(180deg); }
+    .faq-a { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+    .faq-item.open .faq-a { max-height: 500px; }
+    .faq-a-inner { padding: 4px 0 20px; color: var(--text-muted); font-size: .88rem; line-height: 1.75; }
+    .faq-a-inner strong { color: var(--text); }
+    .faq-a-inner ul { margin: 8px 0 0 16px; }
+    .faq-a-inner li { margin-bottom: 4px; }
+    .faq-hours { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .faq-hour-row { display: flex; justify-content: space-between; padding: 8px 14px; background: var(--s1); border-radius: 8px; font-size: .83rem; }
+    .faq-hour-day { font-weight: 600; color: var(--text); }
+    .faq-hour-time { color: var(--text-muted); }
+    .faq-wa-btn { display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: #000; font-weight: 600; font-size: .82rem; padding: 9px 18px; border-radius: 100px; text-decoration: none; margin-top: 12px; }
+    /* ─── WhatsApp flotante ─── */
+    .wa-float { position: fixed; bottom: 24px; right: 24px; z-index: 998; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .wa-float-btn { display: flex; align-items: center; gap: 10px; background: #25D366; color: #000; font-weight: 700; font-size: .85rem; padding: 13px 22px; border-radius: 100px; text-decoration: none; box-shadow: 0 4px 24px rgba(37,211,102,.4); transition: transform .2s, box-shadow .2s; }
+    .wa-float-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(37,211,102,.5); }
+    .wa-float-pulse { width: 52px; height: 52px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,.4); text-decoration: none; transition: transform .2s; }
+    .wa-float-pulse:hover { transform: scale(1.1); }
+    .wa-float-pulse::after { content:''; position:absolute; width:52px; height:52px; background:rgba(37,211,102,.3); border-radius:50%; animation: waPulse 2s infinite; }
+    @keyframes waPulse { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(1.8);opacity:0} }
+    @media (max-width:768px) { .wa-float-btn span { display:none; } .wa-float-btn { padding:13px; border-radius:50%; } }
+
     /* ─── AGENDA ─── */
     .booking {
       padding: 100px 0;
@@ -1356,6 +1385,7 @@
         <li><a href="#servicios">Servicios</a></li>
         <li><a href="#paquetes">Planes</a></li>
         <li><a href="#sobre-mi">Sobre mí</a></li>
+        <li><a href="#faq">FAQ</a></li>
         <li><a href="#agenda">Agenda</a></li>
         <li><a href="#contacto">Contacto</a></li>
         <li><a href="https://wa.me/573136467945" target="_blank" rel="noopener" class="nav-cta">Agendar Cita</a></li>
@@ -1748,6 +1778,120 @@
     </div>
   </section>
 
+  <!-- FAQ -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <div class="faq-header fade-up">
+        <div class="section-tag">Preguntas frecuentes</div>
+        <h2>Todo lo que necesitas <em>saber</em></h2>
+      </div>
+      <div class="faq-grid fade-up">
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            ¿Cuánto dura cada sesión?
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">
+            <ul>
+              <li><strong>Descarga Muscular Express</strong> (cuello y espalda, o piernas) — 50 minutos</li>
+              <li><strong>Descarga Muscular Completa</strong> (cuerpo completo) — 1 hora 20 minutos</li>
+              <li><strong>Readaptación Funcional</strong> — 40 a 45 minutos</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            ¿Qué debo usar o traer a la cita?
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">
+            <strong>Descargas musculares:</strong>
+            <ul>
+              <li>Hombres: pantaloneta ancha o suelta</li>
+              <li>Mujeres: short corto y brasier fácil de desabrochar</li>
+            </ul>
+            <br>
+            <strong>Readaptación funcional:</strong>
+            <ul>
+              <li>Ropa cómoda para hacer ejercicio y tenis deportivos</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            ¿Trabajan con EPS?
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">
+            No tenemos convenio con EPS. Trabajamos únicamente con <strong>pago particular</strong>. Aceptamos Bancolombia, Nequi y Llave.
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            ¿Atienden a domicilio en todos los sectores?
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">
+            Sí, atendemos en <strong>toda el área metropolitana</strong> de Pereira y Dosquebradas. Algunos sectores como Cerritos, Condina, Santa Rosa y otros alejados tienen un recargo por desplazamiento que se indica en el formulario.
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            ¿Cuáles son los horarios de atención?
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">
+            <div class="faq-hours">
+              <div class="faq-hour-row"><span class="faq-hour-day">Lunes</span><span class="faq-hour-time">8:00 am – 4:30 pm</span></div>
+              <div class="faq-hour-row"><span class="faq-hour-day">Martes</span><span class="faq-hour-time">8:00 am – 5:00 pm</span></div>
+              <div class="faq-hour-row"><span class="faq-hour-day">Miércoles</span><span class="faq-hour-time">8:00 am – 5:00 pm</span></div>
+              <div class="faq-hour-row"><span class="faq-hour-day">Jueves</span><span class="faq-hour-time">8:00 am – 8:00 pm</span></div>
+              <div class="faq-hour-row"><span class="faq-hour-day">Viernes</span><span class="faq-hour-time">8:00 am – 8:00 pm</span></div>
+              <div class="faq-hour-row"><span class="faq-hour-day">Sábado</span><span class="faq-hour-time">7:00 am – 9:30 am · 2:00 pm – 6:00 pm</span></div>
+              <div class="faq-hour-row"><span class="faq-hour-day">Domingo</span><span class="faq-hour-time">Sin servicio</span></div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            ¿Cómo llego al consultorio presencial?
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">
+            Estamos ubicados en <strong>Finca Villa Diana, Vereda El Estanquillo</strong>, Pereira. Al confirmar tu cita te enviamos un video con las indicaciones exactas para llegar sin problema. Si tienes dudas, escríbenos:
+            <br>
+            <a href="https://wa.me/573136467945?text=Hola%20Jessica%2C%20necesito%20las%20indicaciones%20para%20llegar%20al%20consultorio" target="_blank" rel="noopener" class="faq-wa-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.89.525 3.658 1.438 5.168L2 22l4.978-1.301A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 11.999 2z"/></svg>
+              Pedir indicaciones por WhatsApp
+            </a>
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            ¿Puedo cancelar o reagendar mi cita?
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">
+            Sí. Las cancelaciones o reprogramaciones deben realizarse con un mínimo de <strong>12 horas de anticipación</strong> por uno de estos medios:
+            <ul>
+              <li>WhatsApp: <strong>313 646 7945</strong></li>
+              <li>Instagram: <strong>@jessicaocampofiso</strong></li>
+            </ul>
+            Las sesiones canceladas o reprogramadas fuera de ese plazo <strong>se consideran realizadas</strong> y no aplica devolución. Esta política aplica para valoraciones funcionales, readaptación funcional y descargas musculares.
+          </div></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- AGENDA -->
   <section class="booking" id="agenda">
     <div class="container">
@@ -2099,7 +2243,7 @@
       3: [{from:'08:00', to:'17:00'}],                             // Miércoles
       4: [{from:'08:00', to:'20:00'}],                             // Jueves
       5: [{from:'08:00', to:'20:00'}],                             // Viernes
-      6: [{from:'07:00', to:'08:30'}, {from:'14:00', to:'17:00'}], // Sábado
+      6: [{from:'07:00', to:'09:00'}, {from:'14:00', to:'18:00'}], // Sábado
     };
 
     function buildTimeSlots(dateStr) {
@@ -2176,7 +2320,7 @@
       const msg = document.getElementById('bkAvailMsg');
       if (available === 0) {
         msg.className = 'bk-avail-msg none';
-        msg.textContent = 'No hay horarios disponibles para esta fecha. Por favor elige otro día.';
+        msg.innerHTML = 'No hay horarios disponibles para esta fecha. ¿Quieres que te avisemos si se libera un cupo? <a href="https://wa.me/573136467945?text=Hola%20Jessica%2C%20quisiera%20quedar%20en%20lista%20de%20espera%20para%20el%20' + encodeURIComponent(bk.date) + '" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600;text-decoration:underline">Apúntate a la lista de espera</a>';
         msg.style.display = 'block';
       } else if (available < total) {
         msg.className = 'bk-avail-msg ok';
@@ -2301,14 +2445,29 @@
       document.getElementById('bkSuccess').classList.add('active');
       const price = bk.modality === 'Presencial' ? bk.priceP : bk.priceD;
       const dateStr = new Date(bk.date + 'T12:00').toLocaleDateString('es-CO', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+      const ref = 'JO-' + Date.now().toString(36).toUpperCase().slice(-6);
+      // Google Calendar link
+      const gcStart = bk.date.replace(/-/g,'') + 'T' + bk.time.replace(':','') + '00';
+      const gcEnd   = bk.date.replace(/-/g,'') + 'T' + bk.time.replace(':','') + '00';
+      const gcLink  = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+        '&text=' + encodeURIComponent('Cita: ' + bk.service + ' — Jessica Ocampo Fisio') +
+        '&dates=' + gcStart + '/' + gcEnd +
+        '&details=' + encodeURIComponent('Modalidad: ' + bk.modality + '\nValor: ' + price + '\nContacto: +57 313 646 7945');
       document.getElementById('bkSuccessDetails').innerHTML = `
-        <div class="bk-summary-title">Detalles confirmados</div>
+        <div class="bk-summary-title">Detalles de tu reserva</div>
+        <div class="bk-summary-row"><span>Ref.</span><span style="font-family:monospace;font-size:.82rem;color:var(--primary)">${ref}</span></div>
         <div class="bk-summary-row"><span>Servicio</span><span>${bk.service}</span></div>
         <div class="bk-summary-row"><span>${bk.modality}</span><span>${dateStr} · ${bk.time}</span></div>
         <div class="bk-summary-row"><span>Valor</span><span class="bk-summary-price">${price}</span></div>
         <div class="bk-summary-row"><span>Nombre</span><span>${bk.name}</span></div>
+        <div style="margin-top:12px;padding:10px 14px;background:rgba(126,221,208,.07);border-radius:8px;font-size:.78rem;color:var(--text-muted);line-height:1.6">
+          Para cancelar o reagendar escribe con <strong style="color:var(--text)">12 horas de anticipación</strong> al <strong style="color:var(--text)">313 646 7945</strong>.
+        </div>
+        <a href="${gcLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-size:.8rem;color:var(--primary);text-decoration:none;border:1px solid rgba(126,221,208,.3);padding:7px 14px;border-radius:8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Agregar a Google Calendar
+        </a>
       `;
-      // Update progress — all done
       [1,2,3].forEach(i => {
         const p = document.getElementById('prog' + i);
         p.classList.remove('active');
@@ -2345,6 +2504,22 @@
     window.goStep = goStep;
     window.submitBooking = submitBooking;
     window.resetBooking = resetBooking;
+
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+    window.toggleFaq = toggleFaq;
   </script>
+
+  <!-- WhatsApp flotante -->
+  <div class="wa-float">
+    <a href="https://wa.me/573136467945?text=Hola%20Jessica%2C%20quiero%20agendar%20una%20cita" target="_blank" rel="noopener" class="wa-float-btn" aria-label="Agendar por WhatsApp">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.89.525 3.658 1.438 5.168L2 22l4.978-1.301A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 11.999 2z"/></svg>
+      <span>Agendar por WhatsApp</span>
+    </a>
+  </div>
 </body>
 </html>
