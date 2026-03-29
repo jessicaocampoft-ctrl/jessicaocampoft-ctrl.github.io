@@ -398,8 +398,10 @@
   lucide.createIcons();
 
   // ─── CONFIGURACIÓN ───────────────────────────────────────────
-  const ADMIN_PIN = '2610';   // ← Cambia este PIN (solo Jessica lo sabe)
-  const ADMIN_KEY = 'jof_admin_session';
+  const ADMIN_PIN      = '2610';
+  const ADMIN_KEY      = 'jof_admin_session';
+  const ADMIN_TOKEN    = 'JESSICA2026';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz9IpyJi9o1HKeHQ00gf6DmSn0eYYj3mzYG-naiXg-MyYbiSoR9BbUQwwODcg6-20Qb/exec';
   // ─────────────────────────────────────────────────────────────
 
   // ─── IDENTIFICACIÓN DEL PACIENTE ─────────────────────────────
@@ -452,8 +454,44 @@
     aplicarNombre(val);
   }
 
-  function savePassport() { localStorage.setItem(claves.passport, JSON.stringify(passportState)); }
-  function saveDescarga()  { localStorage.setItem(claves.descarga,  JSON.stringify(descargaState));  }
+  // ─── CLOUD SYNC ───────────────────────────────────────────────
+  async function cloudLoad(nombre) {
+    try {
+      const url = APPS_SCRIPT_URL + '?action=getPassport&nombre=' + encodeURIComponent(nombre);
+      const r   = await fetch(url);
+      const d   = await r.json();
+      if (d.ok) {
+        passportState = d.passport || {};
+        descargaState  = d.descarga  || {};
+        // Actualizar caché local
+        localStorage.setItem(claves.passport, JSON.stringify(passportState));
+        localStorage.setItem(claves.descarga,  JSON.stringify(descargaState));
+      }
+    } catch(e) { /* sin internet: usa localStorage como fallback */ }
+  }
+
+  async function cloudSave() {
+    if (!nombrePaciente) return;
+    try {
+      const params = new URLSearchParams({
+        action:   'savePassport',
+        token:    ADMIN_TOKEN,
+        nombre:   nombrePaciente,
+        passport: JSON.stringify(passportState),
+        descarga: JSON.stringify(descargaState),
+      });
+      await fetch(APPS_SCRIPT_URL + '?' + params.toString());
+    } catch(e) { /* guarda solo en local si no hay internet */ }
+  }
+
+  function savePassport() {
+    localStorage.setItem(claves.passport, JSON.stringify(passportState));
+    if (isAdmin) cloudSave();
+  }
+  function saveDescarga() {
+    localStorage.setItem(claves.descarga, JSON.stringify(descargaState));
+    if (isAdmin) cloudSave();
+  }
 
   // ─── LOGO TAP (5 veces para abrir PIN) ───────────────────────
   let tapCount = 0, tapTimer = null;
@@ -620,16 +658,18 @@
 
   // ─── INIT ─────────────────────────────────────────────────────
   if (nombrePaciente) {
-    // Nombre conocido (URL o LocalStorage) → aplicar directo
-    aplicarNombre(nombrePaciente);
-    // Si vino en URL, guardarlo para próximas visitas sin URL
     if (nombreUrl) localStorage.setItem('jof_nombre_paciente', nombreUrl);
+    // Mostrar datos locales inmediatamente (respuesta rápida)
+    aplicarNombre(nombrePaciente);
+    // Luego cargar desde la nube y refrescar
+    cloudLoad(nombrePaciente).then(() => {
+      renderPassport();
+      renderDescarga();
+    });
   } else {
-    // Sin nombre → mostrar modal de bienvenida
     const modal = document.getElementById('nombreModal');
     modal.style.display = 'flex';
     document.getElementById('nombreInput').focus();
-    // Render inicial en blanco mientras espera
     renderPassport(); renderDescarga(); applyAdminMode(isAdmin);
   }
 </script>

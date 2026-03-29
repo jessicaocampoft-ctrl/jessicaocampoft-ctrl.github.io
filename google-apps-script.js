@@ -23,6 +23,11 @@ function doGet(e) {
     return js(getAvailability(p.date));
   }
 
+  // Pasaporte — lectura pública (sin token)
+  if (p.action === 'getPassport' && p.nombre) {
+    return js(getPassport(decodeURIComponent(p.nombre)));
+  }
+
   if (p.token !== ADMIN_TOKEN) {
     return js({ok: false, error: 'Sin permiso'});
   }
@@ -31,12 +36,17 @@ function doGet(e) {
   if (p.action === 'block')         return js(doBlock(p));
   if (p.action === 'unblock')       return js(doUnblock(p));
   if (p.action === 'updateStatus')  return js(doUpdateStatus(p));
-  if (p.action === 'adminBook')     return js(createBooking(JSON.parse(decodeURIComponent(p.data)), true));
+  if (p.action === 'adminBook')     return js(createBooking(JSON.parse(p.data), true));
   if (p.action === 'getCalEvents')  return js(getCalendarEvents(p.from, p.to));
   if (p.action === 'cancelBooking') return js(doCancelBooking(p.id));
-  if (p.action === 'editBooking')   return js(doEditBooking(JSON.parse(decodeURIComponent(p.data))));
+  if (p.action === 'editBooking')   return js(doEditBooking(JSON.parse(p.data)));
   if (p.action === 'deletePatient') return js(deletePatient(decodeURIComponent(p.nombre)));
-  if (p.action === 'editPatient')   return js(editPatient(JSON.parse(decodeURIComponent(p.data))));
+  if (p.action === 'editPatient')   return js(editPatient(JSON.parse(p.data)));
+
+  // Pasaporte — escritura (requiere token admin)
+  if (p.action === 'savePassport' && p.nombre) {
+    return js(savePassport(decodeURIComponent(p.nombre), p.passport || '{}', p.descarga || '{}'));
+  }
 
   return txt('Jessica Ocampo Fisioterapeuta - Sistema activo');
 }
@@ -621,4 +631,58 @@ function buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, esHoy
     '<div style="background:#f9fafb;padding:16px 32px;text-align:center;font-size:12px;color:#9ca3af">' +
     'Jessica Ocampo Fisioterapeuta · Pereira, Colombia' +
     '</div></div>';
+}
+
+// =============================================================
+//  PASAPORTE DE MOVIMIENTO
+// =============================================================
+
+function getPasaportesSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Pasaportes');
+  if (!sh) {
+    sh = ss.insertSheet('Pasaportes');
+    sh.appendRow(['nombre', 'passport', 'descarga', 'actualizado']);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function getPassport(nombre) {
+  try {
+    var sh   = getPasaportesSheet();
+    var data = sh.getDataRange().getValues();
+    var norm = (nombre || '').toLowerCase().trim();
+    for (var i = 1; i < data.length; i++) {
+      if ((data[i][0] || '').toLowerCase().trim() === norm) {
+        return {
+          ok:       true,
+          passport: data[i][1] ? JSON.parse(data[i][1]) : {},
+          descarga: data[i][2] ? JSON.parse(data[i][2]) : {}
+        };
+      }
+    }
+    return { ok: true, passport: {}, descarga: {} };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+function savePassport(nombre, passportJson, descargaJson) {
+  try {
+    var sh   = getPasaportesSheet();
+    var data = sh.getDataRange().getValues();
+    var norm = (nombre || '').toLowerCase().trim();
+    var now  = new Date().toISOString();
+    for (var i = 1; i < data.length; i++) {
+      if ((data[i][0] || '').toLowerCase().trim() === norm) {
+        sh.getRange(i + 1, 1, 1, 4).setValues([[nombre, passportJson, descargaJson, now]]);
+        return { ok: true };
+      }
+    }
+    sh.appendRow([nombre, passportJson, descargaJson, now]);
+    return { ok: true };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
 }
