@@ -1093,14 +1093,16 @@ function pasaporteLink(nombre) {
 }
 
 function waBtnPasaporte(tel, nombre) {
-  const t = String(tel||'').replace(/\D/g,'');
-  if (!t || t.length < 7) return '';
-  const phone = t.length <= 10 ? '57'+t : t;
   const link = pasaporteLink(nombre);
+  const t = String(tel||'').replace(/\D/g,'');
+  const phone = t.length <= 10 ? '57'+t : t;
   const primero = waNombre(nombre);
   const msg = 'Hola ' + primero + ', te comparto tu Pasaporte de Movimiento personal. Desde aquí puedes ver tu progreso sesión a sesión. ¡Guárdalo en tu celular!\n\n' + link + '\n\n- Jessica Ocampo Fisioterapeuta';
-  const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
-  return '<a href="' + url + '" target="_blank" class="btn btn-passport btn-sm" title="Enviar Pasaporte de Movimiento">🎯 Pasaporte</a>';
+  if (t.length >= 7) {
+    const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+    return '<a href="' + url + '" target="_blank" class="btn btn-passport btn-sm">🎯 Pasaporte</a>';
+  }
+  return '<a href="' + link + '" target="_blank" class="btn btn-passport btn-sm">🎯 Pasaporte</a>';
 }
 
 function toast(msg, type='ok') {
