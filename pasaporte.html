@@ -250,7 +250,16 @@
       <div class="stamp reward-circle" id="s8" onclick="toggleStamp(8)"><i data-lucide="gift" class="w-6 h-6 stamp-icon" style="color:rgba(232,184,75,.55);"></i></div>
     </div>
 
-    <!-- Reward banner -->
+    <!-- Beneficio siempre visible -->
+    <div id="passport-benefit" class="rounded-2xl p-4 text-center" style="background:rgba(232,184,75,.07); border:1px solid rgba(232,184,75,.22);">
+      <p class="text-sm font-500 leading-snug" style="color:rgba(10,26,18,.55);">
+        Completa 8 sesiones y obtén
+        <span class="font-900 text-base" style="color:#C9962A;"> 15 min de Presoterapia </span>
+        o<br><span class="font-700" style="color:#C9962A;">Descarga Express 20 min — ¡Gratis!</span>
+      </p>
+    </div>
+
+    <!-- Reward banner (al completar las 8) -->
     <div id="reward-banner" class="hidden rounded-2xl p-4 flex items-center gap-3" style="background:linear-gradient(135deg,rgba(232,184,75,.10),rgba(201,150,42,.14)); border:1px solid rgba(232,184,75,.25);">
       <span class="text-3xl">🏆</span>
       <div>
@@ -615,7 +624,9 @@
     lucide.createIcons();
     document.getElementById('stamp-count').textContent = count;
     document.getElementById('passport-prog').style.width = (count / 8 * 100) + '%';
-    document.getElementById('reward-banner').classList.toggle('hidden', !passportState[8]);
+    const done = !!passportState[8];
+    document.getElementById('reward-banner').classList.toggle('hidden', !done);
+    document.getElementById('passport-benefit').classList.toggle('hidden', done);
   }
 
   function renderDescarga() {
