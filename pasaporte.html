@@ -251,7 +251,7 @@
     </div>
 
     <!-- Beneficio siempre visible -->
-    <div id="passport-benefit" class="rounded-2xl p-4 text-center" style="background:rgba(232,184,75,.07); border:1px solid rgba(232,184,75,.22);">
+    <div id="passport-benefit" class="rounded-2xl p-4 text-center" style="background:rgba(232,184,75,.07); border:1px solid rgba(232,184,75,.22); margin-bottom:0;">
       <p class="text-sm font-500 leading-snug" style="color:rgba(10,26,18,.55);">
         Completa 8 sesiones y obtén
         <span class="font-900 text-base" style="color:#C9962A;"> 15 min de Presoterapia </span>
@@ -625,8 +625,8 @@
     document.getElementById('stamp-count').textContent = count;
     document.getElementById('passport-prog').style.width = (count / 8 * 100) + '%';
     const done = !!passportState[8];
-    document.getElementById('reward-banner').classList.toggle('hidden', !done);
-    document.getElementById('passport-benefit').classList.toggle('hidden', done);
+    document.getElementById('reward-banner').style.display  = done ? 'flex' : 'none';
+    document.getElementById('passport-benefit').style.display = done ? 'none' : 'block';
   }
 
   function renderDescarga() {
