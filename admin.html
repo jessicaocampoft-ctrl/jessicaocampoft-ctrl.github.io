@@ -1639,7 +1639,7 @@ function renderPacientes() {
           <button class="btn btn-ghost btn-sm" onclick="verHistorialPac(${idx})">Historial</button>
           ${waBtn(p.telefono,p.nombre,'','','','WA')}
           <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${p.telefono||''}','${p.nombre.replace(/'/g,"\\'")}','${(p.ultimoServicio||'').replace(/'/g,"\\'")}')">💬</button>
-          ${waBtnPasaporte(p.telefono,p.nombre)}
+          <a href="https://jessicaocampoft-ctrl.github.io/pasaporte.html?nombre=${encodeURIComponent(p.nombre)}" target="_blank" class="btn btn-passport btn-sm">🎯 Pasaporte</a>
           <button class="btn btn-edit btn-sm" onclick="editarPacienteIdx(${idx})">✏️ Editar</button>
           <button class="btn btn-danger btn-sm" onclick="borrarPaciente(${idx})">🗑️ Eliminar</button>
         </div>
