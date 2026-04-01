@@ -390,9 +390,12 @@ tr:hover td{background:rgba(126,221,208,.03)}
       Dashboard
     </button>
 
-    <button class="sb-link" id="sb-agenda" onclick="showView('agenda')">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Agenda
+    <button class="sb-link" id="sb-agenda" onclick="showView('agenda')" style="justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Agenda
+      </span>
+      <span id="badgePendientes" style="display:none;background:#d97706;color:#fff;border-radius:99px;font-size:.68rem;font-weight:700;padding:1px 7px;line-height:1.6">0</span>
     </button>
 
     <button class="sb-link" id="sb-nueva" onclick="showView('nueva')">
@@ -471,7 +474,10 @@ tr:hover td{background:rgba(126,221,208,.03)}
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
         <div class="card">
-          <div class="card-title">Citas de hoy</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+            <div class="card-title" style="margin-bottom:0">Citas de hoy</div>
+            <button class="btn btn-ghost btn-sm" onclick="resumenDiaWA()" title="Enviar resumen del día por WhatsApp">📋 Resumen WA</button>
+          </div>
           <div class="timeline" id="tlHoy">
             <div class="loading-wrap"><div class="spinner"></div> Cargando...</div>
           </div>
@@ -509,6 +515,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
         </select>
         <input type="date" id="fDesde" onchange="renderAgenda()" title="Desde">
         <input type="date" id="fHasta" onchange="renderAgenda()" title="Hasta">
+        <button class="btn btn-teal btn-sm" onclick="filtrarHoy()">Hoy</button>
         <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Limpiar</button>
       </div>
 
@@ -753,28 +760,11 @@ tr:hover td{background:rgba(126,221,208,.03)}
             </div>
             <div class="field">
               <label>Hora inicio *</label>
-              <select id="blStart">
-                <option value="07:00">07:00</option><option value="08:00">08:00</option>
-                <option value="09:00">09:00</option><option value="10:00">10:00</option>
-                <option value="11:00">11:00</option><option value="12:00">12:00</option>
-                <option value="13:00">13:00</option><option value="14:00">14:00</option>
-                <option value="15:00">15:00</option><option value="16:00">16:00</option>
-                <option value="17:00">17:00</option><option value="18:00">18:00</option>
-                <option value="19:00">19:00</option><option value="20:00">20:00</option>
-                <option value="21:00">21:00</option>
-              </select>
+              <input type="time" id="blStart" min="07:00" max="21:00">
             </div>
             <div class="field">
               <label>Hora fin *</label>
-              <select id="blEnd">
-                <option value="08:00">08:00</option><option value="09:00">09:00</option>
-                <option value="10:00">10:00</option><option value="11:00">11:00</option>
-                <option value="12:00">12:00</option><option value="13:00">13:00</option>
-                <option value="14:00">14:00</option><option value="15:00">15:00</option>
-                <option value="16:00">16:00</option><option value="17:00">17:00</option>
-                <option value="18:00">18:00</option><option value="19:00">19:00</option>
-                <option value="20:00">20:00</option>
-              </select>
+              <input type="time" id="blEnd" min="07:00" max="21:00">
             </div>
             <div class="field">
               <label>Motivo (opcional)</label>
@@ -1208,6 +1198,7 @@ function initDashboard() {
     .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stCobrado').textContent = cobrado > 0 ? '$'+cobrado.toLocaleString('es-CO') : '—';
+  updateBadge();
 
   // Timeline hoy
   const citasHoy = allData.citas.filter(c => normDate(c.fecha) === todayStr).sort((a,b) => a.hora.localeCompare(b.hora));
@@ -1277,7 +1268,11 @@ function renderAgenda() {
   tbody.innerHTML = citas.map(c => `
     <tr>
       <td><span style="font-family:var(--font-m);font-size:.8rem">${fmtDate(c.fecha)}</span><br><small style="color:var(--muted)">${c.hora}</small></td>
-      <td><strong>${c.nombre}</strong><br><small style="color:var(--muted)">${c.telefono||''}</small></td>
+      <td>
+        <strong>${c.nombre}</strong><br>
+        <small style="color:var(--muted)">${c.telefono||''}</small><br>
+        <button class="btn btn-ghost btn-sm" style="margin-top:3px;font-size:.7rem;padding:2px 7px" onclick="verHistorial('${encodeURIComponent(c.nombre)}')">📋 Historial</button>
+      </td>
       <td style="font-size:.82rem">${c.servicio}</td>
       <td><span class="chip ${c.modalidad==='Domicilio'?'chip-info':'chip-ok'}" style="font-size:.7rem">${c.modalidad}</span></td>
       <td style="font-family:var(--font-m);color:var(--primary);font-size:.82rem">${c.precio}</td>
@@ -1286,15 +1281,16 @@ function renderAgenda() {
           <option ${c.estado==='Confirmada'?'selected':''}>Confirmada</option>
           <option ${c.estado==='Pendiente'?'selected':''}>Pendiente</option>
           <option ${c.estado==='Atendida'?'selected':''}>Atendida</option>
+          <option ${c.estado==='No asistió'?'selected':''}>No asistió</option>
           <option ${c.estado==='Cancelada'?'selected':''}>Cancelada</option>
         </select>
       </td>
       <td>
         <div style="display:flex;gap:4px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
-          ${(()=>{const u=waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,c.precio,c.modalidad);return u?`<a href="${u}" target="_blank" class="btn btn-wa btn-sm" title="Confirmacion con info de pago">Conf.</a>`:'';})()}
-          ${(()=>{const u=waLinkRec(c.telefono,c.nombre,c.fecha,c.hora,c.servicio);return u?`<a href="${u}" target="_blank" class="btn btn-wa-rec btn-sm" title="Recordatorio de cita">Rec.</a>`:'';})()}
-          ${(()=>{const u=waLinkSeg(c.telefono,c.nombre,c.servicio);return u?`<a href="${u}" target="_blank" class="btn btn-wa-seg btn-sm" title="Seguimiento post-sesion">Seg.</a>`:'';})()}
+          ${(()=>{const u=waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,c.precio,c.modalidad);const s=wasWaSent(c.id,'conf');return u?`<a href="${u}" target="_blank" class="btn btn-wa btn-sm" title="${s?'Ya enviado':'Confirmación'}" onclick="markWaSent('${c.id}','conf');this.textContent=this.textContent.includes('✓')?this.textContent:'Conf.✓'" style="${s?'opacity:.5':''}">${s?'Conf.✓':'Conf.'}</a>`:'';})()}
+          ${(()=>{const u=waLinkRec(c.telefono,c.nombre,c.fecha,c.hora,c.servicio);const s=wasWaSent(c.id,'rec');return u?`<a href="${u}" target="_blank" class="btn btn-wa-rec btn-sm" title="${s?'Ya enviado':'Recordatorio'}" onclick="markWaSent('${c.id}','rec');this.textContent=this.textContent.includes('✓')?this.textContent:'Rec.✓'" style="${s?'opacity:.5':''}">${s?'Rec.✓':'Rec.'}</a>`:'';})()}
+          ${(()=>{const u=waLinkSeg(c.telefono,c.nombre,c.servicio);const s=wasWaSent(c.id,'seg');return u?`<a href="${u}" target="_blank" class="btn btn-wa-seg btn-sm" title="${s?'Ya enviado':'Seguimiento'}" onclick="markWaSent('${c.id}','seg');this.textContent=this.textContent.includes('✓')?this.textContent:'Seg.✓'" style="${s?'opacity:.5':''}">${s?'Seg.✓':'Seg.'}</a>`:'';})()}
           ${waBtnPasaporte(c.telefono,c.nombre)}
           ${c.estado!=='Cancelada'?`<button class="btn btn-edit btn-sm" onclick="editarCita('${c.id}')" title="Editar">✏️</button>`:''}
           ${c.estado!=='Cancelada'?`<button class="btn btn-danger btn-sm" onclick="cancelarCita('${c.id}','${c.nombre.replace(/'/g,"\\'")}')" title="Cancelar">🚫</button>`:''}
@@ -1307,6 +1303,68 @@ function clearFilters() {
   ['fSearch','fDesde','fHasta'].forEach(id => document.getElementById(id).value='');
   ['fStatus','fMod'].forEach(id => document.getElementById(id).selectedIndex=0);
   renderAgenda();
+}
+
+function filtrarHoy() {
+  document.getElementById('fDesde').value = today();
+  document.getElementById('fHasta').value = today();
+  document.getElementById('fSearch').value = '';
+  document.getElementById('fStatus').selectedIndex = 0;
+  document.getElementById('fMod').selectedIndex = 0;
+  showView('agenda');
+  renderAgenda();
+}
+
+function updateBadge() {
+  const n = allData.citas.filter(c => c.estado === 'Pendiente').length;
+  const b = document.getElementById('badgePendientes');
+  if (!b) return;
+  b.textContent = n;
+  b.style.display = n > 0 ? 'inline' : 'none';
+}
+
+function resumenDiaWA() {
+  const hoy = allData.citas
+    .filter(c => normDate(c.fecha) === today() && c.estado !== 'Cancelada')
+    .sort((a,b) => a.hora.localeCompare(b.hora));
+  if (!hoy.length) { toast('No hay citas hoy', 'err'); return; }
+  const fecha = new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  const lines = ['📋 *Agenda del ' + fecha + ':*', ''];
+  hoy.forEach((c,i) => {
+    lines.push((i+1) + '. ' + c.hora + ' — *' + c.nombre + '*');
+    lines.push('   ' + c.servicio + ' · ' + c.modalidad + ' · ' + c.precio);
+    lines.push('   Estado: ' + c.estado);
+    lines.push('');
+  });
+  lines.push('Total: ' + hoy.length + ' cita(s)');
+  window.open('https://wa.me/573136467945?text=' + encodeURIComponent(lines.join('\n')), '_blank');
+}
+
+function agendarDesdePaciente(encNombre, encTel, encEmail) {
+  const nombre  = decodeURIComponent(encNombre);
+  const telefono= decodeURIComponent(encTel);
+  const email   = decodeURIComponent(encEmail);
+  closeModal('modalHistorial');
+  showView('nueva');
+  document.getElementById('ncName').value  = nombre;
+  document.getElementById('ncPhone').value = telefono;
+  document.getElementById('ncEmail').value = email;
+  document.getElementById('pacSearch').value = nombre + (telefono ? ' — ' + telefono : '');
+  toast('Datos de ' + nombre.split(' ')[0] + ' cargados. Completa fecha, hora y servicio.');
+}
+
+async function guardarNotaAdmin(id) {
+  const nota = document.getElementById('notaAdminInput').value.trim();
+  try {
+    const data = encodeURIComponent(JSON.stringify({id, notaAdmin: nota}));
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=editBooking&token=${encodeURIComponent(TOKEN)}&data=${data}`);
+    const d = await r.json();
+    if (d.ok) {
+      const cita = allData.citas.find(c => c.id === id);
+      if (cita) cita.notaAdmin = nota;
+      toast('Nota guardada');
+    } else toast('Error al guardar nota', 'err');
+  } catch(e) { toast('Error de conexión', 'err'); }
 }
 
 async function changeStatus(id, status) {
@@ -1327,6 +1385,7 @@ async function changeStatus(id, status) {
       }
       initDashboard();
       renderAgenda();
+      updateBadge();
     } else toast('Error al actualizar', 'err');
   } catch(e) { toast('Error de conexión', 'err'); }
 }
@@ -1344,17 +1403,35 @@ function verDetalle(id) {
         ${row('Valor', c.precio)} ${row('Estado', chipState(c.estado))}
         ${c.direccion ? row('Dirección', c.direccion) : ''}
         ${c.notas ? row('Notas del paciente', c.notas, true) : ''}
-        ${c.notaAdmin ? row('Nota admin', c.notaAdmin, true) : ''}
         ${row('ID cita', c.id)}
       </div>
-      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+      <!-- Nota interna editable -->
+      <div style="margin-top:10px;padding:10px 12px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);border-radius:8px">
+        <div style="font-size:.75rem;color:#92400e;font-family:var(--font-m);margin-bottom:5px">📝 Nota interna (solo tú la ves)</div>
+        <textarea id="notaAdminInput" rows="2" style="width:100%;background:transparent;border:none;outline:none;font-family:var(--font-b);font-size:.85rem;color:var(--text);resize:none" placeholder="Ej: Viene con su mamá, debe pagar saldo...">${c.notaAdmin||''}</textarea>
+        <button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="guardarNotaAdmin('${c.id}')">Guardar nota</button>
+      </div>
+      <!-- Mini-historial -->
+      ${(()=>{
+        const prev = allData.citas.filter(x => x.nombre===c.nombre && x.id!==c.id).sort((a,b)=>(normDate(b.fecha)+b.hora).localeCompare(normDate(a.fecha)+a.hora)).slice(0,3);
+        if (!prev.length) return '';
+        return `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+          <div style="font-size:.75rem;color:var(--muted);font-family:var(--font-m);margin-bottom:8px">CITAS ANTERIORES DE ${c.nombre.split(' ')[0].toUpperCase()}</div>
+          ${prev.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(27,191,176,.07);font-size:.82rem">
+            <span style="font-family:var(--font-m);color:var(--primary);font-size:.75rem">${fmtDate(p.fecha)} ${p.hora}</span>
+            <span style="flex:1;margin:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.servicio}</span>
+            ${chipState(p.estado)}
+          </div>`).join('')}
+        </div>`;
+      })()}
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
         ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp confirmación',c.precio,c.modalidad)}
         <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${c.telefono||''}','${c.nombre.replace(/'/g,"\\'")}','${c.servicio.replace(/'/g,"\\'")}')">💬 Seguimiento</button>
         ${waBtnPasaporte(c.telefono,c.nombre)}
         ${c.email ? `<a href="mailto:${c.email}" class="btn btn-ghost btn-sm">📧 Email</a>` : ''}
       </div>
       ${!esCancelada ? `
-      <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:12px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:12px;margin-top:10px">
         <button class="btn btn-edit btn-sm" onclick="editarCita('${c.id}')">✏️ Editar cita</button>
         <button class="btn btn-danger btn-sm" onclick="cancelarCita('${c.id}','${c.nombre.replace(/'/g,"\\'")}')">🚫 Cancelar cita</button>
       </div>` : ''}
@@ -1737,8 +1814,12 @@ function verHistorialPac(idx) {
 
 function _renderHistorial(nombre, citas) {
   document.getElementById('modalHistorialTitle').textContent = 'Historial: ' + nombre;
+  const ref = citas[0] || {};
   document.getElementById('modalHistorialContent').innerHTML = `
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">${citas.length} cita(s) registrada(s)</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <p style="color:var(--muted);font-size:.85rem;margin:0">${citas.length} cita(s) registrada(s)</p>
+      <button class="btn btn-teal btn-sm" onclick="agendarDesdePaciente('${encodeURIComponent(nombre)}','${encodeURIComponent(ref.telefono||'')}','${encodeURIComponent(ref.email||'')}')">+ Nueva cita para ${nombre.split(' ')[0]}</button>
+    </div>
     ${citas.map(c => `
     <div style="padding:12px;background:var(--s2);border-radius:8px;margin-bottom:8px;border:1px solid var(--border)">
       <div style="display:flex;justify-content:space-between;align-items:center">
