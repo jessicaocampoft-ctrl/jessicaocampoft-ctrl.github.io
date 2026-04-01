@@ -541,8 +541,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
       <div class="card" style="max-width:640px">
 
         <!-- ── COMANDO DE VOZ ── -->
-        <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" style="width:100%;justify-content:center;background:rgba(27,191,176,.08);border-color:var(--primary);color:var(--primary);font-size:.95rem;padding:13px;margin-bottom:14px">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoice()" style="width:100%;justify-content:center;background:rgba(27,191,176,.08);border-color:var(--primary);color:var(--primary);font-size:.95rem;padding:13px;margin-bottom:14px">
           🎙️ Dictar cita por voz
         </button>
         <div class="voice-status" id="voiceStatus">
@@ -1938,59 +1937,107 @@ function openNuevaCitaFromCal(dateStr, hour) {
 // ══════════════════════════════════════════════════════════════
 // ── VOZ ──
 // ══════════════════════════════════════════════════════════════
-const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-let _voiceActive = false;
-let _voiceRec    = null;
+let _voiceActive  = false;
+let _voiceRec     = null;
+let _voiceGotResult = false;
+
+function _getSR() { return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
+
+function _voiceBtn()      { return document.getElementById('voiceBtn'); }
+function _voiceStatusEl() { return document.getElementById('voiceStatus'); }
+
+const VOICE_ICON = '🎙️ Dictar cita por voz';
+const VOICE_STOP = '⏹ Detener escucha';
 
 function toggleVoice() {
-  if (!SpeechRec) {
-    toast('Tu navegador no soporta reconocimiento de voz. Usa Safari en iPhone.', 'err');
+  const SR = _getSR();
+  if (!SR) {
+    alert('Tu iPhone necesita iOS 14.5 o superior y Safari para usar dictado.\n\nSi ya tienes iOS 14.5+, asegúrate de estar en Safari (no Chrome ni otro navegador).');
     return;
   }
-  if (_voiceActive) { _stopVoice(); return; }
-  _startVoice();
+  if (_voiceActive) { _stopVoice(false); return; }
+  _startVoice(SR);
 }
 
-function _startVoice() {
-  _voiceRec = new SpeechRec();
-  _voiceRec.lang            = 'es-CO';
-  _voiceRec.interimResults  = false;
-  _voiceRec.maxAlternatives = 3;
+function _startVoice(SR) {
+  try {
+    _voiceRec = new SR();
+  } catch(e) {
+    alert('No se pudo iniciar el micrófono: ' + e.message);
+    return;
+  }
 
-  _voiceActive = true;
-  document.getElementById('voiceBtn').classList.add('listening');
-  document.getElementById('voiceBtn').innerHTML =
-    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Detener';
-  document.getElementById('voiceStatus').style.display = 'flex';
+  // Configuración optimizada para iOS Safari
+  _voiceRec.lang            = 'es-ES'; // 'es-CO' no está soportado en todos los iOS
+  _voiceRec.continuous      = false;   // iOS no soporta continuous=true de forma confiable
+  _voiceRec.interimResults  = false;
+  _voiceRec.maxAlternatives = 1;
+
+  _voiceActive    = true;
+  _voiceGotResult = false;
+
+  const btn = _voiceBtn();
+  btn.classList.add('listening');
+  btn.textContent = VOICE_STOP;
+  _voiceStatusEl().style.display = 'flex';
   document.getElementById('voiceTranscript').textContent = '';
   document.getElementById('voiceHelp').style.display = 'none';
 
   _voiceRec.onresult = e => {
-    const transcript = e.results[0][0].transcript;
+    _voiceGotResult = true;
+    const transcript = Array.from(e.results)
+      .map(r => r[0].transcript).join(' ');
     document.getElementById('voiceTranscript').textContent = '"' + transcript + '"';
     _parseVoice(transcript);
   };
 
   _voiceRec.onerror = e => {
-    if (e.error === 'not-allowed') toast('Permiso de micrófono denegado. Actívalo en Ajustes > Safari.', 'err');
-    else if (e.error === 'no-speech') toast('No se detectó voz. Intenta de nuevo.', 'err');
-    else toast('Error de voz: ' + e.error, 'err');
-    _stopVoice();
+    if (e.error === 'not-allowed') {
+      alert('Permiso de micrófono denegado.\n\nVe a Ajustes > Safari > Micrófono y actívalo para este sitio.');
+    } else if (e.error === 'no-speech') {
+      toast('No escuché nada. Toca el botón y habla claramente.', 'err');
+    } else {
+      toast('Error: ' + e.error, 'err');
+    }
+    _stopVoice(false);
   };
 
-  _voiceRec.onend = () => _stopVoice();
-  _voiceRec.start();
+  _voiceRec.onend = () => {
+    if (!_voiceGotResult) {
+      // iOS para automáticamente — re-iniciar si no hubo resultado
+      // (solo si el usuario no presionó "Detener")
+      if (_voiceActive) {
+        toast('Escuchando... habla ahora', 'ok');
+        try { _voiceRec.start(); return; } catch(e) {}
+      }
+    }
+    _stopVoice(false);
+  };
+
+  try {
+    _voiceRec.start();
+    toast('🎙 Escuchando... habla la cita', 'ok');
+  } catch(e) {
+    alert('No se pudo activar el micrófono: ' + e.message + '\n\nAsegúrate de permitir el acceso al micrófono cuando Safari lo solicite.');
+    _stopVoice(false);
+  }
 }
 
-function _stopVoice() {
+function _stopVoice(showMsg = true) {
   _voiceActive = false;
-  if (_voiceRec) { try { _voiceRec.stop(); } catch(e) {} _voiceRec = null; }
-  const btn = document.getElementById('voiceBtn');
-  btn.classList.remove('listening');
-  btn.innerHTML =
-    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar cita';
+  if (_voiceRec) {
+    _voiceRec.onend = null; // evitar loop
+    try { _voiceRec.stop(); } catch(e) {}
+    _voiceRec = null;
+  }
+  const btn = _voiceBtn();
+  if (btn) {
+    btn.classList.remove('listening');
+    btn.textContent = VOICE_ICON;
+  }
   setTimeout(() => {
-    document.getElementById('voiceStatus').style.display = 'none';
+    const s = _voiceStatusEl();
+    if (s) s.style.display = 'none';
   }, 3000);
 }
 
