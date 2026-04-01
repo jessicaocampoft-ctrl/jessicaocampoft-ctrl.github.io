@@ -651,35 +651,52 @@ tr:hover td{background:rgba(126,221,208,.03)}
           </div>
           <div class="field">
             <label>Precio (para registro)</label>
-            <select id="ncPrice">
-              <option value="">— Elige servicio y modalidad —</option>
-              <option value="$70.000">$70.000</option>
-              <option value="$75.000">$75.000</option>
-              <option value="$80.000">$80.000</option>
-              <option value="$85.000">$85.000</option>
-              <option value="$90.000">$90.000</option>
-              <option value="$95.000">$95.000</option>
-              <option value="$110.000">$110.000</option>
-              <option value="$125.000">$125.000</option>
-              <option value="$135.000">$135.000</option>
-              <option value="$162.000">$162.000</option>
-              <option value="$210.000">$210.000</option>
-              <option value="$245.000">$245.000</option>
-              <option value="$294.000">$294.000</option>
-              <option value="$295.000">$295.000</option>
-              <option value="$350.000">$350.000</option>
-              <option value="$378.000">$378.000</option>
-              <option value="$410.000">$410.000</option>
-              <option value="$459.000">$459.000</option>
-              <option value="$476.000">$476.000</option>
-              <option value="$495.000">$495.000</option>
-              <option value="$560.000">$560.000</option>
-              <option value="$578.000">$578.000</option>
-              <option value="$580.000">$580.000</option>
-              <option value="$680.000">$680.000</option>
-              <option value="$690.000">$690.000</option>
-              <option value="A convenir">A convenir</option>
-            </select>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="ncPrice" onchange="calcDescuento()" style="flex:1">
+                <option value="">— Elige servicio y modalidad —</option>
+                <option value="$70.000">$70.000</option>
+                <option value="$75.000">$75.000</option>
+                <option value="$80.000">$80.000</option>
+                <option value="$85.000">$85.000</option>
+                <option value="$90.000">$90.000</option>
+                <option value="$95.000">$95.000</option>
+                <option value="$110.000">$110.000</option>
+                <option value="$125.000">$125.000</option>
+                <option value="$135.000">$135.000</option>
+                <option value="$162.000">$162.000</option>
+                <option value="$210.000">$210.000</option>
+                <option value="$245.000">$245.000</option>
+                <option value="$294.000">$294.000</option>
+                <option value="$295.000">$295.000</option>
+                <option value="$350.000">$350.000</option>
+                <option value="$378.000">$378.000</option>
+                <option value="$410.000">$410.000</option>
+                <option value="$459.000">$459.000</option>
+                <option value="$476.000">$476.000</option>
+                <option value="$495.000">$495.000</option>
+                <option value="$560.000">$560.000</option>
+                <option value="$578.000">$578.000</option>
+                <option value="$580.000">$580.000</option>
+                <option value="$680.000">$680.000</option>
+                <option value="$690.000">$690.000</option>
+                <option value="A convenir">A convenir</option>
+              </select>
+              <button type="button" onclick="toggleDescuento()" style="white-space:nowrap;padding:8px 12px;background:var(--s2);border:1px solid var(--teal);border-radius:8px;color:var(--teal);font-family:var(--font-b);font-size:.82rem;cursor:pointer">🏷️ Descuento</button>
+            </div>
+            <div id="descuentoPanel" style="display:none;margin-top:10px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <label style="font-size:.82rem;color:var(--muted);margin:0;white-space:nowrap">Descuento:</label>
+                <input type="number" id="ncDescPct" min="0" max="100" placeholder="%" oninput="calcDescuento()" style="width:70px;background:var(--s1);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:6px 8px;outline:none">
+                <span style="font-size:.82rem;color:var(--muted)">%</span>
+                <span style="font-size:.82rem;color:var(--muted)">ó</span>
+                <input type="text" id="ncDescMonto" placeholder="$0" oninput="calcDescuentoMonto()" style="width:90px;background:var(--s1);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:6px 8px;outline:none">
+                <button type="button" onclick="quitarDescuento()" style="padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:.78rem;cursor:pointer">Quitar</button>
+              </div>
+              <div id="descuentoResult" style="margin-top:8px;font-size:.88rem;display:none">
+                <span style="color:var(--muted)">Precio original: </span><span id="descOriginal" style="text-decoration:line-through;color:var(--muted)"></span>
+                <span style="margin-left:10px;color:var(--teal);font-family:var(--font-b)">Precio final: </span><span id="descFinal" style="color:var(--teal);font-family:var(--font-b)"></span>
+              </div>
+            </div>
           </div>
         </div>
         <div class="field" id="ncAddrWrap" style="display:none;margin-top:16px">
@@ -1027,6 +1044,60 @@ function parsePrecio(p) {
   if (!p) return 0;
   const n = parseInt(String(p).replace(/[^0-9]/g,''), 10);
   return isNaN(n) ? 0 : n;
+}
+function formatPrecio(n) {
+  return '$' + n.toLocaleString('es-CO').replace(/,/g, '.');
+}
+function toggleDescuento() {
+  const panel = document.getElementById('descuentoPanel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if (panel.style.display === 'block') calcDescuento();
+}
+function calcDescuento() {
+  const base = parsePrecio(document.getElementById('ncPrice').value);
+  if (!base) { document.getElementById('descuentoResult').style.display='none'; return; }
+  const pct = parseFloat(document.getElementById('ncDescPct').value) || 0;
+  if (pct > 0) {
+    document.getElementById('ncDescMonto').value = '';
+    const desc = Math.round(base * pct / 100);
+    const final = base - desc;
+    _showDescResult(base, final, desc);
+  } else {
+    document.getElementById('descuentoResult').style.display='none';
+  }
+}
+function calcDescuentoMonto() {
+  const base = parsePrecio(document.getElementById('ncPrice').value);
+  if (!base) { document.getElementById('descuentoResult').style.display='none'; return; }
+  const monto = parsePrecio(document.getElementById('ncDescMonto').value);
+  if (monto > 0) {
+    document.getElementById('ncDescPct').value = '';
+    const final = Math.max(0, base - monto);
+    _showDescResult(base, final, monto);
+  } else {
+    document.getElementById('descuentoResult').style.display='none';
+  }
+}
+function _showDescResult(base, final, desc) {
+  document.getElementById('descOriginal').textContent = formatPrecio(base);
+  document.getElementById('descFinal').textContent = formatPrecio(final) + ' (- ' + formatPrecio(desc) + ')';
+  document.getElementById('descuentoResult').style.display = 'block';
+}
+function quitarDescuento() {
+  document.getElementById('ncDescPct').value = '';
+  document.getElementById('ncDescMonto').value = '';
+  document.getElementById('descuentoResult').style.display = 'none';
+}
+function getPrecioFinal() {
+  const sel = document.getElementById('ncPrice').value;
+  if (!sel || sel === 'A convenir') return sel;
+  const base = parsePrecio(sel);
+  if (!base) return sel;
+  const pct   = parseFloat(document.getElementById('ncDescPct').value)  || 0;
+  const monto = parsePrecio(document.getElementById('ncDescMonto').value) || 0;
+  if (pct > 0)   return formatPrecio(base - Math.round(base * pct / 100));
+  if (monto > 0) return formatPrecio(Math.max(0, base - monto));
+  return sel;
 }
 function markWaSent(id, type) { localStorage.setItem('wa_'+id+'_'+type, '1'); }
 function wasWaSent(id, type)  { return !!localStorage.getItem('wa_'+id+'_'+type); }
@@ -1650,8 +1721,8 @@ async function submitAdminBooking() {
     name, phone,
     email: document.getElementById('ncEmail').value.trim(),
     service: serv, modality: mod, date, time,
-    priceP: document.getElementById('ncPrice').value || 'A convenir',
-    priceD: document.getElementById('ncPrice').value || 'A convenir',
+    priceP: getPrecioFinal() || 'A convenir',
+    priceD: getPrecioFinal() || 'A convenir',
     address: document.getElementById('ncAddress').value.trim(),
     notes:   document.getElementById('ncNotes').value.trim()
   };
@@ -1733,6 +1804,8 @@ function clearNuevaCita() {
   document.getElementById('ncAddrWrap').style.display='none';
   const dd = document.getElementById('pacDropdown');
   if (dd) dd.style.display='none';
+  quitarDescuento();
+  document.getElementById('descuentoPanel').style.display = 'none';
 }
 
 // ── PACIENTES ──
