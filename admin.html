@@ -541,13 +541,10 @@ tr:hover td{background:rgba(126,221,208,.03)}
       <div class="card" style="max-width:640px">
 
         <!-- ── COMANDO DE VOZ ── -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <span style="font-size:.82rem;color:var(--muted)">Puedes dictar la cita completa en voz</span>
-          <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-            Dictar cita
-          </button>
-        </div>
+        <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" style="width:100%;justify-content:center;background:rgba(27,191,176,.08);border-color:var(--primary);color:var(--primary);font-size:.95rem;padding:13px;margin-bottom:14px">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          🎙️ Dictar cita por voz
+        </button>
         <div class="voice-status" id="voiceStatus">
           <div class="voice-dot"></div>
           <span>Escuchando... habla la cita completa</span>
