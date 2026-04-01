@@ -95,7 +95,33 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 .page-sub{color:var(--muted);font-size:.9rem;margin-top:6px}
 
 /* ── STATS GRID ── */
-.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:28px}
+.stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-bottom:28px}
+/* ── SIDEBAR SEARCH ── */
+.sb-search{
+  display:flex;align-items:center;gap:6px;margin:0 0 8px;
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  padding:7px 10px;transition:var(--tr);
+}
+.sb-search:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--glow)}
+.sb-search svg{flex-shrink:0;opacity:.4}
+.sb-search input{
+  flex:1;background:none;border:none;outline:none;
+  font-family:var(--font-b);font-size:.82rem;color:var(--text);
+}
+.sb-search input::placeholder{color:var(--muted)}
+/* ── WEEK SUMMARY ── */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:4px}
+.wday{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:10px 6px;border-radius:8px;background:var(--s2);
+  border:1px solid var(--border);cursor:pointer;transition:var(--tr);
+}
+.wday:hover{border-color:var(--primary)}
+.wday.wday-today{border-color:var(--primary);background:rgba(27,191,176,.06)}
+.wday-name{font-size:.68rem;font-family:var(--font-m);color:var(--muted);text-transform:uppercase}
+.wday-num{font-size:.85rem;font-weight:600}
+.wday-count{font-size:.78rem;font-family:var(--font-m);color:var(--primary);font-weight:600}
+.wday-empty{color:var(--muted);font-size:.72rem}
 .stat-card{
   background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
   padding:20px 22px;transition:var(--tr);
@@ -326,7 +352,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
 .voice-transcript{color:var(--primary);font-style:italic;flex:1}
 
 /* ── RESPONSIVE ── */
-@media(max-width:1100px){
+@media(max-width:1300px){
   .stats-grid{grid-template-columns:repeat(3,1fr)}
 }
 @media(max-width:900px){
@@ -384,6 +410,12 @@ tr:hover td{background:rgba(126,221,208,.03)}
   <!-- Sidebar -->
   <nav id="sidebar">
     <div class="sb-logo"><img src="Logo/3.png" alt="Logo"></div>
+
+    <!-- Búsqueda global -->
+    <div class="sb-search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="globalSearchInput" placeholder="Buscar paciente..." oninput="globalSearch(this.value)" autocomplete="off">
+    </div>
 
     <button class="sb-link active" id="sb-dashboard" onclick="showView('dashboard')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -470,6 +502,11 @@ tr:hover td{background:rgba(126,221,208,.03)}
           <div class="stat-val" id="stCobrado" style="font-size:1.5rem">—</div>
           <div class="stat-desc">ingresos del mes</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-label">Cobrado esta semana</div>
+          <div class="stat-val" id="stCobradoSemana" style="font-size:1.5rem">—</div>
+          <div class="stat-desc">ingresos de la semana</div>
+        </div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
@@ -487,6 +524,17 @@ tr:hover td{background:rgba(126,221,208,.03)}
           <div class="timeline" id="tlProximas">
             <div class="loading-wrap"><div class="spinner"></div> Cargando...</div>
           </div>
+        </div>
+      </div>
+
+      <!-- Vista semanal rápida -->
+      <div class="card" style="margin-top:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="card-title" style="margin-bottom:0">📅 Esta semana</div>
+          <button class="btn btn-ghost btn-sm" onclick="showView('calendario')">Ver calendario completo →</button>
+        </div>
+        <div class="week-grid" id="weekGrid">
+          <div class="loading-wrap"><div class="spinner"></div></div>
         </div>
       </div>
     </section>
@@ -1103,6 +1151,72 @@ function markWaSent(id, type) { localStorage.setItem('wa_'+id+'_'+type, '1'); }
 function wasWaSent(id, type)  { return !!localStorage.getItem('wa_'+id+'_'+type); }
 function agendarHoy() { showView('nueva'); document.getElementById('ncDate').value = today(); }
 
+// ── BÚSQUEDA GLOBAL ──
+function globalSearch(val) {
+  showView('agenda');
+  const fSearch = document.getElementById('fSearch');
+  if (fSearch) { fSearch.value = val; renderAgenda(); }
+}
+
+// ── REAGENDAR RÁPIDO ──
+function toggleReagendar(id) {
+  const panel = document.getElementById('reagendarPanel_' + id);
+  if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+async function confirmarReagendar(id) {
+  const fecha = document.getElementById('rDate_' + id).value;
+  const hora  = document.getElementById('rTime_' + id).value;
+  if (!fecha || !hora) { toast('Selecciona fecha y hora', 'err'); return; }
+  const cita = allData.citas.find(c => c.id === id);
+  if (!cita) return;
+  const data = encodeURIComponent(JSON.stringify({
+    id, servicio: cita.servicio, modalidad: cita.modalidad,
+    fecha, hora, precio: cita.precio, notas: cita.notas || ''
+  }));
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=editBooking&token=${encodeURIComponent(TOKEN)}&data=${data}`);
+    const d = await r.json();
+    if (d.ok) {
+      cita.fecha = fecha; cita.hora = hora;
+      toast('Cita reagendada: ' + fmtDate(fecha) + ' ' + hora);
+      closeModal('modalDetalle');
+      initDashboard(); renderAgenda(); renderCalendar();
+    } else toast('Error: ' + (d.error || ''), 'err');
+  } catch(e) { toast('Error de conexión', 'err'); }
+}
+
+// ── VISTA SEMANAL (dashboard) ──
+function renderWeekGrid() {
+  const todayStr = today();
+  const now = new Date();
+  const wd = now.getDay();
+  const startW = new Date(now); startW.setDate(now.getDate() - wd + (wd === 0 ? -6 : 1));
+  const dayNames = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const days = Array.from({length:7}, (_,i) => {
+    const d = new Date(startW); d.setDate(startW.getDate() + i); return d;
+  });
+  const grid = document.getElementById('weekGrid');
+  if (!grid) return;
+  grid.innerHTML = days.map((d, i) => {
+    const ds = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+    const count = allData.citas.filter(c => c.estado !== 'Cancelada' && normDate(c.fecha) === ds).length;
+    const isToday = ds === todayStr;
+    return `<div class="wday ${isToday ? 'wday-today' : ''}" onclick="filtrarDia('${ds}')">
+      <span class="wday-name">${dayNames[i]}</span>
+      <span class="wday-num">${d.getDate()}</span>
+      ${count > 0
+        ? `<span class="wday-count">${count} cita${count > 1 ? 's' : ''}</span>`
+        : `<span class="wday-empty">libre</span>`}
+    </div>`;
+  }).join('');
+}
+function filtrarDia(dateStr) {
+  showView('agenda');
+  document.getElementById('fDesde').value = dateStr;
+  document.getElementById('fHasta').value = dateStr;
+  renderAgenda();
+}
+
 // Returns "YYYY-MM-DD" from a Date object
 function toDateStr(d) {
   return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
@@ -1269,7 +1383,14 @@ function initDashboard() {
     .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stCobrado').textContent = cobrado > 0 ? '$'+cobrado.toLocaleString('es-CO') : '—';
+
+  const cobradoSemana = citas
+    .filter(c => { const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; })
+    .reduce((s,c) => s + parsePrecio(c.precio), 0);
+  document.getElementById('stCobradoSemana').textContent = cobradoSemana > 0 ? '$'+cobradoSemana.toLocaleString('es-CO') : '—';
+
   updateBadge();
+  renderWeekGrid();
 
   // Timeline hoy
   const citasHoy = allData.citas.filter(c => normDate(c.fecha) === todayStr).sort((a,b) => a.hora.localeCompare(b.hora));
@@ -1504,7 +1625,23 @@ function verDetalle(id) {
       ${!esCancelada ? `
       <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:12px;margin-top:10px">
         <button class="btn btn-edit btn-sm" onclick="editarCita('${c.id}')">✏️ Editar cita</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleReagendar('${c.id}')">📅 Reagendar</button>
         <button class="btn btn-danger btn-sm" onclick="cancelarCita('${c.id}','${c.nombre.replace(/'/g,"\\'")}')">🚫 Cancelar cita</button>
+      </div>
+      <div id="reagendarPanel_${c.id}" style="display:none;margin-top:10px;background:rgba(27,191,176,.05);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="font-size:.78rem;color:var(--muted);font-family:var(--font-m);margin-bottom:10px">NUEVA FECHA Y HORA</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div class="field" style="flex:1;min-width:130px">
+            <label>Fecha *</label>
+            <input type="date" id="rDate_${c.id}" value="${c.fecha}">
+          </div>
+          <div class="field" style="flex:1;min-width:110px">
+            <label>Hora *</label>
+            <input type="time" id="rTime_${c.id}" value="${c.hora}">
+          </div>
+          <button class="btn btn-teal btn-sm" onclick="confirmarReagendar('${c.id}')">Confirmar</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleReagendar('${c.id}')">Cancelar</button>
+        </div>
       </div>` : ''}
     </div>`;
   openModal('modalDetalle');
