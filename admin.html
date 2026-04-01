@@ -300,6 +300,31 @@ tr:hover td{background:rgba(126,221,208,.03)}
 .cal-ev-name{font-size:.75rem;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cal-ev-serv{font-size:.7rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.75}
 
+/* ── VOZ ── */
+.voice-btn{
+  display:inline-flex;align-items:center;gap:7px;padding:9px 16px;
+  border-radius:8px;background:var(--s2);border:1px solid var(--border);
+  color:var(--text);font-family:var(--font-b);font-size:.85rem;font-weight:500;
+  cursor:pointer;transition:var(--tr);
+}
+.voice-btn:hover{border-color:var(--primary);color:var(--primary)}
+.voice-btn.listening{
+  background:rgba(220,38,38,.08);border-color:rgba(220,38,38,.5);color:#dc2626;
+  animation:voicePulse 1.2s ease-in-out infinite;
+}
+@keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.3)}50%{box-shadow:0 0 0 7px rgba(220,38,38,0)}}
+.voice-status{
+  display:none;align-items:center;gap:10px;padding:12px 16px;
+  background:rgba(220,38,38,.05);border:1px solid rgba(220,38,38,.2);
+  border-radius:8px;margin-bottom:18px;font-size:.85rem;
+}
+.voice-dot{
+  width:10px;height:10px;border-radius:50%;background:#dc2626;
+  animation:voiceBlink .8s ease-in-out infinite;flex-shrink:0;
+}
+@keyframes voiceBlink{0%,100%{opacity:1}50%{opacity:.2}}
+.voice-transcript{color:var(--primary);font-style:italic;flex:1}
+
 /* ── RESPONSIVE ── */
 @media(max-width:1100px){
   .stats-grid{grid-template-columns:repeat(3,1fr)}
@@ -514,6 +539,25 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <p class="page-sub">Como administrador puedes agendar sin restricción de horario ni buffer de domicilio</p>
       </div>
       <div class="card" style="max-width:640px">
+
+        <!-- ── COMANDO DE VOZ ── -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <span style="font-size:.82rem;color:var(--muted)">Puedes dictar la cita completa en voz</span>
+          <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            Dictar cita
+          </button>
+        </div>
+        <div class="voice-status" id="voiceStatus">
+          <div class="voice-dot"></div>
+          <span>Escuchando... habla la cita completa</span>
+          <span class="voice-transcript" id="voiceTranscript"></span>
+        </div>
+        <div id="voiceHelp" style="display:none;background:rgba(27,191,176,.06);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:.8rem;color:var(--muted);line-height:1.6">
+          <strong style="color:var(--text)">Ejemplo:</strong> "Cita para María García, mañana a las 3 pm, descarga muscular completa, presencial"<br>
+          <span style="font-size:.75rem">Puedes decir: hoy · mañana · el lunes · el 15 de abril · a las 2 pm · domicilio · presencial</span>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin-bottom:20px">
 
         <!-- ── BUSCADOR PACIENTE EXISTENTE ── -->
         <div class="field" style="margin-bottom:20px;position:relative">
@@ -846,13 +890,31 @@ tr:hover td{background:rgba(126,221,208,.03)}
       <div>
         <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Servicio</label>
         <select id="editServicio" class="nc-input" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none">
-          <option>Descarga Muscular — Cuello y Espalda</option>
-          <option>Descarga Muscular — Piernas</option>
-          <option>Descarga Muscular Completa</option>
-          <option>Valoración Funcional</option>
-          <option>Readaptación Funcional</option>
-          <option>Sesiones en Gimnasio</option>
-          <option>Jornada Empresarial</option>
+          <optgroup label="── Sesiones ──">
+            <option>Descarga Muscular — Cuello y Espalda</option>
+            <option>Descarga Muscular — Piernas</option>
+            <option>Descarga Muscular Completa</option>
+            <option>Valoración Funcional</option>
+            <option>Readaptación Funcional</option>
+            <option>Sesiones en Gimnasio</option>
+            <option>Jornada Empresarial</option>
+          </optgroup>
+          <optgroup label="── Tu cuerpo sin dolor ──">
+            <option>Plan Espalda Sin Dolor</option>
+            <option>Plan Alivio Profundo</option>
+            <option>Plan Alivio en Casa</option>
+            <option>Plan Dúo Mensual</option>
+          </optgroup>
+          <optgroup label="── Deportistas ──">
+            <option>Plan Recarga</option>
+            <option>Plan Avanza</option>
+            <option>Plan Elite</option>
+          </optgroup>
+          <optgroup label="── Readaptación funcional ──">
+            <option>Plan Inicio</option>
+            <option>Plan Avance</option>
+            <option>Plan Transforma</option>
+          </optgroup>
         </select>
       </div>
       <div>
@@ -869,7 +931,6 @@ tr:hover td{background:rgba(126,221,208,.03)}
       <div>
         <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Hora</label>
         <input type="time" id="editHora" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none">
-        </select>
       </div>
       <div>
         <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Valor</label>
@@ -1325,24 +1386,36 @@ async function cancelarCita(id, nombre) {
 
 // ── Abrir modal de edición con datos actuales ──
 function editarCita(id) {
-  const c = allData.citas.find(x => x.id === id);
-  if (!c) return;
-  document.getElementById('editId').value           = c.id;
-  document.getElementById('editFecha').value        = normDate(c.fecha);
-  document.getElementById('editPrecio').value       = c.precio || '';
-  document.getElementById('editNotas').value        = c.notas  || '';
-  // Seleccionar servicio
-  const ss = document.getElementById('editServicio');
-  for (let i = 0; i < ss.options.length; i++) if (ss.options[i].value === c.servicio) { ss.selectedIndex = i; break; }
-  // Seleccionar modalidad
-  document.getElementById('editModalidad').value = c.modality === 'Domicilio' ? 'Domicilio' : 'Presencial';
-  const editMod = document.getElementById('editModalidad');
-  for (let i = 0; i < editMod.options.length; i++) if (editMod.options[i].value === c.modalidad) { editMod.selectedIndex = i; break; }
-  // Seleccionar hora
-  const hs = document.getElementById('editHora');
-  for (let i = 0; i < hs.options.length; i++) if (hs.options[i].value === c.hora) { hs.selectedIndex = i; break; }
-  closeModal('modalDetalle');
-  openModal('modalEditar');
+  try {
+    const c = allData.citas.find(x => x.id === id);
+    if (!c) { toast('No se encontró la cita', 'err'); return; }
+
+    document.getElementById('editId').value     = c.id;
+    document.getElementById('editFecha').value  = normDate(c.fecha);
+    document.getElementById('editPrecio').value = c.precio || '';
+    document.getElementById('editNotas').value  = c.notas  || '';
+
+    // Servicio — buscar por texto (opciones con y sin optgroup)
+    const ss = document.getElementById('editServicio');
+    let found = false;
+    for (let i = 0; i < ss.options.length; i++) {
+      if (ss.options[i].value === c.servicio || ss.options[i].text.trim() === c.servicio) {
+        ss.selectedIndex = i; found = true; break;
+      }
+    }
+    if (!found) ss.value = ss.options[0].value; // fallback al primero
+
+    // Modalidad
+    document.getElementById('editModalidad').value = c.modalidad === 'Domicilio' ? 'Domicilio' : 'Presencial';
+
+    // Hora
+    document.getElementById('editHora').value = c.hora || '';
+
+    closeModal('modalDetalle');
+    openModal('modalEditar');
+  } catch(err) {
+    toast('Error al abrir edición: ' + err.message, 'err');
+  }
 }
 
 // ── Guardar los cambios de la edición ──
@@ -1863,6 +1936,183 @@ function openNuevaCitaFromCal(dateStr, hour) {
   // Scroll al inicio del formulario
   const form = document.querySelector('.nc-form');
   if (form) setTimeout(() => form.scrollIntoView({behavior:'smooth', block:'start'}), 80);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── VOZ ──
+// ══════════════════════════════════════════════════════════════
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let _voiceActive = false;
+let _voiceRec    = null;
+
+function toggleVoice() {
+  if (!SpeechRec) {
+    toast('Tu navegador no soporta reconocimiento de voz. Usa Safari en iPhone.', 'err');
+    return;
+  }
+  if (_voiceActive) { _stopVoice(); return; }
+  _startVoice();
+}
+
+function _startVoice() {
+  _voiceRec = new SpeechRec();
+  _voiceRec.lang            = 'es-CO';
+  _voiceRec.interimResults  = false;
+  _voiceRec.maxAlternatives = 3;
+
+  _voiceActive = true;
+  document.getElementById('voiceBtn').classList.add('listening');
+  document.getElementById('voiceBtn').innerHTML =
+    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Detener';
+  document.getElementById('voiceStatus').style.display = 'flex';
+  document.getElementById('voiceTranscript').textContent = '';
+  document.getElementById('voiceHelp').style.display = 'none';
+
+  _voiceRec.onresult = e => {
+    const transcript = e.results[0][0].transcript;
+    document.getElementById('voiceTranscript').textContent = '"' + transcript + '"';
+    _parseVoice(transcript);
+  };
+
+  _voiceRec.onerror = e => {
+    if (e.error === 'not-allowed') toast('Permiso de micrófono denegado. Actívalo en Ajustes > Safari.', 'err');
+    else if (e.error === 'no-speech') toast('No se detectó voz. Intenta de nuevo.', 'err');
+    else toast('Error de voz: ' + e.error, 'err');
+    _stopVoice();
+  };
+
+  _voiceRec.onend = () => _stopVoice();
+  _voiceRec.start();
+}
+
+function _stopVoice() {
+  _voiceActive = false;
+  if (_voiceRec) { try { _voiceRec.stop(); } catch(e) {} _voiceRec = null; }
+  const btn = document.getElementById('voiceBtn');
+  btn.classList.remove('listening');
+  btn.innerHTML =
+    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar cita';
+  setTimeout(() => {
+    document.getElementById('voiceStatus').style.display = 'none';
+  }, 3000);
+}
+
+function _norm(s) {
+  return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+function _parseVoice(text) {
+  const t = _norm(text);
+  let filled = [];
+
+  // ── FECHA ──
+  let fecha = '';
+  if      (/\bhoy\b/.test(t))    fecha = today();
+  else if (/\bmanana\b/.test(t)) { const d=new Date(); d.setDate(d.getDate()+1); fecha=toDateStr(d); }
+  else {
+    const DIAS = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+    for (let i=0;i<DIAS.length;i++) {
+      if (t.includes(DIAS[i])) {
+        const d=new Date();
+        const diff=(i-d.getDay()+7)%7||7;
+        d.setDate(d.getDate()+diff);
+        fecha=toDateStr(d);
+        break;
+      }
+    }
+    const dm = t.match(/(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)/);
+    if (dm) {
+      const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      fecha = new Date().getFullYear()+'-'+pad(MESES.indexOf(dm[2])+1)+'-'+pad(parseInt(dm[1]));
+    }
+  }
+  if (fecha) { document.getElementById('ncDate').value = fecha; filled.push('fecha'); }
+
+  // ── HORA ──
+  const tm = t.match(/(?:a\s+las?\s+)?(\d{1,2})(?:[:\s](\d{2}))?\s*(am|pm)/);
+  const tm2 = !tm && t.match(/a\s+las?\s+(\d{1,2})(?:[:\s](\d{2}))?/);
+  const match = tm || tm2;
+  if (match) {
+    let h = parseInt(match[1]);
+    const min = match[2] ? parseInt(match[2]) : 0;
+    const ampm = match[3];
+    if      (ampm==='pm' && h<12) h+=12;
+    else if (ampm==='am' && h===12) h=0;
+    else if (!ampm && h>=1 && h<=6) h+=12; // 1-6 sin indicador → PM
+    document.getElementById('ncTime').value = pad(h)+':'+pad(min);
+    filled.push('hora');
+  }
+
+  // ── SERVICIO ──
+  const SMAP = [
+    [/descarga.*(cuello|espalda)|cuello.*espalda/, 'Descarga Muscular — Cuello y Espalda', false],
+    [/descarga.*pierna|pierna.*descarga/,           'Descarga Muscular — Piernas',          false],
+    [/descarga.*complet|completa/,                  'Descarga Muscular Completa',            false],
+    [/valoracion/,                                  'Valoración Funcional',                 false],
+    [/readaptacion/,                                'Readaptación Funcional',               false],
+    [/espalda\s+sin\s+dolor/,                       'Plan Espalda Sin Dolor',               true ],
+    [/alivio\s+profundo/,                           'Plan Alivio Profundo',                 true ],
+    [/alivio.*casa|plan.*casa/,                     'Plan Alivio en Casa',                  true ],
+    [/duo\s*mensual|plan\s*duo/,                    'Plan Dúo Mensual',                     true ],
+    [/\bplan\s+recarga\b|\brecarga\b/,              'Plan Recarga',                         true ],
+    [/\bplan\s+avanza\b|\bavanza\b/,                'Plan Avanza',                          true ],
+    [/\belite\b/,                                   'Plan Elite',                           true ],
+    [/\bplan\s+inicio\b|\binicio\b/,                'Plan Inicio',                          true ],
+    [/\bplan\s+avance\b|\bavance\b/,                'Plan Avance',                          true ],
+    [/\btransforma\b/,                              'Plan Transforma',                      true ],
+  ];
+  for (const [re, serv, isPlan] of SMAP) {
+    if (re.test(t)) {
+      const main = document.getElementById('ncServiceMain');
+      const plan = document.getElementById('ncServicePlan');
+      if (!isPlan) {
+        main.value = serv;
+        plan.style.display = 'none';
+        document.getElementById('ncService').value = serv;
+      } else {
+        main.value = '__planes__';
+        plan.style.display = 'block';
+        plan.value = serv;
+        document.getElementById('ncService').value = serv;
+      }
+      autoFillPrice();
+      filled.push('servicio');
+      break;
+    }
+  }
+
+  // ── MODALIDAD ──
+  if (/domicilio|a\s+domicilio|en\s+casa/.test(t)) {
+    document.getElementById('ncMod').value = 'Domicilio';
+    toggleNcAddress();
+    filled.push('modalidad');
+  } else if (/presencial/.test(t)) {
+    document.getElementById('ncMod').value = 'Presencial';
+    toggleNcAddress();
+    filled.push('modalidad');
+  }
+
+  // ── PACIENTE — buscar "para [nombre]" ──
+  const nm = text.match(/\bpara\s+([A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ]+){0,3})/i);
+  if (nm) {
+    const rawName = nm[1].trim();
+    const normName = _norm(rawName);
+    // Buscar coincidencia en pacientes existentes
+    const known = allData.citas.find(c => _norm(c.nombre).includes(normName) || normName.includes(_norm(c.nombre).split(' ')[0]));
+    if (known) {
+      document.getElementById('ncName').value  = known.nombre;
+      document.getElementById('ncPhone').value = known.telefono || '';
+      document.getElementById('ncEmail').value = known.email    || '';
+      if (known.direccion) document.getElementById('ncAddress').value = known.direccion;
+      filled.push('paciente (encontrado)');
+    } else {
+      document.getElementById('ncName').value = rawName.replace(/\b\w/g, l => l.toUpperCase());
+      filled.push('nombre');
+    }
+  }
+
+  if (filled.length) toast('Voz: ' + filled.join(', ') + ' ✓');
+  else { toast('No entendí la cita. Intenta de nuevo.', 'err'); document.getElementById('voiceHelp').style.display='block'; }
 }
 
 // ── MODALS ──

@@ -638,7 +638,7 @@ function buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, esHoy
 // =============================================================
 
 function getPasaportesSheet() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = getOrCreateSheet();
   var sh = ss.getSheetByName('Pasaportes');
   if (!sh) {
     sh = ss.insertSheet('Pasaportes');
