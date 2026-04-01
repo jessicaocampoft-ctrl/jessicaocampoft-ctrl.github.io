@@ -541,19 +541,23 @@ tr:hover td{background:rgba(126,221,208,.03)}
       <div class="card" style="max-width:640px">
 
         <!-- ── COMANDO DE VOZ ── -->
-        <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoice()" style="width:100%;justify-content:center;background:rgba(27,191,176,.08);border-color:var(--primary);color:var(--primary);font-size:.95rem;padding:13px;margin-bottom:14px">
+        <button type="button" id="voiceBtn" onclick="toggleVoicePanel()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(27,191,176,.08);border:1.5px solid var(--primary);border-radius:10px;color:var(--primary);font-family:var(--font-b);font-size:.95rem;font-weight:600;padding:13px;margin-bottom:0;cursor:pointer">
           🎙️ Dictar cita por voz
         </button>
-        <div class="voice-status" id="voiceStatus">
-          <div class="voice-dot"></div>
-          <span>Escuchando... habla la cita completa</span>
-          <span class="voice-transcript" id="voiceTranscript"></span>
+        <div id="voicePanel" style="display:none;margin-top:10px;background:rgba(27,191,176,.05);border:1px solid var(--border);border-radius:10px;padding:14px">
+          <p style="font-size:.8rem;color:var(--muted);margin-bottom:8px;line-height:1.5">
+            <strong style="color:var(--text)">1.</strong> Toca el campo de abajo &nbsp;
+            <strong style="color:var(--text)">2.</strong> Toca el <strong>🎤 micrófono del teclado</strong> de tu iPhone &nbsp;
+            <strong style="color:var(--text)">3.</strong> Dicta la cita &nbsp;
+            <strong style="color:var(--text)">4.</strong> Toca <em>Procesar</em>
+          </p>
+          <textarea id="voiceText" rows="3" placeholder='Ej: "Cita para María García, mañana a las 3 pm, descarga muscular completa, presencial"' style="width:100%;background:var(--s1);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;resize:none;margin-bottom:8px" onfocus="this.style.borderColor='var(--primary)'"></textarea>
+          <div style="display:flex;gap:8px">
+            <button type="button" onclick="procesarVozTexto()" style="flex:1;background:var(--primary);color:#0D0D0D;font-family:var(--font-b);font-size:.88rem;font-weight:600;padding:10px;border:none;border-radius:8px;cursor:pointer">✓ Procesar cita</button>
+            <button type="button" onclick="toggleVoicePanel()" style="background:var(--s2);color:var(--muted);font-family:var(--font-b);font-size:.88rem;padding:10px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer">Cerrar</button>
+          </div>
         </div>
-        <div id="voiceHelp" style="display:none;background:rgba(27,191,176,.06);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:.8rem;color:var(--muted);line-height:1.6">
-          <strong style="color:var(--text)">Ejemplo:</strong> "Cita para María García, mañana a las 3 pm, descarga muscular completa, presencial"<br>
-          <span style="font-size:.75rem">Puedes decir: hoy · mañana · el lunes · el 15 de abril · a las 2 pm · domicilio · presencial</span>
-        </div>
-        <hr style="border:none;border-top:1px solid var(--border);margin-bottom:20px">
+        <hr style="border:none;border-top:1px solid var(--border);margin:18px 0 20px">
 
         <!-- ── BUSCADOR PACIENTE EXISTENTE ── -->
         <div class="field" style="margin-bottom:20px;position:relative">
@@ -1948,6 +1952,25 @@ function _voiceStatusEl() { return document.getElementById('voiceStatus'); }
 
 const VOICE_ICON = '🎙️ Dictar cita por voz';
 const VOICE_STOP = '⏹ Detener escucha';
+
+// ── Panel de voz (dictado por teclado iOS) ──
+function toggleVoicePanel() {
+  const panel = document.getElementById('voicePanel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    document.getElementById('voiceText').value = '';
+    setTimeout(() => document.getElementById('voiceText').focus(), 100);
+  }
+}
+
+function procesarVozTexto() {
+  const txt = (document.getElementById('voiceText').value || '').trim();
+  if (!txt) { toast('Escribe o dicta algo primero', 'err'); return; }
+  _parseVoice(txt);
+  document.getElementById('voicePanel').style.display = 'none';
+  document.getElementById('voiceText').value = '';
+}
 
 function toggleVoice() {
   const SR = _getSR();
