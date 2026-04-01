@@ -640,7 +640,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
             <input type="text" id="ncName" placeholder="Nombre completo">
           </div>
           <div class="field">
-            <label>Teléfono *</label>
+            <label>Teléfono</label>
             <input type="tel" id="ncPhone" placeholder="+57 300 000 0000">
           </div>
           <div class="field">
@@ -1849,7 +1849,7 @@ async function submitAdminBooking() {
   const mod   = document.getElementById('ncMod').value;
   const date  = document.getElementById('ncDate').value;
   const time  = document.getElementById('ncTime').value;
-  if (!name||!phone||!serv||!date||!time) { toast('Completa los campos obligatorios (*)','err'); return; }
+  if (!name||!serv||!date||!time) { toast('Completa los campos obligatorios (*)','err'); return; }
 
   const btn = document.getElementById('ncSubmitBtn');
   btn.textContent = 'Creando...'; btn.disabled = true;
