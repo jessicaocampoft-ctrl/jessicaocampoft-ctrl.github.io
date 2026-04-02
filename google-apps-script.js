@@ -28,6 +28,11 @@ function doGet(e) {
     return js(getPassport(decodeURIComponent(p.nombre)));
   }
 
+  // Reseñas Google — público (sin token)
+  if (p.action === 'getReviews') {
+    return js(getGoogleReviews());
+  }
+
   if (p.token !== ADMIN_TOKEN) {
     return js({ok: false, error: 'Sin permiso'});
   }
@@ -686,3 +691,22 @@ function savePassport(nombre, passportJson, descargaJson) {
     return { ok: false, error: e.message };
   }
 }
+
+// ── RESEÑAS GOOGLE ──
+function getGoogleReviews() {
+  var PLACE_ID = 'ChIJVwU1iJ15sCARAQ_jFCdVsXI';
+  var API_KEY  = 'AIzaSyAKtsK8EaAG0GE_0Ma-mNoaMwy1ZG0gEv8';
+  try {
+    var url = 'https://places.googleapis.com/v1/places/' + PLACE_ID + '?key=' + API_KEY;
+    var res  = UrlFetchApp.fetch(url, {
+      headers: { 'X-Goog-FieldMask': 'rating,userRatingCount,reviews' },
+      muteHttpExceptions: true
+    });
+    var data = JSON.parse(res.getContentText());
+    if (data.error) return { ok: false, error: data.error.message };
+    return { ok: true, data: data };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+}
+

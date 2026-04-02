@@ -2612,18 +2612,14 @@
     }
     window.toggleFaq = toggleFaq;
 
-    // ─── Google Reviews (Places API New) ───
+    // ─── Google Reviews (vía Apps Script) ───
     async function loadReviews() {
-      const PLACE_ID = 'ChIJVwU1iJ15sCARAQ_jFCdVsXI';
-      const API_KEY  = 'AIzaSyAKtsK8EaAG0GE_0Ma-mNoaMwy1ZG0gEv8';
-      const grid     = document.getElementById('reviewsGrid');
+      const grid = document.getElementById('reviewsGrid');
       try {
-        const res  = await fetch(
-          `https://places.googleapis.com/v1/places/${PLACE_ID}?key=${API_KEY}`,
-          { headers: { 'X-Goog-FieldMask': 'rating,userRatingCount,reviews' } }
-        );
-        const data = await res.json();
-        if (!res.ok || data.error) throw new Error(data.error?.message || 'API error');
+        const res  = await fetch(APPS_SCRIPT_URL + '?action=getReviews');
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'Error');
+        const data = json.data;
 
         // Calificación general
         if (data.rating) {
