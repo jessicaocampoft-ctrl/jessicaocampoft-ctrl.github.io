@@ -2613,7 +2613,20 @@
     window.toggleFaq = toggleFaq;
 
     // ─── Google Reviews ───
+    // Fallback si el script no carga en 8 segundos
+    const _reviewsTimeout = setTimeout(() => {
+      const grid = document.getElementById('reviewsGrid');
+      if (grid && grid.querySelector('.reviews-loading')) {
+        grid.innerHTML = `<div class="reviews-loading">
+          <a href="https://g.page/r/ChIJVwU1iJ15sCARAQ_jFCdVsXI/review" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;font-weight:600">
+            Ver reseñas en Google →
+          </a>
+        </div>`;
+      }
+    }, 8000);
+
     window.initReviews = function() {
+      clearTimeout(_reviewsTimeout);
       const PLACE_ID = 'ChIJVwU1iJ15sCARAQ_jFCdVsXI';
       const service  = new google.maps.places.PlacesService(document.createElement('div'));
       service.getDetails({
