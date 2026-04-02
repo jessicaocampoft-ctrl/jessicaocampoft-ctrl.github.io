@@ -2612,73 +2612,65 @@
     }
     window.toggleFaq = toggleFaq;
 
-    // ─── Google Reviews ───
-    // Fallback si el script no carga en 8 segundos
-    const _reviewsTimeout = setTimeout(() => {
-      const grid = document.getElementById('reviewsGrid');
-      if (grid && grid.querySelector('.reviews-loading')) {
-        grid.innerHTML = `<div class="reviews-loading">
-          <a href="https://g.page/r/ChIJVwU1iJ15sCARAQ_jFCdVsXI/review" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;font-weight:600">
-            Ver reseñas en Google →
-          </a>
-        </div>`;
-      }
-    }, 8000);
-
-    window.initReviews = function() {
-      clearTimeout(_reviewsTimeout);
+    // ─── Google Reviews (Places API New) ───
+    async function loadReviews() {
       const PLACE_ID = 'ChIJVwU1iJ15sCARAQ_jFCdVsXI';
-      const service  = new google.maps.places.PlacesService(document.createElement('div'));
-      service.getDetails({
-        placeId: PLACE_ID,
-        fields: ['reviews', 'rating', 'user_ratings_total']
-      }, function(place, status) {
-        const grid = document.getElementById('reviewsGrid');
-        if (status !== google.maps.places.PlacesServiceStatus.OK || !place) {
-          grid.innerHTML = '<div class="reviews-loading">No se pudieron cargar las reseñas en este momento.</div>';
-          return;
-        }
+      const API_KEY  = 'AIzaSyAKtsK8EaAG0GE_0Ma-mNoaMwy1ZG0gEv8';
+      const grid     = document.getElementById('reviewsGrid');
+      try {
+        const res  = await fetch(
+          `https://places.googleapis.com/v1/places/${PLACE_ID}?key=${API_KEY}`,
+          { headers: { 'X-Goog-FieldMask': 'rating,userRatingCount,reviews' } }
+        );
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error?.message || 'API error');
+
         // Calificación general
-        if (place.rating) {
-          const rounded = Math.round(place.rating);
-          document.getElementById('reviewsScore').textContent    = place.rating.toFixed(1);
+        if (data.rating) {
+          const rounded = Math.round(data.rating);
+          document.getElementById('reviewsScore').textContent    = data.rating.toFixed(1);
           document.getElementById('reviewsStarsBig').textContent = '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
-          document.getElementById('reviewsCount').textContent    = (place.user_ratings_total || 0) + ' reseñas en Google';
+          document.getElementById('reviewsCount').textContent    = (data.userRatingCount || 0) + ' reseñas en Google';
           document.getElementById('reviewsOverall').style.display = 'flex';
           document.getElementById('reviewsBadge').style.display   = 'flex';
         }
-        // Tarjetas de reseñas
-        if (!place.reviews || !place.reviews.length) {
+
+        // Tarjetas
+        if (!data.reviews || !data.reviews.length) {
           grid.innerHTML = '<div class="reviews-loading">Aún no hay reseñas disponibles.</div>';
           return;
         }
         const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
-        grid.innerHTML = place.reviews.map(r => {
-          const initial = (r.author_name || '?').charAt(0).toUpperCase();
-          const avatarInner = r.profile_photo_url
-            ? `<img src="${r.profile_photo_url}" alt="${r.author_name}" referrerpolicy="no-referrer">`
+        grid.innerHTML = data.reviews.map(r => {
+          const name    = r.authorAttribution?.displayName || 'Paciente';
+          const photo   = r.authorAttribution?.photoUri;
+          const initial = name.charAt(0).toUpperCase();
+          const avatar  = photo
+            ? `<img src="${photo}" alt="${name}" referrerpolicy="no-referrer">`
             : initial;
-          const text = r.text
-            ? (r.text.length > 240 ? r.text.slice(0, 240) + '…' : r.text)
-            : '';
+          const rawText = r.text?.text || '';
+          const text    = rawText.length > 240 ? rawText.slice(0, 240) + '…' : rawText;
           return `<div class="review-card fade-up">
             <div class="review-top">
-              <div class="review-avatar">${avatarInner}</div>
+              <div class="review-avatar">${avatar}</div>
               <div class="review-meta">
-                <div class="review-name">${r.author_name}</div>
-                <div class="review-time">${r.relative_time_description || ''}</div>
+                <div class="review-name">${name}</div>
+                <div class="review-time">${r.relativePublishTimeDescription || ''}</div>
               </div>
             </div>
             <div class="review-stars">${stars(r.rating)}</div>
             ${text ? `<p class="review-text">${text}</p>` : ''}
           </div>`;
         }).join('');
-        // Activar animaciones en las nuevas tarjetas
         grid.querySelectorAll('.review-card.fade-up').forEach(el => observer.observe(el));
-      });
-    };
+      } catch(e) {
+        grid.innerHTML = `<div class="reviews-loading">
+          <a href="https://search.google.com/local/reviews?placeid=ChIJVwU1iJ15sCARAQ_jFCdVsXI" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;font-weight:600">Ver reseñas en Google →</a>
+        </div>`;
+      }
+    }
+    loadReviews();
   </script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKtsK8EaAG0GE_0Ma-mNoaMwy1ZG0gEv8&libraries=places&callback=initReviews" async defer></script>
 
   <!-- WhatsApp flotante -->
   <div class="wa-float">
