@@ -109,6 +109,9 @@ function createBooking(d, isAdmin) {
   // Forzar columna Telefono como texto para evitar #ERROR! en Sheets
   cSheet.getRange(cSheet.getLastRow(), 4).setNumberFormat('@').setValue(phoneClean);
 
+  // Guardar/actualizar paciente en hoja Pacientes
+  upsertPaciente(d.name, d.phone, d.email);
+
   // Link de WhatsApp para Jessica
   var tel  = (d.phone || '').replace(/\D/g,'');
   if (tel.length <= 10) tel = '57' + tel;
@@ -511,7 +514,16 @@ function setupTriggers() {
 // -------------------------------------------------------------
 function getOrCreateSheet() {
   var files = DriveApp.getFilesByName(SS_NAME);
-  if (files.hasNext()) return SpreadsheetApp.open(files.next());
+  if (files.hasNext()) {
+    var ss = SpreadsheetApp.open(files.next());
+    // Crear hoja Pacientes si no existe aún
+    if (!ss.getSheetByName('Pacientes')) {
+      ss.insertSheet('Pacientes').getRange(1,1,1,5).setValues([[
+        'Nombre','Telefono','Email','PrimeraVisita','UltimaVisita'
+      ]]);
+    }
+    return ss;
+  }
 
   var ss = SpreadsheetApp.create(SS_NAME);
   var cs = ss.getActiveSheet(); cs.setName('Citas');
@@ -523,7 +535,39 @@ function getOrCreateSheet() {
   ss.insertSheet('Bloqueos').getRange(1,1,1,5).setValues([[
     'Fecha','HoraInicio','HoraFin','Motivo','CreadoPor'
   ]]);
+  ss.insertSheet('Pacientes').getRange(1,1,1,5).setValues([[
+    'Nombre','Telefono','Email','PrimeraVisita','UltimaVisita'
+  ]]);
   return ss;
+}
+
+function upsertPaciente(nombre, telefono, email) {
+  try {
+    var ss    = getOrCreateSheet();
+    var sheet = ss.getSheetByName('Pacientes');
+    var phone = ('' + (telefono || '')).replace(/\D/g, '');
+    var norm  = (nombre || '').toLowerCase().trim();
+    var today = new Date().toLocaleDateString('es-CO');
+    var data  = sheet.getDataRange().getValues();
+
+    for (var i = 1; i < data.length; i++) {
+      var rowNorm  = ('' + (data[i][0] || '')).toLowerCase().trim();
+      var rowPhone = ('' + (data[i][1] || '')).replace(/\D/g, '');
+      if (rowNorm === norm || (phone && rowPhone === phone)) {
+        // Actualizar teléfono/email si llegaron nuevos y actualizar última visita
+        if (phone && !rowPhone)    sheet.getRange(i+1, 2).setValue(phone);
+        if (email && !data[i][2])  sheet.getRange(i+1, 3).setValue(email);
+        sheet.getRange(i+1, 5).setValue(today);
+        return;
+      }
+    }
+    // Nuevo paciente
+    sheet.appendRow([nombre, phone, email || '', today, today]);
+    sheet.getRange(sheet.getLastRow(), 2).setNumberFormat('@').setValue(phone);
+  } catch(e) {
+    // No interrumpir el booking si falla el upsert
+    Logger.log('upsertPaciente error: ' + e.message);
+  }
 }
 
 function parseDT(date, time) {

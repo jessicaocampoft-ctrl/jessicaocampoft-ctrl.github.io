@@ -2451,21 +2451,49 @@ function _parseVoice(text) {
   }
 
   // ── PACIENTE — buscar "para [nombre]" ──
-  const nm = text.match(/\bpara\s+([A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ]+){0,3})/i);
+  const STOP_WORDS = new Set([
+    'el','la','los','las','un','una','de','del','al','a','en','y','o',
+    'que','se','con','por','como','hoy','manana','lunes','martes',
+    'miercoles','jueves','viernes','sabado','domingo','para','las','los',
+    'esta','este','ese','esa','su','sus','mi','mis','le','les','me','nos',
+    'mas','pero','si','no','ya','hay','fue','ser','son','era'
+  ]);
+  // Palabras que terminan el nombre (señales de fin)
+  const NAME_STOPPERS = /\b(el|la|los|las|hoy|manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo|presencial|domicilio|descarga|valoracion|readaptacion|plan|para|a\s+las?)\b/i;
+
+  const nm = text.match(/\bpara\s+([A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ]+){0,4})/i);
   if (nm) {
-    const rawName = nm[1].trim();
-    const normName = _norm(rawName);
-    // Buscar coincidencia en pacientes existentes
-    const known = allData.citas.find(c => _norm(c.nombre).includes(normName) || normName.includes(_norm(c.nombre).split(' ')[0]));
-    if (known) {
-      document.getElementById('ncName').value  = known.nombre;
-      document.getElementById('ncPhone').value = known.telefono || '';
-      document.getElementById('ncEmail').value = known.email    || '';
-      if (known.direccion) document.getElementById('ncAddress').value = known.direccion;
-      filled.push('paciente (encontrado)');
-    } else {
-      document.getElementById('ncName').value = rawName.replace(/\b\w/g, l => l.toUpperCase());
-      filled.push('nombre');
+    // Recortar el nombre en el primer stop-stopper
+    let rawFull = nm[1].trim();
+    const stopMatch = rawFull.match(NAME_STOPPERS);
+    if (stopMatch) rawFull = rawFull.slice(0, stopMatch.index).trim();
+
+    // Filtrar stop words del interior del nombre
+    const nameWords = rawFull.split(/\s+/).filter(w => !STOP_WORDS.has(_norm(w)) && w.length > 1);
+    const rawName   = nameWords.join(' ');
+    if (!rawName) { /* no se capturó nombre válido */ }
+    else {
+      const normName = _norm(rawName);
+      // Buscar en histórico: coincidencia por nombre completo o al menos nombre+apellido
+      const known = allData.citas.find(c => {
+        const cn = _norm(c.nombre);
+        const parts = normName.split(' ');
+        // Coincide si el nombre normalizado contiene al menos las primeras dos palabras dictadas
+        return cn === normName
+          || cn.includes(normName)
+          || (parts.length >= 2 && cn.includes(parts[0]) && cn.includes(parts[1]))
+          || (parts.length === 1 && cn.startsWith(parts[0]));
+      });
+      if (known) {
+        document.getElementById('ncName').value  = known.nombre;
+        document.getElementById('ncPhone').value = known.telefono || '';
+        document.getElementById('ncEmail').value = known.email    || '';
+        if (known.direccion) document.getElementById('ncAddress').value = known.direccion;
+        filled.push('paciente (encontrado)');
+      } else {
+        document.getElementById('ncName').value = rawName.replace(/\b\w/g, l => l.toUpperCase());
+        filled.push('nombre');
+      }
     }
   }
 
