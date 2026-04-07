@@ -288,6 +288,29 @@ tr:hover td{background:rgba(126,221,208,.03)}
 .toast-msg.err {border-color:rgba(248,113,113,.4);color:var(--err)}
 @keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
 
+/* ── ALERTA CITA PRÓXIMA ── */
+.alert-banner{
+  display:none;align-items:center;gap:12px;padding:14px 20px;
+  background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.45);
+  border-radius:10px;margin-bottom:20px;
+  animation:pulseAlert 2.2s ease-in-out infinite;
+}
+.alert-banner.show{display:flex}
+@keyframes pulseAlert{0%,100%{border-color:rgba(251,191,36,.45)}50%{border-color:rgba(251,191,36,.9);box-shadow:0 0 14px rgba(251,191,36,.18)}}
+.alert-icon{font-size:1.5rem;flex-shrink:0}
+.alert-txt{flex:1;font-size:.88rem}
+.alert-mins{font-family:var(--font-m);color:var(--warn);font-size:1.05rem;font-weight:700;white-space:nowrap}
+
+/* ── PAGO BADGE ── */
+.pago-btn{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 9px;
+  border-radius:99px;font-size:.7rem;font-weight:600;cursor:pointer;
+  border:1px solid;transition:var(--tr);background:transparent;
+  font-family:var(--font-b);white-space:nowrap;
+}
+.pago-btn.pagada   {color:var(--ok);border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.08)}
+.pago-btn.pendiente{color:var(--warn);border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)}
+
 /* ── PACIENTES ── */
 .pac-badge{
   display:inline-flex;align-items:center;justify-content:center;
@@ -476,6 +499,14 @@ tr:hover td{background:rgba(126,221,208,.03)}
         </button>
       </div>
 
+      <!-- Alerta cita próxima -->
+      <div class="alert-banner" id="upcomingAlert">
+        <span class="alert-icon">⏰</span>
+        <span class="alert-txt" id="upcomingAlertTxt">Próxima cita</span>
+        <span class="alert-mins" id="upcomingAlertMins"></span>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="showView('agenda');filtrarHoy()">Ver agenda</button>
+      </div>
+
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Citas hoy</div>
@@ -513,7 +544,10 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
             <div class="card-title" style="margin-bottom:0">Citas de hoy</div>
-            <button class="btn btn-ghost btn-sm" onclick="resumenDiaWA()" title="Enviar resumen del día por WhatsApp">📋 Resumen WA</button>
+            <div style="display:flex;gap:6px">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="exportarAgendaDia()" title="Descargar agenda como archivo de texto">📥 Exportar</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="resumenDiaWA()" title="Enviar resumen del día por WhatsApp">📋 Resumen WA</button>
+            </div>
           </div>
           <div class="timeline" id="tlHoy">
             <div class="loading-wrap"><div class="spinner"></div> Cargando...</div>
@@ -755,6 +789,22 @@ tr:hover td{background:rgba(126,221,208,.03)}
           <label>Notas adicionales</label>
           <textarea id="ncNotes" placeholder="Observaciones, indicaciones..."></textarea>
         </div>
+        <!-- ── CITAS RECURRENTES ── -->
+        <div style="margin-top:14px;padding:12px 14px;background:rgba(27,191,176,.05);border:1px solid var(--border);border-radius:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" id="ncRecurring" onchange="toggleRecurringPanel()" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer">
+            <label for="ncRecurring" style="font-size:.88rem;cursor:pointer">Agendar como cita recurrente (repetir cada semana)</label>
+          </div>
+          <div id="recurringPanel" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <label style="font-size:.82rem;color:var(--muted)">Total de sesiones:</label>
+              <input type="number" id="ncSessions" min="2" max="20" value="4" style="width:70px;background:var(--s1);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:6px 8px;outline:none">
+              <span style="font-size:.82rem;color:var(--muted)">sesiones · 1 por semana</span>
+            </div>
+            <p style="font-size:.75rem;color:var(--muted);margin-top:6px">Se crearán todas las citas automáticamente en la misma hora, día de semana y servicio.</p>
+          </div>
+        </div>
+
         <div style="margin-top:20px;display:flex;gap:10px">
           <button class="btn btn-teal" onclick="submitAdminBooking()" id="ncSubmitBtn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 8v4l3 3"/></svg>
@@ -1151,6 +1201,84 @@ function markWaSent(id, type) { localStorage.setItem('wa_'+id+'_'+type, '1'); }
 function wasWaSent(id, type)  { return !!localStorage.getItem('wa_'+id+'_'+type); }
 function agendarHoy() { showView('nueva'); document.getElementById('ncDate').value = today(); }
 
+// ── PAGO POR CITA (localStorage) ──
+function isPagada(id)  { return localStorage.getItem('pago_'+id) === '1'; }
+function togglePago(id) {
+  if (isPagada(id)) localStorage.removeItem('pago_'+id);
+  else localStorage.setItem('pago_'+id, '1');
+  renderAgenda();
+  initDashboard();
+}
+function pagoBadge(id) {
+  const paid = isPagada(id);
+  return `<button type="button" class="pago-btn ${paid?'pagada':'pendiente'}" onclick="event.stopPropagation();togglePago('${id}')" title="Clic para cambiar estado de pago">${paid?'✓ Pagada':'⏳ Pago pend.'}</button>`;
+}
+
+// ── ALERTA CITA PRÓXIMA ──
+function checkUpcomingAlerts() {
+  const now      = new Date();
+  const todayStr = today();
+  const banner   = document.getElementById('upcomingAlert');
+  if (!banner) return;
+
+  const candidates = allData.citas
+    .filter(c => c.estado !== 'Cancelada' && normDate(c.fecha) === todayStr)
+    .map(c => {
+      const [h, m] = c.hora.split(':').map(Number);
+      const dt   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
+      const diff = (dt - now) / 60000;
+      return { ...c, diff };
+    })
+    .filter(c => c.diff > 0 && c.diff <= 30)
+    .sort((a, b) => a.diff - b.diff);
+
+  if (!candidates.length) { banner.classList.remove('show'); return; }
+  const next = candidates[0];
+  const mins = Math.round(next.diff);
+  document.getElementById('upcomingAlertTxt').innerHTML =
+    `Próxima cita: <strong>${next.nombre}</strong> — ${next.servicio}`;
+  document.getElementById('upcomingAlertMins').textContent =
+    `en ${mins} min (${next.hora})`;
+  banner.classList.add('show');
+}
+
+// ── EXPORTAR AGENDA DEL DÍA ──
+function exportarAgendaDia() {
+  const todayStr = today();
+  const citas = allData.citas
+    .filter(c => normDate(c.fecha) === todayStr && c.estado !== 'Cancelada')
+    .sort((a, b) => a.hora.localeCompare(b.hora));
+  if (!citas.length) { toast('No hay citas hoy para exportar', 'err'); return; }
+
+  const fecha = new Date().toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  let txt = `AGENDA — ${fecha.toUpperCase()}\n${'='.repeat(52)}\n\n`;
+  citas.forEach((c, i) => {
+    txt += `${i+1}. ${c.hora}  ${c.nombre}\n`;
+    txt += `   Servicio:  ${c.servicio}\n`;
+    txt += `   Modalidad: ${c.modalidad}\n`;
+    txt += `   Valor:     ${c.precio}${isPagada(c.id)?' ✓ PAGADA':' (pago pendiente)'}\n`;
+    txt += `   Estado:    ${c.estado}\n`;
+    if (c.telefono)  txt += `   Tel:       ${c.telefono}\n`;
+    if (c.direccion) txt += `   Dirección: ${c.direccion}\n`;
+    if (c.notas)     txt += `   Notas:     ${c.notas}\n`;
+    txt += '\n';
+  });
+  txt += `Total: ${citas.length} cita(s)  |  Cobro pendiente: ${citas.filter(c=>!isPagada(c.id)).length}\n`;
+
+  const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `agenda-${todayStr}.txt`; a.click();
+  URL.revokeObjectURL(url);
+  toast('Agenda exportada');
+}
+
+// ── CITAS RECURRENTES ──
+function toggleRecurringPanel() {
+  document.getElementById('recurringPanel').style.display =
+    document.getElementById('ncRecurring').checked ? 'block' : 'none';
+}
+
 // ── BÚSQUEDA GLOBAL ──
 function globalSearch(val) {
   showView('agenda');
@@ -1391,6 +1519,10 @@ function initDashboard() {
 
   updateBadge();
   renderWeekGrid();
+  checkUpcomingAlerts();
+  // Revisar alerta cada minuto
+  if (window._alertInterval) clearInterval(window._alertInterval);
+  window._alertInterval = setInterval(checkUpcomingAlerts, 60000);
 
   // Timeline hoy
   const citasHoy = allData.citas.filter(c => normDate(c.fecha) === todayStr).sort((a,b) => a.hora.localeCompare(b.hora));
@@ -1406,7 +1538,9 @@ function initDashboard() {
           <div class="tl-serv">${c.servicio} · ${c.modalidad} · ${c.precio}</div>
           <div class="tl-actions">
             ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp',c.precio,c.modalidad)}
-            <button class="btn btn-ghost btn-sm" onclick="changeStatus('${c.id}','Atendida')">Marcar atendida</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
+            ${pagoBadge(c.id)}
+            <button type="button" class="btn btn-ghost btn-sm" onclick="changeStatus('${c.id}','Atendida')">✓ Atendida</button>
           </div>
         </div>
       </div>`).join('');
@@ -1424,14 +1558,21 @@ function initDashboard() {
   if (proximas.length === 0) {
     tlP.innerHTML = '<div class="empty"><p>No hay citas en los próximos 7 días</p></div>';
   } else {
-    tlP.innerHTML = proximas.map(c => `
+    tlP.innerHTML = proximas.map(c => {
+      const waUrl = waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,c.precio,c.modalidad);
+      return `
       <div class="tl-item">
         <div class="tl-time" style="min-width:80px">${fmtDate(c.fecha)}<br><small style="color:var(--muted)">${c.hora}</small></div>
         <div class="tl-body">
           <div class="tl-name">${c.nombre}</div>
           <div class="tl-serv">${c.servicio} · ${c.modalidad}</div>
+          <div class="tl-actions">
+            ${waUrl ? `<a href="${waUrl}" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>` : ''}
+            <button type="button" class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
+          </div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 }
 
@@ -1467,7 +1608,7 @@ function renderAgenda() {
       </td>
       <td style="font-size:.82rem">${c.servicio}</td>
       <td><span class="chip ${c.modalidad==='Domicilio'?'chip-info':'chip-ok'}" style="font-size:.7rem">${c.modalidad}</span></td>
-      <td style="font-family:var(--font-m);color:var(--primary);font-size:.82rem">${c.precio}</td>
+      <td style="font-family:var(--font-m);color:var(--primary);font-size:.82rem">${c.precio}<br>${pagoBadge(c.id)}</td>
       <td>
         <select class="btn btn-ghost btn-sm" onchange="changeStatus('${c.id}',this.value)" style="cursor:pointer">
           <option ${c.estado==='Confirmada'?'selected':''}>Confirmada</option>
@@ -1863,15 +2004,36 @@ async function submitAdminBooking() {
     notes:   document.getElementById('ncNotes').value.trim()
   };
 
+  const isRecurring  = document.getElementById('ncRecurring').checked;
+  const totalSessions = isRecurring ? (parseInt(document.getElementById('ncSessions').value) || 1) : 1;
+
   try {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=adminBook&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(data))}`);
     const d = await r.json();
-    if (d.ok) {
+    if (!d.ok) { toast('Error: ' + (d.error||''), 'err'); btn.textContent = 'Crear cita'; btn.disabled = false; return; }
+
+    // Crear sesiones adicionales si es recurrente
+    if (isRecurring && totalSessions > 1) {
+      btn.textContent = 'Creando sesiones...';
+      const baseDate = new Date(date + 'T12:00:00');
+      let created = 1;
+      for (let s = 1; s < totalSessions; s++) {
+        baseDate.setDate(baseDate.getDate() + 7);
+        const nextData = { ...data, date: toDateStr(baseDate) };
+        try {
+          const rr = await fetch(`${APPS_SCRIPT_URL}?action=adminBook&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(nextData))}`);
+          const dd = await rr.json();
+          if (dd.ok) created++;
+        } catch(ex) {}
+      }
+      toast(`${created} de ${totalSessions} sesiones recurrentes creadas`);
+    } else {
       toast('Cita creada y agregada a Google Calendar');
-      clearNuevaCita();
-      await reload();
-      initDashboard();
-    } else toast('Error: ' + (d.error||''), 'err');
+    }
+
+    clearNuevaCita();
+    await reload();
+    initDashboard();
   } catch(e) { toast('Error de conexión','err'); }
 
   btn.textContent = 'Crear cita'; btn.disabled = false;
@@ -1942,6 +2104,8 @@ function clearNuevaCita() {
   if (dd) dd.style.display='none';
   quitarDescuento();
   document.getElementById('descuentoPanel').style.display = 'none';
+  const rc = document.getElementById('ncRecurring');
+  if (rc) { rc.checked = false; document.getElementById('recurringPanel').style.display = 'none'; }
 }
 
 // ── PACIENTES ──
