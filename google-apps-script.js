@@ -424,8 +424,8 @@ function getAdminData() {
     var b = bRows[j];
     bloqueos.push({
       fecha: (b[0] instanceof Date) ? fmtDate(b[0]) : (b[0] ? ('' + b[0]).split('T')[0] : ''),
-      inicio: (b[1] instanceof Date) ? (pad(b[1].getHours()) + ':' + pad(b[1].getMinutes())) : ('' + (b[1] || '')),
-      fin: (b[2] instanceof Date) ? (pad(b[2].getHours()) + ':' + pad(b[2].getMinutes())) : ('' + (b[2] || '')),
+      inicio: st(b[1]),
+      fin:    st(b[2]),
       motivo: b[3]
     });
   }
