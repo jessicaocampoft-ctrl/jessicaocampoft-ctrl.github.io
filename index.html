@@ -2397,7 +2397,7 @@
         t.classList.remove('selected','taken','checking');
       });
 
-      fetch(APPS_SCRIPT_URL + '?action=availability&date=' + date)
+      fetch(APPS_SCRIPT_URL + '?action=availability&date=' + date + '&service=' + encodeURIComponent(bk.service || ''))
         .then(r => r.json())
         .then(data => { applyAvailability(data.slots || {}); })
         .catch(() => {}); // Si falla el API, todos los slots quedan disponibles
@@ -2438,7 +2438,7 @@
       btn.innerHTML = 'Verificando...';
 
       try {
-        const r = await fetch(APPS_SCRIPT_URL + '?action=availability&date=' + bk.date);
+        const r = await fetch(APPS_SCRIPT_URL + '?action=availability&date=' + bk.date + '&service=' + encodeURIComponent(bk.service || ''));
         const data = await r.json();
         const slots = data.slots || {};
 

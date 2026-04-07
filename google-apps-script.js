@@ -20,7 +20,7 @@ function doGet(e) {
   }
 
   if (p.action === 'availability' && p.date) {
-    return js(getAvailability(p.date));
+    return js(getAvailability(p.date, p.service));
   }
 
   // Pasaporte — lectura pública (sin token)
@@ -74,14 +74,13 @@ function doPost(e) {
 // -------------------------------------------------------------
 function createBooking(d, isAdmin) {
   if (!isAdmin) {
-    var avail = checkAvailability(d.date, d.time, d.modality);
+    var avail = checkAvailability(d.date, d.time, d.modality, d.service);
     if (!avail.available) return {ok: false, error: avail.reason};
   }
 
   var cal   = CalendarApp.getDefaultCalendar();
   var start = parseDT(d.date, d.time);
-  // Domicilio para pacientes = 60min sesion + 30min buffer transporte
-  var mins  = (d.modality === 'Domicilio' && !isAdmin) ? 90 : 60;
+  var mins  = getServiceDuration(d.service) + (d.modality === 'Domicilio' ? 30 : 0);
   var end   = new Date(start.getTime() + mins * 60000);
   var price = d.modality === 'Presencial' ? d.priceP : d.priceD;
 
@@ -160,9 +159,10 @@ function st(v) {
 // -------------------------------------------------------------
 //  DISPONIBILIDAD — lee Sheets + Calendario UNA sola vez
 // -------------------------------------------------------------
-function getAvailability(date) {
+function getAvailability(date, service) {
   var SLOTS = ['07:00','08:00','09:00','10:00','11:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
   var result = {};
+  var newDur = getServiceDuration(service); // duración del servicio que quiere agendar
 
   // Leer Sheets una sola vez
   var ss    = getOrCreateSheet();
@@ -177,33 +177,34 @@ function getAvailability(date) {
   try { calEvents = CalendarApp.getDefaultCalendar().getEvents(dayStart, dayEnd); } catch(x) {}
 
   SLOTS.forEach(function(s) {
-    var start  = parseDT(date, s);
-    var end60  = new Date(start.getTime() + 60 * 60000);
-    var ok     = true;
+    var start   = parseDT(date, s);
+    var endNew  = new Date(start.getTime() + newDur * 60000);
+    var ok      = true;
 
-    // 1. Google Calendar (eventos personales + citas existentes)
+    // 1. Google Calendar (eventos personales solamente — los [CITA] ya están en Sheets)
     for (var k = 0; k < calEvents.length && ok; k++) {
       var ev = calEvents[k];
       if (ev.isAllDayEvent()) continue;
-      if (start < ev.getEndTime() && end60 > ev.getStartTime()) ok = false;
+      if (ev.getTitle().indexOf('[CITA]') === 0) continue; // ya chequeados vía Sheets
+      if (start < ev.getEndTime() && endNew > ev.getStartTime()) ok = false;
     }
 
-    // 2. Citas en Sheets
+    // 2. Citas en Sheets — usar duración real de cada cita existente
     for (var i = 1; i < cRows.length && ok; i++) {
       var r = cRows[i];
       if (r[10] === 'Cancelada') continue;
       var rf = sd(r[7]);
       if (rf !== date) continue;
-      var es = parseDT(rf, st(r[8]));
-      var em = r[6] === 'Domicilio' ? 90 : 60;
-      if (start < new Date(es.getTime() + em*60000) && end60 > es) ok = false;
+      var es  = parseDT(rf, st(r[8]));
+      var em  = getServiceDuration(r[5]) + (r[6] === 'Domicilio' ? 30 : 0);
+      if (start < new Date(es.getTime() + em*60000) && endNew > es) ok = false;
     }
 
     // 3. Bloqueos
     for (var j = 1; j < bRows.length && ok; j++) {
       var b = bRows[j];
       if (sd(b[0]) !== date) continue;
-      if (start < parseDT(date, st(b[2])) && end60 > parseDT(date, st(b[1]))) ok = false;
+      if (start < parseDT(date, st(b[2])) && endNew > parseDT(date, st(b[1]))) ok = false;
     }
 
     result[s] = ok;
@@ -212,22 +213,25 @@ function getAvailability(date) {
   return {ok: true, date: date, slots: result};
 }
 
-function checkAvailability(date, time, modality) {
+function checkAvailability(date, time, modality, service) {
   var start = parseDT(date, time);
-  var mins  = modality === 'Domicilio' ? 90 : 60;
+  var mins  = getServiceDuration(service) + (modality === 'Domicilio' ? 30 : 0);
   var end   = new Date(start.getTime() + mins * 60000);
 
-  // 1. Google Calendar — bloquear si hay cualquier evento personal
+  // 1. Google Calendar — bloquear solo eventos personales (no [CITA])
   try {
     var calEvents = CalendarApp.getDefaultCalendar().getEvents(start, end);
     for (var k = 0; k < calEvents.length; k++) {
-      if (!calEvents[k].isAllDayEvent()) return {available: false, reason: 'Ese horario no esta disponible. Por favor elige otro.'};
+      var ev = calEvents[k];
+      if (ev.isAllDayEvent()) continue;
+      if (ev.getTitle().indexOf('[CITA]') === 0) continue;
+      return {available: false, reason: 'Ese horario no esta disponible. Por favor elige otro.'};
     }
   } catch(x) {}
 
   var ss = getOrCreateSheet();
 
-  // 2. Citas existentes en Sheets
+  // 2. Citas existentes — usar duración real de cada servicio
   var cRows = ss.getSheetByName('Citas').getDataRange().getValues();
   for (var i = 1; i < cRows.length; i++) {
     var r = cRows[i];
@@ -235,7 +239,7 @@ function checkAvailability(date, time, modality) {
     var rf = sd(r[7]);
     if (rf !== date) continue;
     var es = parseDT(rf, st(r[8]));
-    var em = r[6] === 'Domicilio' ? 90 : 60;
+    var em = getServiceDuration(r[5]) + (r[6] === 'Domicilio' ? 30 : 0);
     if (start < new Date(es.getTime() + em*60000) && end > es) return {available: false, reason: 'Ese horario ya esta reservado. Por favor elige otro.'};
   }
 
@@ -264,7 +268,7 @@ function doUnblock(p) {
   var sheet = getOrCreateSheet().getSheetByName('Bloqueos');
   var rows  = sheet.getDataRange().getValues();
   for (var i = rows.length - 1; i >= 1; i--) {
-    if (rows[i][0] === p.date && rows[i][1] === p.startTime) {
+    if (sd(rows[i][0]) === p.date && st(rows[i][1]) === p.startTime) {
       sheet.deleteRow(i + 1);
       return {ok: true};
     }
@@ -568,6 +572,18 @@ function upsertPaciente(nombre, telefono, email) {
     // No interrumpir el booking si falla el upsert
     Logger.log('upsertPaciente error: ' + e.message);
   }
+}
+
+function getServiceDuration(service) {
+  var s = (service || '').toLowerCase()
+    .replace(/[áàâ]/g,'a').replace(/[éèê]/g,'e')
+    .replace(/[íìî]/g,'i').replace(/[óòô]/g,'o').replace(/[úùû]/g,'u');
+  if (s.indexOf('completa') > -1)       return 80;
+  if (s.indexOf('readaptacion') > -1)   return 50;
+  if (s.indexOf('valoracion') > -1)     return 50;
+  if (s.indexOf('piernas') > -1)        return 50;
+  if (s.indexOf('cuello') > -1)         return 50;
+  return 60;
 }
 
 function parseDT(date, time) {
