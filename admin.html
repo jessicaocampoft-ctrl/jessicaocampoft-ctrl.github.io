@@ -475,6 +475,14 @@ tr:hover td{background:rgba(126,221,208,.03)}
       Pacientes
     </button>
 
+    <button class="sb-link" id="sb-recordatorios" onclick="showView('recordatorios')" style="justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Recordatorios
+      </span>
+      <span id="badgeRecordatorios" style="display:none;background:#dc2626;color:#fff;border-radius:99px;font-size:.68rem;font-weight:700;padding:1px 7px;line-height:1.6">0</span>
+    </button>
+
     <div class="sb-sep"></div>
 
     <button class="sb-link sb-signout" onclick="logout()">
@@ -901,6 +909,33 @@ tr:hover td{background:rgba(126,221,208,.03)}
       </div>
     </section>
 
+    <!-- ── RECORDATORIOS ── -->
+    <section id="vRecordatorios" style="display:none">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title"><em>Recordatorios</em> de reagendamiento</h1>
+          <p class="page-sub">Pacientes que llevan 4 o más semanas sin sesión de descarga muscular</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="cargarRecordatorios()">🔄 Actualizar</button>
+          <button type="button" class="btn btn-teal" id="btnSendEmails" onclick="enviarEmailsRecordatorio()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+            Enviar emails a todos
+          </button>
+        </div>
+      </div>
+
+      <!-- Info banner -->
+      <div style="background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:14px 18px;margin-bottom:24px;font-size:.85rem;color:#1e40af;display:flex;gap:10px;align-items:flex-start">
+        <span style="font-size:1.2rem;flex-shrink:0">💡</span>
+        <span>Los recordatorios se envían automáticamente por email cada lunes a las 8am (requiere activar el trigger). Los pacientes sin email los ves aquí para enviarles WhatsApp manualmente.</span>
+      </div>
+
+      <div id="recContent">
+        <div class="loading-wrap"><div class="spinner"></div> Cargando pacientes...</div>
+      </div>
+    </section>
+
     <!-- ── PACIENTES ── -->
     <section id="vPacientes" style="display:none">
       <div class="page-header">
@@ -1113,7 +1148,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
-  ['dashboard','agenda','nueva','calendario','bloquear','pacientes'].forEach(id => {
+  ['dashboard','agenda','nueva','calendario','bloquear','pacientes','recordatorios'].forEach(id => {
     document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1)).style.display = 'none';
     document.getElementById('sb-' + id).classList.remove('active');
   });
@@ -1121,10 +1156,11 @@ function showView(v) {
   document.getElementById('sb-' + v).classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
 
-  if (v === 'agenda')     renderAgenda();
-  if (v === 'bloquear')   renderBloqueos();
-  if (v === 'pacientes')  renderPacientes();
-  if (v === 'calendario') renderCalendar();
+  if (v === 'agenda')         renderAgenda();
+  if (v === 'bloquear')       renderBloqueos();
+  if (v === 'pacientes')      renderPacientes();
+  if (v === 'calendario')     renderCalendar();
+  if (v === 'recordatorios')  cargarRecordatorios();
 }
 
 function toggleSidebar() {
@@ -2662,6 +2698,175 @@ function _parseVoice(text) {
 
   if (filled.length) toast('Voz: ' + filled.join(', ') + ' ✓');
   else { toast('No entendí la cita. Intenta de nuevo.', 'err'); document.getElementById('voiceHelp').style.display='block'; }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── RECORDATORIOS ──
+// ══════════════════════════════════════════════════════════════
+
+// Mensajes predefinidos con el nombre del paciente
+function msgSemana4(nombre) {
+  const primero = nombre.split(' ')[0];
+  return `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta👋 Ya vamos en la semana 4 desde tu última descarga muscular — la próxima semana sería el momento ideal para hacerla antes de que el cuerpo empiece a acumular tensión de nuevo. ¿Te agendo?`;
+}
+function msgSemana5(nombre) {
+  const primero = nombre.split(' ')[0];
+  return `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta👋 Ya se cumplieron las 5 semanas desde tu última sesión de descarga — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ¿Te agendo esta semana?`;
+}
+function waRecordatorio(tel, nombre, semanas) {
+  const t = String(tel||'').replace(/\D/g,'');
+  if (!t || t.length < 7) return null;
+  const phone = t.length <= 10 ? '57'+t : t;
+  const msg   = semanas === 4 ? msgSemana4(nombre) : msgSemana5(nombre);
+  return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+}
+
+let _remData = null;
+
+async function cargarRecordatorios() {
+  const cont = document.getElementById('recContent');
+  cont.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> Consultando base de datos...</div>';
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=getReminders&token=${encodeURIComponent(TOKEN)}`);
+    const d = await r.json();
+    if (!d.ok) { cont.innerHTML = '<div class="empty"><p>Error al cargar: ' + (d.error||'') + '</p></div>'; return; }
+    _remData = d;
+    renderRecordatorios(d);
+    // Actualizar badge en sidebar
+    const total = d.semana4.length + d.semana5.length;
+    const badge = document.getElementById('badgeRecordatorios');
+    if (badge) { badge.textContent = total; badge.style.display = total > 0 ? 'inline' : 'none'; }
+  } catch(e) {
+    cont.innerHTML = '<div class="empty"><p>Error de conexión</p></div>';
+  }
+}
+
+function renderRecordatorios(d) {
+  const cont = document.getElementById('recContent');
+  const total = d.semana4.length + d.semana5.length;
+
+  if (total === 0) {
+    cont.innerHTML = `<div class="empty" style="padding:60px 20px">
+      <p style="font-size:1.1rem">✅ Todos los pacientes están al día</p>
+      <p style="margin-top:8px;font-size:.85rem">No hay pacientes con más de 4 semanas sin sesión.</p>
+    </div>`;
+    return;
+  }
+
+  const sinEmail4  = d.semana4.filter(p => !p.email || p.email.indexOf('@') < 0).length;
+  const sinEmail5  = d.semana5.filter(p => !p.email || p.email.indexOf('@') < 0).length;
+  const conEmail   = total - sinEmail4 - sinEmail5;
+
+  cont.innerHTML = `
+    <!-- Resumen rápido -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px">
+      <div class="stat-card"><div class="stat-label">Total a recordar</div><div class="stat-val">${total}</div><div class="stat-desc">pacientes</div></div>
+      <div class="stat-card"><div class="stat-label">Pueden recibir email</div><div class="stat-val" style="color:var(--ok)">${conEmail}</div><div class="stat-desc">tienen email registrado</div></div>
+      <div class="stat-card"><div class="stat-label">Solo WhatsApp</div><div class="stat-val" style="color:var(--warn)">${sinEmail4+sinEmail5}</div><div class="stat-desc">no tienen email</div></div>
+    </div>
+
+    <!-- Semana 4 -->
+    ${d.semana4.length ? `
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div class="card-title" style="margin-bottom:2px;color:var(--warn)">⏰ Semana 4 — Momento ideal</div>
+          <div style="font-size:.82rem;color:var(--muted)">${d.semana4.length} paciente(s) · entre 28 y 34 días desde su última sesión</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${d.semana4.map(p => recCard(p, 4)).join('')}
+      </div>
+    </div>` : ''}
+
+    <!-- Semana 5+ -->
+    ${d.semana5.length ? `
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div class="card-title" style="margin-bottom:2px;color:var(--err)">🔴 Semana 5+ — Reagendamiento urgente</div>
+          <div style="font-size:.82rem;color:var(--muted)">${d.semana5.length} paciente(s) · más de 35 días sin sesión</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${d.semana5.map(p => recCard(p, 5)).join('')}
+      </div>
+    </div>` : ''}
+  `;
+}
+
+function recCard(p, semanas) {
+  const waUrl   = waRecordatorio(p.telefono, p.nombre, semanas);
+  const semanas5 = semanas >= 5;
+  const color   = semanas5 ? 'var(--err)' : 'var(--warn)';
+  const hasEmail = p.email && p.email.indexOf('@') >= 0;
+  const dias    = p.dias;
+  const initials = p.nombre.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2);
+  const previewMsg = (semanas === 4 ? msgSemana4(p.nombre) : msgSemana5(p.nombre)).slice(0, 90) + '…';
+
+  return `<div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--s2);border:1px solid var(--border);border-radius:10px;flex-wrap:wrap">
+    <div class="pac-badge" style="background:rgba(27,191,176,.08);border-color:${color};flex-shrink:0">${initials}</div>
+    <div style="flex:1;min-width:160px">
+      <div style="font-weight:600;font-size:.9rem">${p.nombre}</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-top:2px">${p.lastServicio||'—'} · ${fmtDate(p.lastFecha)}</div>
+      <div style="font-size:.75rem;color:${color};font-family:var(--font-m);margin-top:2px;font-weight:600">${dias} días sin sesión</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:4px;font-style:italic">"${previewMsg}"</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0">
+      ${waUrl
+        ? `<a href="${waUrl}" target="_blank" class="btn btn-wa btn-sm" onclick="marcarRecordatorioEnviado('${p.nombre}',${semanas})">
+            ${recEnviado(p.nombre,semanas) ? '✓ WA enviado' : '💬 WhatsApp'}
+           </a>`
+        : `<span style="font-size:.78rem;color:var(--muted)">Sin teléfono</span>`}
+      ${hasEmail
+        ? `<button type="button" class="btn btn-ghost btn-sm" onclick="enviarEmailUno('${encodeURIComponent(p.nombre)}',${semanas})"
+            ${recEmailEnviado(p.nombre) ? 'style="opacity:.5"' : ''}>
+            ${recEmailEnviado(p.nombre) ? '✓ Email enviado' : '📧 Email'}
+           </button>`
+        : `<span style="font-size:.78rem;color:var(--muted);padding:5px 8px">Sin email</span>`}
+      <button type="button" class="btn btn-ghost btn-sm" onclick="agendarDesdePacienteRec('${encodeURIComponent(p.nombre)}','${encodeURIComponent(p.telefono||'')}','${encodeURIComponent(p.email||'')}')">+ Agendar</button>
+    </div>
+  </div>`;
+}
+
+function recEnviado(nombre, semanas)  { return !!localStorage.getItem('rec_wa_'+semanas+'_'+nombre); }
+function recEmailEnviado(nombre)      { return !!localStorage.getItem('rec_email_'+nombre); }
+function marcarRecordatorioEnviado(nombre, semanas) {
+  localStorage.setItem('rec_wa_'+semanas+'_'+nombre, '1');
+  // Re-render para mostrar checkmark
+  if (_remData) renderRecordatorios(_remData);
+}
+
+async function enviarEmailsRecordatorio() {
+  const btn = document.getElementById('btnSendEmails');
+  btn.textContent = 'Enviando...'; btn.disabled = true;
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=sendReminders&token=${encodeURIComponent(TOKEN)}`);
+    const d = await r.json();
+    if (d.ok) {
+      toast(`✅ ${d.sent} email(s) enviados · ${d.skipped} sin email (envía WhatsApp manualmente)`);
+      // Marcar emails enviados localmente
+      if (_remData) {
+        [...(_remData.semana4||[]), ...(_remData.semana5||[])].forEach(p => {
+          if (p.email && p.email.indexOf('@') >= 0) localStorage.setItem('rec_email_'+p.nombre, '1');
+        });
+        renderRecordatorios(_remData);
+      }
+    } else toast('Error: ' + (d.error||''), 'err');
+  } catch(e) { toast('Error de conexión', 'err'); }
+  btn.textContent = 'Enviar emails a todos'; btn.disabled = false;
+}
+
+function agendarDesdePacienteRec(encNombre, encTel, encEmail) {
+  const nombre   = decodeURIComponent(encNombre);
+  const telefono = decodeURIComponent(encTel);
+  const email    = decodeURIComponent(encEmail);
+  showView('nueva');
+  document.getElementById('ncName').value  = nombre;
+  document.getElementById('ncPhone').value = telefono;
+  document.getElementById('ncEmail').value = email;
+  document.getElementById('pacSearch').value = nombre + (telefono ? ' — ' + telefono : '');
+  toast('Datos de ' + nombre.split(' ')[0] + ' cargados. Completa fecha, hora y servicio.');
 }
 
 // ── MODALS ──

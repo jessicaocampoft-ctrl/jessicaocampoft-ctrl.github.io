@@ -45,8 +45,10 @@ function doGet(e) {
   if (p.action === 'getCalEvents')  return js(getCalendarEvents(p.from, p.to));
   if (p.action === 'cancelBooking') return js(doCancelBooking(p.id));
   if (p.action === 'editBooking')   return js(doEditBooking(JSON.parse(p.data)));
-  if (p.action === 'deletePatient') return js(deletePatient(decodeURIComponent(p.nombre)));
-  if (p.action === 'editPatient')   return js(editPatient(JSON.parse(p.data)));
+  if (p.action === 'deletePatient')  return js(deletePatient(decodeURIComponent(p.nombre)));
+  if (p.action === 'editPatient')    return js(editPatient(JSON.parse(p.data)));
+  if (p.action === 'getReminders')   return js(getRemindersData());
+  if (p.action === 'sendReminders')  return js(sendEmailReminders());
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -770,6 +772,136 @@ function savePassport(nombre, passportJson, descargaJson) {
   } catch(e) {
     return { ok: false, error: e.message };
   }
+}
+
+// -------------------------------------------------------------
+//  RECORDATORIOS MENSUALES DE REAGENDAMIENTO
+// -------------------------------------------------------------
+
+// Devuelve pacientes cuya última cita fue hace ~4 semanas (semana4) o 5+ semanas (semana5)
+function getRemindersData() {
+  var ss   = getOrCreateSheet();
+  var rows = ss.getSheetByName('Citas').getDataRange().getValues();
+
+  // Construir mapa: último registro por paciente
+  var map = {};
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (r[10] === 'Cancelada') continue;
+    var nombre = ('' + (r[2] || '')).trim();
+    var fecha  = sd(r[7]);
+    if (!nombre || !fecha) continue;
+    var phone = ('' + (r[3] || '')).replace(/\D/g, '');
+    var email = ('' + (r[4] || '')).trim();
+    var serv  = r[5] || '';
+    if (!map[nombre] || fecha > map[nombre].lastFecha) {
+      map[nombre] = { nombre: nombre, telefono: phone, email: email, lastFecha: fecha, lastServicio: serv };
+    }
+  }
+
+  var now = new Date(); now.setHours(0,0,0,0);
+  var semana4 = [], semana5 = [];
+
+  for (var key in map) {
+    var p = map[key];
+    var dp = p.lastFecha.split('-');
+    var lastDate = new Date(+dp[0], +dp[1]-1, +dp[2]);
+    var dias = Math.floor((now - lastDate) / 86400000);
+    if (dias >= 28 && dias < 35) semana4.push({ nombre: p.nombre, telefono: p.telefono, email: p.email, lastServicio: p.lastServicio, lastFecha: p.lastFecha, dias: dias });
+    else if (dias >= 35 && dias < 70) semana5.push({ nombre: p.nombre, telefono: p.telefono, email: p.email, lastServicio: p.lastServicio, lastFecha: p.lastFecha, dias: dias });
+  }
+
+  semana4.sort(function(a,b){ return a.dias - b.dias; });
+  semana5.sort(function(a,b){ return a.dias - b.dias; });
+  return { ok: true, semana4: semana4, semana5: semana5 };
+}
+
+// Envía emails a todos los pacientes con email registrado que están en semana 4 o 5+
+function sendEmailReminders() {
+  var data = getRemindersData();
+  if (!data.ok) return { ok: false, error: data.error };
+
+  var sent = 0, errors = 0, skipped = 0;
+  var all = data.semana4.map(function(p){ return { p:p, semanas:4 }; })
+           .concat(data.semana5.map(function(p){ return { p:p, semanas:5 }; }));
+
+  for (var i = 0; i < all.length; i++) {
+    var item = all[i];
+    var p    = item.p;
+    if (!p.email || p.email.indexOf('@') < 0) { skipped++; continue; }
+
+    var primero = p.nombre.split(' ')[0];
+    var asunto  = item.semanas === 4
+      ? ('⏰ ' + primero + ', ya es momento de tu próxima descarga muscular')
+      : ('💆 ' + primero + ', lleva 5 semanas desde tu última sesión');
+
+    try {
+      GmailApp.sendEmail(p.email, asunto, '', {
+        htmlBody: buildReminderMensualEmail(p.nombre, item.semanas),
+        name: 'Jessica Ocampo Fisioterapeuta'
+      });
+      sent++;
+    } catch(e) {
+      errors++;
+      Logger.log('Error email ' + p.email + ': ' + e.message);
+    }
+  }
+
+  // Resumen para Jessica
+  if (sent > 0 || skipped > 0) {
+    GmailApp.sendEmail(JESSICA_EMAIL,
+      'Recordatorios de reagendamiento enviados — ' + sent + ' email(s)',
+      'Resumen del envío automático de recordatorios:\n\n' +
+      '✅ Emails enviados: ' + sent + '\n' +
+      '⏭ Sin email (WhatsApp manual): ' + skipped + '\n' +
+      '❌ Errores: ' + errors + '\n\n' +
+      'Entra al panel admin → Recordatorios para enviarles WhatsApp a los pacientes sin email.');
+  }
+
+  return { ok: true, sent: sent, skipped: skipped, errors: errors };
+}
+
+function buildReminderMensualEmail(nombre, semanas) {
+  var primero = nombre.split(' ')[0];
+  var msg = semanas === 4
+    ? ('Ya vamos en la <strong>semana 4</strong> desde tu última descarga muscular — la próxima semana sería el momento ideal para hacerla antes de que el cuerpo empiece a acumular tensión de nuevo.')
+    : ('Ya se cumplieron las <strong>5 semanas</strong> desde tu última sesión de descarga — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan.');
+
+  return '<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">' +
+    '<div style="background:#0d9488;padding:24px 32px;text-align:center">' +
+    '<h1 style="color:#fff;margin:0;font-size:19px">⏰ Es momento de tu próxima sesión</h1>' +
+    '<p style="color:#ccfbf1;margin:6px 0 0;font-size:13px">Jessica Ocampo Fisioterapeuta</p>' +
+    '</div>' +
+    '<div style="padding:28px 32px">' +
+    '<p style="margin:0 0 14px;font-size:15px">Hola <strong>' + primero + '</strong>! 👋 Soy Jessica Ocampo Fisioterapeuta.</p>' +
+    '<p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#374151">' + msg + '</p>' +
+    '<div style="text-align:center;margin:24px 0">' +
+    '<a href="https://jessicaocampoft-ctrl.github.io/#agenda" style="background:#0d9488;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block">Agendar mi cita 📅</a>' +
+    '</div>' +
+    '<p style="font-size:13px;color:#6b7280;margin:0">O escríbeme directamente:<br>' +
+    '<a href="https://wa.me/573136467945" style="color:#0d9488">+57 313 646 7945 (WhatsApp)</a></p>' +
+    '</div>' +
+    '<div style="background:#f9fafb;padding:16px 32px;text-align:center;font-size:12px;color:#9ca3af">' +
+    'Jessica Ocampo Fisioterapeuta · Pereira, Colombia<br>' +
+    '<a href="https://jessicaocampoft-ctrl.github.io" style="color:#0d9488">jessicaocampoft-ctrl.github.io</a>' +
+    '</div></div>';
+}
+
+// Ejecuta ESTA función UNA sola vez para activar el trigger semanal automático:
+function setupReminderTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === 'autoSendReminders') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('autoSendReminders')
+    .timeBased().everyWeeks(1)
+    .onWeekDay(ScriptApp.WeekDay.MONDAY)
+    .atHour(8).inTimezone('America/Bogota').create();
+  Logger.log('Trigger activado: recordatorios todos los lunes a las 8am (hora Colombia).');
+}
+
+function autoSendReminders() {
+  var result = sendEmailReminders();
+  Logger.log('autoSendReminders: enviados=' + result.sent + ', sinEmail=' + result.skipped + ', errores=' + result.errors);
 }
 
 // ── RESEÑAS GOOGLE ──
