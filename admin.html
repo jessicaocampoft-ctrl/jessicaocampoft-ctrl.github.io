@@ -1742,18 +1742,17 @@ function seguimientoWA(tel, nombre, servicio) {
 // ── BLOQUEAR ──
 function renderBloqueos() {
   const bl = document.getElementById('blockList');
-  const today = allData.bloqueos.filter(b => b.fecha >= today);
   if (!allData.bloqueos.length) {
     bl.innerHTML = '<div class="empty"><p>No hay bloqueos activos</p></div>';
     return;
   }
-  bl.innerHTML = allData.bloqueos.map((b,i) => `
+  bl.innerHTML = allData.bloqueos.map((b) => `
     <div class="block-item">
       <div class="block-info">
         <div class="block-date">${fmtDate(b.fecha)} · ${b.inicio} — ${b.fin}</div>
         <div class="block-reason">${b.motivo||'Sin motivo'}</div>
       </div>
-      <button class="btn btn-err btn-sm" onclick="doUnblock('${b.fecha}','${b.inicio}')">Eliminar</button>
+      <button class="btn btn-err btn-sm" onclick="doUnblock('${b.bid||''}','${b.fecha}','${b.inicio}')">Eliminar</button>
     </div>`).join('');
 }
 
@@ -1768,7 +1767,7 @@ async function doBlock() {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=block&token=${encodeURIComponent(TOKEN)}&date=${date}&startTime=${start}&endTime=${end}&reason=${encodeURIComponent(reason||'Bloqueado')}`);
     const d = await r.json();
     if (d.ok) {
-      allData.bloqueos.push({fecha:date, inicio:start, fin:end, motivo:reason||'Bloqueado'});
+      allData.bloqueos.push({bid: d.bid||'', fecha:date, inicio:start, fin:end, motivo:reason||'Bloqueado'});
       toast('Horario bloqueado correctamente');
       renderBloqueos();
       document.getElementById('blDate').value = '';
@@ -1777,15 +1776,15 @@ async function doBlock() {
   } catch(e) { toast('Error de conexión','err'); }
 }
 
-async function doUnblock(date, startTime) {
+async function doUnblock(bid, date, startTime) {
   try {
-    const r = await fetch(`${APPS_SCRIPT_URL}?action=unblock&token=${encodeURIComponent(TOKEN)}&date=${date}&startTime=${startTime}`);
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=unblock&token=${encodeURIComponent(TOKEN)}&bid=${encodeURIComponent(bid)}&date=${date}&startTime=${startTime}`);
     const d = await r.json();
     if (d.ok) {
-      allData.bloqueos = allData.bloqueos.filter(b => !(b.fecha===date && b.inicio===startTime));
+      allData.bloqueos = allData.bloqueos.filter(b => bid ? b.bid !== bid : !(b.fecha===date && b.inicio===startTime));
       toast('Bloqueo eliminado');
       renderBloqueos();
-    } else toast('Error al eliminar','err');
+    } else toast('Error al eliminar: ' + (d.error||''), 'err');
   } catch(e) { toast('Error de conexión','err'); }
 }
 

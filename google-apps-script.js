@@ -258,19 +258,38 @@ function checkAvailability(date, time, modality, service) {
 //  ACCIONES ADMIN
 // -------------------------------------------------------------
 function doBlock(p) {
+  var bid = 'B' + new Date().getTime();
   getOrCreateSheet().getSheetByName('Bloqueos').appendRow([
-    p.date, p.startTime, p.endTime, p.reason || 'Bloqueado', 'Admin'
+    p.date, p.startTime, p.endTime, p.reason || 'Bloqueado', 'Admin', bid
   ]);
-  return {ok: true};
+  return {ok: true, bid: bid};
 }
 
 function doUnblock(p) {
   var sheet = getOrCreateSheet().getSheetByName('Bloqueos');
   var rows  = sheet.getDataRange().getValues();
   for (var i = rows.length - 1; i >= 1; i--) {
-    if (sd(rows[i][0]) === p.date && st(rows[i][1]) === p.startTime) {
+    // Eliminar por ID único si existe (bloqueos nuevos)
+    if (p.bid && rows[i][5] && rows[i][5] === p.bid) {
       sheet.deleteRow(i + 1);
       return {ok: true};
+    }
+    // Fallback para bloqueos viejos sin ID: comparar fecha + hora en múltiples formatos
+    if (!p.bid) {
+      var rowDate  = sd(rows[i][0]);
+      var rowStart = st(rows[i][1]);
+      var targetTime = (p.startTime || '').trim();
+      // Normalizar: si viene como decimal convertir a HH:MM
+      if (!isNaN(parseFloat(targetTime)) && targetTime.indexOf(':') === -1) {
+        var n = parseFloat(targetTime);
+        var hh = Math.floor(n * 24);
+        var mm = Math.round((n * 24 - hh) * 60);
+        targetTime = (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
+      }
+      if (rowDate === (p.date || '').trim() && rowStart === targetTime) {
+        sheet.deleteRow(i + 1);
+        return {ok: true};
+      }
     }
   }
   return {ok: false, error: 'No encontrado'};
@@ -423,6 +442,7 @@ function getAdminData() {
   for (var j = 1; j < bRows.length; j++) {
     var b = bRows[j];
     bloqueos.push({
+      bid:    b[5] || '',
       fecha: (b[0] instanceof Date) ? fmtDate(b[0]) : (b[0] ? ('' + b[0]).split('T')[0] : ''),
       inicio: st(b[1]),
       fin:    st(b[2]),
