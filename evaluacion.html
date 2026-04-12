@@ -598,6 +598,116 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
       <div class="photo-grid" id="photoGrid"></div>
     </div>
 
+    <!-- REPORTE POSTURAL -->
+    <div class="card" id="reportePosturalCard" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+        <div class="card-title" style="margin-bottom:0">📐 Análisis postural</div>
+        <button class="btn btn-teal btn-sm" onclick="generarReportePostural()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Generar PDF postural
+        </button>
+      </div>
+
+      <!-- VISTA ANTERIOR -->
+      <div class="sec-title">Vista anterior</div>
+      <div class="checks-wrap" id="postAnt">
+        <label class="chk-pill" onclick="togPostura(this,'ant_cabeza_adelantada')"><input type="checkbox"> Cabeza adelantada</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_hombro_der_alto')"><input type="checkbox"> Hombro derecho elevado</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_hombro_izq_alto')"><input type="checkbox"> Hombro izquierdo elevado</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_hombros_simetricos')"><input type="checkbox"> Hombros simétricos ✓</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_cresta_der_alta')"><input type="checkbox"> Cresta ilíaca der. elevada</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_cresta_izq_alta')"><input type="checkbox"> Cresta ilíaca izq. elevada</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_crestas_simetricas')"><input type="checkbox"> Crestas ilíacas simétricas ✓</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_rodilla_valgo_der')"><input type="checkbox"> Valgo rodilla derecha</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_rodilla_valgo_izq')"><input type="checkbox"> Valgo rodilla izquierda</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_rodilla_varo_der')"><input type="checkbox"> Varo rodilla derecha</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_rodilla_varo_izq')"><input type="checkbox"> Varo rodilla izquierda</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_pronacion_der')"><input type="checkbox"> Pronación pie derecho</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_pronacion_izq')"><input type="checkbox"> Pronación pie izquierdo</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_supinacion_der')"><input type="checkbox"> Supinación pie derecho</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_supinacion_izq')"><input type="checkbox"> Supinación pie izquierdo</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_pies_simetricos')"><input type="checkbox"> Pies neutros / simétricos ✓</label>
+        <label class="chk-pill" onclick="togPostura(this,'ant_escoliosis_aparente')"><input type="checkbox"> Escoliosis aparente</label>
+      </div>
+
+      <!-- VISTA POSTERIOR -->
+      <div class="sec-title">Vista posterior</div>
+      <div class="checks-wrap">
+        <label class="chk-pill" onclick="togPostura(this,'pos_escap_der_alta')"><input type="checkbox"> Escápula derecha elevada</label>
+        <label class="chk-pill" onclick="togPostura(this,'pos_escap_izq_alta')"><input type="checkbox"> Escápula izquierda elevada</label>
+        <label class="chk-pill" onclick="togPostura(this,'pos_escap_aladas')"><input type="checkbox"> Escápulas aladas</label>
+        <label class="chk-pill" onclick="togPostura(this,'pos_escap_simetricas')"><input type="checkbox"> Escápulas simétricas ✓</label>
+        <label class="chk-pill" onclick="togPostura(this,'pos_columna_recta')"><input type="checkbox"> Columna recta ✓</label>
+        <label class="chk-pill" onclick="togPostura(this,'pos_escoliosis_der')"><input type="checkbox"> Curva escoliótica derecha</label>
+        <label class="chk-pill" onclick="togPostura(this,'pos_escoliosis_izq')"><input type="checkbox"> Curva escoliótica izquierda</label>
+        <label class="chk-pill" onclick="togPostura(this,'pos_talon_valgo_der')"><input type="checkbox"> Talón valgo derecho</label>
+        <label class="chk-pill" onclick="togPostura(this,'pos_talon_valgo_izq')"><input type="checkbox"> Talón valgo izquierdo</label>
+        <label class="chk-pill" onclick="togPostura(this,'pos_pliegues_asimetricos')"><input type="checkbox"> Pliegues glúteos asimétricos</label>
+        <label class="chk-pill" onclick="togPostura(this,'pos_trapecio_der_hipertonico')"><input type="checkbox"> Trapecio der. hipertónico</label>
+        <label class="chk-pill" onclick="togPostura(this,'pos_trapecio_izq_hipertonico')"><input type="checkbox"> Trapecio izq. hipertónico</label>
+      </div>
+
+      <!-- VISTA LATERAL -->
+      <div class="sec-title">Vista lateral</div>
+      <div class="checks-wrap">
+        <label class="chk-pill" onclick="togPostura(this,'lat_cabeza_adelantada')"><input type="checkbox"> Adelantamiento cefálico</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_cifosis_aumentada')"><input type="checkbox"> Cifosis dorsal aumentada</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_cifosis_normal')"><input type="checkbox"> Cifosis normal ✓</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_lordosis_aumentada')"><input type="checkbox"> Hiperlordosis lumbar</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_lordosis_reducida')"><input type="checkbox"> Lordosis reducida / rectificada</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_lordosis_normal')"><input type="checkbox"> Lordosis normal ✓</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_rodilla_hiperext')"><input type="checkbox"> Rodilla en hiperextensión</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_rodilla_flexum')"><input type="checkbox"> Rodilla en flexum</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_pelvis_anteversion')"><input type="checkbox"> Pelvis en anteversión</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_pelvis_retroversion')"><input type="checkbox"> Pelvis en retroversión</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_pelvis_neutra')"><input type="checkbox"> Pelvis neutra ✓</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_abdomen_prominente')"><input type="checkbox"> Abdomen prominente</label>
+        <label class="chk-pill" onclick="togPostura(this,'lat_alineacion_normal')"><input type="checkbox"> Alineación global normal ✓</label>
+      </div>
+
+      <!-- MEDICIONES Y OBSERVACIONES -->
+      <div class="sec-title">Observaciones y mediciones</div>
+      <div class="fg">
+        <div class="field">
+          <label>Tipo de postura global</label>
+          <select id="postTipo" onchange="S.postura=S.postura||{};S.postura.tipo=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;outline:none">
+            <option value="">Selecciona</option>
+            <option>Cifótico-lordótica</option>
+            <option>Espalda plana</option>
+            <option>Espalda curva</option>
+            <option>Postura ideal / neutra</option>
+            <option>Swayback</option>
+            <option>Escoliótica</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Nivel de riesgo postural</label>
+          <select id="postRiesgo" onchange="S.postura=S.postura||{};S.postura.riesgo=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;outline:none">
+            <option value="">Selecciona</option>
+            <option>Bajo — cambios leves</option>
+            <option>Moderado — intervención recomendada</option>
+            <option>Alto — intervención prioritaria</option>
+          </select>
+        </div>
+        <div class="field span-full">
+          <label>Observaciones adicionales</label>
+          <textarea id="postObs" rows="3" placeholder="Describe compensaciones, asimetrías relevantes, patrones de movimiento observados..." oninput="S.postura=S.postura||{};S.postura.obs=this.value"></textarea>
+        </div>
+        <div class="field span-full">
+          <label>Recomendaciones posturales para el paciente</label>
+          <textarea id="postRecomend" rows="3" placeholder="Correctivos de postura, hábitos a mejorar, ajustes ergonómicos..." oninput="S.postura=S.postura||{};S.postura.recomend=this.value"></textarea>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-teal" onclick="generarReportePostural()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Generar PDF de reporte postural
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="abrirModalEmail()">📧 Enviar al paciente</button>
+      </div>
+    </div>
+
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="WIZ.prev()">← Atrás</button>
       <button class="btn btn-teal" onclick="WIZ.next()">Continuar →</button>
@@ -958,7 +1068,7 @@ function nuevaEval(){
       tratPrev:'no',tratPrevDesc:'',cirugia:'no',cirugiaDesc:'',
       patologias:[],medicamentos:'',alergias:'',
       objetivos:[],objetivosDesc:'',consentimiento:false,firma:''},
-    tests:{},sesiones:[],alta:null,fotos:[]};
+    tests:{},sesiones:[],alta:null,fotos:[],postura:{},iaTexto:'',ejercicios:[],riesgo:null};
   document.getElementById('viewLista').style.display='none';
   document.getElementById('fechaConsentimiento').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   initSig();
@@ -1480,6 +1590,222 @@ function actualizarSemaforo(){
 }
 
 // ══════════════════════════════════════
+// ANÁLISIS POSTURAL
+// ══════════════════════════════════════
+function togPostura(el,key){
+  el.classList.toggle('on');
+  S.postura=S.postura||{};
+  S.postura[key]=el.classList.contains('on');
+}
+
+async function generarReportePostural(){
+  if(!S.fotos||!S.fotos.length){toast('Sube al menos una foto primero','warn');return;}
+  toast('Generando reporte postural...','ok');
+  await new Promise(r=>setTimeout(r,200));
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF('p','mm','letter');
+  const W=doc.internal.pageSize.getWidth();
+  const H=doc.internal.pageSize.getHeight();
+  let y=0;
+  const P=S.postura||{};
+  const hc=S.hc;
+
+  // ─── HEADER ───
+  doc.setFillColor(27,191,176);doc.rect(0,0,W,16,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(12);
+  doc.text('Jessica Ocampo Fisioterapeuta',10,10);
+  doc.setFontSize(8);doc.text('REPORTE DE ANÁLISIS POSTURAL',W-10,10,{align:'right'});
+  y=24;
+
+  // ─── DATOS PACIENTE ───
+  doc.setTextColor(26,26,46);doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text(hc.nombre||'Paciente',10,y);y+=6;
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(107,114,128);
+  doc.text(`Edad: ${hc.edad||'—'} años  |  Sexo: ${hc.sexo||'—'}  |  Perfil: ${
+    {deportista:'Deportista',gimnasio:'Gimnasio/Activo',postquirurgico:'Posquirúrgico',empresarial:'Empresarial'}[S.perfil]||S.perfil||'—'
+  }  |  Fecha: ${new Date().toLocaleDateString('es-CO')}`,10,y);y+=5;
+  if(hc.ocupacion||hc.deporte)doc.text(`Ocupación: ${hc.ocupacion||'—'}  |  Deporte: ${hc.deporte||'—'}`,10,y);
+  y+=8;doc.setDrawColor(27,191,176);doc.setLineWidth(0.3);doc.line(10,y,W-10,y);y+=8;
+
+  // ─── FOTOS POSTURALES ───
+  const fotosPost=S.fotos.filter(f=>
+    ['Postura anterior','Postura posterior','Lateral izquierda','Lateral derecha'].includes(f.categoria)
+  );
+  const fotasMostrar=fotosPost.length?fotosPost:S.fotos.slice(0,4);
+
+  if(fotasMostrar.length){
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(26,26,46);
+    doc.text('Registro fotográfico postural',10,y);y+=5;
+
+    // Calcular ancho de foto según cantidad
+    const n=Math.min(fotasMostrar.length,4);
+    const fotoW=(W-20-(n-1)*4)/n;
+    const fotoH=fotoW*1.35;
+    let xF=10;
+    fotasMostrar.slice(0,4).forEach(foto=>{
+      try{
+        doc.addImage(foto.src,'JPEG',xF,y,fotoW,fotoH);
+        doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(107,114,128);
+        doc.text(foto.categoria,xF+fotoW/2,y+fotoH+3,{align:'center',maxWidth:fotoW});
+      }catch(e){}
+      xF+=fotoW+4;
+    });
+    y+=fotoH+10;
+  }
+
+  if(y>H-60){doc.addPage();y=20;}
+
+  // ─── HALLAZGOS POR VISTA ───
+  const hallazgos={
+    'Vista anterior':{},
+    'Vista posterior':{},
+    'Vista lateral':{}
+  };
+  const labels={
+    // Anterior
+    ant_cabeza_adelantada:'Cabeza adelantada',
+    ant_hombro_der_alto:'Hombro derecho elevado',
+    ant_hombro_izq_alto:'Hombro izquierdo elevado',
+    ant_hombros_simetricos:'Hombros simétricos ✓',
+    ant_cresta_der_alta:'Cresta ilíaca der. elevada',
+    ant_cresta_izq_alta:'Cresta ilíaca izq. elevada',
+    ant_crestas_simetricas:'Crestas ilíacas simétricas ✓',
+    ant_rodilla_valgo_der:'Valgo rodilla derecha',
+    ant_rodilla_valgo_izq:'Valgo rodilla izquierda',
+    ant_rodilla_varo_der:'Varo rodilla derecha',
+    ant_rodilla_varo_izq:'Varo rodilla izquierda',
+    ant_pronacion_der:'Pronación pie derecho',
+    ant_pronacion_izq:'Pronación pie izquierdo',
+    ant_supinacion_der:'Supinación pie derecho',
+    ant_supinacion_izq:'Supinación pie izquierdo',
+    ant_pies_simetricos:'Pies neutros / simétricos ✓',
+    ant_escoliosis_aparente:'Escoliosis aparente',
+    // Posterior
+    pos_escap_der_alta:'Escápula derecha elevada',
+    pos_escap_izq_alta:'Escápula izquierda elevada',
+    pos_escap_aladas:'Escápulas aladas',
+    pos_escap_simetricas:'Escápulas simétricas ✓',
+    pos_columna_recta:'Columna recta ✓',
+    pos_escoliosis_der:'Curva escoliótica derecha',
+    pos_escoliosis_izq:'Curva escoliótica izquierda',
+    pos_talon_valgo_der:'Talón valgo derecho',
+    pos_talon_valgo_izq:'Talón valgo izquierdo',
+    pos_pliegues_asimetricos:'Pliegues glúteos asimétricos',
+    pos_trapecio_der_hipertonico:'Trapecio der. hipertónico',
+    pos_trapecio_izq_hipertonico:'Trapecio izq. hipertónico',
+    // Lateral
+    lat_cabeza_adelantada:'Adelantamiento cefálico',
+    lat_cifosis_aumentada:'Cifosis dorsal aumentada',
+    lat_cifosis_normal:'Cifosis normal ✓',
+    lat_lordosis_aumentada:'Hiperlordosis lumbar',
+    lat_lordosis_reducida:'Lordosis reducida / rectificada',
+    lat_lordosis_normal:'Lordosis normal ✓',
+    lat_rodilla_hiperext:'Rodilla en hiperextensión',
+    lat_rodilla_flexum:'Rodilla en flexum',
+    lat_pelvis_anteversion:'Pelvis en anteversión',
+    lat_pelvis_retroversion:'Pelvis en retroversión',
+    lat_pelvis_neutra:'Pelvis neutra ✓',
+    lat_abdomen_prominente:'Abdomen prominente',
+    lat_alineacion_normal:'Alineación global normal ✓'
+  };
+
+  // Agrupar hallazgos activos
+  const activos={
+    'Vista anterior':Object.entries(P).filter(([k,v])=>v&&k.startsWith('ant_')).map(([k])=>labels[k]||k),
+    'Vista posterior':Object.entries(P).filter(([k,v])=>v&&k.startsWith('pos_')).map(([k])=>labels[k]||k),
+    'Vista lateral':Object.entries(P).filter(([k,v])=>v&&k.startsWith('lat_')).map(([k])=>labels[k]||k)
+  };
+
+  const colores={
+    'Vista anterior':'#2563eb',
+    'Vista posterior':'#7c3aed',
+    'Vista lateral':'#d97706'
+  };
+
+  Object.entries(activos).forEach(([vista,items])=>{
+    if(!items.length)return;
+    if(y>H-40){doc.addPage();y=20;}
+    // Header de sección
+    doc.setFillColor(245,247,250);doc.roundedRect(10,y-3,W-20,7,2,2,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);
+    const col=colores[vista];
+    const rgb=col==='#2563eb'?[37,99,235]:col==='#7c3aed'?[124,58,237]:[217,119,6];
+    doc.setTextColor(...rgb);
+    doc.text(vista.toUpperCase(),14,y+1);y+=9;
+
+    const positivos=items.filter(i=>!i.includes('✓'));
+    const normales=items.filter(i=>i.includes('✓'));
+
+    positivos.forEach(item=>{
+      if(y>H-15){doc.addPage();y=20;}
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(220,38,38);
+      doc.text('⚠  '+item,14,y);y+=4.5;
+    });
+    normales.forEach(item=>{
+      if(y>H-15){doc.addPage();y=20;}
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(22,163,74);
+      doc.text('✓  '+item.replace(' ✓',''),14,y);y+=4.5;
+    });
+    y+=4;
+  });
+
+  // ─── TIPO DE POSTURA Y RIESGO ───
+  if(P.tipo||P.riesgo){
+    if(y>H-40){doc.addPage();y=20;}
+    doc.setDrawColor(27,191,176);doc.line(10,y,W-10,y);y+=6;
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(26,26,46);
+    if(P.tipo){doc.text(`Tipo de postura global: `,10,y);doc.setFont('helvetica','normal');doc.text(P.tipo,55,y);y+=5;}
+    if(P.riesgo){
+      const rCol=P.riesgo.startsWith('Bajo')?[22,163,74]:P.riesgo.startsWith('Moderado')?[217,119,6]:[220,38,38];
+      doc.setFont('helvetica','bold');doc.text(`Nivel de riesgo: `,10,y);
+      doc.setTextColor(...rCol);doc.setFont('helvetica','bold');doc.text(P.riesgo,46,y);
+      doc.setTextColor(26,26,46);y+=7;
+    }
+  }
+
+  // ─── OBSERVACIONES ───
+  if(P.obs){
+    if(y>H-40){doc.addPage();y=20;}
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(26,26,46);
+    doc.text('Observaciones clínicas',10,y);y+=5;
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(107,114,128);
+    const obsLines=doc.splitTextToSize(P.obs,W-20);
+    doc.text(obsLines,10,y);y+=obsLines.length*4+6;
+  }
+
+  // ─── RECOMENDACIONES ───
+  if(P.recomend){
+    if(y>H-40){doc.addPage();y=20;}
+    doc.setFillColor(237,253,249);doc.roundedRect(10,y-3,W-20,6,2,2,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(27,191,176);
+    doc.text('Recomendaciones posturales',14,y+1);y+=9;
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(26,26,46);
+    const recLines=doc.splitTextToSize(P.recomend,W-20);
+    doc.text(recLines,10,y);y+=recLines.length*4+6;
+  }
+
+  // ─── FIRMA ───
+  if(y>H-35){doc.addPage();y=20;}
+  y=Math.max(y,H-45);
+  doc.setDrawColor(200,200,200);doc.line(10,y,80,y);doc.line(W-80,y,W-10,y);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(107,114,128);
+  doc.text('Jessica Ocampo Fisioterapeuta',45,y+5,{align:'center'});
+  doc.text('Firma del paciente',W-45,y+5,{align:'center'});
+
+  // ─── FOOTER ───
+  const pages=doc.internal.getNumberOfPages();
+  for(let p=1;p<=pages;p++){
+    doc.setPage(p);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(200,200,200);
+    doc.text(`Jessica Ocampo Fisioterapeuta · Pereira, Colombia · jessicaocampoft.com · Pág. ${p}/${pages}`,W/2,H-4,{align:'center'});
+  }
+
+  doc.save(`reporte_postural_${(hc.nombre||'paciente').replace(/ /g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+  toast('Reporte postural generado ✓','ok');
+}
+
+// ══════════════════════════════════════
 // MÓDULO 4 — FOTOS
 // ══════════════════════════════════════
 function subirFotos(files){
@@ -1513,13 +1839,21 @@ function onDrop(ev){
 
 function renderFotos(){
   const grid=document.getElementById('photoGrid');
-  if(!S.fotos.length){grid.innerHTML='';return;}
+  if(!S.fotos.length){
+    grid.innerHTML='';
+    const card=document.getElementById('reportePosturalCard');
+    if(card)card.style.display='none';
+    return;
+  }
   grid.innerHTML=S.fotos.map(f=>`
     <div class="ph-thumb" onclick="verFoto('${f.id}')">
       <img src="${f.src}" loading="lazy">
       <div class="ph-lbl">${f.categoria}<br>${f.fecha} · S${f.sesion}</div>
       <button class="ph-del" onclick="event.stopPropagation();borrarFoto('${f.id}')">×</button>
     </div>`).join('');
+  // Mostrar sección de análisis postural al tener fotos
+  const card=document.getElementById('reportePosturalCard');
+  if(card)card.style.display='block';
 }
 
 async function borrarFoto(id){
