@@ -193,6 +193,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 .ia-btn-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 
 /* RESPONSIVE */
+/* SCORING GUIDE */
+.sg-wrap{margin-top:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.sg-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:8px 13px;background:var(--s2);border:none;cursor:pointer;font-family:var(--font-b);gap:8px}
+.sg-toggle:hover{background:var(--s3)}
+.sg-toggle-lbl{font-size:.73rem;color:var(--muted);font-family:var(--font-m);letter-spacing:.02em}
+.sg-arrow{font-size:.65rem;color:var(--muted);transition:.2s;flex-shrink:0}
+.sg-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.sg-body.open{max-height:600px}
+.sg-row{display:flex;gap:11px;padding:9px 13px;border-top:1px solid var(--border);align-items:flex-start;background:var(--s1)}
+.sg-dot{width:24px;height:24px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0;margin-top:1px}
+.sg-label{font-weight:600;font-size:.75rem;margin-bottom:2px}
+.sg-desc{font-size:.72rem;color:var(--muted);line-height:1.55}
+
 @media(max-width:768px){
   #sidebar{width:56px;padding:16px 8px}
   #sidebar .sb-link span,#sidebar .sb-section{display:none}
@@ -1339,6 +1352,83 @@ const TESTS_PERFIL={
   ]
 };
 
+// ══════════════════════════════════════
+// CRITERIOS DE PUNTUACIÓN (evidencia científica)
+// ══════════════════════════════════════
+const SCORING_CRITERIA={
+  _default:[
+    {n:0,c:'#dc2626',t:'0 — Dolor durante la prueba',d:'Se presenta dolor al realizar la prueba o el test de depuración asociado. El movimiento está contraindicado hasta identificar y tratar la causa (Cook, Burton & Kiesel, 2006).'},
+    {n:1,c:'#d97706',t:'1 — No completa el patrón',d:'La persona es incapaz de realizar correctamente el patrón de movimiento evaluado: no puede alcanzar la posición o completar el rango requerido.'},
+    {n:2,c:'#2563eb',t:'2 — Completa con compensación',d:'El sujeto es capaz de completar el movimiento, pero debe compensar de algún modo la posición (elevación de talones, valgo, inclinación de tronco, etc.).'},
+    {n:3,c:'#16a34a',t:'3 — Correcto sin compensaciones',d:'Realiza correctamente la prueba sin ninguna asimetría o compensación observable. Patrón de movimiento funcional óptimo (Cook, Burton & Kiesel, 2006).'},
+  ],
+  deepSquat:[
+    {n:0,c:'#dc2626',t:'0 — Dolor',d:'Dolor en cualquier fase del movimiento. Contraindica el entrenamiento en sentadilla. Derivar a evaluación médica antes de continuar (Cook, 2010).'},
+    {n:1,c:'#d97706',t:'1 — No completa',d:'Incapaz de alcanzar la posición: fémur no baja de horizontal, talones marcadamente elevados, brazos caen frente al cuerpo o hay flexión excesiva de columna (FMS™ Manual, 2014).'},
+    {n:2,c:'#2563eb',t:'2 — Con compensación',d:'Completa la sentadilla con compensación observable (ej: talones elevados o brazos caídos). Indica déficit de movilidad de tobillo, cadera o control torácico que requiere corrección (Cook & Burton, 2006).'},
+    {n:3,c:'#16a34a',t:'3 — Óptimo',d:'Fémur por debajo de horizontal, torso paralelo a las tibias, rodillas alineadas sobre pies, barra sobre los pies. Sin elevación de talones ni caída de brazos (Cook, Burton & Kiesel, 2014).'},
+  ],
+  singleLegSquat:[
+    {n:0,c:'#dc2626',t:'0 — Dolor',d:'Dolor en rodilla, cadera o columna durante la ejecución. Indica posible patología articular, tendinosa o síndrome de dolor patelofemoral que contraindica la carga (Crossley et al., 2011).'},
+    {n:1,c:'#d97706',t:'1 — No completa',d:'Colapso en valgo severo, caída del hemipelvis (Trendelenburg positivo), pérdida de equilibrio o incapacidad de controlar el descenso. Disfunción neuromuscular significativa de cadera (Mauntel et al., 2013).'},
+    {n:2,c:'#2563eb',t:'2 — Con compensación',d:'Completa con valgo leve de rodilla, inclinación moderada de tronco o caída pélvica mínima. Déficit de control neuromuscular de cadera y core que predispone a lesión (Powers, 2010).'},
+    {n:3,c:'#16a34a',t:'3 — Óptimo',d:'Descenso controlado, rodilla sobre el 2° dedo, pelvis horizontal, tronco estable. ≤5° de valgo considerado normal. Indica buena función glútea y estabilidad lumbopélvica (Crossley et al., 2011).'},
+  ],
+  birdDog:[
+    {n:0,c:'#dc2626',t:'0 — Dolor',d:'Dolor lumbar o de cadera durante la ejecución. Indica sensibilización central o patología lumbar activa que requiere manejo antes del entrenamiento (McGill, 2010).'},
+    {n:1,c:'#d97706',t:'1 — No completa',d:'Rotación pélvica evidente >15°, pérdida completa de neutral lumbar, temblor o pérdida de equilibrio que impide completar el movimiento. Falla del sistema estabilizador profundo (McGill, 2010).'},
+    {n:2,c:'#2563eb',t:'2 — Con compensación',d:'Completa pero con pérdida leve de neutral lumbar, rotación pélvica mínima o falta de control escapular. Déficit de estabilidad lumbopélvica que requiere trabajo correctivo (Cook et al., 2014).'},
+    {n:3,c:'#16a34a',t:'3 — Óptimo',d:'Neutral lumbar mantenida, sin rotación pélvica observable, control escapular completo, movimiento fluido y simétrico bilateral. Indica estabilidad del core funcional (McGill, Stuart M., 2010).'},
+  ],
+  deadBug:[
+    {n:0,c:'#dc2626',t:'0 — Dolor',d:'Dolor lumbar al extender la extremidad. Indica falla del sistema estabilizador profundo (transverso del abdomen / multífido) que no logra proteger la columna (Hodges & Richardson, 1996).'},
+    {n:1,c:'#d97706',t:'1 — No completa',d:'Hiperlordosis marcada durante la extensión de extremidades, apnea respiratoria o incapacidad de coordinar el patrón contralateral. Disfunción del control motor del core (Hodges, 2003).'},
+    {n:2,c:'#2563eb',t:'2 — Con compensación',d:'Completa con compensación cervical, pérdida breve del neutro lumbar o desincronización del patrón respiratorio. Déficit de resistencia del core ante demanda (McGill, 2016).'},
+    {n:3,c:'#16a34a',t:'3 — Óptimo',d:'Columna lumbar neutra a lo largo de todo el movimiento, respiración diafragmática continua y coordinación perfecta contralateral. Patrón estabilizador funcional completo (Cook, 2014).'},
+  ],
+  hurdleStep:[
+    {n:0,c:'#dc2626',t:'0 — Dolor',d:'Dolor en cadera, rodilla o tobillo en apoyo monopodal. Contraindica el entrenamiento en carga unipodal hasta evaluación médica (Cook, 2010).'},
+    {n:1,c:'#d97706',t:'1 — No completa',d:'Contacto con la valla, pérdida de equilibrio o incapacidad de mantener la alineación cadera-rodilla-tobillo en el apoyo. Déficit severo de estabilidad de cadera (FMS™ Manual, 2014).'},
+    {n:2,c:'#2563eb',t:'2 — Con compensación',d:'Completa el paso pero con inclinación lateral de tronco, asimetría pélvica o movimiento excesivo de la barra. Déficit de estabilidad de cadera y control lumbopélvico (Cook & Burton, 2006).'},
+    {n:3,c:'#16a34a',t:'3 — Óptimo',d:'Cadera, rodilla y tobillo alineados en apoyo, movimiento lumbar mínimo, barra horizontal sin pérdida de equilibrio. Indica estabilidad de cadera y movilidad de cadera contralateral óptimas (FMS™, 2014).'},
+  ],
+  inlineLunge:[
+    {n:0,c:'#dc2626',t:'0 — Dolor',d:'Dolor en rodilla, cadera o columna durante la zancada. Contraindica la carga en posición de lunge hasta evaluación médica (Cook, 2010).'},
+    {n:1,c:'#d97706',t:'1 — No completa',d:'Pérdida de los 3 puntos de contacto de la barra, rodilla toca el suelo fuera de referencia, talón elevado o pérdida de equilibrio. Déficit de estabilidad rotacional y movilidad (FMS™, 2014).'},
+    {n:2,c:'#2563eb',t:'2 — Con compensación',d:'Completa con movimiento de tronco, pérdida de un punto de contacto o inestabilidad de tobillo. Déficit de estabilidad rotacional de cadera y tobillo (Cook & Burton, 2006).'},
+    {n:3,c:'#16a34a',t:'3 — Óptimo',d:'Los 3 puntos de la barra se mantienen, rodilla toca el suelo detrás del talón contralateral, sin movimiento de tronco. Indica estabilidad rotacional y movilidad funcional óptimas (FMS™, 2014).'},
+  ],
+  aslr:[
+    {n:0,c:'#dc2626',t:'0 — Dolor',d:'Dolor al elevar la extremidad o en la pierna contralateral. Indica posible patología discal o radiculopatía activa que requiere evaluación médica urgente (Cook, 2010).'},
+    {n:1,c:'#d97706',t:'1 — No completa',d:'El maléolo no supera el punto medio (mid-knee). Acortamiento severo de isquiotibiales y/o flexores de cadera con restricción de movilidad significativa (Cook & Burton, 2006).'},
+    {n:2,c:'#2563eb',t:'2 — Con compensación',d:'Maléolo entre mid-knee y mid-thigh. Acortamiento moderado con compensación pélvica o lumbar. Requiere trabajo de movilidad de isquiotibiales y psoas (FMS™, 2014).'},
+    {n:3,c:'#16a34a',t:'3 — Óptimo',d:'Maléolo supera el mid-thigh (línea EIAS–patela), pierna contralateral estable en neutro, sin rotación pélvica ni lumbar. Movilidad de cadera y flexibilidad óptimas (Cook, Burton & Kiesel, 2014).'},
+  ],
+  shinbox:[
+    {n:0,c:'#dc2626',t:'0 — Dolor',d:'Dolor en cadera, rodilla o columna durante la evaluación o transición. Indica patología articular activa (FAI, condropatía, lesión de meniscos) que requiere evaluación específica (Functional Movement Institute).'},
+    {n:1,c:'#d97706',t:'1 — No completa',d:'Incapaz de completar la transición RI→RE, ROM articular limitado (<30° RI o RE), o requiere apoyo de manos para moverse. Restricción articular severa de cadera (Meehan et al., 2018).'},
+    {n:2,c:'#2563eb',t:'2 — Con compensación',d:'Completa la transición con compensaciones: elevación de hemipelvis ipsilateral, inclinación de tronco >15° o desplazamiento de peso significativo. Restricción articular moderada (FMI, 2014).'},
+    {n:3,c:'#16a34a',t:'3 — Fluida y controlada',d:'Transición fluida y controlada RI→RE, ≥45° en ambas rotaciones, puede cargar la posición sin compensaciones observables. Movilidad de cadera óptima para el deporte (FMI, 2014).'},
+  ],
+};
+
+function buildScoringGuide(testId){
+  const uid='sg_'+testId+'_'+(Math.random()*9999|0);
+  const criteria=SCORING_CRITERIA[testId]||SCORING_CRITERIA._default;
+  return `<div class="sg-wrap">
+    <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+      <span class="sg-toggle-lbl">📋 Criterios de puntuación (evidencia científica)</span>
+      <span class="sg-arrow">▼</span>
+    </button>
+    <div class="sg-body">
+      ${criteria.map(c=>`<div class="sg-row">
+        <div class="sg-dot" style="background:${c.c}">${c.n}</div>
+        <div><div class="sg-label" style="color:${c.c}">${c.t}</div><div class="sg-desc">${c.d}</div></div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
 function renderTests(){
   const comunes=document.getElementById('testsComunes');
   const perfil=document.getElementById('testsPerfil');
@@ -1404,6 +1494,7 @@ function buildTestCard(t){
         <div class="score-row"><span class="score-lbl">${l}</span>
           <div class="score-btns">${[0,1,2,3].map(n=>`<button class="sb ${S.tests[t.id+'_'+l.toLowerCase()]===n?'s'+n:''}" onclick="setScore('${t.id}_${l.toLowerCase()}',${n},this)">${n}</button>`).join('')}</div>
         </div>`).join('');
+      body+=buildScoringGuide(t.id);
     }
     if(t.comps)body+=buildComps(t.id,t.comps);
   }else if(t.posNeg){
@@ -1494,8 +1585,7 @@ function buildTestCard(t){
           <div class="score-btns">
             ${[0,1,2,3].map(n=>`
             <button class="sb ${S.tests['shinbox_trans_'+l.toLowerCase()]===n?'s'+n:''}"
-              onclick="setScore('shinbox_trans_${l.toLowerCase()}',${n},this)"
-              title="${['No puede realizar','Compensaciones severas','Compensaciones leves','Fluida y controlada'][n]}">${n}</button>`).join('')}
+              onclick="setScore('shinbox_trans_${l.toLowerCase()}',${n},this)">${n}</button>`).join('')}
           </div>
         </div>
         <div class="field" style="margin-top:8px">
@@ -1507,6 +1597,7 @@ function buildTestCard(t){
         </div>
       </div>`).join('')}
     </div>
+    ${buildScoringGuide('shinbox')}
     <div id="shinboxResult" style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:12px;font-size:.82rem;display:none"></div>
     <div style="font-size:.78rem;color:var(--muted);margin-bottom:6px">Compensaciones observadas:</div>
     <div class="checks-wrap">
@@ -1523,6 +1614,7 @@ function buildTestCard(t){
     body=`<div class="score-row"><span class="score-lbl">Puntuación</span>
       <div class="score-btns">${[0,1,2,3].map(n=>`<button class="sb ${S.tests[t.id]===n?'s'+n:''}" onclick="setScore('${t.id}',${n},this)">${n}</button>`).join('')}</div>
     </div>`;
+    body+=buildScoringGuide(t.id);
     if(t.comps)body+=buildComps(t.id,t.comps);
   }
   body+=`<div class="field" style="margin-top:10px"><label>Observaciones</label>
