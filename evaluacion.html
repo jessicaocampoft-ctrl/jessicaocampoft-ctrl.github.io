@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Evaluación Fisioterapéutica — Jessica Ocampo</title>
+<link rel="icon" href="Logo/4.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Cormorant+Garamond:ital,wght@0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F8FA;--s1:#FFFFFF;--s2:#F0F2F5;--s3:#E8EAED;
+  --primary:#1BBFB0;--primary-h:#17A89A;
+  --text:#1A1A2E;--muted:#6B7280;
+  --border:rgba(27,191,176,.18);--glow:rgba(27,191,176,.12);
+  --font-h:'Cormorant Garamond',serif;--font-b:'DM Sans',sans-serif;--font-m:'DM Mono',monospace;
+  --r:10px;--tr:.2s ease;
+  --ok:#16a34a;--warn:#d97706;--err:#dc2626;--info:#2563eb;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--primary);border-radius:99px}
+
+/* SIDEBAR */
+#sidebar{position:fixed;top:0;left:0;height:100vh;width:220px;background:#fff;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;gap:4px;padding:24px 12px;z-index:100;overflow-y:auto;box-shadow:2px 0 12px rgba(0,0,0,.06)}
+.sb-logo{padding:0 8px 20px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.sb-logo img{height:36px}
+.sb-link{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;color:var(--muted);font-size:.88rem;font-weight:500;cursor:pointer;border:none;background:none;text-align:left;width:100%;transition:var(--tr);text-decoration:none}
+.sb-link:hover{background:var(--s2);color:var(--text)}
+.sb-link.active{background:rgba(126,221,208,.1);color:var(--primary);border:1px solid var(--border)}
+.sb-sep{height:1px;background:var(--border);margin:8px 0}
+.sb-section{font-size:.68rem;font-family:var(--font-m);color:var(--muted);padding:6px 14px;letter-spacing:.08em;text-transform:uppercase}
+
+/* MAIN */
+#main{margin-left:220px;padding:32px 36px;min-height:100vh}
+
+/* PROGRESS */
+.wiz-progress{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:16px 24px;margin-bottom:28px;overflow-x:auto}
+.wiz-steps{display:flex;align-items:center;min-width:600px}
+.wiz-step{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;position:relative;cursor:pointer}
+.wiz-step::before{content:'';position:absolute;top:15px;right:-50%;width:100%;height:2px;background:var(--s3);z-index:0}
+.wiz-step:last-child::before{display:none}
+.ws-dot{width:30px;height:30px;border-radius:50%;background:var(--s3);border:2px solid var(--s3);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--muted);position:relative;z-index:1;transition:var(--tr)}
+.wiz-step.done .ws-dot{background:var(--primary);border-color:var(--primary);color:#fff}
+.wiz-step.active .ws-dot{background:#fff;border-color:var(--primary);color:var(--primary);box-shadow:0 0 0 4px var(--glow)}
+.ws-label{font-size:.68rem;color:var(--muted);text-align:center;white-space:nowrap}
+.wiz-step.active .ws-label,.wiz-step.done .ws-label{color:var(--text);font-weight:500}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:20px}
+.card-title{font-family:var(--font-h);font-size:1.2rem;font-weight:600;margin-bottom:18px}
+.sec-title{font-family:var(--font-h);font-size:1rem;color:var(--primary);margin:22px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* PAGE HEADER */
+.page-header{margin-bottom:24px}
+.page-title{font-family:var(--font-h);font-size:1.9rem;font-weight:600}
+.page-title em{color:var(--primary);font-style:italic}
+.page-sub{color:var(--muted);font-size:.9rem;margin-top:5px}
+
+/* PROFILE CARDS */
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}
+.pc{background:var(--s1);border:2px solid var(--border);border-radius:14px;padding:28px 18px;text-align:center;cursor:pointer;transition:var(--tr);position:relative}
+.pc:hover{border-color:var(--primary);transform:translateY(-3px);box-shadow:0 8px 28px var(--glow)}
+.pc.sel{border-color:var(--primary);background:rgba(27,191,176,.04)}
+.pc-icon{font-size:2.4rem;margin-bottom:10px;display:block}
+.pc h3{font-family:var(--font-h);font-size:1.05rem;margin-bottom:5px}
+.pc p{font-size:.78rem;color:var(--muted);line-height:1.5}
+.pc-check{position:absolute;top:10px;right:10px;width:22px;height:22px;background:var(--primary);border-radius:50%;display:none;align-items:center;justify-content:center;color:#fff;font-size:.75rem}
+.pc.sel .pc-check{display:flex}
+
+/* FORMS */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:.78rem;color:var(--muted);font-family:var(--font-m)}
+.field input,.field select,.field textarea{background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;transition:var(--tr);width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--glow)}
+.field textarea{resize:vertical;min-height:72px}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.span-full{grid-column:1/-1}
+.field-note{font-size:.75rem;color:var(--muted);margin-top:3px}
+.badge-imc{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border-radius:20px;font-size:.78rem;font-weight:600;margin-top:5px}
+
+/* EVA */
+.eva-track{position:relative;padding:10px 0}
+.eva-slider{width:100%;height:10px;border-radius:5px;-webkit-appearance:none;outline:none;cursor:pointer;background:linear-gradient(to right,#16a34a 0%,#d97706 50%,#dc2626 100%)}
+.eva-slider::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid var(--primary);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.eva-num{font-size:2rem;font-weight:700;font-family:var(--font-m);text-align:center}
+.eva-faces{display:flex;justify-content:space-between;font-size:1.1rem;margin-top:3px}
+.eva-labels{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted)}
+
+/* BODY MAP */
+.bmap-wrap{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.bmap-col{text-align:center}
+.bmap-col label{font-size:.75rem;color:var(--muted);display:block;margin-bottom:6px}
+.bmap-col svg{cursor:crosshair;border:1px solid var(--border);border-radius:8px;background:var(--s2)}
+.zona-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.zona-chip{background:rgba(220,38,38,.1);color:#dc2626;border:1px solid rgba(220,38,38,.3);border-radius:20px;padding:2px 10px;font-size:.75rem;display:flex;align-items:center;gap:5px}
+.zona-chip button{background:none;border:none;cursor:pointer;color:#dc2626;font-size:.8rem;line-height:1;padding:0}
+
+/* SIGNATURE */
+.sig-wrap{border:1px dashed var(--border);border-radius:8px;background:var(--s2);overflow:hidden;position:relative}
+#sigCanvas{display:block;touch-action:none;cursor:crosshair}
+.sig-clear{position:absolute;top:8px;right:8px;font-size:.75rem;padding:4px 10px}
+
+/* TESTS */
+.test-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.test-hd{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;cursor:pointer;user-select:none}
+.test-hd:hover{background:var(--s2)}
+.test-name{font-weight:600;font-size:.92rem;display:flex;align-items:center;gap:8px}
+.test-tag{background:var(--s2);border-radius:6px;padding:2px 9px;font-size:.72rem;font-family:var(--font-m);color:var(--muted)}
+.test-bd{padding:0 18px;max-height:0;overflow:hidden;transition:max-height .3s ease}
+.test-bd.open{max-height:800px;padding:0 18px 18px}
+.score-row{display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap}
+.score-lbl{font-size:.8rem;color:var(--muted);width:80px;flex-shrink:0}
+.score-btns{display:flex;gap:6px}
+.sb{width:34px;height:34px;border-radius:7px;border:1.5px solid var(--border);background:var(--s2);font-weight:700;font-size:.85rem;cursor:pointer;transition:var(--tr);color:var(--muted)}
+.sb:hover{border-color:var(--primary)}
+.sb.s0{background:#dc2626;border-color:#dc2626;color:#fff}
+.sb.s1{background:#d97706;border-color:#d97706;color:#fff}
+.sb.s2{background:#2563eb;border-color:#2563eb;color:#fff}
+.sb.s3{background:#16a34a;border-color:#16a34a;color:#fff}
+.checks-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.chk-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;background:var(--s2);border:1px solid transparent;border-radius:20px;font-size:.75rem;cursor:pointer;transition:var(--tr);user-select:none}
+.chk-pill input[type=checkbox]{display:none}
+.chk-pill.on{background:rgba(27,191,176,.12);border-color:var(--border);color:var(--primary)}
+
+/* SEMAFORO */
+.sem-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.sem{display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:6px;font-size:.78rem}
+.sem.g{background:rgba(22,163,74,.1);color:#16a34a}.sem.y{background:rgba(217,119,6,.1);color:#d97706}.sem.r{background:rgba(220,38,38,.1);color:#dc2626}
+.sem::before{content:'';width:7px;height:7px;border-radius:50%;flex-shrink:0;background:currentColor}
+
+/* PHOTOS */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:var(--tr)}
+.upload-zone:hover,.drag{border-color:var(--primary);background:rgba(27,191,176,.04)}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:14px}
+.ph-thumb{border-radius:8px;overflow:hidden;border:1px solid var(--border);position:relative;aspect-ratio:3/4;background:var(--s3);cursor:pointer}
+.ph-thumb img{width:100%;height:100%;object-fit:cover}
+.ph-lbl{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.65);color:#fff;font-size:.68rem;padding:4px 6px;text-align:center}
+.ph-del{position:absolute;top:5px;right:5px;background:rgba(220,38,38,.9);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.7rem;cursor:pointer;display:none;align-items:center;justify-content:center}
+.ph-thumb:hover .ph-del{display:flex}
+
+/* SOAP */
+.soap-block{border-left:3px solid var(--primary);padding-left:14px;margin-bottom:14px}
+.soap-lbl{font-size:.72rem;font-weight:700;color:var(--primary);font-family:var(--font-m);letter-spacing:.06em;margin-bottom:5px}
+
+/* SESSION TIMELINE */
+.sess-list{display:flex;flex-direction:column;gap:12px}
+.sess-item{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;align-items:flex-start;gap:14px}
+.sess-num{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+.sess-info{flex:1}
+.sess-date{font-size:.78rem;color:var(--muted)}
+.sess-eva{display:flex;align-items:center;gap:8px;margin-top:6px}
+.eva-dot{width:10px;height:10px;border-radius:50%}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:8px;font-family:var(--font-b);font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:var(--tr);text-decoration:none}
+.btn-teal{background:var(--primary);color:#0D0D0D}.btn-teal:hover{background:var(--primary-h)}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text)}.btn-ghost:hover{background:var(--s2)}
+.btn-ok{background:#16a34a;color:#fff}.btn-ok:hover{background:#15803d}
+.btn-danger{background:#dc2626;color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-sm{padding:6px 12px;font-size:.78rem}
+.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;align-items:center}
+
+/* TOAST */
+.toast-wrap{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--text);color:#fff;padding:11px 16px;border-radius:8px;font-size:.83rem;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,.25);animation:tin .2s ease;display:flex;align-items:center;gap:8px}
+.toast.ok{background:var(--ok)}.toast.err{background:var(--err)}.toast.warn{background:var(--warn)}
+@keyframes tin{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+/* CONSENT */
+.consent-text{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:.8rem;color:var(--muted);line-height:1.75;max-height:160px;overflow-y:auto;margin-bottom:12px}
+.check-row{display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.85rem}
+.check-row input{margin-top:3px;accent-color:var(--primary)}
+
+/* DISCHARGE */
+.alta-box{background:linear-gradient(135deg,rgba(27,191,176,.08),rgba(27,191,176,.02));border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center}
+.star-wrap{display:flex;gap:6px;font-size:1.8rem;cursor:pointer;justify-content:center}
+.star{opacity:.3;transition:.1s;user-select:none}.star.on{opacity:1}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  #sidebar{width:56px;padding:16px 8px}
+  #sidebar .sb-link span,#sidebar .sb-section{display:none}
+  #main{margin-left:56px;padding:16px}
+  .fg{grid-template-columns:1fr}
+  .fg2{grid-template-columns:1fr}
+  .profile-grid{grid-template-columns:1fr 1fr}
+  .bmap-wrap{gap:8px}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sb-logo"><img src="Logo/4.png" alt="Logo" onerror="this.style.display='none'"></div>
+  <a class="sb-link" href="admin.html">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    <span>Volver al admin</span>
+  </a>
+  <div class="sb-sep"></div>
+  <div class="sb-section">Evaluación</div>
+  <button class="sb-link active" onclick="WIZ.go(0)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    <span>Perfil</span>
+  </button>
+  <button class="sb-link" onclick="WIZ.go(1)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <span>Historia clínica</span>
+  </button>
+  <button class="sb-link" onclick="WIZ.go(2)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>Evaluación IA</span>
+  </button>
+  <button class="sb-link" onclick="WIZ.go(3)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <span>Fotos</span>
+  </button>
+  <button class="sb-link" onclick="WIZ.go(4)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span>Sesiones</span>
+  </button>
+  <button class="sb-link" onclick="WIZ.go(5)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+    <span>PDF</span>
+  </button>
+  <button class="sb-link" onclick="WIZ.go(6)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    <span>Alta</span>
+  </button>
+  <div class="sb-sep" style="margin-top:auto"></div>
+  <button class="sb-link" onclick="autoGuardar()" style="color:var(--primary)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    <span>Guardar</span>
+  </button>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+    <div>
+      <h1 class="page-title">Evaluación <em>Fisioterapéutica</em></h1>
+      <p class="page-sub" id="pageSubtitle">Selecciona o crea una evaluación para comenzar</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="nuevaEval()">+ Nueva evaluación</button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirListaEvals()">📋 Mis evaluaciones</button>
+    </div>
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div class="wiz-progress" id="wizProgress" style="display:none">
+    <div class="wiz-steps" id="wizSteps"></div>
+  </div>
+
+  <!-- LISTA DE EVALUACIONES (inicio) -->
+  <div id="viewLista">
+    <div class="card" style="text-align:center;padding:48px">
+      <div style="font-size:3rem;margin-bottom:16px">📋</div>
+      <div class="card-title" style="margin-bottom:8px">Módulo de Evaluación Fisioterapéutica</div>
+      <p style="color:var(--muted);margin-bottom:28px;max-width:420px;margin-inline:auto">Crea evaluaciones completas con historia clínica, tests funcionales, fotos y generación de PDF profesional.</p>
+      <button class="btn btn-teal" onclick="nuevaEval()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Nueva evaluación
+      </button>
+      <div id="evalListWrap" style="margin-top:28px;text-align:left"></div>
+    </div>
+  </div>
+
+  <!-- MÓDULO 1: PERFIL -->
+  <div id="view0" style="display:none">
+    <div class="card">
+      <div class="card-title">Selecciona el perfil del paciente</div>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px">El perfil determina qué tests de evaluación se mostrarán.</p>
+      <div class="profile-grid">
+        <div class="pc" onclick="selPerfil('deportista')">
+          <div class="pc-check">✓</div>
+          <span class="pc-icon">🏋️</span>
+          <h3>Deportista</h3>
+          <p>CrossFit, artes marciales, alto rendimiento, competición</p>
+        </div>
+        <div class="pc" onclick="selPerfil('gimnasio')">
+          <div class="pc-check">✓</div>
+          <span class="pc-icon">💪</span>
+          <h3>Gimnasio / Activo</h3>
+          <p>Actividad física regular, gym, entrenamiento funcional</p>
+        </div>
+        <div class="pc" onclick="selPerfil('postquirurgico')">
+          <div class="pc-check">✓</div>
+          <span class="pc-icon">🩺</span>
+          <h3>Postquirúrgico</h3>
+          <p>LCA, hombro, columna, prótesis, recuperación quirúrgica</p>
+        </div>
+        <div class="pc" onclick="selPerfil('empresarial')">
+          <div class="pc-check">✓</div>
+          <span class="pc-icon">💼</span>
+          <h3>Empresarial / Sedentario</h3>
+          <p>Trabajo de oficina, adulto mayor, sedentarismo</p>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-teal" onclick="WIZ.next()">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- MÓDULO 2: HISTORIA CLÍNICA -->
+  <div id="view1" style="display:none">
+    <!-- DATOS PERSONALES -->
+    <div class="card">
+      <div class="card-title">Historia Clínica</div>
+      <div class="sec-title">Datos personales</div>
+      <div class="fg">
+        <div class="field span-full"><label>Nombre completo *</label><input id="hcNombre" type="text" placeholder="Ana García López" oninput="S.hc.nombre=this.value"></div>
+        <div class="field"><label>Fecha de nacimiento</label><input id="hcFechaNac" type="date" onchange="calcEdad()"></div>
+        <div class="field"><label>Edad (años)</label><input id="hcEdad" type="number" placeholder="0" readonly style="background:var(--s3)"></div>
+        <div class="field"><label>Sexo biológico</label>
+          <select id="hcSexo" onchange="S.hc.sexo=this.value;calcIMC()">
+            <option value="">Selecciona</option><option>Masculino</option><option>Femenino</option>
+          </select>
+        </div>
+        <div class="field"><label>Peso (kg)</label><input id="hcPeso" type="number" placeholder="70" min="20" max="300" oninput="calcIMC()"></div>
+        <div class="field"><label>Talla (cm)</label><input id="hcTalla" type="number" placeholder="170" min="100" max="230" oninput="calcIMC()"></div>
+        <div class="field"><label>IMC</label>
+          <input id="hcIMC" type="text" readonly style="background:var(--s3)">
+          <div id="imcBadge" class="badge-imc" style="display:none"></div>
+        </div>
+        <div class="field"><label>Teléfono</label><input id="hcTel" type="tel" placeholder="3136467945" oninput="S.hc.telefono=this.value"></div>
+        <div class="field"><label>Correo electrónico</label><input id="hcEmail" type="email" placeholder="correo@email.com" oninput="S.hc.email=this.value"></div>
+        <div class="field"><label>Ocupación</label><input id="hcOcupacion" type="text" placeholder="Docente, programador..." oninput="S.hc.ocupacion=this.value"></div>
+        <div class="field"><label>Deporte / actividad</label><input id="hcDeporte" type="text" placeholder="Fútbol, yoga, ninguno..." oninput="S.hc.deporte=this.value"></div>
+        <div class="field"><label>Frecuencia semanal (días)</label><input id="hcFrecuencia" type="number" min="0" max="7" placeholder="3" oninput="S.hc.frecuenciaDeporte=+this.value"></div>
+      </div>
+    </div>
+
+    <!-- MOTIVO DE CONSULTA -->
+    <div class="card">
+      <div class="sec-title">Motivo de consulta</div>
+      <div class="field" style="margin-bottom:16px">
+        <label>Describe el motivo de consulta *</label>
+        <textarea id="hcMotivo" rows="3" placeholder="¿Qué te trae hoy? ¿Cuándo empezó? ¿Cómo se manifiesta?" oninput="S.hc.motivo=this.value"></textarea>
+      </div>
+
+      <label style="font-size:.82rem;color:var(--muted);display:block;margin-bottom:10px">Marca las zonas de dolor en el cuerpo (haz clic)</label>
+      <div class="bmap-wrap">
+        <div class="bmap-col">
+          <label>Vista anterior</label>
+          <svg id="bmapAnt" width="120" height="240" viewBox="0 0 120 240" onclick="addZona(event,'anterior')">
+            <ellipse cx="60" cy="22" rx="18" ry="20" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="38" y="44" width="44" height="55" rx="6" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="10" y="46" width="26" height="48" rx="8" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="84" y="46" width="26" height="48" rx="8" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="38" y="100" width="20" height="55" rx="5" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="62" y="100" width="20" height="55" rx="5" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="38" y="156" width="20" height="50" rx="5" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="62" y="156" width="20" height="50" rx="5" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="38" y="207" width="20" height="28" rx="4" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="62" y="207" width="20" height="28" rx="4" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <g id="dotsAnt"></g>
+          </svg>
+        </div>
+        <div class="bmap-col">
+          <label>Vista posterior</label>
+          <svg id="bmapPos" width="120" height="240" viewBox="0 0 120 240" onclick="addZona(event,'posterior')">
+            <ellipse cx="60" cy="22" rx="18" ry="20" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="38" y="44" width="44" height="55" rx="6" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="10" y="46" width="26" height="48" rx="8" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="84" y="46" width="26" height="48" rx="8" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="38" y="100" width="20" height="55" rx="5" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="62" y="100" width="20" height="55" rx="5" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="38" y="156" width="20" height="50" rx="5" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="62" y="156" width="20" height="50" rx="5" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="38" y="207" width="20" height="28" rx="4" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <rect x="62" y="207" width="20" height="28" rx="4" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+            <g id="dotsPos"></g>
+          </svg>
+        </div>
+      </div>
+      <div id="zonaList" class="zona-list" style="margin-top:12px"></div>
+
+      <div class="sec-title">Escala de dolor EVA</div>
+      <div class="eva-track">
+        <div class="eva-num" id="evaNum">5</div>
+        <div class="eva-faces"><span>😊</span><span>😐</span><span>😣</span><span>😭</span></div>
+        <input type="range" class="eva-slider" id="evaSlider" min="0" max="10" value="5" oninput="updEva(this.value)">
+        <div class="eva-labels"><span>0 Sin dolor</span><span>5 Moderado</span><span>10 Insoportable</span></div>
+      </div>
+
+      <div class="fg" style="margin-top:16px">
+        <div class="field"><label>Tiempo de evolución</label><input id="hcTiempo" type="number" min="1" placeholder="2" oninput="S.hc.tiempoEvolucion=this.value"></div>
+        <div class="field"><label>Unidad</label>
+          <select id="hcTiempoU" onchange="S.hc.tiempoUnidad=this.value">
+            <option>Días</option><option>Semanas</option><option>Meses</option><option>Años</option>
+          </select>
+        </div>
+        <div class="field"><label>Tipo de lesión</label>
+          <select id="hcTipoLesion" onchange="S.hc.tipoLesion=this.value">
+            <option value="">Selecciona</option><option>Aguda</option><option>Subaguda</option><option>Crónica</option>
+          </select>
+        </div>
+        <div class="field"><label>¿Tratamiento previo?</label>
+          <select id="hcTratPrev" onchange="toggleTratPrev(this.value)">
+            <option value="no">No</option><option value="si">Sí</option>
+          </select>
+        </div>
+        <div class="field span-full" id="hcTratPrevDescWrap" style="display:none">
+          <label>Describe el tratamiento previo</label>
+          <textarea id="hcTratPrevDesc" rows="2" oninput="S.hc.tratPrevDesc=this.value"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANTECEDENTES -->
+    <div class="card">
+      <div class="sec-title">Antecedentes</div>
+      <div class="fg">
+        <div class="field"><label>¿Cirugías previas?</label>
+          <select id="hcCirugia" onchange="toggleField('hcCirugiaDescW',this.value==='si')">
+            <option value="no">No</option><option value="si">Sí</option>
+          </select>
+        </div>
+        <div class="field span-full" id="hcCirugiaDescW" style="display:none">
+          <label>¿Cuáles? ¿En qué año?</label>
+          <textarea id="hcCirugiaDesc" rows="2" oninput="S.hc.cirugiaDesc=this.value"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:8px">Patologías de base</label>
+        <div class="checks-wrap" id="patologiasWrap">
+          <label class="chk-pill" onclick="togChk(this,'patologia')"><input type="checkbox" value="Diabetes"> Diabetes</label>
+          <label class="chk-pill" onclick="togChk(this,'patologia')"><input type="checkbox" value="Hipertensión"> Hipertensión</label>
+          <label class="chk-pill" onclick="togChk(this,'patologia')"><input type="checkbox" value="Osteoporosis"> Osteoporosis</label>
+          <label class="chk-pill" onclick="togChk(this,'patologia')"><input type="checkbox" value="Artritis"> Artritis</label>
+          <label class="chk-pill" onclick="togChk(this,'patologia')"><input type="checkbox" value="Artrosis"> Artrosis</label>
+          <label class="chk-pill" onclick="togChk(this,'patologia')"><input type="checkbox" value="Fibromialgia"> Fibromialgia</label>
+          <label class="chk-pill" onclick="togChk(this,'patologia')"><input type="checkbox" value="Hernia discal"> Hernia discal</label>
+          <label class="chk-pill" onclick="togChk(this,'patologia')"><input type="checkbox" value="Cardiopatía"> Cardiopatía</label>
+          <label class="chk-pill" onclick="togChk(this,'patologia')"><input type="checkbox" value="Ninguna"> Ninguna</label>
+        </div>
+      </div>
+      <div class="fg" style="margin-top:14px">
+        <div class="field"><label>Medicamentos actuales</label><input id="hcMeds" type="text" placeholder="Ibuprofeno, omeprazol..." oninput="S.hc.medicamentos=this.value"></div>
+        <div class="field"><label>Alergias relevantes</label><input id="hcAlergias" type="text" placeholder="Ninguna, penicilina..." oninput="S.hc.alergias=this.value"></div>
+      </div>
+    </div>
+
+    <!-- OBJETIVOS -->
+    <div class="card">
+      <div class="sec-title">Objetivos del paciente</div>
+      <div class="checks-wrap" style="margin-bottom:14px" id="objetivosWrap">
+        <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Reducir dolor"> Reducir dolor</label>
+        <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Volver al deporte"> Volver al deporte</label>
+        <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Mejorar movilidad"> Mejorar movilidad</label>
+        <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Prevención"> Prevención</label>
+        <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Rendimiento"> Rendimiento</label>
+        <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Rehabilitación postquirúrgica"> Rehab. postquirúrgica</label>
+        <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Mejorar calidad de vida"> Calidad de vida</label>
+      </div>
+      <div class="field"><label>Describe con sus palabras lo que espera lograr</label>
+        <textarea id="hcObjetivosDesc" rows="2" oninput="S.hc.objetivosDesc=this.value" placeholder="Quiero poder jugar fútbol sin dolor en 2 meses..."></textarea>
+      </div>
+    </div>
+
+    <!-- CONSENTIMIENTO -->
+    <div class="card">
+      <div class="sec-title">Consentimiento informado</div>
+      <div class="consent-text">
+        Yo, paciente de Jessica Ocampo Fisioterapeuta, declaro que he sido informado/a de manera clara y comprensible sobre los objetivos, procedimientos, beneficios y posibles riesgos de la evaluación y el tratamiento fisioterapéutico propuesto. Entiendo que puedo hacer preguntas en cualquier momento y que tengo derecho a retirar mi consentimiento sin que esto afecte mi atención. Autorizo que mi información clínica sea registrada y utilizada exclusivamente con fines terapéuticos y de seguimiento de mi proceso de recuperación. Confirmo que la información proporcionada es verdadera y completa. Fecha de evaluación: <span id="fechaConsentimiento"></span>.
+      </div>
+      <label class="check-row" style="margin-bottom:14px">
+        <input type="checkbox" id="chkConsentimiento" onchange="S.hc.consentimiento=this.checked">
+        <span>He leído y acepto el consentimiento informado</span>
+      </label>
+      <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px">Firma digital del paciente</label>
+      <div class="sig-wrap">
+        <canvas id="sigCanvas" height="140"></canvas>
+        <button class="btn btn-ghost btn-sm sig-clear" onclick="clearSig()">Limpiar</button>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="WIZ.prev()">← Atrás</button>
+      <button class="btn btn-teal" onclick="validarHC()">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- MÓDULO 3: TESTS -->
+  <div id="view2" style="display:none">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">Evaluación funcional</div>
+      <div class="sem-wrap" id="semaforo" style="margin-bottom:0"></div>
+    </div>
+
+    <!-- TESTS COMUNES -->
+    <div class="sec-title" style="margin-top:20px">Tests comunes — todos los perfiles</div>
+    <div id="testsComunes"></div>
+
+    <!-- TESTS POR PERFIL -->
+    <div id="testsPerfil"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="WIZ.prev()">← Atrás</button>
+      <button class="btn btn-teal" onclick="WIZ.next()">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- MÓDULO 4: FOTOS -->
+  <div id="view3" style="display:none">
+    <div class="card">
+      <div class="card-title">Fotos posturales y de evolución</div>
+      <div class="fg2" style="margin-bottom:16px">
+        <div class="field">
+          <label>Categoría</label>
+          <select id="fotoCategoria">
+            <option>Postura anterior</option>
+            <option>Postura posterior</option>
+            <option>Lateral izquierda</option>
+            <option>Lateral derecha</option>
+            <option>Zona de lesión</option>
+            <option>Ejercicio / actividad</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Número de sesión</label>
+          <input id="fotoSesionNum" type="number" min="1" value="1" placeholder="1">
+        </div>
+      </div>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fotoInput').click()"
+           ondragover="ev.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="onDrop(event)">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 10px;display:block;opacity:.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <p style="margin-bottom:6px">Arrastra fotos aquí o <strong style="color:var(--primary)">haz clic para seleccionar</strong></p>
+        <p style="font-size:.75rem">JPG, PNG — máx. 10 MB</p>
+      </div>
+      <input type="file" id="fotoInput" accept="image/*" multiple style="display:none" onchange="subirFotos(this.files)">
+
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="abrirCamara()">📷 Usar cámara</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleComparador()">🔄 Comparar fotos</button>
+      </div>
+
+      <!-- Cámara -->
+      <div id="camaraWrap" style="display:none;margin-top:14px">
+        <video id="camaraVideo" style="width:100%;max-width:400px;border-radius:8px;border:1px solid var(--border)" autoplay playsinline></video>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn btn-teal btn-sm" onclick="capturarFoto()">📸 Capturar</button>
+          <button class="btn btn-ghost btn-sm" onclick="cerrarCamara()">Cerrar</button>
+        </div>
+      </div>
+
+      <!-- Comparador -->
+      <div id="comparadorWrap" style="display:none;margin-top:14px">
+        <div class="fg2">
+          <div>
+            <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px">Foto inicial</label>
+            <select id="selFotoA" onchange="renderComparador()" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.85rem;outline:none"></select>
+          </div>
+          <div>
+            <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px">Foto actual</label>
+            <select id="selFotoB" onchange="renderComparador()" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.85rem;outline:none"></select>
+          </div>
+        </div>
+        <div id="comparadorImgs" style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap"></div>
+      </div>
+
+      <div class="photo-grid" id="photoGrid"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="WIZ.prev()">← Atrás</button>
+      <button class="btn btn-teal" onclick="WIZ.next()">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- MÓDULO 5: SESIONES -->
+  <div id="view4" style="display:none">
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+        <div class="card-title" style="margin-bottom:0">Seguimiento de sesiones</div>
+        <button class="btn btn-teal btn-sm" onclick="nuevaSesion()">+ Nueva sesión</button>
+      </div>
+      <div id="sesionResumen" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px"></div>
+      <div class="sess-list" id="sessList"></div>
+    </div>
+
+    <!-- Formulario nueva sesión -->
+    <div class="card" id="nuevaSesionForm" style="display:none">
+      <div class="card-title">Registrar sesión</div>
+      <div class="fg">
+        <div class="field"><label>Fecha *</label><input id="sessFecha" type="date"></div>
+        <div class="field"><label>Duración (min)</label><input id="sessDuracion" type="number" min="15" max="180" value="60"></div>
+        <div class="field"><label>N° sesiones pactadas</label><input id="sessTotalPact" type="number" min="1" value="8"></div>
+        <div class="field"><label>Estado</label>
+          <select id="sessEstado">
+            <option>Completada</option><option>Pendiente</option><option>Cancelada</option><option>Reagendada</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:8px">Servicios aplicados</label>
+        <div class="checks-wrap">
+          <label class="chk-pill" onclick="togChk(this,'servApl')"><input type="checkbox" value="Descarga muscular"> Descarga muscular</label>
+          <label class="chk-pill" onclick="togChk(this,'servApl')"><input type="checkbox" value="Readaptación funcional"> Readaptación funcional</label>
+          <label class="chk-pill" onclick="togChk(this,'servApl')"><input type="checkbox" value="Valoración"> Valoración</label>
+          <label class="chk-pill" onclick="togChk(this,'servApl')"><input type="checkbox" value="Jornada empresarial"> Jornada empresarial</label>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:8px">Equipos usados</label>
+        <div class="checks-wrap">
+          <label class="chk-pill" onclick="togChk(this,'equipoApl')"><input type="checkbox" value="Botas de compresión"> Botas de compresión</label>
+          <label class="chk-pill" onclick="togChk(this,'equipoApl')"><input type="checkbox" value="TENS"> TENS</label>
+          <label class="chk-pill" onclick="togChk(this,'equipoApl')"><input type="checkbox" value="Pistola percusión"> Pistola percusión</label>
+          <label class="chk-pill" onclick="togChk(this,'equipoApl')"><input type="checkbox" value="Crioinmersión"> Crioinmersión</label>
+          <label class="chk-pill" onclick="togChk(this,'equipoApl')"><input type="checkbox" value="Masaje manual"> Masaje manual</label>
+        </div>
+      </div>
+
+      <div class="fg2" style="margin-top:14px">
+        <div>
+          <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:5px">EVA inicio de sesión</label>
+          <input type="range" class="eva-slider" id="sessEvaIni" min="0" max="10" value="5" oninput="document.getElementById('sessEvaIniV').textContent=this.value">
+          <div style="text-align:center;font-weight:700;font-family:var(--font-m)" id="sessEvaIniV">5</div>
+        </div>
+        <div>
+          <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:5px">EVA final de sesión</label>
+          <input type="range" class="eva-slider" id="sessEvaFin" min="0" max="10" value="3" oninput="document.getElementById('sessEvaFinV').textContent=this.value">
+          <div style="text-align:center;font-weight:700;font-family:var(--font-m)" id="sessEvaFinV">3</div>
+        </div>
+      </div>
+
+      <div class="sec-title">Nota SOAP</div>
+      <div class="soap-block">
+        <div class="soap-lbl">S — SUBJETIVO</div>
+        <div class="field"><textarea id="soapS" rows="2" placeholder="Cómo llegó el paciente, qué reporta hoy..."></textarea></div>
+      </div>
+      <div class="soap-block">
+        <div class="soap-lbl">O — OBJETIVO</div>
+        <div class="field"><textarea id="soapO" rows="2" placeholder="Hallazgos clínicos del día, tests aplicados..."></textarea></div>
+      </div>
+      <div class="soap-block">
+        <div class="soap-lbl">A — ANÁLISIS</div>
+        <div class="field"><textarea id="soapA" rows="2" placeholder="Respuesta al tratamiento vs. sesión anterior..."></textarea></div>
+      </div>
+      <div class="soap-block">
+        <div class="soap-lbl">P — PLAN</div>
+        <div class="field"><textarea id="soapP" rows="2" placeholder="Qué se trabajará en la próxima sesión..."></textarea></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="dictarVoz('soapS')" title="Dictar por voz">🎤 Voz S</button>
+        <button class="btn btn-ghost btn-sm" onclick="dictarVoz('soapO')">🎤 O</button>
+        <button class="btn btn-ghost btn-sm" onclick="dictarVoz('soapA')">🎤 A</button>
+        <button class="btn btn-ghost btn-sm" onclick="dictarVoz('soapP')">🎤 P</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-teal" onclick="guardarSesion()">Guardar sesión</button>
+        <button class="btn btn-ghost" onclick="cancelarSesion()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- Gráfica EVA -->
+    <div class="card" id="graficaCard" style="display:none">
+      <div class="card-title">Evolución del dolor</div>
+      <canvas id="graficaEva" height="100"></canvas>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="WIZ.prev()">← Atrás</button>
+      <button class="btn btn-teal" onclick="WIZ.next()">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- MÓDULO 6: PDF -->
+  <div id="view5" style="display:none">
+    <div class="card">
+      <div class="card-title">Generar reporte en PDF</div>
+      <p style="color:var(--muted);margin-bottom:24px;font-size:.88rem">Genera el informe completo para el expediente clínico o una versión simplificada para el paciente.</p>
+      <div class="fg2">
+        <div class="card" style="border:2px solid var(--border);cursor:pointer;transition:var(--tr)" onclick="generarPDF('tecnico')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:2rem;margin-bottom:10px">📄</div>
+          <div class="card-title" style="margin-bottom:6px;font-size:1rem">PDF Técnico</div>
+          <p style="font-size:.8rem;color:var(--muted)">Historia clínica completa, todos los tests con puntuaciones, fotos posturales, notas SOAP, gráficas y consentimiento firmado.</p>
+          <div class="btn-row" style="margin-top:14px"><button class="btn btn-teal btn-sm" onclick="event.stopPropagation();generarPDF('tecnico')">Generar</button></div>
+        </div>
+        <div class="card" style="border:2px solid var(--border);cursor:pointer;transition:var(--tr)" onclick="generarPDF('paciente')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:2rem;margin-bottom:10px">🧡</div>
+          <div class="card-title" style="margin-bottom:6px;font-size:1rem">PDF Paciente</div>
+          <p style="font-size:.8rem;color:var(--muted)">Resumen visual y motivador en lenguaje simple: fotos comparativas, evolución del dolor, logros y recomendaciones para casa.</p>
+          <div class="btn-row" style="margin-top:14px"><button class="btn btn-teal btn-sm" onclick="event.stopPropagation();generarPDF('paciente')">Generar</button></div>
+        </div>
+      </div>
+      <div id="qrWrap" style="margin-top:20px;display:none">
+        <p style="font-size:.8rem;color:var(--muted);margin-bottom:8px">QR para agendar próxima cita:</p>
+        <div id="qrCode"></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="WIZ.prev()">← Atrás</button>
+      <button class="btn btn-teal" onclick="WIZ.next()">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- MÓDULO 7: ALTA -->
+  <div id="view6" style="display:none">
+    <div class="card">
+      <div class="card-title">Ficha de alta</div>
+      <div class="fg">
+        <div class="field"><label>Fecha de alta</label><input id="altaFecha" type="date"></div>
+        <div class="field"><label>Sesiones realizadas</label><input id="altaSesiones" type="number" readonly style="background:var(--s3)"></div>
+        <div class="field"><label>Objetivo alcanzado</label>
+          <select id="altaObjetivo">
+            <option value="si">Sí — completamente</option>
+            <option value="parcial">Parcialmente</option>
+            <option value="no">No — requiere seguimiento</option>
+          </select>
+        </div>
+        <div class="field span-full"><label>Resumen de evolución</label>
+          <textarea id="altaResumen" rows="3" placeholder="El paciente llegó con... durante el proceso se trabajó... al alta se evidencia..."></textarea>
+        </div>
+        <div class="field span-full"><label>Recomendaciones para casa</label>
+          <textarea id="altaRecomend" rows="3" placeholder="Continuar ejercicios de movilidad, evitar posturas prolongadas, retornar si hay recaída..."></textarea>
+        </div>
+      </div>
+
+      <div class="sec-title">Encuesta de satisfacción</div>
+      <label style="font-size:.85rem;color:var(--muted);display:block;margin-bottom:8px">¿Cómo calificarías tu experiencia?</label>
+      <div class="star-wrap" id="starWrap">
+        <span class="star" onclick="setStar(1)">⭐</span>
+        <span class="star" onclick="setStar(2)">⭐</span>
+        <span class="star" onclick="setStar(3)">⭐</span>
+        <span class="star" onclick="setStar(4)">⭐</span>
+        <span class="star" onclick="setStar(5)">⭐</span>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label>Comentario del paciente (testimonio)</label>
+        <textarea id="altaTestimonio" rows="3" placeholder="Quedé muy satisfecha con el tratamiento, el dolor desapareció en..."></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ok" onclick="cerrarAlta()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Dar de alta y cerrar evaluación
+        </button>
+        <button class="btn btn-ghost" onclick="WIZ.prev()">← Atrás</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- MODAL FOTO GRANDE -->
+<div id="modalFoto" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9000;align-items:center;justify-content:center" onclick="this.style.display='none'">
+  <img id="modalFotoImg" style="max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 0 60px rgba(0,0,0,.5)">
+</div>
+
+<script>
+'use strict';
+// ══════════════════════════════════════
+// ESTADO GLOBAL
+// ══════════════════════════════════════
+let S = {
+  evalId: null,
+  perfil: '',
+  hc: { nombre:'',fechaNac:'',edad:0,sexo:'',peso:0,talla:0,imc:0,imcClasif:'',
+    telefono:'',email:'',ocupacion:'',deporte:'',frecuenciaDeporte:0,
+    motivo:'',zonas:[],eva:5,tiempoEvolucion:'',tiempoUnidad:'Días',tipoLesion:'',
+    tratPrev:'no',tratPrevDesc:'',cirugia:'no',cirugiaDesc:'',
+    patologias:[],medicamentos:'',alergias:'',
+    objetivos:[],objetivosDesc:'',consentimiento:false,firma:''
+  },
+  tests:{},
+  sesiones:[],
+  alta:null,
+  fotos:[]
+};
+let grafEvaChart=null;
+let mediaStream=null;
+let reconocimiento=null;
+let autoSaveTimer=null;
+const PASOS=['Perfil','Historia clínica','Tests','Fotos','Sesiones','PDF','Alta'];
+let wizStep=0;
+
+// ══════════════════════════════════════
+// INDEXEDDB
+// ══════════════════════════════════════
+const DB_NAME='JessicaEval',DB_VER=1;
+let db=null;
+function abrirDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(DB_NAME,DB_VER);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains('evaluaciones')) d.createObjectStore('evaluaciones',{keyPath:'id'});
+      if(!d.objectStoreNames.contains('fotos')) d.createObjectStore('fotos',{keyPath:'id'});
+    };
+    req.onsuccess=e=>{db=e.target.result;res(db)};
+    req.onerror=()=>rej(req.error);
+  });
+}
+function dbGuardar(store,obj){return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(obj).onsuccess=()=>res();tx.onerror=()=>rej(tx.error)});}
+function dbGetAll(store){return new Promise((res,rej)=>{const tx=db.transaction(store,'readonly');const req=tx.objectStore(store).getAll();req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)});}
+function dbGet(store,key){return new Promise((res,rej)=>{const tx=db.transaction(store,'readonly');const req=tx.objectStore(store).get(key);req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)});}
+function dbDelete(store,key){return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(key).onsuccess=()=>res();tx.onerror=()=>rej(tx.error)});}
+
+// ══════════════════════════════════════
+// WIZARD
+// ══════════════════════════════════════
+const WIZ={
+  go(n){
+    if(n<0||n>6)return;
+    wizStep=n;
+    document.querySelectorAll('[id^="view"]').forEach(el=>el.style.display='none');
+    document.getElementById('view'+n).style.display='block';
+    document.getElementById('wizProgress').style.display='block';
+    renderWizSteps();
+    if(n===2)renderTests();
+    if(n===4)renderSesiones();
+    if(n===5)initPDF();
+    if(n===6)initAlta();
+    window.scrollTo({top:0,behavior:'smooth'});
+  },
+  next(){this.go(wizStep+1)},
+  prev(){this.go(wizStep-1)}
+};
+function renderWizSteps(){
+  const c=document.getElementById('wizSteps');
+  c.innerHTML=PASOS.map((p,i)=>`
+    <div class="wiz-step ${i<wizStep?'done':i===wizStep?'active':''}" onclick="WIZ.go(${i})">
+      <div class="ws-dot">${i<wizStep?'✓':i+1}</div>
+      <div class="ws-label">${p}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════
+// NUEVA EVALUACIÓN
+// ══════════════════════════════════════
+function nuevaEval(){
+  S={evalId:'eval_'+Date.now(),perfil:'',
+    hc:{nombre:'',fechaNac:'',edad:0,sexo:'',peso:0,talla:0,imc:0,imcClasif:'',
+      telefono:'',email:'',ocupacion:'',deporte:'',frecuenciaDeporte:0,
+      motivo:'',zonas:[],eva:5,tiempoEvolucion:'',tiempoUnidad:'Días',tipoLesion:'',
+      tratPrev:'no',tratPrevDesc:'',cirugia:'no',cirugiaDesc:'',
+      patologias:[],medicamentos:'',alergias:'',
+      objetivos:[],objetivosDesc:'',consentimiento:false,firma:''},
+    tests:{},sesiones:[],alta:null,fotos:[]};
+  document.getElementById('viewLista').style.display='none';
+  document.getElementById('fechaConsentimiento').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  initSig();
+  iniciarAutoguardado();
+  WIZ.go(0);
+}
+
+async function abrirListaEvals(){
+  document.querySelectorAll('[id^="view"]').forEach(el=>el.style.display='none');
+  document.getElementById('viewLista').style.display='block';
+  document.getElementById('wizProgress').style.display='none';
+  const evals=await dbGetAll('evaluaciones');
+  const wrap=document.getElementById('evalListWrap');
+  if(!evals.length){wrap.innerHTML='<p style="color:var(--muted);font-size:.85rem;text-align:center">No hay evaluaciones guardadas aún.</p>';return;}
+  wrap.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+
+    evals.sort((a,b)=>b.id.localeCompare(a.id)).map(e=>`
+      <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--s2);border-radius:10px;border:1px solid var(--border)">
+        <div style="flex:1">
+          <div style="font-weight:600">${e.hc&&e.hc.nombre?e.hc.nombre:'Sin nombre'}</div>
+          <div style="font-size:.78rem;color:var(--muted)">${e.perfil||'Sin perfil'} · ${new Date(+e.id.replace('eval_','')).toLocaleDateString('es-CO')}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="cargarEval('${e.id}')">Abrir</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarEval('${e.id}')">🗑️</button>
+      </div>`).join('')+'</div>';
+}
+
+async function cargarEval(id){
+  const e=await dbGet('evaluaciones',id);
+  if(!e){toast('No se encontró la evaluación','err');return;}
+  S=e;
+  // Restaurar fotos del estado
+  const fotos=await dbGetAll('fotos');
+  S.fotos=fotos.filter(f=>f.evalId===id);
+  llenarHCForm();
+  document.getElementById('viewLista').style.display='none';
+  iniciarAutoguardado();
+  WIZ.go(0);
+  // Restaurar perfil visual
+  if(S.perfil) document.querySelectorAll('.pc').forEach(el=>{el.classList.toggle('sel',el.getAttribute('onclick').includes(S.perfil))});
+}
+
+async function eliminarEval(id){
+  if(!confirm('¿Eliminar esta evaluación? Esta acción no se puede deshacer.'))return;
+  await dbDelete('evaluaciones',id);
+  const fotos=await dbGetAll('fotos');
+  for(const f of fotos.filter(f=>f.evalId===id)) await dbDelete('fotos',f.id);
+  toast('Evaluación eliminada');
+  abrirListaEvals();
+}
+
+async function autoGuardar(){
+  if(!S.evalId)return;
+  const sig=document.getElementById('sigCanvas');
+  if(sig) S.hc.firma=sig.toDataURL();
+  await dbGuardar('evaluaciones',{...S,fotos:[]});
+  toast('Guardado automático ✓','ok');
+}
+
+function iniciarAutoguardado(){
+  if(autoSaveTimer)clearInterval(autoSaveTimer);
+  autoSaveTimer=setInterval(()=>autoGuardar(),30000);
+}
+
+// ══════════════════════════════════════
+// MÓDULO 1 — PERFIL
+// ══════════════════════════════════════
+function selPerfil(p){
+  S.perfil=p;
+  document.querySelectorAll('.pc').forEach(el=>el.classList.remove('sel'));
+  event.currentTarget.classList.add('sel');
+  toast('Perfil: '+{deportista:'Deportista 🏋️',gimnasio:'Gimnasio / Activo 💪',postquirurgico:'Postquirúrgico 🩺',empresarial:'Empresarial 💼'}[p]);
+}
+
+// ══════════════════════════════════════
+// MÓDULO 2 — HISTORIA CLÍNICA
+// ══════════════════════════════════════
+function calcEdad(){
+  const v=document.getElementById('hcFechaNac').value;
+  if(!v)return;
+  S.hc.fechaNac=v;
+  const hoy=new Date(),nac=new Date(v);
+  let edad=hoy.getFullYear()-nac.getFullYear();
+  if(hoy.getMonth()<nac.getMonth()||(hoy.getMonth()===nac.getMonth()&&hoy.getDate()<nac.getDate()))edad--;
+  S.hc.edad=edad;
+  document.getElementById('hcEdad').value=edad;
+  calcIMC();
+}
+
+function calcIMC(){
+  const p=parseFloat(document.getElementById('hcPeso').value)||0;
+  const t=parseFloat(document.getElementById('hcTalla').value)||0;
+  if(!p||!t){document.getElementById('imcBadge').style.display='none';return;}
+  S.hc.peso=p;S.hc.talla=t;
+  const imc=p/((t/100)**2);
+  S.hc.imc=+imc.toFixed(1);
+  document.getElementById('hcIMC').value=S.hc.imc;
+  let cls,col;
+  if(imc<18.5){cls='Bajo peso';col='#2563eb';}
+  else if(imc<25){cls='Normal';col='#16a34a';}
+  else if(imc<30){cls='Sobrepeso';col='#d97706';}
+  else{cls='Obesidad';col='#dc2626';}
+  S.hc.imcClasif=cls;
+  const b=document.getElementById('imcBadge');
+  b.textContent='●  '+cls;b.style.display='inline-flex';
+  b.style.background=col+'18';b.style.color=col;
+}
+
+// BODY MAP
+let zonasContador=0;
+function addZona(ev,vista){
+  const svg=ev.currentTarget;
+  const rect=svg.getBoundingClientRect();
+  const x=(ev.clientX-rect.left)/rect.width*100;
+  const y=(ev.clientY-rect.top)/rect.height*100;
+  const zona={id:++zonasContador,x,y,vista};
+  S.hc.zonas.push(zona);
+  const dotsId=vista==='anterior'?'dotsAnt':'dotsPos';
+  const dotsG=document.getElementById(dotsId);
+  const svgEl=document.getElementById(vista==='anterior'?'bmapAnt':'bmapPos');
+  const vw=svgEl.viewBox.baseVal.width,vh=svgEl.viewBox.baseVal.height;
+  const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  circle.setAttribute('cx',x/100*vw);circle.setAttribute('cy',y/100*vh);
+  circle.setAttribute('r','6');circle.setAttribute('fill','#dc2626');
+  circle.setAttribute('opacity','0.8');circle.setAttribute('id','dot_'+zona.id);
+  circle.style.cursor='pointer';
+  circle.onclick=(e)=>{e.stopPropagation();quitarZona(zona.id)};
+  dotsG.appendChild(circle);
+  renderZonaList();
+}
+function quitarZona(id){
+  S.hc.zonas=S.hc.zonas.filter(z=>z.id!==id);
+  const el=document.getElementById('dot_'+id);if(el)el.remove();
+  renderZonaList();
+}
+function renderZonaList(){
+  document.getElementById('zonaList').innerHTML=S.hc.zonas.map(z=>`
+    <span class="zona-chip">${z.vista==='anterior'?'⬛':'⬜'} Zona ${z.id}
+      <button onclick="quitarZona(${z.id})">×</button>
+    </span>`).join('');
+}
+
+// EVA
+function updEva(v){
+  S.hc.eva=+v;
+  const n=document.getElementById('evaNum');
+  n.textContent=v;
+  const col=v<=3?'#16a34a':v<=6?'#d97706':'#dc2626';
+  n.style.color=col;
+}
+
+// FIRMA
+let sigCtx,sigDraw=false;
+function initSig(){
+  const c=document.getElementById('sigCanvas');
+  if(!c)return;
+  c.width=c.offsetWidth||500;
+  sigCtx=c.getContext('2d');
+  sigCtx.lineWidth=2;sigCtx.lineCap='round';sigCtx.strokeStyle='#1A1A2E';
+  const pos=(e)=>{const r=c.getBoundingClientRect(),src=e.touches?e.touches[0]:e;return{x:src.clientX-r.left,y:src.clientY-r.top}};
+  c.onmousedown=c.ontouchstart=(e)=>{e.preventDefault();sigDraw=true;const p=pos(e);sigCtx.beginPath();sigCtx.moveTo(p.x,p.y)};
+  c.onmousemove=c.ontouchmove=(e)=>{e.preventDefault();if(!sigDraw)return;const p=pos(e);sigCtx.lineTo(p.x,p.y);sigCtx.stroke()};
+  c.onmouseup=c.ontouchend=()=>sigDraw=false;
+}
+function clearSig(){const c=document.getElementById('sigCanvas');if(c&&sigCtx)sigCtx.clearRect(0,0,c.width,c.height);}
+
+function toggleTratPrev(v){
+  S.hc.tratPrev=v;
+  document.getElementById('hcTratPrevDescWrap').style.display=v==='si'?'block':'none';
+}
+function toggleField(id,show){document.getElementById(id).style.display=show?'block':'none';}
+
+function togChk(el,tipo){
+  el.classList.toggle('on');
+  const v=el.querySelector('input').value;
+  const arr=tipo==='patologia'?S.hc.patologias:tipo==='objetivo'?S.hc.objetivos:
+    tipo==='servApl'?_sesionTemp.servicios:tipo==='equipoApl'?_sesionTemp.equipos:[];
+  const idx=arr.indexOf(v);
+  if(idx===-1)arr.push(v);else arr.splice(idx,1);
+}
+
+function validarHC(){
+  if(!S.hc.nombre.trim()){toast('El nombre es obligatorio','err');return;}
+  if(!S.hc.consentimiento){toast('Debes aceptar el consentimiento informado','err');return;}
+  const sig=document.getElementById('sigCanvas');
+  S.hc.firma=sig?sig.toDataURL():'';
+  autoGuardar();
+  WIZ.next();
+}
+
+function llenarHCForm(){
+  const h=S.hc;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  set('hcNombre',h.nombre);set('hcFechaNac',h.fechaNac);set('hcEdad',h.edad);
+  set('hcSexo',h.sexo);set('hcPeso',h.peso);set('hcTalla',h.talla);
+  set('hcTel',h.telefono);set('hcEmail',h.email);set('hcOcupacion',h.ocupacion);
+  set('hcDeporte',h.deporte);set('hcFrecuencia',h.frecuenciaDeporte);
+  set('hcMotivo',h.motivo);set('hcTiempo',h.tiempoEvolucion);
+  set('hcMeds',h.medicamentos);set('hcAlergias',h.alergias);
+  set('hcObjetivosDesc',h.objetivosDesc);
+  if(h.eva!==undefined)document.getElementById('evaSlider').value=h.eva;
+  updEva(h.eva||5);
+}
+
+// ══════════════════════════════════════
+// MÓDULO 3 — TESTS
+// ══════════════════════════════════════
+const TESTS_COMUNES=[
+  {id:'postura',nombre:'Análisis postural estático',tag:'Todos',
+   secciones:[
+    {titulo:'Vista anterior',checks:['Alineación de cabeza','Hombros al mismo nivel','Crestas ilíacas simétricas','Rodillas alineadas','Pies neutros']},
+    {titulo:'Vista posterior',checks:['Escoliosis aparente','Altura escapular simétrica','Alineación de talones','Pliegues glúteos simétricos']},
+    {titulo:'Vista lateral',checks:['Adelantamiento cefálico','Cifosis dorsal','Hiperlordosis lumbar','Rodilla en hiperextensión']}
+   ]},
+  {id:'deepSquat',nombre:'Deep Squat (FMS)',tag:'0-3',bilateral:false,
+   comps:['Talones elevados','Rodillas en valgo','Flexión de columna excesiva','Brazos caen hacia adelante','Rotación de tronco']},
+  {id:'singleLegSquat',nombre:'Single Leg Squat',tag:'0-3',bilateral:true,
+   comps:['Valgo de rodilla','Trendelenburg','Inclinación de tronco','Pronación de pie','Pérdida de equilibrio']},
+  {id:'birdDog',nombre:'Bird Dog',tag:'0-3',bilateral:true,
+   comps:['Pérdida de neutral lumbar','Rotación de pelvis','Falta control escapular','Temblor','Pérdida de equilibrio']},
+  {id:'deadBug',nombre:'Dead Bug',tag:'0-3',bilateral:true,
+   comps:['Pérdida lumbar en extensión','Compensación cervical','Falta de coordinación','Apnea respiratoria']},
+];
+
+const TESTS_PERFIL={
+  deportista:[
+    {id:'hurdleStep',nombre:'Hurdle Step (FMS)',tag:'0-3',bilateral:false,comps:['Inclinación de tronco','Varo/Valgo de rodilla','Asimetría pélvica']},
+    {id:'inlineLunge',nombre:'Inline Lunge (FMS)',tag:'0-3',bilateral:true,comps:['Caída de barra','Rodilla toca el suelo antes','Talón levantado','Pérdida de equilibrio']},
+    {id:'aslr',nombre:'Active Straight Leg Raise (FMS)',tag:'0-3',bilateral:true,comps:['Rotación pélvica','Pérdida de neutro lumbar','Compensación de rodilla contraria']},
+    {id:'ybalance',nombre:'Y-Balance Test',tag:'Distancias cm',ybalance:true},
+    {id:'apley',nombre:'Apley Scratch Test (hombros)',tag:'cm bilateral',apley:true},
+  ],
+  gimnasio:[
+    {id:'ohsquat',nombre:'Overhead Squat (NASM)',tag:'Checklist',
+     secciones:[
+      {titulo:'Compensaciones observadas',checks:['Cabeza adelantada','Hombros hacia adelante','Columna en flexión','Caída de arcos','Rodillas en valgo','Inclinación anterior de tronco']}
+     ]},
+    {id:'thomas',nombre:'Thomas Test',tag:'Positivo/Negativo',bilateral:true,posNeg:true,comps:['Flexión residual de cadera','Abducción de rodilla','Rotación externa de cadera']},
+    {id:'ober',nombre:'Ober Test (IT Band)',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    {id:'pushup',nombre:'Push Up Test',tag:'Repeticiones',repeticiones:true},
+    {id:'plank',nombre:'Plank (segundos)',tag:'Tiempo',tiempo:true,comps:['Caída de cadera','Elevación de glúteos','Pérdida de respiración','Anteriorización cefálica']},
+  ],
+  postquirurgico:[
+    {id:'rom',nombre:'Rango de movimiento articular',tag:'Goniometría',rom:true},
+    {id:'lachman',nombre:'Test de Lachman (LCA)',tag:'Positivo/Negativo',posNeg:true,bilateral:false,grados:true},
+    {id:'mcmurray',nombre:'McMurray (meniscos)',tag:'Positivo/Negativo',mcmurray:true},
+    {id:'singleHop',nombre:'Single Leg Hop Test',tag:'LSI %',hop:true},
+    {id:'ikdc',nombre:'IKDC Funcionalidad subjetiva',tag:'0-10',slider:true,max:10,lbl:'Funcionalidad'},
+    {id:'aclrsi',nombre:'ACL-RSI (confianza retorno)',tag:'0-10',slider:true,max:10,lbl:'Confianza'},
+  ],
+  empresarial:[
+    {id:'sitreach',nombre:'Sit and Reach',tag:'cm',repeticiones:true,lbl:'Distancia (cm)'},
+    {id:'chairstand',nombre:'30s Chair Stand Test',tag:'Repeticiones',repeticiones:true,lbl:'N° repeticiones'},
+    {id:'marcha4m',nombre:'Test marcha 4 metros',tag:'Segundos',tiempo:true},
+    {id:'equilibrio',nombre:'Equilibrio monopodal',tag:'Segundos',equilibrio:true},
+    {id:'trendelenburg',nombre:'Trendelenburg estático',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+  ]
+};
+
+function renderTests(){
+  const comunes=document.getElementById('testsComunes');
+  const perfil=document.getElementById('testsPerfil');
+  comunes.innerHTML=TESTS_COMUNES.map(t=>buildTestCard(t)).join('');
+  const perfilTests=TESTS_PERFIL[S.perfil]||[];
+  if(perfilTests.length){
+    perfil.innerHTML=`<div class="sec-title">Tests específicos — ${
+      {deportista:'Deportista',gimnasio:'Gimnasio/Activo',postquirurgico:'Postquirúrgico',empresarial:'Empresarial'}[S.perfil]||S.perfil
+    }</div>`+perfilTests.map(t=>buildTestCard(t)).join('');
+  }else{perfil.innerHTML='';}
+  actualizarSemaforo();
+}
+
+function buildTestCard(t){
+  let body='';
+  if(t.secciones){
+    body=t.secciones.map(s=>`
+      <div style="margin-bottom:12px">
+        <div style="font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:6px">${s.titulo}</div>
+        <div class="checks-wrap">${s.checks.map(c=>`
+          <label class="chk-pill ${(S.tests[t.id+'_'+c])?'on':''}" onclick="togTestChk(this,'${t.id}','${c}')">
+            <input type="checkbox" ${S.tests[t.id+'_'+c]?'checked':''}> ${c}
+          </label>`).join('')}</div>
+      </div>`).join('');
+  }else if(t.bilateral){
+    const lados=['Derecho','Izquierdo'];
+    if(t.posNeg){
+      body=lados.map(l=>`
+        <div class="score-row"><span class="score-lbl">${l}</span>
+          <select onchange="S.tests['${t.id}_${l.toLowerCase()}']=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.85rem;outline:none">
+            <option>—</option><option>Negativo</option><option>Positivo leve</option><option>Positivo moderado</option><option>Positivo severo</option>
+          </select>
+        </div>`).join('');
+    }else if(t.ybalance){
+      body=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        ${['Derecho','Izquierdo'].map(l=>`
+        <div>
+          <div style="font-weight:600;font-size:.82rem;margin-bottom:8px">${l}</div>
+          ${['Anterior','Posteromedial','Posterolateral'].map(d=>`
+          <div class="field" style="margin-bottom:6px">
+            <label>${d} (cm)</label>
+            <input type="number" min="0" max="150" placeholder="0"
+              onchange="S.tests['yb_${l.toLowerCase()}_${d.toLowerCase()}']=+this.value;calcYBalance()"
+              value="${S.tests['yb_'+l.toLowerCase()+'_'+d.toLowerCase()]||''}">
+          </div>`).join('')}
+        </div>`).join('')}
+      </div>
+      <div id="ybResult" style="background:var(--s2);border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"></div>`;
+    }else if(t.apley){
+      body=`<div class="fg2">
+        ${['Derecho','Izquierdo'].map(l=>`
+        <div class="field"><label>${l} — Alcance (cm)</label>
+          <input type="number" placeholder="0" onchange="S.tests['apley_${l.toLowerCase()}']=+this.value" value="${S.tests['apley_'+l.toLowerCase()]||''}">
+        </div>`).join('')}
+      </div>
+      <div class="field" style="margin-top:8px"><label>¿Simétrico?</label>
+        <select onchange="S.tests.apley_simetrico=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:6px;outline:none">
+          <option>—</option><option>Simétrico</option><option>Asimétrico</option>
+        </select>
+      </div>`;
+    }else{
+      body=lados.map(l=>`
+        <div class="score-row"><span class="score-lbl">${l}</span>
+          <div class="score-btns">${[0,1,2,3].map(n=>`<button class="sb ${S.tests[t.id+'_'+l.toLowerCase()]===n?'s'+n:''}" onclick="setScore('${t.id}_${l.toLowerCase()}',${n},this)">${n}</button>`).join('')}</div>
+        </div>`).join('');
+    }
+    if(t.comps)body+=buildComps(t.id,t.comps);
+  }else if(t.posNeg){
+    body=`<div class="score-row">
+      <select onchange="S.tests['${t.id}']=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.85rem;outline:none">
+        <option>—</option><option>Negativo</option><option>Positivo 1+</option><option>Positivo 2+</option><option>Positivo 3+</option>
+      </select>
+    </div>`;
+    if(t.grados)body+=`<div class="field" style="margin-top:8px"><label>Grado de laxitud</label><input type="text" placeholder="1+/2+/3+" onchange="S.tests['${t.id}_grado']=this.value"></div>`;
+  }else if(t.rom){
+    body=`<div class="fg">
+      <div class="field"><label>Articulación</label>
+        <select id="romArticulacion" onchange="S.tests.romArticulacion=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none">
+          <option>Rodilla</option><option>Cadera</option><option>Tobillo</option><option>Hombro</option><option>Codo</option><option>Columna lumbar</option>
+        </select>
+      </div>
+      ${['Flexión','Extensión','Rotación interna','Rotación externa','Abducción'].map(m=>`
+      <div class="field"><label>${m} (°)</label>
+        <input type="number" min="0" max="180" placeholder="0" onchange="S.tests['rom_${m.toLowerCase().replace(/ /g,'_')}']=+this.value" value="${S.tests['rom_'+m.toLowerCase().replace(/ /g,'_')]||''}">
+      </div>`).join('')}
+    </div>`;
+  }else if(t.hop){
+    body=`<div class="fg2">
+      ${['Derecho','Izquierdo'].map(l=>`
+      <div class="field"><label>${l} (cm)</label>
+        <input type="number" min="0" max="300" placeholder="0" id="hop_${l.toLowerCase()}"
+          onchange="S.tests['hop_${l.toLowerCase()}']=+this.value;calcLSI()" value="${S.tests['hop_'+l.toLowerCase()]||''}">
+      </div>`).join('')}
+    </div>
+    <div id="lsiResult" style="background:var(--s2);border-radius:8px;padding:10px;margin-top:8px;font-size:.82rem"></div>`;
+  }else if(t.slider){
+    body=`<div style="padding:8px 0">
+      <input type="range" class="eva-slider" min="0" max="${t.max||10}" value="${S.tests[t.id]||5}"
+        oninput="S.tests['${t.id}']=+this.value;document.getElementById('slv_${t.id}').textContent=this.value">
+      <div style="text-align:center;font-weight:700;font-family:var(--font-m);margin-top:4px" id="slv_${t.id}">${S.tests[t.id]||5}</div>
+    </div>`;
+  }else if(t.tiempo){
+    body=`<div class="score-row"><span class="score-lbl">Tiempo</span>
+      <input type="number" min="0" max="600" placeholder="0" style="width:100px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none"
+        onchange="S.tests['${t.id}']=+this.value" value="${S.tests[t.id]||''}"> <span style="color:var(--muted);font-size:.85rem">segundos</span>
+    </div>`;
+    if(t.comps)body+=buildComps(t.id,t.comps);
+  }else if(t.repeticiones){
+    body=`<div class="score-row"><span class="score-lbl">${t.lbl||'Repeticiones'}</span>
+      <input type="number" min="0" max="200" placeholder="0" style="width:100px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none"
+        onchange="S.tests['${t.id}']=+this.value" value="${S.tests[t.id]||''}">
+    </div>`;
+  }else if(t.equilibrio){
+    body=`<div class="fg">
+      ${['Derecho ojos abiertos','Izquierdo ojos abiertos','Derecho ojos cerrados','Izquierdo ojos cerrados'].map(k=>`
+      <div class="field"><label>${k} (seg)</label>
+        <input type="number" min="0" max="120" placeholder="0" onchange="S.tests['eq_${k.replace(/ /g,'_').toLowerCase()}']=+this.value" value="${S.tests['eq_'+k.replace(/ /g,'_').toLowerCase()]||''}">
+      </div>`).join('')}
+    </div>`;
+  }else if(t.mcmurray){
+    body=`<div class="fg2">
+      <div class="field"><label>Menisco medial</label>
+        <select onchange="S.tests.mcm_medial=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none">
+          <option>—</option><option>Negativo</option><option>Positivo</option>
+        </select>
+      </div>
+      <div class="field"><label>Menisco lateral</label>
+        <select onchange="S.tests.mcm_lateral=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none">
+          <option>—</option><option>Negativo</option><option>Positivo</option>
+        </select>
+      </div>
+    </div>`;
+  }else{
+    body=`<div class="score-row"><span class="score-lbl">Puntuación</span>
+      <div class="score-btns">${[0,1,2,3].map(n=>`<button class="sb ${S.tests[t.id]===n?'s'+n:''}" onclick="setScore('${t.id}',${n},this)">${n}</button>`).join('')}</div>
+    </div>`;
+    if(t.comps)body+=buildComps(t.id,t.comps);
+  }
+  body+=`<div class="field" style="margin-top:10px"><label>Observaciones</label>
+    <textarea rows="2" placeholder="Observaciones del test..." onchange="S.tests['${t.id}_obs']=this.value">${S.tests[t.id+'_obs']||''}</textarea>
+  </div>`;
+  return `<div class="test-card">
+    <div class="test-hd" onclick="toggleTest(this)">
+      <div class="test-name"><span>${t.nombre}</span><span class="test-tag">${t.tag}</span></div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="test-bd">${body}</div>
+  </div>`;
+}
+
+function buildComps(id,comps){
+  return `<div style="margin-top:8px;font-size:.78rem;color:var(--muted);margin-bottom:4px">Compensaciones observadas:</div>
+  <div class="checks-wrap">${comps.map(c=>`
+    <label class="chk-pill ${(S.tests[id+'_comp_'+c])?'on':''}" onclick="togTestChk(this,'${id}_comp','${c}')">
+      <input type="checkbox"> ${c}
+    </label>`).join('')}</div>`;
+}
+
+function setScore(key,val,btn){
+  S.tests[key]=val;
+  btn.closest('.score-btns').querySelectorAll('.sb').forEach((b,i)=>{
+    b.className='sb '+(i===val?'s'+val:'');
+  });
+  actualizarSemaforo();
+}
+
+function togTestChk(el,id,v){
+  el.classList.toggle('on');
+  S.tests[id+'_'+v]=el.classList.contains('on');
+}
+
+function toggleTest(hd){
+  const bd=hd.nextElementSibling;
+  bd.classList.toggle('open');
+}
+
+function calcYBalance(){
+  const get=(k)=>S.tests[k]||0;
+  const der={a:get('yb_derecho_anterior'),pm:get('yb_derecho_posteromedial'),pl:get('yb_derecho_posterolateral')};
+  const izq={a:get('yb_izquierdo_anterior'),pm:get('yb_izquierdo_posteromedial'),pl:get('yb_izquierdo_posterolateral')};
+  if(!der.a||!izq.a){document.getElementById('ybResult').innerHTML='Ingresa los valores para calcular';return;}
+  const ll=S.hc.talla||170;
+  const scoreDer=((der.a+der.pm+der.pl)/(ll*3))*100;
+  const scoreIzq=((izq.a+izq.pm+izq.pl)/(ll*3))*100;
+  const asim=Math.abs(der.a-izq.a)/Math.max(der.a,izq.a)*100;
+  const alerta=asim>4?'<span style="color:#dc2626;font-weight:600"> ⚠️ Asimetría >4% — riesgo de lesión</span>':'<span style="color:#16a34a"> ✓ Asimetría aceptable</span>';
+  document.getElementById('ybResult').innerHTML=
+    `Score Derecho: <strong>${scoreDer.toFixed(1)}%</strong> | Score Izquierdo: <strong>${scoreIzq.toFixed(1)}%</strong><br>Asimetría anterior: <strong>${asim.toFixed(1)}%</strong>${alerta}`;
+}
+
+function calcLSI(){
+  const d=S.tests.hop_derecho||0,i=S.tests.hop_izquierdo||0;
+  if(!d||!i){document.getElementById('lsiResult').innerHTML='Ingresa ambos valores';return;}
+  const lsi=Math.min(d,i)/Math.max(d,i)*100;
+  const ok=lsi>=90;
+  document.getElementById('lsiResult').innerHTML=
+    `LSI: <strong style="color:${ok?'#16a34a':'#dc2626'}">${lsi.toFixed(1)}%</strong> ${ok?'✓ Apto para retorno':'⚠️ Requiere más rehabilitación (meta: ≥90%)'}`;
+}
+
+function actualizarSemaforo(){
+  const scores=Object.entries(S.tests).filter(([k,v])=>typeof v==='number'&&(k.endsWith('_derecho')||k.endsWith('_izquierdo')||(!k.includes('_')&&[0,1,2,3].includes(v))));
+  const wrap=document.getElementById('semaforo');
+  if(!scores.length){wrap.innerHTML='';return;}
+  const resumen=scores.reduce((acc,[k,v])=>{acc.push({k,v});return acc;},[]);
+  const bajos=resumen.filter(x=>x.v<=1).length;
+  const medios=resumen.filter(x=>x.v===2).length;
+  const buenos=resumen.filter(x=>x.v===3).length;
+  wrap.innerHTML=`
+    <div class="sem r"><strong>${bajos}</strong> tests con limitación severa</div>
+    <div class="sem y"><strong>${medios}</strong> tests con limitación moderada</div>
+    <div class="sem g"><strong>${buenos}</strong> tests dentro del rango</div>`;
+}
+
+// ══════════════════════════════════════
+// MÓDULO 4 — FOTOS
+// ══════════════════════════════════════
+function subirFotos(files){
+  Array.from(files).forEach(file=>{
+    if(!file.type.startsWith('image/'))return;
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      const foto={
+        id:'foto_'+Date.now()+'_'+Math.random().toString(36).slice(2),
+        evalId:S.evalId,
+        src:e.target.result,
+        categoria:document.getElementById('fotoCategoria').value,
+        sesion:+document.getElementById('fotoSesionNum').value||1,
+        fecha:new Date().toLocaleDateString('es-CO')
+      };
+      await dbGuardar('fotos',foto);
+      S.fotos.push(foto);
+      renderFotos();
+      actualizarSelectores();
+      toast('Foto guardada ✓','ok');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function onDrop(ev){
+  ev.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  subirFotos(ev.dataTransfer.files);
+}
+
+function renderFotos(){
+  const grid=document.getElementById('photoGrid');
+  if(!S.fotos.length){grid.innerHTML='';return;}
+  grid.innerHTML=S.fotos.map(f=>`
+    <div class="ph-thumb" onclick="verFoto('${f.id}')">
+      <img src="${f.src}" loading="lazy">
+      <div class="ph-lbl">${f.categoria}<br>${f.fecha} · S${f.sesion}</div>
+      <button class="ph-del" onclick="event.stopPropagation();borrarFoto('${f.id}')">×</button>
+    </div>`).join('');
+}
+
+async function borrarFoto(id){
+  await dbDelete('fotos',id);
+  S.fotos=S.fotos.filter(f=>f.id!==id);
+  renderFotos();actualizarSelectores();
+}
+
+function verFoto(id){
+  const f=S.fotos.find(x=>x.id===id);
+  if(!f)return;
+  const m=document.getElementById('modalFoto');
+  document.getElementById('modalFotoImg').src=f.src;
+  m.style.display='flex';
+}
+
+function actualizarSelectores(){
+  ['selFotoA','selFotoB'].forEach(sid=>{
+    const sel=document.getElementById(sid);
+    if(!sel)return;
+    const prev=sel.value;
+    sel.innerHTML=S.fotos.map(f=>`<option value="${f.id}">${f.categoria} — S${f.sesion} (${f.fecha})</option>`).join('');
+    if(prev)sel.value=prev;
+  });
+}
+
+function toggleComparador(){
+  const w=document.getElementById('comparadorWrap');
+  w.style.display=w.style.display==='none'?'block':'none';
+  actualizarSelectores();
+}
+
+function renderComparador(){
+  const idA=document.getElementById('selFotoA').value;
+  const idB=document.getElementById('selFotoB').value;
+  const fA=S.fotos.find(f=>f.id===idA);
+  const fB=S.fotos.find(f=>f.id===idB);
+  const wrap=document.getElementById('comparadorImgs');
+  if(!fA||!fB){wrap.innerHTML='';return;}
+  wrap.innerHTML=[fA,fB].map(f=>`
+    <div style="flex:1;min-width:200px">
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:5px">${f.categoria} — ${f.fecha} · Sesión ${f.sesion}</div>
+      <img src="${f.src}" style="width:100%;border-radius:8px;border:1px solid var(--border)">
+    </div>`).join('');
+}
+
+async function abrirCamara(){
+  const wrap=document.getElementById('camaraWrap');
+  wrap.style.display='block';
+  try{
+    mediaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    document.getElementById('camaraVideo').srcObject=mediaStream;
+  }catch{toast('No se pudo acceder a la cámara','err');wrap.style.display='none';}
+}
+
+function cerrarCamara(){
+  if(mediaStream)mediaStream.getTracks().forEach(t=>t.stop());
+  document.getElementById('camaraWrap').style.display='none';
+}
+
+function capturarFoto(){
+  const video=document.getElementById('camaraVideo');
+  const canvas=document.createElement('canvas');
+  canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+  const fakeFile=canvas.toDataURL('image/jpeg',.85);
+  const foto={
+    id:'foto_'+Date.now(),evalId:S.evalId,src:fakeFile,
+    categoria:document.getElementById('fotoCategoria').value,
+    sesion:+document.getElementById('fotoSesionNum').value||1,
+    fecha:new Date().toLocaleDateString('es-CO')
+  };
+  dbGuardar('fotos',foto).then(()=>{S.fotos.push(foto);renderFotos();actualizarSelectores();toast('Foto capturada ✓','ok');});
+}
+
+// ══════════════════════════════════════
+// MÓDULO 5 — SESIONES
+// ══════════════════════════════════════
+let _sesionTemp={servicios:[],equipos:[]};
+
+function renderSesiones(){
+  const list=document.getElementById('sessList');
+  const res=document.getElementById('sesionResumen');
+  const completadas=S.sesiones.filter(s=>s.estado==='Completada').length;
+  const canceladas=S.sesiones.filter(s=>s.estado==='Cancelada').length;
+  const pactadas=S.sesiones[0]?.totalPact||8;
+  res.innerHTML=`
+    <div style="background:rgba(27,191,176,.1);border-radius:8px;padding:10px 16px;font-size:.85rem">✅ <strong>${completadas}</strong> completadas</div>
+    <div style="background:rgba(217,119,6,.1);border-radius:8px;padding:10px 16px;font-size:.85rem">⏳ <strong>${Math.max(0,pactadas-completadas)}</strong> restantes</div>
+    <div style="background:rgba(220,38,38,.1);border-radius:8px;padding:10px 16px;font-size:.85rem">❌ <strong>${canceladas}</strong> canceladas</div>`;
+  if(!S.sesiones.length){list.innerHTML='<p style="color:var(--muted);font-size:.85rem;text-align:center;padding:20px">No hay sesiones registradas aún.</p>';return;}
+  list.innerHTML=S.sesiones.map((s,i)=>{
+    const evaCol=s.evaFin<=3?'#16a34a':s.evaFin<=6?'#d97706':'#dc2626';
+    return `<div class="sess-item">
+      <div class="sess-num">${i+1}</div>
+      <div class="sess-info">
+        <div style="font-weight:600">${s.fecha} · ${s.duracion} min · <span style="color:${
+          s.estado==='Completada'?'#16a34a':s.estado==='Cancelada'?'#dc2626':'#d97706'
+        }">${s.estado}</span></div>
+        <div class="sess-date">${(s.servicios||[]).join(', ')||'Sin servicios registrados'}</div>
+        <div class="sess-eva" style="margin-top:5px">
+          <div class="eva-dot" style="background:#d97706"></div>EVA inicio: <strong>${s.evaIni}</strong>
+          <div class="eva-dot" style="background:${evaCol}"></div>EVA final: <strong style="color:${evaCol}">${s.evaFin}</strong>
+        </div>
+        ${s.soap&&s.soap.S?`<div style="font-size:.78rem;color:var(--muted);margin-top:5px;padding-left:8px;border-left:2px solid var(--border)">S: ${s.soap.S.slice(0,100)}${s.soap.S.length>100?'...':''}</div>`:''}
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="verSesion(${i})">SOAP</button>
+    </div>`;
+  }).join('');
+  renderGraficaEva();
+  const ult=S.sesiones[S.sesiones.length-1];
+  if(ult){
+    const diasSinSesion=Math.floor((Date.now()-new Date(ult.fecha))/(1000*86400));
+    if(diasSinSesion>14)toast(`⚠️ Han pasado ${diasSinSesion} días sin sesión`,'warn');
+  }
+}
+
+function nuevaSesion(){
+  _sesionTemp={servicios:[],equipos:[]};
+  document.querySelectorAll('#nuevaSesionForm .chk-pill').forEach(el=>el.classList.remove('on'));
+  document.getElementById('sessFecha').value=new Date().toISOString().slice(0,10);
+  document.getElementById('nuevaSesionForm').style.display='block';
+  document.getElementById('nuevaSesionForm').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelarSesion(){document.getElementById('nuevaSesionForm').style.display='none';}
+
+function guardarSesion(){
+  const fecha=document.getElementById('sessFecha').value;
+  if(!fecha){toast('La fecha es obligatoria','err');return;}
+  const sesion={
+    fecha,duracion:+document.getElementById('sessDuracion').value||60,
+    totalPact:+document.getElementById('sessTotalPact').value||8,
+    estado:document.getElementById('sessEstado').value,
+    servicios:[..._sesionTemp.servicios],
+    equipos:[..._sesionTemp.equipos],
+    evaIni:+document.getElementById('sessEvaIni').value,
+    evaFin:+document.getElementById('sessEvaFin').value,
+    soap:{
+      S:document.getElementById('soapS').value,
+      O:document.getElementById('soapO').value,
+      A:document.getElementById('soapA').value,
+      P:document.getElementById('soapP').value
+    }
+  };
+  S.sesiones.push(sesion);
+  document.getElementById('nuevaSesionForm').style.display='none';
+  ['soapS','soapO','soapA','soapP'].forEach(id=>{document.getElementById(id).value='';});
+  autoGuardar();
+  renderSesiones();
+  toast('Sesión guardada ✓','ok');
+}
+
+function verSesion(idx){
+  const s=S.sesiones[idx];
+  if(!s||!s.soap)return;
+  alert(`SOAP — Sesión ${idx+1} (${s.fecha})\n\nS: ${s.soap.S}\nO: ${s.soap.O}\nA: ${s.soap.A}\nP: ${s.soap.P}`);
+}
+
+function renderGraficaEva(){
+  const card=document.getElementById('graficaCard');
+  if(S.sesiones.length<2){card.style.display='none';return;}
+  card.style.display='block';
+  const labels=S.sesiones.map((s,i)=>'S'+(i+1)+' '+s.fecha.slice(5));
+  const ini=S.sesiones.map(s=>s.evaIni);
+  const fin=S.sesiones.map(s=>s.evaFin);
+  if(grafEvaChart)grafEvaChart.destroy();
+  grafEvaChart=new Chart(document.getElementById('graficaEva'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'EVA inicio',data:ini,borderColor:'#d97706',backgroundColor:'rgba(217,119,6,.1)',tension:.3,pointRadius:5},
+      {label:'EVA final',data:fin,borderColor:'#1BBFB0',backgroundColor:'rgba(27,191,176,.1)',tension:.3,pointRadius:5}
+    ]},
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{y:{min:0,max:10,ticks:{stepSize:1}}}}
+  });
+}
+
+// VOZ
+function dictarVoz(campo){
+  if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){
+    toast('Tu navegador no soporta dictado por voz','warn');return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(reconocimiento)reconocimiento.stop();
+  reconocimiento=new SR();
+  reconocimiento.lang='es-CO';reconocimiento.continuous=false;reconocimiento.interimResults=false;
+  reconocimiento.onresult=e=>{
+    const txt=e.results[0][0].transcript;
+    const el=document.getElementById(campo);
+    el.value+=(el.value?' ':'')+txt;
+    toast('Texto dictado ✓','ok');
+  };
+  reconocimiento.onerror=()=>toast('Error en el dictado','err');
+  reconocimiento.start();
+  toast('Escuchando... habla ahora 🎤');
+}
+
+// ══════════════════════════════════════
+// MÓDULO 6 — PDF
+// ══════════════════════════════════════
+function initPDF(){
+  // Generar QR si hay URL configurada
+  const qrWrap=document.getElementById('qrCode');
+  if(qrWrap&&!qrWrap.innerHTML){
+    try{new QRCode(qrWrap,{text:'https://jessicaocampoft.com',width:120,height:120});}catch{}
+    document.getElementById('qrWrap').style.display='block';
+  }
+}
+
+async function generarPDF(tipo){
+  toast('Generando PDF...','ok');
+  await new Promise(r=>setTimeout(r,300));
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF('p','mm','letter');
+  const W=doc.internal.pageSize.getWidth();
+  const H=doc.internal.pageSize.getWidth();
+  let y=20;
+  const hc=S.hc;
+
+  // HEADER
+  doc.setFillColor(27,191,176);doc.rect(0,0,W,12,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(11);
+  doc.text('Jessica Ocampo Fisioterapeuta',10,8);
+  doc.setFontSize(8);doc.text(tipo==='tecnico'?'Historia Clínica — Informe Técnico':'Informe de Evolución — Para el Paciente',W-10,8,{align:'right'});
+
+  y=25;
+  doc.setTextColor(26,26,46);
+  if(tipo==='tecnico'){
+    // DATOS PACIENTE
+    doc.setFont('helvetica','bold');doc.setFontSize(14);
+    doc.text(hc.nombre||'Paciente',10,y);y+=7;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(107,114,128);
+    doc.text(`Edad: ${hc.edad} años  |  Sexo: ${hc.sexo||'—'}  |  IMC: ${hc.imc} (${hc.imcClasif})  |  Fecha evaluación: ${new Date().toLocaleDateString('es-CO')}`,10,y);y+=5;
+    doc.text(`Ocupación: ${hc.ocupacion||'—'}  |  Deporte: ${hc.deporte||'—'}  ${hc.frecuenciaDeporte?`${hc.frecuenciaDeporte}x/semana`:''}`,10,y);y+=9;
+    doc.setDrawColor(27,191,176);doc.setLineWidth(0.3);doc.line(10,y,W-10,y);y+=6;
+
+    // MOTIVO
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(26,26,46);
+    doc.text('Motivo de consulta',10,y);y+=5;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(107,114,128);
+    const motivoLines=doc.splitTextToSize(hc.motivo||'—',W-20);
+    doc.text(motivoLines,10,y);y+=motivoLines.length*4+4;
+
+    // EVA
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(26,26,46);
+    doc.text(`EVA inicial: ${hc.eva}/10  |  Lesión: ${hc.tipoLesion||'—'}  |  Evolución: ${hc.tiempoEvolucion||'—'} ${hc.tiempoUnidad||''}`,10,y);y+=8;
+
+    // ANTECEDENTES
+    doc.setFont('helvetica','bold');doc.setFontSize(10);
+    doc.text('Antecedentes',10,y);y+=5;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(107,114,128);
+    doc.text(`Patologías: ${hc.patologias.length?hc.patologias.join(', '):'Ninguna'}`,10,y);y+=4;
+    doc.text(`Cirugías: ${hc.cirugia==='si'?(hc.cirugiaDesc||'Sí'):'No'}`,10,y);y+=4;
+    doc.text(`Medicamentos: ${hc.medicamentos||'Ninguno'}  |  Alergias: ${hc.alergias||'Ninguna'}`,10,y);y+=8;
+
+    // OBJETIVOS
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(26,26,46);
+    doc.text('Objetivos del paciente',10,y);y+=5;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(107,114,128);
+    if(hc.objetivos.length)doc.text(hc.objetivos.join(' · '),10,y);y+=4;
+    if(hc.objetivosDesc){const ls=doc.splitTextToSize(hc.objetivosDesc,W-20);doc.text(ls,10,y);y+=ls.length*4;}
+    y+=6;doc.line(10,y,W-10,y);y+=6;
+
+    // TESTS
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(26,26,46);
+    doc.text('Resultados de evaluación funcional',10,y);y+=6;
+    const testEntries=Object.entries(S.tests).filter(([k])=>!k.includes('_obs')&&!k.includes('_comp'));
+    testEntries.forEach(([k,v])=>{
+      if(y>H-30){doc.addPage();y=20;}
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(107,114,128);
+      doc.text(`${k.replace(/_/g,' ')}: ${v}`,10,y);y+=4;
+    });
+    y+=6;
+
+    // SESIONES
+    if(S.sesiones.length){
+      if(y>H-40){doc.addPage();y=20;}
+      doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(26,26,46);
+      doc.text('Seguimiento de sesiones',10,y);y+=6;
+      S.sesiones.forEach((s,i)=>{
+        if(y>H-30){doc.addPage();y=20;}
+        doc.setFont('helvetica','bold');doc.setFontSize(8);
+        doc.text(`Sesión ${i+1} — ${s.fecha} — EVA: ${s.evaIni}→${s.evaFin}`,10,y);y+=4;
+        if(s.soap){
+          doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(107,114,128);
+          if(s.soap.S){const ls=doc.splitTextToSize('S: '+s.soap.S,W-20);doc.text(ls,12,y);y+=ls.length*3.5;}
+          if(s.soap.P){const ls=doc.splitTextToSize('P: '+s.soap.P,W-20);doc.text(ls,12,y);y+=ls.length*3.5;}
+        }
+        doc.setTextColor(26,26,46);y+=2;
+      });
+    }
+
+    // FIRMA
+    if(hc.firma&&hc.firma!=='data:,'){
+      if(y>H-50){doc.addPage();y=20;}
+      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(26,26,46);
+      doc.text('Consentimiento firmado:',10,y);y+=5;
+      try{doc.addImage(hc.firma,'PNG',10,y,80,25);}catch{}y+=30;
+    }
+
+  }else{
+    // PDF PACIENTE — lenguaje simple
+    doc.setFont('helvetica','bold');doc.setFontSize(16);
+    doc.text(`¡Hola, ${(hc.nombre||'').split(' ')[0]}! 👋`,10,y);y+=8;
+    doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(107,114,128);
+    doc.text('Este es el resumen de tu proceso con Jessica Ocampo Fisioterapeuta',10,y);y+=10;
+
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(27,191,176);
+    doc.text('Cómo llegaste',10,y);y+=5;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
+    const motivoS=doc.splitTextToSize(`Tu motivo de consulta fue: ${hc.motivo||'—'}. Con un dolor inicial de ${hc.eva}/10.`,W-20);
+    doc.text(motivoS,10,y);y+=motivoS.length*4+6;
+
+    if(S.sesiones.length){
+      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(27,191,176);
+      doc.text('Tu proceso de recuperación',10,y);y+=5;
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
+      doc.text(`Completaste ${S.sesiones.filter(s=>s.estado==='Completada').length} sesiones.`,10,y);y+=4;
+      const ul=S.sesiones[S.sesiones.length-1];
+      if(ul){
+        const mejora=S.sesiones[0].evaIni-ul.evaFin;
+        if(mejora>0)doc.text(`Tu dolor bajó de ${S.sesiones[0].evaIni} a ${ul.evaFin} — ¡${mejora} puntos de mejora! 🎉`,10,y);y+=8;
+      }
+    }
+
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(27,191,176);
+    doc.text('Lo que lograste',10,y);y+=5;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
+    const objetivosTexto=hc.objetivos.length?hc.objetivos.join(', '):'mejorar tu calidad de vida';
+    doc.text(`Tus metas eran: ${objetivosTexto}.`,10,y);y+=10;
+
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(27,191,176);
+    doc.text('Recomendaciones para casa',10,y);y+=5;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
+    const recLines=doc.splitTextToSize(S.alta?.recomend||'Continúa con los ejercicios indicados. Si el dolor regresa, no esperes — agenda tu sesión de seguimiento.',W-20);
+    doc.text(recLines,10,y);y+=recLines.length*4+10;
+
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(27,191,176);
+    doc.text('Agenda tu próxima cita:',10,y);y+=5;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
+    doc.text('jessicaocampoft.com  |  WhatsApp: 3136467945',10,y);
+  }
+
+  // FOOTER
+  const pages=doc.internal.getNumberOfPages();
+  for(let p=1;p<=pages;p++){
+    doc.setPage(p);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(200,200,200);
+    doc.text(`Jessica Ocampo Fisioterapeuta — Página ${p} de ${pages}`,W/2,doc.internal.pageSize.getHeight()-5,{align:'center'});
+  }
+
+  doc.save(`evaluacion_${(hc.nombre||'paciente').replace(/ /g,'_')}_${tipo}_${new Date().toISOString().slice(0,10)}.pdf`);
+  toast('PDF generado ✓','ok');
+}
+
+// ══════════════════════════════════════
+// MÓDULO 7 — ALTA
+// ══════════════════════════════════════
+function initAlta(){
+  document.getElementById('altaFecha').value=new Date().toISOString().slice(0,10);
+  document.getElementById('altaSesiones').value=S.sesiones.filter(s=>s.estado==='Completada').length;
+}
+
+let _estrellas=0;
+function setStar(n){
+  _estrellas=n;S.alta=S.alta||{};S.alta.estrellas=n;
+  document.querySelectorAll('#starWrap .star').forEach((s,i)=>s.classList.toggle('on',i<n));
+}
+
+async function cerrarAlta(){
+  S.alta={
+    fecha:document.getElementById('altaFecha').value,
+    sesiones:+document.getElementById('altaSesiones').value,
+    objetivo:document.getElementById('altaObjetivo').value,
+    resumen:document.getElementById('altaResumen').value,
+    recomend:document.getElementById('altaRecomend').value,
+    estrellas:_estrellas,
+    testimonio:document.getElementById('altaTestimonio').value
+  };
+  await autoGuardar();
+  toast('✅ Alta registrada. ¡Evaluación completada!','ok');
+  setTimeout(()=>abrirListaEvals(),1500);
+}
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+function toast(msg,tipo=''){
+  const w=document.getElementById('toastWrap');
+  const el=document.createElement('div');
+  el.className='toast '+(tipo||'');
+  el.textContent=msg;
+  w.appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+window.addEventListener('DOMContentLoaded',async()=>{
+  await abrirDB();
+  abrirListaEvals();
+  window.addEventListener('beforeunload',e=>{
+    if(S.evalId){e.preventDefault();e.returnValue='';}
+  });
+});
+</script>
+</body>
+</html>

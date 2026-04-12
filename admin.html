@@ -475,6 +475,11 @@ tr:hover td{background:rgba(126,221,208,.03)}
       Pacientes
     </button>
 
+    <button class="sb-link" id="sb-basedatos" onclick="showView('basedatos')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      Base de datos
+    </button>
+
     <button class="sb-link" id="sb-recordatorios" onclick="showView('recordatorios')" style="justify-content:space-between">
       <span style="display:flex;align-items:center;gap:10px">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -484,6 +489,11 @@ tr:hover td{background:rgba(126,221,208,.03)}
     </button>
 
     <div class="sb-sep"></div>
+
+    <a class="sb-link" href="evaluacion.html" style="color:#7c3aed">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Evaluación
+    </a>
 
     <button class="sb-link sb-signout" onclick="logout()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -545,6 +555,11 @@ tr:hover td{background:rgba(126,221,208,.03)}
           <div class="stat-label">Cobrado esta semana</div>
           <div class="stat-val" id="stCobradoSemana" style="font-size:1.5rem">—</div>
           <div class="stat-desc">ingresos de la semana</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Cobrado hoy</div>
+          <div class="stat-val" id="stCobradoHoy" style="font-size:1.5rem">—</div>
+          <div class="stat-desc">ingresos del día</div>
         </div>
       </div>
 
@@ -967,6 +982,78 @@ tr:hover td{background:rgba(126,221,208,.03)}
       </div>
     </section>
 
+    <!-- ── BASE DE DATOS ── -->
+    <section id="vBasedatos" style="display:none">
+      <div class="page-header">
+        <h1 class="page-title"><em>Base de datos</em></h1>
+        <p class="page-sub">Agrega y gestiona pacientes directamente desde aquí</p>
+      </div>
+
+      <!-- Formulario agregar paciente -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-title">Agregar paciente</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">
+          <div class="field">
+            <label>Nombre completo *</label>
+            <input type="text" id="dbNombre" placeholder="Ana García López" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Teléfono / WhatsApp</label>
+            <input type="tel" id="dbTelefono" placeholder="3136467945">
+          </div>
+          <div class="field">
+            <label>Correo electrónico</label>
+            <input type="email" id="dbEmail" placeholder="correo@email.com">
+          </div>
+          <div class="field">
+            <label>Entidad</label>
+            <input type="text" id="dbEntidad" placeholder="EPS, ARL, Particular..." autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Deporte o actividad</label>
+            <input type="text" id="dbDeporte" placeholder="Fútbol, natación, yoga, ninguno..." autocomplete="off">
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label>Notas / Diagnóstico</label>
+            <textarea id="dbNotas" rows="2" style="resize:vertical;width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none" placeholder="Motivo de consulta, diagnóstico, observaciones..."></textarea>
+          </div>
+        </div>
+        <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-teal" id="dbSubmitBtn" onclick="agregarPacienteDB()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Agregar paciente
+          </button>
+          <button class="btn btn-ghost" onclick="limpiarFormDB()">Limpiar</button>
+        </div>
+      </div>
+
+      <!-- Tabla de pacientes -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div class="card-title" style="margin-bottom:0">Pacientes registrados</div>
+          <input type="text" id="dbSearch" placeholder="Buscar por nombre, teléfono o email..." oninput="renderBasedatos()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.85rem;outline:none;color:var(--text);width:260px;transition:var(--tr)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Paciente</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Sesiones</th>
+                <th>Última cita</th>
+                <th>Servicio frecuente</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="dbTbody">
+              <tr><td colspan="7"><div class="loading-wrap"><div class="spinner"></div> Cargando...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
 
@@ -1148,9 +1235,11 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
-  ['dashboard','agenda','nueva','calendario','bloquear','pacientes','recordatorios'].forEach(id => {
-    document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1)).style.display = 'none';
-    document.getElementById('sb-' + id).classList.remove('active');
+  ['dashboard','agenda','nueva','calendario','bloquear','pacientes','basedatos','recordatorios'].forEach(id => {
+    const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
+    const sb  = document.getElementById('sb-' + id);
+    if (sec) sec.style.display = 'none';
+    if (sb)  sb.classList.remove('active');
   });
   document.getElementById('v' + v.charAt(0).toUpperCase() + v.slice(1)).style.display = 'block';
   document.getElementById('sb-' + v).classList.add('active');
@@ -1161,6 +1250,7 @@ function showView(v) {
   if (v === 'pacientes')      renderPacientes();
   if (v === 'calendario')     renderCalendar();
   if (v === 'recordatorios')  cargarRecordatorios();
+  if (v === 'basedatos')      { renderBasedatos(); initFormDB(); }
 }
 
 function toggleSidebar() {
@@ -1552,6 +1642,11 @@ function initDashboard() {
     .filter(c => { const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; })
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stCobradoSemana').textContent = cobradoSemana > 0 ? '$'+cobradoSemana.toLocaleString('es-CO') : '—';
+
+  const cobradoHoy = citas
+    .filter(c => normDate(c.fecha) === todayStr)
+    .reduce((s,c) => s + parsePrecio(c.precio), 0);
+  document.getElementById('stCobradoHoy').textContent = cobradoHoy > 0 ? '$'+cobradoHoy.toLocaleString('es-CO') : '—';
 
   updateBadge();
   renderWeekGrid();
@@ -2302,6 +2397,191 @@ async function borrarPaciente(idx) {
     renderPacientes();
     initDashboard();
   } catch(e) { toast('Error de conexión', 'err'); }
+}
+
+// ── BASE DE DATOS ──
+let _dbPacs = [];
+
+function initFormDB() {
+  // noop — form fields start empty, no defaults needed
+}
+
+function dbOnServiceChange() {
+  const val = document.getElementById('dbServicioMain').value;
+  const planSel = document.getElementById('dbServicioPlan');
+  if (val === '__planes__') {
+    planSel.style.display = 'block';
+    document.getElementById('dbServicio').value = '';
+  } else {
+    planSel.style.display = 'none';
+    document.getElementById('dbServicio').value = val;
+  }
+}
+
+function dbOnPlanChange() {
+  document.getElementById('dbServicio').value = document.getElementById('dbServicioPlan').value;
+}
+
+function renderBasedatos() {
+  const search = (document.getElementById('dbSearch') ? document.getElementById('dbSearch').value : '').toLowerCase();
+  const map = {};
+  (allData.citas || []).forEach(function(c) {
+    const phone  = (c.telefono || '').replace(/\D/g, '').slice(-10);
+    const email  = (c.email || '').toLowerCase().trim();
+    const nombre = (c.nombre || '').trim();
+    const key = phone.length >= 10 ? 'p:' + phone : (email ? 'e:' + email : 'n:' + nombre.toLowerCase());
+    if (!map[key]) map[key] = {nombre: nombre, telefono: '', email: '', sesiones: 0, ultima: '', ultimoServicio: '', servicios: {}, nombres: []};
+    if (map[key].nombres.indexOf(nombre) === -1) map[key].nombres.push(nombre);
+    if (phone.length >= 10 && !map[key].telefono) map[key].telefono = phone;
+    if (email && !map[key].email) map[key].email = email;
+    map[key].sesiones++;
+    if (normDate(c.fecha) > normDate(map[key].ultima)) {
+      map[key].ultima = normDate(c.fecha);
+      map[key].ultimoServicio = c.servicio;
+      map[key].nombre = nombre;
+    }
+    map[key].servicios[c.servicio] = (map[key].servicios[c.servicio] || 0) + 1;
+  });
+
+  _dbPacs = Object.values(map);
+  let pacs = _dbPacs;
+  if (search) pacs = pacs.filter(function(p) {
+    return (p.nombre + (p.telefono || '') + (p.email || '')).toLowerCase().indexOf(search) !== -1;
+  });
+  pacs.sort(function(a, b) { return b.sesiones - a.sesiones; });
+
+  const tbody = document.getElementById('dbTbody');
+  if (!tbody) return;
+  if (!pacs.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><p>No hay pacientes registrados</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = pacs.map(function(p) {
+    const idx      = _dbPacs.indexOf(p);
+    const topServ  = Object.entries(p.servicios).sort(function(a,b){return b[1]-a[1];})[0] || ['—', 0];
+    const initials = p.nombre.split(' ').map(function(x){return x[0]||'';}).join('').toUpperCase().slice(0, 2);
+    return '<tr>' +
+      '<td><div style="display:flex;align-items:center;gap:10px"><div class="pac-badge">' + initials + '</div><strong>' + p.nombre + '</strong></div></td>' +
+      '<td style="font-family:var(--font-m);font-size:.82rem">' + (p.telefono || '—') + '</td>' +
+      '<td style="font-size:.82rem;color:var(--muted)">' + (p.email || '—') + '</td>' +
+      '<td><span class="chip chip-ok">' + p.sesiones + '</span></td>' +
+      '<td style="font-size:.82rem">' + fmtDate(p.ultima) + '</td>' +
+      '<td style="font-size:.82rem;color:var(--muted)">' + topServ[0] + '</td>' +
+      '<td><div style="display:flex;gap:5px;flex-wrap:wrap">' +
+        waBtn(p.telefono, p.nombre, '', '', '', 'WA') +
+        '<button type="button" class="btn btn-edit btn-sm" onclick="dbEditarPac(' + idx + ')">✏️ Editar</button>' +
+        '<button type="button" class="btn btn-danger btn-sm" onclick="dbBorrarPac(' + idx + ')">🗑️</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function dbEditarPac(idx) {
+  const p = _dbPacs[idx];
+  if (!p) return;
+  document.getElementById('epOldNombre').value  = JSON.stringify(p.nombres);
+  document.getElementById('epNombre').value     = p.nombre;
+  document.getElementById('epTelefono').value   = p.telefono || '';
+  document.getElementById('epEmail').value      = p.email || '';
+  document.getElementById('epSaveBtn').setAttribute('onclick', 'guardarPacienteDB()');
+  openModal('modalEditarPaciente');
+}
+
+async function guardarPacienteDB() {
+  const oldNombresRaw = document.getElementById('epOldNombre').value;
+  const newNombre     = document.getElementById('epNombre').value.trim();
+  const telefono      = document.getElementById('epTelefono').value.trim();
+  const email         = document.getElementById('epEmail').value.trim();
+  if (!newNombre) { toast('El nombre no puede estar vacío', 'err'); return; }
+  const btn = document.getElementById('epSaveBtn');
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+  try {
+    let oldNombres = [];
+    try { oldNombres = JSON.parse(oldNombresRaw); } catch(e) { oldNombres = [oldNombresRaw]; }
+    let totalActualizado = 0;
+    for (const oldNombre of oldNombres) {
+      const data = encodeURIComponent(JSON.stringify({oldNombre, newNombre, telefono, email}));
+      const r = await fetch(`${APPS_SCRIPT_URL}?action=editPatient&token=${encodeURIComponent(TOKEN)}&data=${data}`);
+      const d = await r.json();
+      if (d.ok) totalActualizado += d.updated || 0;
+    }
+    allData.citas.forEach(c => {
+      if (oldNombres.includes(c.nombre)) { c.nombre = newNombre; c.telefono = telefono.replace(/\D/g, ''); c.email = email; }
+    });
+    toast(`Paciente actualizado en ${totalActualizado} cita(s)`);
+    closeModal('modalEditarPaciente');
+    renderBasedatos();
+  } catch(e) { toast('Error de conexión', 'err'); }
+  btn.textContent = 'Guardar cambios'; btn.disabled = false;
+}
+
+async function dbBorrarPac(idx) {
+  const p = _dbPacs[idx];
+  if (!p) return;
+  if (!confirm(`¿Eliminar a ${p.nombre} y sus ${p.sesiones} cita(s)?\n\nEsta acción no se puede deshacer.`)) return;
+  try {
+    for (const nombre of p.nombres) {
+      await fetch(`${APPS_SCRIPT_URL}?action=deletePatient&token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(nombre)}`);
+    }
+    allData.citas = allData.citas.filter(c => !p.nombres.includes(c.nombre));
+    toast(`${p.nombre} eliminado/a correctamente`);
+    renderBasedatos();
+    initDashboard();
+  } catch(e) { toast('Error de conexión', 'err'); }
+}
+
+async function agregarPacienteDB() {
+  const nombre   = document.getElementById('dbNombre').value.trim();
+  const telefono = document.getElementById('dbTelefono').value.trim();
+  const email    = document.getElementById('dbEmail').value.trim();
+  const entidad  = document.getElementById('dbEntidad').value.trim();
+  const deporte  = document.getElementById('dbDeporte').value.trim();
+  const notas    = document.getElementById('dbNotas').value.trim();
+
+  if (!nombre) { toast('El nombre es obligatorio', 'err'); return; }
+
+  const btn = document.getElementById('dbSubmitBtn');
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+
+  // Construir notas completas con entidad y deporte
+  const partes = [];
+  if (entidad) partes.push('Entidad: ' + entidad);
+  if (deporte) partes.push('Deporte/actividad: ' + deporte);
+  if (notas)   partes.push(notas);
+  const notasFinal = partes.join(' | ');
+
+  const data = {
+    name: nombre, phone: telefono, email: email,
+    service: 'Registro', modality: 'Presencial',
+    date: today(), time: '09:00',
+    priceP: 'A convenir', priceD: 'A convenir',
+    address: '', notes: notasFinal
+  };
+
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=adminBook&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(data))}`);
+    const d = await r.json();
+    if (d.ok) {
+      toast(`${nombre} agregado/a correctamente`);
+      limpiarFormDB();
+      await reload();
+      renderBasedatos();
+      initDashboard();
+    } else {
+      toast('Error: ' + (d.error || ''), 'err');
+    }
+  } catch(e) { toast('Error de conexión', 'err'); }
+
+  btn.textContent = 'Agregar paciente'; btn.disabled = false;
+}
+
+function limpiarFormDB() {
+  document.getElementById('dbNombre').value   = '';
+  document.getElementById('dbTelefono').value = '';
+  document.getElementById('dbEmail').value    = '';
+  document.getElementById('dbEntidad').value  = '';
+  document.getElementById('dbDeporte').value  = '';
+  document.getElementById('dbNotas').value    = '';
 }
 
 // ── CALENDARIO ──
