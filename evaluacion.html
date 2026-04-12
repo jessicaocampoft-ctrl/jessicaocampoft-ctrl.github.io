@@ -596,6 +596,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
       </div>
 
       <div class="photo-grid" id="photoGrid"></div>
+
+      <!-- Banner resultados posturales -->
+      <div id="btnVerPostura" style="display:none;margin-top:16px">
+        <div style="background:linear-gradient(135deg,rgba(27,191,176,.09),rgba(27,191,176,.03));border:1.5px solid rgba(27,191,176,.35);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:600;font-size:.92rem;color:var(--text)">📐 Resultados de la evaluación postural</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Registra hallazgos, tipo de postura y genera el reporte en PDF</div>
+          </div>
+          <button class="btn btn-teal btn-sm" onclick="document.getElementById('reportePosturalCard').scrollIntoView({behavior:'smooth'})">Ir al análisis →</button>
+        </div>
+      </div>
     </div>
 
     <!-- REPORTE POSTURAL -->
@@ -1839,10 +1850,12 @@ function onDrop(ev){
 
 function renderFotos(){
   const grid=document.getElementById('photoGrid');
+  const card=document.getElementById('reportePosturalCard');
+  const banner=document.getElementById('btnVerPostura');
   if(!S.fotos.length){
     grid.innerHTML='';
-    const card=document.getElementById('reportePosturalCard');
     if(card)card.style.display='none';
+    if(banner)banner.style.display='none';
     return;
   }
   grid.innerHTML=S.fotos.map(f=>`
@@ -1851,9 +1864,8 @@ function renderFotos(){
       <div class="ph-lbl">${f.categoria}<br>${f.fecha} · S${f.sesion}</div>
       <button class="ph-del" onclick="event.stopPropagation();borrarFoto('${f.id}')">×</button>
     </div>`).join('');
-  // Mostrar sección de análisis postural al tener fotos
-  const card=document.getElementById('reportePosturalCard');
   if(card)card.style.display='block';
+  if(banner)banner.style.display='block';
 }
 
 async function borrarFoto(id){
@@ -2480,6 +2492,21 @@ async function evaluarConIA(){
   const ybI=(S.tests.yb_izquierdo_anterior||0)+(S.tests.yb_izquierdo_posteromedial||0)+(S.tests.yb_izquierdo_posterolateral||0);
   if(ybD&&ybI){const asim=Math.abs(ybD-ybI)/Math.max(ybD,ybI)*100;ybInfo=`\n• Y-Balance: Der ${ybD}, Izq ${ybI}, Asimetría ${asim.toFixed(1)}% (${asim>4?'ALERTA >4%':'OK'})`;}
 
+  // Recolectar hallazgos posturales
+  const P=S.postura||{};
+  const postAlteraciones=[...document.querySelectorAll('#view3 .chk-pill.on')].map(el=>el.textContent.trim().replace(/\s+/g,' ')).filter(t=>!t.includes('✓'));
+  const postNormales=[...document.querySelectorAll('#view3 .chk-pill.on')].map(el=>el.textContent.trim().replace(/\s+/g,' ')).filter(t=>t.includes('✓'));
+  let posturaInfo='';
+  if(postAlteraciones.length||postNormales.length||P.tipo||P.obs){
+    posturaInfo='\n\nANÁLISIS POSTURAL:';
+    if(postAlteraciones.length)posturaInfo+='\nAlteraciones detectadas:\n'+postAlteraciones.map(h=>`• ${h}`).join('\n');
+    if(postNormales.length)posturaInfo+='\nHallazgos normales:\n'+postNormales.map(h=>`• ${h}`).join('\n');
+    if(P.tipo)posturaInfo+=`\nTipo de postura global: ${P.tipo}`;
+    if(P.riesgo)posturaInfo+=`\nRiesgo postural: ${P.riesgo}`;
+    if(P.obs)posturaInfo+=`\nObservaciones clínicas: ${P.obs}`;
+    if(P.recomend)posturaInfo+=`\nRecomendaciones registradas: ${P.recomend}`;
+  }
+
   const prompt=`Eres una fisioterapeuta clínica experta de alto rendimiento. Analiza los datos de evaluación y genera un informe profesional en español. Sé específica, clínica y útil.
 
 DATOS DEL PACIENTE:
@@ -2497,18 +2524,22 @@ ${S.hc.cirugia==='si'?`- Cirugías: ${S.hc.cirugiaDesc||'Sí, sin detalles'}`:''
 
 HALLAZGOS DE TESTS FUNCIONALES:
 ${testsResumen||'No se registraron tests aún'}${ybInfo}
-${S.riesgo?`\nÍndice de riesgo: ${S.riesgo.nivel} (${S.riesgo.puntos} factores: ${S.riesgo.factores.join(', ')})`:''}
+${S.riesgo?`\nÍndice de riesgo: ${S.riesgo.nivel} (${S.riesgo.puntos} factores: ${S.riesgo.factores.join(', ')})`:''}${posturaInfo}
 
 Genera el informe con EXACTAMENTE estas secciones (usa los títulos con ##):
 
 ## DIAGNÓSTICO FISIOTERAPÉUTICO
-(2-3 oraciones. Diagnóstico clínico preciso basado en hallazgos. Incluye estructuras afectadas y posibles mecanismos causales.)
+(2-3 oraciones. Diagnóstico clínico preciso basado en todos los hallazgos incluyendo postura. Incluye estructuras afectadas y posibles mecanismos causales.)
 
 ## HALLAZGOS PRINCIPALES
-(Lista de máximo 5 hallazgos con formato: • Hallazgo → implicación clínica. Ordénalos de mayor a menor relevancia.)
+(Lista de máximo 5 hallazgos con formato: • Hallazgo → implicación clínica. Incluye hallazgos posturales si los hay. Ordénalos de mayor a menor relevancia.)
 
+${postAlteraciones.length||P.tipo?`## ANÁLISIS POSTURAL
+(Interpreta los hallazgos posturales registrados. Relaciona las alteraciones con el motivo de consulta y los tests funcionales. Identifica cadenas musculares implicadas.)
+
+`:''}\
 ## PLAN DE TRATAMIENTO
-(Mínimo 3 fases con nombre, duración estimada, objetivos específicos y técnicas fisioterapéuticas recomendadas.)
+(Mínimo 3 fases con nombre, duración estimada, objetivos específicos y técnicas fisioterapéuticas recomendadas. Si hay alteraciones posturales, inclúyelas en el plan.)
 
 ## OBJETIVOS FUNCIONALES
 (4-5 objetivos SMART y medibles, específicos para este paciente. Incluye plazos realistas.)
