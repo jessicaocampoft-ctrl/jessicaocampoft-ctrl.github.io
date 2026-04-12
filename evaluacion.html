@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Evaluación Fisioterapéutica — Jessica Ocampo</title>
+<title>Valoración Funcional de Movimiento — Jessica Ocampo</title>
 <link rel="icon" href="Logo/4.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Cormorant+Garamond:ital,wght@0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -254,12 +254,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 <main id="main">
   <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
     <div>
-      <h1 class="page-title">Evaluación <em>Fisioterapéutica</em></h1>
-      <p class="page-sub" id="pageSubtitle">Selecciona o crea una evaluación para comenzar</p>
+      <h1 class="page-title">Valoración <em>Funcional de Movimiento</em></h1>
+      <p class="page-sub" id="pageSubtitle">Selecciona o crea una valoración para comenzar</p>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-ghost btn-sm" onclick="nuevaEval()">+ Nueva evaluación</button>
-      <button class="btn btn-ghost btn-sm" onclick="abrirListaEvals()">📋 Mis evaluaciones</button>
+      <button class="btn btn-ghost btn-sm" onclick="nuevaEval()">+ Nueva valoración</button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirListaEvals()">📋 Mis valoraciones</button>
     </div>
   </div>
 
@@ -272,8 +272,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
   <div id="viewLista">
     <div class="card" style="text-align:center;padding:48px">
       <div style="font-size:3rem;margin-bottom:16px">📋</div>
-      <div class="card-title" style="margin-bottom:8px">Módulo de Evaluación Fisioterapéutica</div>
-      <p style="color:var(--muted);margin-bottom:28px;max-width:420px;margin-inline:auto">Crea evaluaciones completas con historia clínica, tests funcionales, fotos y generación de PDF profesional.</p>
+      <div class="card-title" style="margin-bottom:8px">Módulo de Valoración Funcional</div>
+      <p style="color:var(--muted);margin-bottom:28px;max-width:420px;margin-inline:auto">Crea valoraciones funcionales completas, tests funcionales, fotos y generación de PDF profesional.</p>
       <button class="btn btn-teal" onclick="nuevaEval()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         Nueva evaluación
@@ -300,11 +300,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
           <h3>Gimnasio / Activo</h3>
           <p>Actividad física regular, gym, entrenamiento funcional</p>
         </div>
-        <div class="pc" onclick="selPerfil('postquirurgico')">
+        <div class="pc" onclick="selPerfil('retorno')">
           <div class="pc-check">✓</div>
           <span class="pc-icon">🩺</span>
-          <h3>Postquirúrgico</h3>
-          <p>LCA, hombro, columna, prótesis, recuperación quirúrgica</p>
+          <h3>Retorno al movimiento</h3>
+          <p>Retorno al movimiento tras intervención quirúrgica</p>
         </div>
         <div class="pc" onclick="selPerfil('empresarial')">
           <div class="pc-check">✓</div>
@@ -323,8 +323,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
   <div id="view1" style="display:none">
     <!-- DATOS PERSONALES -->
     <div class="card">
-      <div class="card-title">Historia Clínica</div>
-      <div class="sec-title">Datos personales</div>
+      <div class="card-title">Ficha de Valoración Funcional</div>
+      <div class="sec-title">Datos del consultante</div>
       <div class="fg">
         <div class="field span-full"><label>Nombre completo *</label><input id="hcNombre" type="text" placeholder="Ana García López" oninput="S.hc.nombre=this.value"></div>
         <div class="field"><label>Fecha de nacimiento</label><input id="hcFechaNac" type="date" onchange="calcEdad()"></div>
@@ -350,13 +350,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 
     <!-- MOTIVO DE CONSULTA -->
     <div class="card">
-      <div class="sec-title">Motivo de consulta</div>
+      <div class="sec-title">Motivo de inicio del proceso</div>
       <div class="field" style="margin-bottom:16px">
-        <label>Describe el motivo de consulta *</label>
-        <textarea id="hcMotivo" rows="3" placeholder="¿Qué te trae hoy? ¿Cuándo empezó? ¿Cómo se manifiesta?" oninput="S.hc.motivo=this.value"></textarea>
+        <label>Describe el motivo de inicio del proceso *</label>
+        <textarea id="hcMotivo" rows="3" placeholder="¿Qué te trajo aquí? ¿Cuándo empezó a limitarte? ¿Cómo afecta tu movimiento?" oninput="S.hc.motivo=this.value"></textarea>
       </div>
 
-      <label style="font-size:.82rem;color:var(--muted);display:block;margin-bottom:10px">Marca las zonas de dolor en el cuerpo (haz clic)</label>
+      <label style="font-size:.82rem;color:var(--muted);display:block;margin-bottom:10px">Marca las zonas de tensión o restricción de movimiento (haz clic)</label>
       <div class="bmap-wrap">
         <div class="bmap-col">
           <label>Vista anterior</label>
@@ -393,12 +393,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
       </div>
       <div id="zonaList" class="zona-list" style="margin-top:12px"></div>
 
-      <div class="sec-title">Escala de dolor EVA</div>
+      <div class="sec-title">Percepción de molestia o tensión</div>
       <div class="eva-track">
         <div class="eva-num" id="evaNum">5</div>
         <div class="eva-faces"><span>😊</span><span>😐</span><span>😣</span><span>😭</span></div>
         <input type="range" class="eva-slider" id="evaSlider" min="0" max="10" value="5" oninput="updEva(this.value)">
-        <div class="eva-labels"><span>0 Sin dolor</span><span>5 Moderado</span><span>10 Insoportable</span></div>
+        <div class="eva-labels"><span>0 Sin molestia</span><span>5 Moderado</span><span>10 Limitación total</span></div>
       </div>
 
       <div class="fg" style="margin-top:16px">
@@ -408,9 +408,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
             <option>Días</option><option>Semanas</option><option>Meses</option><option>Años</option>
           </select>
         </div>
-        <div class="field"><label>Tipo de lesión</label>
+        <div class="field"><label>Tipo de restricción funcional</label>
           <select id="hcTipoLesion" onchange="S.hc.tipoLesion=this.value">
-            <option value="">Selecciona</option><option>Aguda</option><option>Subaguda</option><option>Crónica</option>
+            <option value="">Selecciona</option><option>Reciente (menos de 6 semanas)</option><option>En proceso de resolución</option><option>De larga data (más de 3 meses)</option>
           </select>
         </div>
         <div class="field"><label>¿Tratamiento previo?</label>
@@ -427,20 +427,20 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 
     <!-- ANTECEDENTES -->
     <div class="card">
-      <div class="sec-title">Antecedentes</div>
+      <div class="sec-title">Historial de movimiento y condición física</div>
       <div class="fg">
-        <div class="field"><label>¿Cirugías previas?</label>
+        <div class="field"><label>¿Intervenciones quirúrgicas previas?</label>
           <select id="hcCirugia" onchange="toggleField('hcCirugiaDescW',this.value==='si')">
             <option value="no">No</option><option value="si">Sí</option>
           </select>
         </div>
         <div class="field span-full" id="hcCirugiaDescW" style="display:none">
-          <label>¿Cuáles? ¿En qué año?</label>
+          <label>¿Cuáles? ¿En qué año aproximadamente?</label>
           <textarea id="hcCirugiaDesc" rows="2" oninput="S.hc.cirugiaDesc=this.value"></textarea>
         </div>
       </div>
       <div style="margin-top:14px">
-        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:8px">Patologías de base</label>
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:8px">Condiciones preexistentes</label>
         <div class="checks-wrap" id="patologiasWrap">
           <label class="chk-pill" onclick="togChk(this,'patologia')"><input type="checkbox" value="Diabetes"> Diabetes</label>
           <label class="chk-pill" onclick="togChk(this,'patologia')"><input type="checkbox" value="Hipertensión"> Hipertensión</label>
@@ -454,21 +454,21 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
         </div>
       </div>
       <div class="fg" style="margin-top:14px">
-        <div class="field"><label>Medicamentos actuales</label><input id="hcMeds" type="text" placeholder="Ibuprofeno, omeprazol..." oninput="S.hc.medicamentos=this.value"></div>
-        <div class="field"><label>Alergias relevantes</label><input id="hcAlergias" type="text" placeholder="Ninguna, penicilina..." oninput="S.hc.alergias=this.value"></div>
+        <div class="field"><label>Apoyo farmacológico actual</label><input id="hcMeds" type="text" placeholder="Ibuprofeno, omeprazol..." oninput="S.hc.medicamentos=this.value"></div>
+        <div class="field"><label>Restricciones o alergias conocidas</label><input id="hcAlergias" type="text" placeholder="Ninguna, penicilina..." oninput="S.hc.alergias=this.value"></div>
       </div>
     </div>
 
     <!-- OBJETIVOS -->
     <div class="card">
-      <div class="sec-title">Objetivos del paciente</div>
+      <div class="sec-title">Metas del proceso</div>
       <div class="checks-wrap" style="margin-bottom:14px" id="objetivosWrap">
         <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Reducir dolor"> Reducir dolor</label>
         <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Volver al deporte"> Volver al deporte</label>
         <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Mejorar movilidad"> Mejorar movilidad</label>
         <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Prevención"> Prevención</label>
         <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Rendimiento"> Rendimiento</label>
-        <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Rehabilitación postquirúrgica"> Rehab. postquirúrgica</label>
+        <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Readaptación post-intervención"> Readaptación post-intervención</label>
         <label class="chk-pill" onclick="togChk(this,'objetivo')"><input type="checkbox" value="Mejorar calidad de vida"> Calidad de vida</label>
       </div>
       <div class="field"><label>Describe con sus palabras lo que espera lograr</label>
@@ -478,15 +478,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 
     <!-- CONSENTIMIENTO -->
     <div class="card">
-      <div class="sec-title">Consentimiento informado</div>
+      <div class="sec-title">Acuerdo de participación en programa de movimiento</div>
       <div class="consent-text">
-        Yo, paciente de Jessica Ocampo Fisioterapeuta, declaro que he sido informado/a de manera clara y comprensible sobre los objetivos, procedimientos, beneficios y posibles riesgos de la evaluación y el tratamiento fisioterapéutico propuesto. Entiendo que puedo hacer preguntas en cualquier momento y que tengo derecho a retirar mi consentimiento sin que esto afecte mi atención. Autorizo que mi información clínica sea registrada y utilizada exclusivamente con fines terapéuticos y de seguimiento de mi proceso de recuperación. Confirmo que la información proporcionada es verdadera y completa. Fecha de evaluación: <span id="fechaConsentimiento"></span>.
+        Yo, _______________________, identificado/a con cédula N° _______________, declaro que de forma libre y voluntaria decido participar en el programa de valoración funcional, readaptación al movimiento y acondicionamiento físico dirigido por Jessica Ocampo, Fisioterapeuta. Entiendo que este programa incluye: valoración de patrones de movimiento, diseño de planes personalizados de readaptación funcional, educación en higiene postural y del movimiento, y acompañamiento en el proceso de acondicionamiento físico. Declaro que he informado de manera veraz sobre mis condiciones físicas actuales y cualquier restricción relevante. Entiendo que este programa no reemplaza la atención médica y que en caso de requerir valoración médica seré orientado/a a consultar con el profesional correspondiente. Autorizo el registro fotográfico de mi proceso exclusivamente con fines de seguimiento de mi evolución, con carácter confidencial. Entiendo que puedo retirarme del programa en cualquier momento. Fecha: <span id="fechaConsentimiento"></span>.
       </div>
       <label class="check-row" style="margin-bottom:14px">
         <input type="checkbox" id="chkConsentimiento" onchange="S.hc.consentimiento=this.checked">
-        <span>He leído y acepto el consentimiento informado</span>
+        <span>He leído y acepto el acuerdo de participación</span>
       </label>
-      <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px">Firma digital del paciente</label>
+      <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px">Firma del consultante</label>
       <div class="sig-wrap">
         <canvas id="sigCanvas" height="140"></canvas>
         <button class="btn btn-ghost btn-sm sig-clear" onclick="clearSig()">Limpiar</button>
@@ -502,12 +502,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
   <!-- MÓDULO 3: TESTS -->
   <div id="view2" style="display:none">
     <div class="card" style="margin-bottom:0">
-      <div class="card-title">Evaluación funcional</div>
+      <div class="card-title">Valoración de Movimiento</div>
       <div class="sem-wrap" id="semaforo" style="margin-bottom:0"></div>
     </div>
 
     <!-- TESTS COMUNES -->
-    <div class="sec-title" style="margin-top:20px">Tests comunes — todos los perfiles</div>
+    <div class="sec-title" style="margin-top:20px">Tests funcionales de movimiento — todos los perfiles</div>
     <div id="testsComunes"></div>
 
     <!-- TESTS POR PERFIL -->
@@ -538,7 +538,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
   <!-- MÓDULO 4: FOTOS -->
   <div id="view3" style="display:none">
     <div class="card">
-      <div class="card-title">Fotos posturales y de evolución</div>
+      <div class="card-title">Fotos de movimiento y evolución del proceso</div>
       <div class="fg2" style="margin-bottom:16px">
         <div class="field">
           <label>Categoría</label>
@@ -548,7 +548,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
             <option>Lateral izquierda</option>
             <option>Lateral derecha</option>
             <option>Zona de lesión</option>
-            <option>Ejercicio / actividad</option>
+            <option>Movimiento / actividad</option>
           </select>
         </div>
         <div class="field">
@@ -729,7 +729,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
   <div id="view4" style="display:none">
     <div class="card" style="margin-bottom:20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
-        <div class="card-title" style="margin-bottom:0">Seguimiento de sesiones</div>
+        <div class="card-title" style="margin-bottom:0">Seguimiento del proceso</div>
         <button class="btn btn-teal btn-sm" onclick="nuevaSesion()">+ Nueva sesión</button>
       </div>
       <div id="sesionResumen" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px"></div>
@@ -738,7 +738,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 
     <!-- Formulario nueva sesión -->
     <div class="card" id="nuevaSesionForm" style="display:none">
-      <div class="card-title">Registrar sesión</div>
+      <div class="card-title">Registrar sesión de trabajo</div>
       <div class="fg">
         <div class="field"><label>Fecha *</label><input id="sessFecha" type="date"></div>
         <div class="field"><label>Duración (min)</label><input id="sessDuracion" type="number" min="15" max="180" value="60"></div>
@@ -750,11 +750,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
         </div>
       </div>
       <div style="margin-top:14px">
-        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:8px">Servicios aplicados</label>
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:8px">Trabajo realizado en sesión</label>
         <div class="checks-wrap">
-          <label class="chk-pill" onclick="togChk(this,'servApl')"><input type="checkbox" value="Descarga muscular"> Descarga muscular</label>
+          <label class="chk-pill" onclick="togChk(this,'servApl')"><input type="checkbox" value="Trabajo de descarga muscular"> Descarga muscular</label>
           <label class="chk-pill" onclick="togChk(this,'servApl')"><input type="checkbox" value="Readaptación funcional"> Readaptación funcional</label>
-          <label class="chk-pill" onclick="togChk(this,'servApl')"><input type="checkbox" value="Valoración"> Valoración</label>
+          <label class="chk-pill" onclick="togChk(this,'servApl')"><input type="checkbox" value="Valoración funcional"> Valoración funcional</label>
           <label class="chk-pill" onclick="togChk(this,'servApl')"><input type="checkbox" value="Jornada empresarial"> Jornada empresarial</label>
         </div>
       </div>
@@ -771,33 +771,33 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 
       <div class="fg2" style="margin-top:14px">
         <div>
-          <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:5px">EVA inicio de sesión</label>
+          <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:5px">Percepción de molestia al inicio</label>
           <input type="range" class="eva-slider" id="sessEvaIni" min="0" max="10" value="5" oninput="document.getElementById('sessEvaIniV').textContent=this.value">
           <div style="text-align:center;font-weight:700;font-family:var(--font-m)" id="sessEvaIniV">5</div>
         </div>
         <div>
-          <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:5px">EVA final de sesión</label>
+          <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:5px">Percepción de molestia al final</label>
           <input type="range" class="eva-slider" id="sessEvaFin" min="0" max="10" value="3" oninput="document.getElementById('sessEvaFinV').textContent=this.value">
           <div style="text-align:center;font-weight:700;font-family:var(--font-m)" id="sessEvaFinV">3</div>
         </div>
       </div>
 
-      <div class="sec-title">Nota SOAP</div>
+      <div class="sec-title">Registro de sesión</div>
       <div class="soap-block">
-        <div class="soap-lbl">S — SUBJETIVO</div>
-        <div class="field"><textarea id="soapS" rows="2" placeholder="Cómo llegó el paciente, qué reporta hoy..."></textarea></div>
+        <div class="soap-lbl">S — Reporte del consultante</div>
+        <div class="field"><textarea id="soapS" rows="2" placeholder="Cómo llegó el consultante, qué reporta hoy..."></textarea></div>
       </div>
       <div class="soap-block">
-        <div class="soap-lbl">O — OBJETIVO</div>
-        <div class="field"><textarea id="soapO" rows="2" placeholder="Hallazgos clínicos del día, tests aplicados..."></textarea></div>
+        <div class="soap-lbl">O — Hallazgos funcionales del día</div>
+        <div class="field"><textarea id="soapO" rows="2" placeholder="Hallazgos funcionales del día, movimientos evaluados..."></textarea></div>
       </div>
       <div class="soap-block">
-        <div class="soap-lbl">A — ANÁLISIS</div>
-        <div class="field"><textarea id="soapA" rows="2" placeholder="Respuesta al tratamiento vs. sesión anterior..."></textarea></div>
+        <div class="soap-lbl">A — Respuesta al trabajo funcional</div>
+        <div class="field"><textarea id="soapA" rows="2" placeholder="Respuesta al trabajo funcional vs. sesión anterior..."></textarea></div>
       </div>
       <div class="soap-block">
-        <div class="soap-lbl">P — PLAN</div>
-        <div class="field"><textarea id="soapP" rows="2" placeholder="Qué se trabajará en la próxima sesión..."></textarea></div>
+        <div class="soap-lbl">P — Plan para la próxima sesión</div>
+        <div class="field"><textarea id="soapP" rows="2" placeholder="Qué se trabajará funcionalmente en la próxima sesión..."></textarea></div>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn btn-ghost btn-sm" onclick="dictarVoz('soapS')" title="Dictar por voz">🎤 Voz S</button>
@@ -826,19 +826,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
   <!-- MÓDULO 6: PDF -->
   <div id="view5" style="display:none">
     <div class="card">
-      <div class="card-title">Generar reporte en PDF</div>
-      <p style="color:var(--muted);margin-bottom:24px;font-size:.88rem">Genera el informe completo para el expediente clínico o una versión simplificada para el paciente.</p>
+      <div class="card-title">Generar reporte del proceso</div>
+      <p style="color:var(--muted);margin-bottom:24px;font-size:.88rem">Genera el reporte técnico del proceso o la versión motivadora para entregar al consultante.</p>
       <div class="fg2">
         <div class="card" style="border:2px solid var(--border);cursor:pointer;transition:var(--tr)" onclick="generarPDF('tecnico')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
           <div style="font-size:2rem;margin-bottom:10px">📄</div>
-          <div class="card-title" style="margin-bottom:6px;font-size:1rem">PDF Técnico</div>
-          <p style="font-size:.8rem;color:var(--muted)">Historia clínica completa, todos los tests con puntuaciones, fotos posturales, notas SOAP, gráficas y consentimiento firmado.</p>
+          <div class="card-title" style="margin-bottom:6px;font-size:1rem">Reporte técnico del proceso</div>
+          <p style="font-size:.8rem;color:var(--muted)">Ficha de valoración completa, todos los tests con puntuaciones, fotos posturales, notas SOAP, gráficas y consentimiento firmado.</p>
           <div class="btn-row" style="margin-top:14px"><button class="btn btn-teal btn-sm" onclick="event.stopPropagation();generarPDF('tecnico')">Generar</button></div>
         </div>
         <div class="card" style="border:2px solid var(--border);cursor:pointer;transition:var(--tr)" onclick="generarPDF('paciente')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
           <div style="font-size:2rem;margin-bottom:10px">🧡</div>
-          <div class="card-title" style="margin-bottom:6px;font-size:1rem">PDF Paciente</div>
-          <p style="font-size:.8rem;color:var(--muted)">Resumen visual y motivador en lenguaje simple: fotos comparativas, evolución del dolor, logros y recomendaciones para casa.</p>
+          <div class="card-title" style="margin-bottom:6px;font-size:1rem">Reporte para el consultante</div>
+          <p style="font-size:.8rem;color:var(--muted)">Resumen visual y motivador: fotos comparativas, evolución de la molestia, logros del proceso y recomendaciones de movimiento.</p>
           <div class="btn-row" style="margin-top:14px"><button class="btn btn-teal btn-sm" onclick="event.stopPropagation();generarPDF('paciente')">Generar</button></div>
         </div>
       </div>
@@ -867,27 +867,27 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
   <!-- MÓDULO 7: ALTA -->
   <div id="view6" style="display:none">
     <div class="card">
-      <div class="card-title">Ficha de alta</div>
+      <div class="card-title">Cierre del proceso</div>
       <div class="fg">
         <div class="field"><label>Fecha de alta</label><input id="altaFecha" type="date"></div>
         <div class="field"><label>Sesiones realizadas</label><input id="altaSesiones" type="number" readonly style="background:var(--s3)"></div>
-        <div class="field"><label>Objetivo alcanzado</label>
+        <div class="field"><label>Meta del proceso alcanzada</label>
           <select id="altaObjetivo">
-            <option value="si">Sí — completamente</option>
-            <option value="parcial">Parcialmente</option>
-            <option value="no">No — requiere seguimiento</option>
+            <option value="si">Sí — proceso completado</option>
+            <option value="parcial">Parcialmente — continúa en proceso</option>
+            <option value="no">Requiere continuación del programa</option>
           </select>
         </div>
-        <div class="field span-full"><label>Resumen de evolución</label>
+        <div class="field span-full"><label>Resumen del proceso de readaptación</label>
           <textarea id="altaResumen" rows="3" placeholder="El paciente llegó con... durante el proceso se trabajó... al alta se evidencia..."></textarea>
         </div>
-        <div class="field span-full"><label>Recomendaciones para casa</label>
+        <div class="field span-full"><label>Recomendaciones de movimiento para casa</label>
           <textarea id="altaRecomend" rows="3" placeholder="Continuar ejercicios de movilidad, evitar posturas prolongadas, retornar si hay recaída..."></textarea>
         </div>
       </div>
 
-      <div class="sec-title">Encuesta de satisfacción</div>
-      <label style="font-size:.85rem;color:var(--muted);display:block;margin-bottom:8px">¿Cómo calificarías tu experiencia?</label>
+      <div class="sec-title">Tu experiencia en el proceso</div>
+      <label style="font-size:.85rem;color:var(--muted);display:block;margin-bottom:8px">¿Cómo calificarías tu proceso de readaptación con Jessica?</label>
       <div class="star-wrap" id="starWrap">
         <span class="star" onclick="setStar(1)">⭐</span>
         <span class="star" onclick="setStar(2)">⭐</span>
@@ -896,14 +896,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
         <span class="star" onclick="setStar(5)">⭐</span>
       </div>
       <div class="field" style="margin-top:12px">
-        <label>Comentario del paciente (testimonio)</label>
-        <textarea id="altaTestimonio" rows="3" placeholder="Quedé muy satisfecha con el tratamiento, el dolor desapareció en..."></textarea>
+        <label>Comentario libre (tu experiencia con el proceso)</label>
+        <textarea id="altaTestimonio" rows="3" placeholder="El proceso me ayudó a moverme mejor, ahora puedo..."></textarea>
       </div>
 
       <div class="btn-row">
         <button class="btn btn-ok" onclick="cerrarAlta()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Dar de alta y cerrar evaluación
+          Cerrar proceso y registrar egreso
         </button>
         <button class="btn btn-ghost" onclick="WIZ.prev()">← Atrás</button>
       </div>
@@ -1150,7 +1150,7 @@ function selPerfil(p){
   S.perfil=p;
   document.querySelectorAll('.pc').forEach(el=>el.classList.remove('sel'));
   event.currentTarget.classList.add('sel');
-  toast('Perfil: '+{deportista:'Deportista 🏋️',gimnasio:'Gimnasio / Activo 💪',postquirurgico:'Postquirúrgico 🩺',empresarial:'Empresarial 💼'}[p]);
+  toast('Perfil: '+{deportista:'Deportista 🏋️',gimnasio:'Gimnasio / Activo 💪',retorno:'Retorno al movimiento 🩺',empresarial:'Empresarial 💼'}[p]);
 }
 
 // ══════════════════════════════════════
@@ -1322,7 +1322,7 @@ const TESTS_PERFIL={
     {id:'pushup',nombre:'Push Up Test',tag:'Repeticiones',repeticiones:true},
     {id:'plank',nombre:'Plank (segundos)',tag:'Tiempo',tiempo:true,comps:['Caída de cadera','Elevación de glúteos','Pérdida de respiración','Anteriorización cefálica']},
   ],
-  postquirurgico:[
+  retorno:[
     {id:'rom',nombre:'Rango de movimiento articular',tag:'Goniometría',rom:true},
     {id:'lachman',nombre:'Test de Lachman (LCA)',tag:'Positivo/Negativo',posNeg:true,bilateral:false,grados:true},
     {id:'mcmurray',nombre:'McMurray (meniscos)',tag:'Positivo/Negativo',mcmurray:true},
@@ -1346,7 +1346,7 @@ function renderTests(){
   const perfilTests=TESTS_PERFIL[S.perfil]||[];
   if(perfilTests.length){
     perfil.innerHTML=`<div class="sec-title">Tests específicos — ${
-      {deportista:'Deportista',gimnasio:'Gimnasio/Activo',postquirurgico:'Postquirúrgico',empresarial:'Empresarial'}[S.perfil]||S.perfil
+      {deportista:'Deportista',gimnasio:'Gimnasio/Activo',retorno:'Retorno al movimiento',empresarial:'Empresarial'}[S.perfil]||S.perfil
     }</div>`+perfilTests.map(t=>buildTestCard(t)).join('');
   }else{perfil.innerHTML='';}
   actualizarSemaforo();
@@ -1634,7 +1634,7 @@ async function generarReportePostural(){
   doc.text(hc.nombre||'Paciente',10,y);y+=6;
   doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(107,114,128);
   doc.text(`Edad: ${hc.edad||'—'} años  |  Sexo: ${hc.sexo||'—'}  |  Perfil: ${
-    {deportista:'Deportista',gimnasio:'Gimnasio/Activo',postquirurgico:'Posquirúrgico',empresarial:'Empresarial'}[S.perfil]||S.perfil||'—'
+    {deportista:'Deportista',gimnasio:'Gimnasio/Activo',retorno:'Retorno al movimiento',empresarial:'Empresarial'}[S.perfil]||S.perfil||'—'
   }  |  Fecha: ${new Date().toLocaleDateString('es-CO')}`,10,y);y+=5;
   if(hc.ocupacion||hc.deporte)doc.text(`Ocupación: ${hc.ocupacion||'—'}  |  Deporte: ${hc.deporte||'—'}`,10,y);
   y+=8;doc.setDrawColor(27,191,176);doc.setLineWidth(0.3);doc.line(10,y,W-10,y);y+=8;
@@ -2480,7 +2480,7 @@ async function evaluarConIA(){
     <div class="ia-spinner"></div> La IA está analizando los hallazgos de la evaluación...
   </div>`;
 
-  const perfil={deportista:'Deportista (CrossFit/alto rendimiento)',gimnasio:'Activo/Gimnasio',postquirurgico:'Posquirúrgico',empresarial:'Empresarial/Sedentario'}[S.perfil]||S.perfil;
+  const perfil={deportista:'Deportista (CrossFit/alto rendimiento)',gimnasio:'Activo/Gimnasio',retorno:'Retorno al movimiento',empresarial:'Empresarial/Sedentario'}[S.perfil]||S.perfil;
   const zonas=(S.hc.zonas||[]).map(z=>z.region).filter(Boolean).join(', ')||'No especificadas';
   const patologias=(S.hc.patologias||[]).join(', ')||'Ninguna reportada';
   const objetivos=(S.hc.objetivos||[]).join(', ')||'No especificados';
