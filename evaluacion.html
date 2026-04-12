@@ -835,9 +835,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 <!-- MODAL CORREO -->
 <div id="modalEmail" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9002;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--s1);border-radius:14px;max-width:480px;width:100%;padding:28px">
-    <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:600;margin-bottom:16px">📧 Enviar reporte por correo</div>
+    <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:600;margin-bottom:6px">📧 Enviar reporte por correo</div>
+    <p style="color:var(--muted);font-size:.82rem;margin-bottom:16px">Se abrirá tu correo (Gmail, Outlook, etc.) con el mensaje listo — solo haz clic en <strong>Enviar</strong>.</p>
     <div class="field" style="margin-bottom:12px">
-      <label>Correo del paciente</label>
+      <label>Correo del paciente *</label>
       <input id="emailDestino" type="email" placeholder="paciente@correo.com" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;outline:none;font-family:var(--font-b)">
     </div>
     <div class="field" style="margin-bottom:12px">
@@ -848,19 +849,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
         <option value="ejercicios">Plan de ejercicios para casa</option>
       </select>
     </div>
-    <div class="field" style="margin-bottom:16px">
-      <label>Mensaje personalizado (opcional)</label>
-      <textarea id="emailMensaje" rows="3" placeholder="Hola! Te enviamos el resumen de tu evaluación..." style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;resize:vertical;outline:none;font-family:var(--font-b)"></textarea>
-    </div>
-    <div style="background:rgba(27,191,176,.07);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:16px;font-size:.78rem;color:var(--muted);line-height:1.7">
-      <strong style="color:var(--text);display:block;margin-bottom:4px">¿No has configurado EmailJS aún?</strong>
-      1. Ve a <a href="https://emailjs.com" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">emailjs.com</a> → cuenta gratis (200 emails/mes)<br>
-      2. Conecta tu Gmail de Jessica Ocampo<br>
-      3. Crea una plantilla con variables: <code>{{to_name}}</code>, <code>{{to_email}}</code>, <code>{{message}}</code><br>
-      4. Reemplaza en el código: <code>TU_PUBLIC_KEY</code>, <code>TU_SERVICE_ID</code>, <code>TU_TEMPLATE_ID</code>
+    <div class="field" style="margin-bottom:18px">
+      <label>Frase adicional (opcional)</label>
+      <textarea id="emailMensaje" rows="2" placeholder="Recuerda tu cita el viernes a las 10am..." style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;resize:vertical;outline:none;font-family:var(--font-b)"></textarea>
     </div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-teal" onclick="enviarPorCorreo()" style="flex:1">📧 Enviar correo</button>
+      <button class="btn btn-teal" onclick="enviarPorCorreo()" style="flex:1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+        Abrir correo listo para enviar
+      </button>
       <button class="btn btn-ghost" onclick="document.getElementById('modalEmail').style.display='none'">Cancelar</button>
     </div>
     <div id="emailStatus" style="margin-top:10px;font-size:.82rem;text-align:center"></div>
@@ -2318,13 +2315,8 @@ async function generarPDFAlta(){
 }
 
 // ══════════════════════════════════════
-// ENVÍO POR CORREO — EmailJS
+// ENVÍO POR CORREO
 // ══════════════════════════════════════
-// CONFIGURACIÓN: reemplaza estos 3 valores con los de tu cuenta en emailjs.com
-const EMAILJS_PUBLIC_KEY  = 'TU_PUBLIC_KEY_AQUI';
-const EMAILJS_SERVICE_ID  = 'TU_SERVICE_ID_AQUI';
-const EMAILJS_TEMPLATE_ID = 'TU_TEMPLATE_ID_AQUI';
-
 function abrirModalEmail(){
   if(S.hc.email)document.getElementById('emailDestino').value=S.hc.email;
   document.getElementById('emailStatus').textContent='';
@@ -2332,10 +2324,10 @@ function abrirModalEmail(){
   document.getElementById('modalEmail').style.display='flex';
 }
 
-async function enviarPorCorreo(){
+function enviarPorCorreo(){
   const email=document.getElementById('emailDestino').value.trim();
   const tipo=document.getElementById('emailTipo').value;
-  const mensaje=document.getElementById('emailMensaje').value.trim();
+  const mensajeExtra=document.getElementById('emailMensaje').value.trim();
   const statusEl=document.getElementById('emailStatus');
 
   if(!email||!email.includes('@')){
@@ -2344,45 +2336,87 @@ async function enviarPorCorreo(){
     return;
   }
 
-  // Verificar configuración
-  if(EMAILJS_PUBLIC_KEY==='TU_PUBLIC_KEY_AQUI'){
-    statusEl.innerHTML='⚙️ Configura tu cuenta de EmailJS primero.<br><span style="font-size:.75rem">Sigue los 4 pasos del recuadro de arriba.</span>';
-    statusEl.style.color='#d97706';
-    return;
-  }
-
-  statusEl.textContent='⏳ Enviando...';
-  statusEl.style.color='var(--muted)';
-
-  const tipoLabels={paciente:'Reporte de evolución',tecnico:'Historia clínica',ejercicios:'Plan de ejercicios'};
   const nombre=(S.hc.nombre||'Paciente').split(' ')[0];
-  const mensajeFinal=mensaje||`Hola ${nombre}, te enviamos el resumen de tu proceso de fisioterapia. Cualquier duda, contáctanos. WhatsApp: 3136467945`;
+  const fecha=new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const sesionesOk=S.sesiones.filter(s=>s.estado==='Completada').length;
+  const evaIni=S.sesiones.length?S.sesiones[0].evaIni:S.hc.eva;
+  const evaFin=S.sesiones.length?S.sesiones[S.sesiones.length-1].evaFin:S.hc.eva;
 
-  try{
-    // Inicializar EmailJS con la public key
-    if(typeof emailjs!=='undefined'){
-      emailjs.init(EMAILJS_PUBLIC_KEY);
-      await emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
-        to_name:S.hc.nombre||'Paciente',
-        to_email:email,
-        from_name:'Jessica Ocampo Fisioterapeuta',
-        message:mensajeFinal,
-        tipo_reporte:tipoLabels[tipo]||tipo,
-        eva_inicial:S.hc.eva||'—',
-        sesiones_completadas:S.sesiones.filter(s=>s.estado==='Completada').length,
-        fecha:new Date().toLocaleDateString('es-CO')
-      });
-      statusEl.textContent='✅ Correo enviado exitosamente a '+email;
-      statusEl.style.color='#16a34a';
-      toast('Correo enviado a '+email,'ok');
-      setTimeout(()=>{document.getElementById('modalEmail').style.display='none';},2500);
-    }else{
-      throw new Error('EmailJS no cargó. Verifica tu conexión.');
-    }
-  }catch(err){
-    statusEl.innerHTML=`❌ Error al enviar: ${err.message||err.text||'revisa la configuración'}<br><span style="font-size:.75rem;color:var(--muted)">Verifica tu Service ID, Template ID y Public Key en emailjs.com</span>`;
-    statusEl.style.color='#dc2626';
+  let asunto='';
+  let cuerpo='';
+
+  if(tipo==='paciente'){
+    asunto=`Tu reporte de fisioterapia — Jessica Ocampo`;
+    cuerpo=`Hola ${nombre}! 👋
+
+Te enviamos el resumen de tu proceso de recuperación con Jessica Ocampo Fisioterapeuta.
+
+📅 Fecha: ${fecha}
+✅ Sesiones completadas: ${sesionesOk}
+📉 EVA inicial: ${evaIni}/10 → EVA final: ${evaFin}/10
+${S.hc.objetivos.length?'🎯 Objetivos: '+S.hc.objetivos.join(', '):''}
+
+${mensajeExtra||'Recuerda seguir con los ejercicios en casa y escribirnos si tienes alguna duda.'}
+
+Si quieres agendar tu próxima cita:
+🌐 jessicaocampoft.com
+📱 WhatsApp: 3136467945
+
+Con cariño,
+Jessica Ocampo Fisioterapeuta 💚`;
+  }else if(tipo==='tecnico'){
+    asunto=`Historia clínica — ${S.hc.nombre||'Paciente'} — ${new Date().toLocaleDateString('es-CO')}`;
+    cuerpo=`Historia clínica fisioterapéutica
+Generada el ${fecha}
+
+PACIENTE: ${S.hc.nombre||'—'}
+Edad: ${S.hc.edad||'—'} años | Sexo: ${S.hc.sexo||'—'} | IMC: ${S.hc.imc||'—'} (${S.hc.imcClasif||'—'})
+Perfil: ${S.perfil||'—'} | Deporte: ${S.hc.deporte||'—'}
+
+MOTIVO DE CONSULTA:
+${S.hc.motivo||'—'}
+
+EVA INICIAL: ${S.hc.eva}/10 | Tipo lesión: ${S.hc.tipoLesion||'—'} | Evolución: ${S.hc.tiempoEvolucion||'—'} ${S.hc.tiempoUnidad||''}
+Zonas de dolor: ${(S.hc.zonas||[]).map(z=>z.region).join(', ')||'—'}
+Patologías: ${S.hc.patologias.join(', ')||'Ninguna'}
+Medicamentos: ${S.hc.medicamentos||'Ninguno'} | Alergias: ${S.hc.alergias||'Ninguna'}
+
+OBJETIVOS: ${S.hc.objetivos.join(', ')||'—'}
+
+SEGUIMIENTO: ${sesionesOk} sesiones completadas
+EVA inicial: ${evaIni}/10 → EVA final: ${evaFin}/10
+
+${mensajeExtra}
+
+Jessica Ocampo Fisioterapeuta
+jessicaocampoft.com | WhatsApp: 3136467945`;
+  }else{
+    // ejercicios
+    asunto=`Plan de ejercicios para casa — ${nombre}`;
+    const lista=(S.ejercicios||[]).map((e,i)=>
+      `${i+1}. ${e.nombre} — ${e.series} series × ${e.reps}\n   ${e.desc}`
+    ).join('\n\n');
+    cuerpo=`Hola ${nombre}! 🏃
+
+Aquí tienes tu plan de ejercicios personalizado:
+
+${lista||'(Genera primero el plan en el módulo de tests)'}
+
+${mensajeExtra||'Recuerda realizar los ejercicios con cuidado y detenerte si sientes dolor.'}
+
+Cualquier duda:
+🌐 jessicaocampoft.com | 📱 WhatsApp: 3136467945
+
+Jessica Ocampo Fisioterapeuta 💚`;
   }
+
+  // Abre el cliente de correo de la computadora con todo pre-llenado
+  const mailtoLink=`mailto:${email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+  window.open(mailtoLink,'_blank');
+
+  statusEl.innerHTML='✅ Se abrió tu cliente de correo con el mensaje listo.<br><span style="font-size:.75rem;color:var(--muted)">Solo da clic en <strong>Enviar</strong> desde tu correo (Gmail, Outlook, etc.)</span>';
+  statusEl.style.color='#16a34a';
+  toast('Correo preparado — solo haz clic en Enviar 📧','ok');
 }
 
 // ══════════════════════════════════════
