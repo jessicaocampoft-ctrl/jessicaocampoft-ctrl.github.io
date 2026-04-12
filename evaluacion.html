@@ -182,6 +182,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 .star-wrap{display:flex;gap:6px;font-size:1.8rem;cursor:pointer;justify-content:center}
 .star{opacity:.3;transition:.1s;user-select:none}.star.on{opacity:1}
 
+/* IA MODULE */
+.ia-spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ia-result-box{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:14px;font-size:.84rem;line-height:1.85;color:var(--text)}
+.ia-section-hd{font-weight:600;font-size:.8rem;color:var(--primary);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.ia-bullet{padding:4px 0 4px 12px;border-left:2px solid var(--primary);margin:3px 0;font-size:.83rem;color:var(--text)}
+.ia-alerta{background:rgba(220,38,38,.07);border-left:3px solid #dc2626;border-radius:0 8px 8px 0;padding:10px 14px;font-size:.83rem;color:#dc2626;margin-top:6px}
+.ia-btn-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
 /* RESPONSIVE */
 @media(max-width:768px){
   #sidebar{width:56px;padding:16px 8px}
@@ -503,6 +512,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
     <!-- TESTS POR PERFIL -->
     <div id="testsPerfil"></div>
 
+    <!-- RIESGO -->
+    <div class="card" id="riesgoCard" style="display:none;margin-top:20px"></div>
+
+    <!-- BOTONES ACCIÓN IA -->
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+      <button id="btnIA" class="btn btn-teal" onclick="evaluarConIA()">
+        🧠 Evaluar con IA — Diagnóstico y plan de tratamiento
+      </button>
+      <button class="btn btn-ghost" onclick="generarEjercicios()">
+        🏋 Generar ejercicios para casa
+      </button>
+    </div>
+
+    <!-- RESULTADO IA -->
+    <div id="iaResultado" class="card" style="display:none;margin-top:16px"></div>
+
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="WIZ.prev()">← Atrás</button>
       <button class="btn btn-teal" onclick="WIZ.next()">Continuar →</button>
@@ -756,6 +781,45 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 <!-- TOAST CONTAINER -->
 <div class="toast-wrap" id="toastWrap"></div>
 
+<!-- MODAL EJERCICIOS -->
+<div id="modalEjercicios" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9001;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--s1);border-radius:14px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:600">Plan de ejercicios para casa</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-teal btn-sm" onclick="exportarEjerciciosPDF()">📄 Exportar PDF</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modalEjercicios').style.display='none'">✕ Cerrar</button>
+      </div>
+    </div>
+    <div id="ejerciciosBody"></div>
+  </div>
+</div>
+
+<!-- MODAL API KEY -->
+<div id="modalAPIKey" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9002;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--s1);border-radius:14px;max-width:480px;width:100%;padding:28px">
+    <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:600;margin-bottom:6px">🔑 API Key de Anthropic</div>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6">Para usar la evaluación con IA necesitas una API key de Anthropic. Se usa solo en tu navegador y <strong>nunca se guarda</strong> en ningún servidor.</p>
+    <div style="background:rgba(27,191,176,.08);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;font-size:.82rem;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--text);display:block;margin-bottom:6px">¿Cómo obtener tu API key?</strong>
+      1. Ve a <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">console.anthropic.com</a><br>
+      2. Crea una cuenta gratuita (o inicia sesión)<br>
+      3. Ve a <strong>API Keys</strong> → <strong>Create Key</strong><br>
+      4. Copia la key y pégala aquí<br>
+      <span style="color:var(--primary);font-size:.78rem">💡 Costo aprox: $0.003 por evaluación (menos de 1 centavo)</span>
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label>Tu API Key</label>
+      <input id="inputAPIKey" type="password" placeholder="sk-ant-api03-..." style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:var(--font-m);font-size:.85rem;outline:none">
+      <div class="field-note">Comienza con <code>sk-</code> · Solo se usa en esta sesión</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-teal" onclick="guardarAPIKey()" style="flex:1">🧠 Conectar y evaluar</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modalAPIKey').style.display='none'">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL FOTO GRANDE -->
 <div id="modalFoto" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9000;align-items:center;justify-content:center" onclick="this.style.display='none'">
   <img id="modalFotoImg" style="max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 0 60px rgba(0,0,0,.5)">
@@ -821,7 +885,7 @@ const WIZ={
     document.getElementById('view'+n).style.display='block';
     document.getElementById('wizProgress').style.display='block';
     renderWizSteps();
-    if(n===2)renderTests();
+    if(n===2){renderTests();setTimeout(calcularRiesgoLesion,500);}
     if(n===4)renderSesiones();
     if(n===5)initPDF();
     if(n===6)initAlta();
@@ -1081,6 +1145,7 @@ const TESTS_PERFIL={
     {id:'aslr',nombre:'Active Straight Leg Raise (FMS)',tag:'0-3',bilateral:true,comps:['Rotación pélvica','Pérdida de neutro lumbar','Compensación de rodilla contraria']},
     {id:'ybalance',nombre:'Y-Balance Test',tag:'Distancias cm',ybalance:true},
     {id:'apley',nombre:'Apley Scratch Test (hombros)',tag:'cm bilateral',apley:true},
+    {id:'shinbox',nombre:'Shin Box Assessment',tag:'RI/RE + Carga',shinbox:true},
   ],
   gimnasio:[
     {id:'ohsquat',nombre:'Overhead Squat (NASM)',tag:'Checklist',
@@ -1240,6 +1305,54 @@ function buildTestCard(t){
           <option>—</option><option>Negativo</option><option>Positivo</option>
         </select>
       </div>
+    </div>`;
+  }else if(t.shinbox){
+    body=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px">
+      ${['Derecho','Izquierdo'].map(l=>`
+      <div>
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${l}</div>
+        <div class="field" style="margin-bottom:6px">
+          <label>Rotación interna (°)</label>
+          <input type="number" min="0" max="90" placeholder="0"
+            oninput="S.tests['shinbox_ri_${l.toLowerCase()}']=+this.value;calcShinBox()"
+            value="${S.tests['shinbox_ri_'+l.toLowerCase()]||''}">
+        </div>
+        <div class="field" style="margin-bottom:6px">
+          <label>Rotación externa (°)</label>
+          <input type="number" min="0" max="90" placeholder="0"
+            oninput="S.tests['shinbox_re_${l.toLowerCase()}']=+this.value;calcShinBox()"
+            value="${S.tests['shinbox_re_'+l.toLowerCase()]||''}">
+        </div>
+        <div class="score-row" style="margin-top:8px">
+          <span class="score-lbl" style="font-size:.75rem">Calidad transición</span>
+          <div class="score-btns">
+            ${[0,1,2,3].map(n=>`
+            <button class="sb ${S.tests['shinbox_trans_'+l.toLowerCase()]===n?'s'+n:''}"
+              onclick="setScore('shinbox_trans_${l.toLowerCase()}',${n},this)"
+              title="${['No puede realizar','Compensaciones severas','Compensaciones leves','Fluida y controlada'][n]}">${n}</button>`).join('')}
+          </div>
+        </div>
+        <div class="field" style="margin-top:8px">
+          <label>Capacidad de carga ${l}</label>
+          <select onchange="S.tests['shinbox_carga_${l.toLowerCase()}']=this.value"
+            style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none;width:100%">
+            <option>—</option><option>Completa</option><option>Parcial</option><option>No tolera</option>
+          </select>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div id="shinboxResult" style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:12px;font-size:.82rem;display:none"></div>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:6px">Compensaciones observadas:</div>
+    <div class="checks-wrap">
+      ${['Bloqueo articular cadera derecha','Bloqueo articular cadera izquierda',
+         'Dolor rango interno derecho','Dolor rango interno izquierdo',
+         'Compensación columna lumbar','Anteriorización de tronco',
+         'Elevación de pelvis','Restricción de tobillo asociada'].map(c=>`
+      <label class="chk-pill ${S.tests['shinbox_comp_'+c]?'on':''}"
+        onclick="togTestChk(this,'shinbox_comp','${c}')">
+        <input type="checkbox"> ${c}
+      </label>`).join('')}
     </div>`;
   }else{
     body=`<div class="score-row"><span class="score-lbl">Puntuación</span>
@@ -1745,6 +1858,379 @@ async function cerrarAlta(){
   await autoGuardar();
   toast('✅ Alta registrada. ¡Evaluación completada!','ok');
   setTimeout(()=>abrirListaEvals(),1500);
+}
+
+// ══════════════════════════════════════
+// SHIN BOX CALCULATOR
+// ══════════════════════════════════════
+function calcShinBox(){
+  const get=k=>S.tests[k]||0;
+  const ri_d=get('shinbox_ri_derecho'),ri_i=get('shinbox_ri_izquierdo');
+  const re_d=get('shinbox_re_derecho'),re_i=get('shinbox_re_izquierdo');
+  const el=document.getElementById('shinboxResult');
+  if(!el||(!ri_d&&!ri_i&&!re_d&&!re_i))return;
+  el.style.display='block';
+  const asimRI=Math.abs(ri_d-ri_i);
+  const asimRE=Math.abs(re_d-re_i);
+  const semRI_d=ri_d>=30?'g':ri_d>=20?'y':'r';
+  const semRI_i=ri_i>=30?'g':ri_i>=20?'y':'r';
+  const semRE_d=re_d>=40?'g':re_d>=30?'y':'r';
+  const semRE_i=re_i>=40?'g':re_i>=30?'y':'r';
+  const semColors={g:'#16a34a',y:'#d97706',r:'#dc2626'};
+  const semLabel=(col,val)=>`<span style="background:${semColors[col]}22;color:${semColors[col]};border-radius:5px;padding:1px 8px;font-weight:600">${val}°</span>`;
+  const alertaRI=asimRI>10?`<span style="color:#dc2626;font-weight:600"> ⚠️ Asimetría RI: ${asimRI}° → evaluar restricción</span>`:`<span style="color:#16a34a"> ✓ Asimetría RI: ${asimRI}°</span>`;
+  const alertaRE=asimRE>10?`<span style="color:#dc2626;font-weight:600"> ⚠️ Asimetría RE: ${asimRE}°</span>`:`<span style="color:#16a34a"> ✓ Asimetría RE: ${asimRE}°</span>`;
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px">
+      <div><strong>Rotación interna</strong><br>
+        Der: ${semLabel(semRI_d,ri_d)} Izq: ${semLabel(semRI_i,ri_i)} ${alertaRI}
+      </div>
+      <div><strong>Rotación externa</strong><br>
+        Der: ${semLabel(semRE_d,re_d)} Izq: ${semLabel(semRE_i,re_i)} ${alertaRE}
+      </div>
+    </div>
+    <div style="font-size:.75rem;color:var(--muted)">Referencia normal: RI cadera 30–40° · RE cadera 40–60°</div>`;
+}
+
+// ══════════════════════════════════════
+// ÍNDICE DE RIESGO DE LESIÓN
+// ══════════════════════════════════════
+function calcularRiesgoLesion(){
+  let puntos=0;let factores=[];
+  const ybDer=(S.tests.yb_derecho_anterior||0)+(S.tests.yb_derecho_posteromedial||0)+(S.tests.yb_derecho_posterolateral||0);
+  const ybIzq=(S.tests.yb_izquierdo_anterior||0)+(S.tests.yb_izquierdo_posteromedial||0)+(S.tests.yb_izquierdo_posterolateral||0);
+  if(ybDer&&ybIzq){
+    const asimYB=Math.abs(ybDer-ybIzq)/Math.max(ybDer,ybIzq)*100;
+    if(asimYB>4){puntos+=2;factores.push(`Y-Balance asimetría ${asimYB.toFixed(1)}% (>4%)`);}
+  }
+  if(S.tests['singleLegSquat_comp_Valgo de rodilla']){puntos+=2;factores.push('Valgus en Single Leg Squat');}
+  if(S.tests['singleLegSquat_comp_Trendelenburg']){puntos+=1;factores.push('Trendelenburg positivo');}
+  if(S.tests.deepSquat!==undefined&&S.tests.deepSquat<=1){puntos+=1;factores.push('Deep Squat ≤1');}
+  if(S.hc.eva>=7){puntos+=2;factores.push(`EVA ${S.hc.eva}/10`);}
+  else if(S.hc.eva>=4){puntos+=1;factores.push(`EVA ${S.hc.eva}/10`);}
+  const shimRI=Math.abs((S.tests.shinbox_ri_derecho||0)-(S.tests.shinbox_ri_izquierdo||0));
+  if(shimRI>10){puntos+=1;factores.push(`Asimetría RI cadera ${shimRI}°`);}
+  const hopD=S.tests.hop_derecho||0,hopI=S.tests.hop_izquierdo||0;
+  if(hopD&&hopI){
+    const lsi=Math.min(hopD,hopI)/Math.max(hopD,hopI)*100;
+    if(lsi<90){puntos+=2;factores.push(`LSI Hop Test ${lsi.toFixed(1)}% (<90%)`);}
+  }
+  let nivel,color,icono,recomendacion;
+  if(puntos<=2){nivel='Riesgo bajo';color='#16a34a';icono='✅';recomendacion='Continuar con plan de mantenimiento y monitoreo periódico.';}
+  else if(puntos<=5){nivel='Riesgo moderado';color='#d97706';icono='⚠️';recomendacion='Incluir trabajo preventivo en el plan. Reevaluar en 4 semanas.';}
+  else{nivel='Riesgo alto';color='#dc2626';icono='🚨';recomendacion='Intervención prioritaria. Considerar derivación médica si aplica.';}
+  S.riesgo={nivel,puntos,factores,recomendacion};
+  const wrap=document.getElementById('riesgoCard');
+  if(!wrap)return;
+  wrap.style.display='block';
+  wrap.innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div style="font-size:2rem">${icono}</div>
+      <div>
+        <div style="font-weight:700;font-size:1.1rem;color:${color}">${nivel}</div>
+        <div style="font-size:.8rem;color:var(--muted)">${puntos} factor${puntos!==1?'es':''} de riesgo identificado${puntos!==1?'s':''}</div>
+      </div>
+    </div>
+    ${factores.length?`<ul style="font-size:.82rem;color:var(--muted);margin:0 0 10px 16px">${factores.map(f=>`<li>${f}</li>`).join('')}</ul>`:''}
+    <div style="background:${color}18;border-left:3px solid ${color};padding:10px 14px;border-radius:0 8px 8px 0;font-size:.85rem;color:${color};font-weight:500">${recomendacion}</div>`;
+}
+
+// ══════════════════════════════════════
+// GENERADOR DE EJERCICIOS (sin API)
+// ══════════════════════════════════════
+const EJERCICIOS_DB={
+  deepSquat_bajo:[
+    {nombre:'Sentadilla con soporte',series:3,reps:'10',desc:'Sostente de una silla o TRX. Baja controlado hasta donde puedas sin dolor. Mantén los talones en el piso.'},
+    {nombre:'Movilidad de tobillo en pared',series:3,reps:'15 por lado',desc:'De pie frente a la pared, lleva la rodilla hacia la pared sin despegar el talón. Siente el estiramiento en la pantorrilla.'}
+  ],
+  valgus_rodilla:[
+    {nombre:'Activación de glúteo medio en banda',series:3,reps:'15 por lado',desc:'Con banda elástica en rodillas, camina de lado manteniendo los pies paralelos. No dejes que las rodillas se junten.'},
+    {nombre:'Clamshell',series:3,reps:'20 por lado',desc:'Acostado de lado con rodillas dobladas, abre y cierra la pierna de arriba como una almeja. Mantén la pelvis quieta.'}
+  ],
+  bird_dog_bajo:[
+    {nombre:'Bird Dog progresivo',series:3,reps:'8 por lado',desc:'En cuatro puntos, extiende brazo y pierna opuesta simultáneamente. Mantén la espalda neutra. Aguanta 3 segundos.'},
+    {nombre:'Dead Bug',series:3,reps:'8 por lado',desc:'Boca arriba, brazos al techo y rodillas a 90°. Baja brazo y pierna opuesta simultáneamente sin arquear la espalda.'}
+  ],
+  hip_mobility:[
+    {nombre:'Shin Box switches',series:3,reps:'5 por lado',desc:'Sentado en el piso, pasa de rotación interna a externa de cadera de forma controlada. Usa las manos si necesitas apoyo.'},
+    {nombre:'Estiramiento de psoas en estocada',series:3,reps:'30 segundos por lado',desc:'En posición de estocada, lleva la cadera hacia adelante y arriba. Siente el estiramiento en la ingle.'}
+  ],
+  postural_cervical:[
+    {nombre:'Retracción cervical',series:3,reps:'10',desc:'Sentado erguido, lleva la cabeza hacia atrás como haciendo "papada". Mantén 5 segundos. No bajes la barbilla.'},
+    {nombre:'Fortalecimiento de cervicales profundos',series:3,reps:'10',desc:'Boca arriba, asiente la cabeza (barbilla adentro) y levanta levemente la cabeza. Mantén 5 segundos.'}
+  ],
+  core:[
+    {nombre:'Plank con respiración',series:3,reps:'20-30 segundos',desc:'En posición de plancha, mantén la espalda recta. Respira normalmente durante todo el ejercicio.'},
+    {nombre:'Puente de glúteos',series:3,reps:'15',desc:'Boca arriba con rodillas dobladas, sube la cadera hasta que quede alineada con hombros y rodillas. Aprieta glúteos.'}
+  ]
+};
+
+function generarEjercicios(){
+  let ejercicios=[];
+  if((S.tests.deepSquat||3)<=1)ejercicios.push(...EJERCICIOS_DB.deepSquat_bajo);
+  if(S.tests['singleLegSquat_comp_Valgo de rodilla'])ejercicios.push(...EJERCICIOS_DB.valgus_rodilla);
+  if((S.tests['birdDog_derecho']||3)<=1||(S.tests['birdDog_izquierdo']||3)<=1)ejercicios.push(...EJERCICIOS_DB.bird_dog_bajo);
+  if(S.tests.shinbox_ri_derecho&&S.tests.shinbox_ri_derecho<25)ejercicios.push(...EJERCICIOS_DB.hip_mobility);
+  if(S.tests['postura_Vista lateral_Adelantamiento cefálico'])ejercicios.push(...EJERCICIOS_DB.postural_cervical);
+  ejercicios.push(...EJERCICIOS_DB.core);
+  ejercicios=ejercicios.filter((e,i,a)=>a.findIndex(x=>x.nombre===e.nombre)===i).slice(0,8);
+  if(!ejercicios.length){toast('No hay hallazgos suficientes para generar ejercicios aún','warn');return;}
+  S.ejercicios=ejercicios;
+  const modal=document.getElementById('modalEjercicios');
+  const body=document.getElementById('ejerciciosBody');
+  body.innerHTML=`
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Plan personalizado basado en los hallazgos — ${new Date().toLocaleDateString('es-CO')}</p>
+    ${ejercicios.map((e,i)=>`
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div style="font-weight:600;font-size:.9rem">${i+1}. ${e.nombre}</div>
+        <div style="background:rgba(27,191,176,.12);color:var(--primary);border-radius:20px;padding:2px 10px;font-size:.75rem;white-space:nowrap">${e.series} × ${e.reps}</div>
+      </div>
+      <p style="font-size:.82rem;color:var(--muted);margin-top:6px;line-height:1.6">${e.desc}</p>
+    </div>`).join('')}`;
+  modal.style.display='flex';
+}
+
+function exportarEjerciciosPDF(){
+  if(!S.ejercicios||!S.ejercicios.length)return;
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF('p','mm','letter');
+  const W=doc.internal.pageSize.getWidth();let y=10;
+  doc.setFillColor(27,191,176);doc.rect(0,0,W,14,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(12);
+  doc.text('Jessica Ocampo Fisioterapeuta',10,9);
+  doc.setFontSize(8);doc.text('Plan de ejercicios para casa',W-10,9,{align:'right'});y=22;
+  doc.setTextColor(26,26,46);doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text(`Plan personalizado — ${S.hc.nombre||'Paciente'}`,10,y);y+=6;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(107,114,128);
+  doc.text(`Generado el ${new Date().toLocaleDateString('es-CO')}`,10,y);y+=10;
+  doc.setDrawColor(27,191,176);doc.setLineWidth(0.3);doc.line(10,y,W-10,y);y+=8;
+  S.ejercicios.forEach((e,i)=>{
+    if(y>240){doc.addPage();y=20;}
+    doc.setFillColor(27,191,176);doc.roundedRect(10,y-3,W-20,28,3,3,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(255,255,255);
+    doc.text(`${i+1}. ${e.nombre}`,14,y+4);
+    doc.setFontSize(8);
+    doc.text(`${e.series} series × ${e.reps}`,W-14,y+4,{align:'right'});
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(255,255,255);
+    const ls=doc.splitTextToSize(e.desc,W-28);
+    doc.text(ls,14,y+10);y+=35;
+  });
+  y+=6;
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(27,191,176);
+  doc.text('¿Tienes dudas? Escríbenos:',10,y);y+=5;
+  doc.setFont('helvetica','normal');doc.setTextColor(107,114,128);
+  doc.text('WhatsApp: 3136467945  |  jessicaocampoft.com',10,y);
+  doc.save(`ejercicios_${(S.hc.nombre||'paciente').replace(/ /g,'_')}.pdf`);
+  toast('PDF de ejercicios generado ✓','ok');
+}
+
+// ══════════════════════════════════════
+// MÓDULO IA — DIAGNÓSTICO Y PLAN
+// ══════════════════════════════════════
+let _apiKey='';
+
+function abrirModalAPIKey(){
+  document.getElementById('modalAPIKey').style.display='flex';
+}
+
+function guardarAPIKey(){
+  const k=document.getElementById('inputAPIKey').value.trim();
+  if(!k.startsWith('sk-')){toast('La API key debe comenzar con sk-','err');return;}
+  _apiKey=k;
+  document.getElementById('modalAPIKey').style.display='none';
+  toast('API key guardada ✓','ok');
+  evaluarConIA();
+}
+
+async function evaluarConIA(){
+  if(!_apiKey){abrirModalAPIKey();return;}
+  const btnIA=document.getElementById('btnIA');
+  const resultado=document.getElementById('iaResultado');
+  if(btnIA){btnIA.disabled=true;btnIA.innerHTML='<div class="ia-spinner"></div> Analizando...';}
+  resultado.style.display='block';
+  resultado.innerHTML=`<div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;padding:16px">
+    <div class="ia-spinner"></div> La IA está analizando los hallazgos de la evaluación...
+  </div>`;
+
+  const perfil={deportista:'Deportista (CrossFit/alto rendimiento)',gimnasio:'Activo/Gimnasio',postquirurgico:'Posquirúrgico',empresarial:'Empresarial/Sedentario'}[S.perfil]||S.perfil;
+  const zonas=(S.hc.zonas||[]).map(z=>z.region).filter(Boolean).join(', ')||'No especificadas';
+  const patologias=(S.hc.patologias||[]).join(', ')||'Ninguna reportada';
+  const objetivos=(S.hc.objetivos||[]).join(', ')||'No especificados';
+  const testsResumen=Object.entries(S.tests||{})
+    .filter(([k,v])=>v!==undefined&&v!==''&&v!==null&&!k.includes('_obs'))
+    .map(([k,v])=>`• ${k.replace(/_/g,' ')}: ${v}`).join('\n');
+  let ybInfo='';
+  const ybD=(S.tests.yb_derecho_anterior||0)+(S.tests.yb_derecho_posteromedial||0)+(S.tests.yb_derecho_posterolateral||0);
+  const ybI=(S.tests.yb_izquierdo_anterior||0)+(S.tests.yb_izquierdo_posteromedial||0)+(S.tests.yb_izquierdo_posterolateral||0);
+  if(ybD&&ybI){const asim=Math.abs(ybD-ybI)/Math.max(ybD,ybI)*100;ybInfo=`\n• Y-Balance: Der ${ybD}, Izq ${ybI}, Asimetría ${asim.toFixed(1)}% (${asim>4?'ALERTA >4%':'OK'})`;}
+
+  const prompt=`Eres una fisioterapeuta clínica experta de alto rendimiento. Analiza los datos de evaluación y genera un informe profesional en español. Sé específica, clínica y útil.
+
+DATOS DEL PACIENTE:
+- Nombre: ${S.hc.nombre||'No especificado'}
+- Edad: ${S.hc.edad||'—'} años | Sexo: ${S.hc.sexo||'—'} | IMC: ${S.hc.imc||'—'} (${S.hc.imcClasif||'—'})
+- Perfil: ${perfil}
+- Ocupación: ${S.hc.ocupacion||'—'} | Deporte: ${S.hc.deporte||'—'} ${S.hc.frecuenciaDeporte?S.hc.frecuenciaDeporte+'x/sem':''}
+- Motivo de consulta: ${S.hc.motivo||'—'}
+- Patologías previas: ${patologias} | Medicamentos: ${S.hc.medicamentos||'Ninguno'}
+- Objetivos del paciente: ${objetivos}
+- EVA dolor actual: ${S.hc.eva||0}/10 | Tipo lesión: ${S.hc.tipoLesion||'—'} | Evolución: ${S.hc.tiempoEvolucion||'—'} ${S.hc.tiempoUnidad||''}
+- Zonas de dolor: ${zonas}
+${S.hc.tratPrev==='si'?`- Tratamiento previo: ${S.hc.tratPrevDesc||'Sí, sin detalles'}`:''}
+${S.hc.cirugia==='si'?`- Cirugías: ${S.hc.cirugiaDesc||'Sí, sin detalles'}`:''}
+
+HALLAZGOS DE TESTS FUNCIONALES:
+${testsResumen||'No se registraron tests aún'}${ybInfo}
+${S.riesgo?`\nÍndice de riesgo: ${S.riesgo.nivel} (${S.riesgo.puntos} factores: ${S.riesgo.factores.join(', ')})`:''}
+
+Genera el informe con EXACTAMENTE estas secciones (usa los títulos con ##):
+
+## DIAGNÓSTICO FISIOTERAPÉUTICO
+(2-3 oraciones. Diagnóstico clínico preciso basado en hallazgos. Incluye estructuras afectadas y posibles mecanismos causales.)
+
+## HALLAZGOS PRINCIPALES
+(Lista de máximo 5 hallazgos con formato: • Hallazgo → implicación clínica. Ordénalos de mayor a menor relevancia.)
+
+## PLAN DE TRATAMIENTO
+(Mínimo 3 fases con nombre, duración estimada, objetivos específicos y técnicas fisioterapéuticas recomendadas.)
+
+## OBJETIVOS FUNCIONALES
+(4-5 objetivos SMART y medibles, específicos para este paciente. Incluye plazos realistas.)
+
+## SEÑALES DE ALERTA Y CRITERIOS DE DERIVACIÓN
+(Red flags que requieren atención urgente o derivación médica. Si no hay, escríbelo explícitamente.)
+
+Usa terminología fisioterapéutica profesional. No repitas datos del paciente. Sé directa y clínica.`;
+
+  try{
+    const response=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':_apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+    });
+    if(!response.ok){
+      const err=await response.json();
+      throw new Error(err.error?.message||`HTTP ${response.status}`);
+    }
+    const data=await response.json();
+    const texto=data.content?.[0]?.text||'No se obtuvo respuesta.';
+    S.iaTexto=texto;
+    const html=texto
+      .replace(/## (.+)/g,'<div class="ia-section-hd">$1</div>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/^• (.+)$/gm,'<div class="ia-bullet">$1</div>')
+      .replace(/^- (.+)$/gm,'<div class="ia-bullet">$1</div>')
+      .replace(/\n\n/g,'<br>')
+      .replace(/\n(?!<)/g,' ');
+    resultado.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-weight:600;font-size:.95rem">Evaluación IA — ${new Date().toLocaleDateString('es-CO')}</div>
+          <div style="font-size:.75rem;color:var(--muted)">Generado con Claude Sonnet · Solo uso orientativo clínico</div>
+        </div>
+        <div class="ia-btn-bar">
+          <button class="btn btn-ghost btn-sm" onclick="copiarIA()">📋 Copiar</button>
+          <button class="btn btn-teal btn-sm" onclick="exportarIAPDF()">📄 PDF IA</button>
+        </div>
+      </div>
+      <div id="iaTexto" style="font-size:.84rem;line-height:1.85">${html}</div>`;
+    if(typeof actualizarSemaforo==='function')actualizarSemaforo();
+    toast('Evaluación IA completada ✓','ok');
+  }catch(err){
+    resultado.innerHTML=`<div style="color:#dc2626;padding:16px;font-size:.85rem">
+      <strong>✗ Error al conectar con la IA</strong><br>
+      <span style="color:var(--muted);font-size:.8rem">${err.message}</span><br><br>
+      <button class="btn btn-ghost btn-sm" onclick="abrirModalAPIKey()">🔑 Verificar API key</button>
+    </div>`;
+  }
+  if(btnIA){btnIA.disabled=false;btnIA.innerHTML='🧠 Volver a evaluar con IA';}
+}
+
+function copiarIA(){
+  if(!S.iaTexto)return;
+  navigator.clipboard.writeText(S.iaTexto).then(()=>toast('Texto copiado ✓','ok'));
+}
+
+async function exportarIAPDF(){
+  if(!S.iaTexto){toast('Primero genera la evaluación IA','warn');return;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF('p','mm','letter');
+  const W=doc.internal.pageSize.getWidth();let y=10;
+  doc.setFillColor(27,191,176);doc.rect(0,0,W,14,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(12);
+  doc.text('Jessica Ocampo Fisioterapeuta',10,9);
+  doc.setFontSize(8);doc.text('Evaluación con IA — Informe clínico',W-10,9,{align:'right'});y=22;
+  doc.setTextColor(26,26,46);doc.setFont('helvetica','bold');doc.setFontSize(13);
+  doc.text(`Evaluación IA — ${S.hc.nombre||'Paciente'}`,10,y);y+=6;
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(107,114,128);
+  doc.text(`${new Date().toLocaleDateString('es-CO')} · Modelo: Claude Sonnet · Solo uso orientativo clínico`,10,y);y+=8;
+  doc.setDrawColor(27,191,176);doc.setLineWidth(0.3);doc.line(10,y,W-10,y);y+=8;
+  const secciones=S.iaTexto.split(/## /g).filter(Boolean);
+  secciones.forEach(sec=>{
+    const lines=sec.split('\n');
+    const titulo=lines[0].trim();
+    const cuerpo=lines.slice(1).join('\n').trim().replace(/\*\*/g,'');
+    if(y>240){doc.addPage();y=20;}
+    doc.setFillColor(237,253,249);doc.roundedRect(10,y-3,W-20,8,2,2,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(15,110,86);
+    doc.text(titulo.toUpperCase(),14,y+2);y+=10;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(60,60,60);
+    const textLines=doc.splitTextToSize(cuerpo.replace(/•/g,'–'),W-24);
+    textLines.forEach(line=>{
+      if(y>250){doc.addPage();y=20;}
+      doc.text(line,14,y);y+=4.5;
+    });y+=6;
+  });
+  doc.setFontSize(7);doc.setTextColor(200,200,200);
+  doc.text('Jessica Ocampo Fisioterapeuta · Pereira, Colombia · jessicaocampoft.com · WhatsApp: 3136467945',
+    W/2,doc.internal.pageSize.getHeight()-5,{align:'center'});
+  doc.save(`evaluacion_ia_${(S.hc.nombre||'paciente').replace(/ /g,'_')}.pdf`);
+  toast('PDF de evaluación IA generado ✓','ok');
+}
+
+// PDF Alta
+async function generarPDFAlta(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF('p','mm','letter');
+  const W=doc.internal.pageSize.getWidth();let y=10;
+  doc.setFillColor(27,191,176);doc.rect(0,0,W,14,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(12);
+  doc.text('Jessica Ocampo Fisioterapeuta',10,9);
+  doc.setFontSize(8);doc.text('FICHA DE ALTA FISIOTERAPÉUTICA',W-10,9,{align:'right'});y=22;
+  doc.setTextColor(26,26,46);doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text(`Alta: ${S.hc.nombre||'Paciente'}`,10,y);y+=7;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(107,114,128);
+  doc.text(`Fecha de alta: ${document.getElementById('altaFecha').value}  ·  Sesiones: ${S.sesiones.filter(s=>s.estado==='Completada').length}`,10,y);y+=5;
+  doc.text(`Objetivo: ${{si:'Completamente ✓',parcial:'Parcialmente ⚠️',no:'Requiere seguimiento 🔄'}[document.getElementById('altaObjetivo').value]}`,10,y);y+=10;
+  if(S.sesiones.length>=2){
+    const evaIni=S.sesiones[0].evaIni,evaFin=S.sesiones[S.sesiones.length-1].evaFin;
+    const mejora=evaIni-evaFin;
+    doc.setFillColor(237,253,249);doc.roundedRect(10,y-3,W-20,18,3,3,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(27,191,176);
+    doc.text('Evolución del dolor',14,y+4);
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
+    doc.text(`EVA inicial: ${evaIni}/10  →  EVA final: ${evaFin}/10  |  Mejoría: ${mejora>0?'+'+mejora:mejora} puntos`,14,y+10);y+=24;
+  }
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(26,26,46);
+  doc.text('Resumen de evolución',10,y);y+=5;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(107,114,128);
+  const resLines=doc.splitTextToSize(document.getElementById('altaResumen').value||'—',W-20);
+  doc.text(resLines,10,y);y+=resLines.length*4.5+8;
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(26,26,46);
+  doc.text('Recomendaciones para casa',10,y);y+=5;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(107,114,128);
+  const recLines=doc.splitTextToSize(document.getElementById('altaRecomend').value||'—',W-20);
+  doc.text(recLines,10,y);y+=recLines.length*4.5+20;
+  doc.setDrawColor(200,200,200);doc.line(10,y,90,y);doc.line(W-90,y,W-10,y);
+  doc.setFontSize(8);doc.setTextColor(107,114,128);
+  doc.text('Jessica Ocampo Fisioterapeuta',50,y+5,{align:'center'});
+  doc.text('Firma del paciente',W-50,y+5,{align:'center'});
+  doc.setFontSize(7);doc.setTextColor(200,200,200);
+  doc.text('Jessica Ocampo Fisioterapeuta · Pereira, Colombia · jessicaocampoft.com · WhatsApp: 3136467945',
+    W/2,doc.internal.pageSize.getHeight()-5,{align:'center'});
+  doc.save(`alta_${(S.hc.nombre||'paciente').replace(/ /g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+  toast('PDF de alta generado ✓','ok');
 }
 
 // ══════════════════════════════════════
