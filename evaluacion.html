@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -724,6 +725,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
         <p style="font-size:.8rem;color:var(--muted);margin-bottom:8px">QR para agendar próxima cita:</p>
         <div id="qrCode"></div>
       </div>
+
+      <!-- ENVÍO POR CORREO -->
+      <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+        <div class="card-title" style="margin-bottom:6px;font-size:1rem">Enviar al paciente por correo</div>
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:14px">El paciente recibirá su reporte directamente en su correo electrónico de forma profesional.</p>
+        <button class="btn btn-ghost" onclick="abrirModalEmail()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+          Enviar reporte por correo
+        </button>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:8px">✓ Gratis · ✓ Profesional · ✓ El paciente lo recibe en segundos</p>
+      </div>
     </div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="WIZ.prev()">← Atrás</button>
@@ -817,6 +829,41 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
       <button class="btn btn-teal" onclick="guardarAPIKey()" style="flex:1">🧠 Conectar y evaluar</button>
       <button class="btn btn-ghost" onclick="document.getElementById('modalAPIKey').style.display='none'">Cancelar</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL CORREO -->
+<div id="modalEmail" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9002;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--s1);border-radius:14px;max-width:480px;width:100%;padding:28px">
+    <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:600;margin-bottom:16px">📧 Enviar reporte por correo</div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Correo del paciente</label>
+      <input id="emailDestino" type="email" placeholder="paciente@correo.com" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;outline:none;font-family:var(--font-b)">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Tipo de reporte</label>
+      <select id="emailTipo" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;outline:none;font-family:var(--font-b)">
+        <option value="paciente">Reporte para el paciente (lenguaje simple)</option>
+        <option value="tecnico">Historia clínica técnica</option>
+        <option value="ejercicios">Plan de ejercicios para casa</option>
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label>Mensaje personalizado (opcional)</label>
+      <textarea id="emailMensaje" rows="3" placeholder="Hola! Te enviamos el resumen de tu evaluación..." style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;resize:vertical;outline:none;font-family:var(--font-b)"></textarea>
+    </div>
+    <div style="background:rgba(27,191,176,.07);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:16px;font-size:.78rem;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--text);display:block;margin-bottom:4px">¿No has configurado EmailJS aún?</strong>
+      1. Ve a <a href="https://emailjs.com" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">emailjs.com</a> → cuenta gratis (200 emails/mes)<br>
+      2. Conecta tu Gmail de Jessica Ocampo<br>
+      3. Crea una plantilla con variables: <code>{{to_name}}</code>, <code>{{to_email}}</code>, <code>{{message}}</code><br>
+      4. Reemplaza en el código: <code>TU_PUBLIC_KEY</code>, <code>TU_SERVICE_ID</code>, <code>TU_TEMPLATE_ID</code>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-teal" onclick="enviarPorCorreo()" style="flex:1">📧 Enviar correo</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modalEmail').style.display='none'">Cancelar</button>
+    </div>
+    <div id="emailStatus" style="margin-top:10px;font-size:.82rem;text-align:center"></div>
   </div>
 </div>
 
@@ -1691,7 +1738,7 @@ async function generarPDF(tipo){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF('p','mm','letter');
   const W=doc.internal.pageSize.getWidth();
-  const H=doc.internal.pageSize.getWidth();
+  const H=doc.internal.pageSize.getHeight();
   let y=20;
   const hc=S.hc;
 
@@ -1768,6 +1815,26 @@ async function generarPDF(tipo){
       });
     }
 
+    // FOTOS POSTURALES
+    if(S.fotos&&S.fotos.length){
+      if(y>200){doc.addPage();y=20;}
+      doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(26,26,46);
+      doc.text('Registro fotográfico',10,y);y+=6;
+      const fotosPosIni=S.fotos.filter(f=>f.sesion===1);
+      let xFoto=10;
+      for(const foto of fotosPosIni.slice(0,4)){
+        if(xFoto+45>W-10){xFoto=10;y+=58;}
+        if(y>230){doc.addPage();y=20;xFoto=10;}
+        try{
+          doc.addImage(foto.src,'JPEG',xFoto,y,42,52);
+          doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(107,114,128);
+          doc.text(foto.categoria,xFoto+21,y+54,{align:'center',maxWidth:42});
+        }catch(e){}
+        xFoto+=46;
+      }
+      y+=62;
+    }
+
     // FIRMA
     if(hc.firma&&hc.firma!=='data:,'){
       if(y>H-50){doc.addPage();y=20;}
@@ -1812,6 +1879,23 @@ async function generarPDF(tipo){
     doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
     const recLines=doc.splitTextToSize(S.alta?.recomend||'Continúa con los ejercicios indicados. Si el dolor regresa, no esperes — agenda tu sesión de seguimiento.',W-20);
     doc.text(recLines,10,y);y+=recLines.length*4+10;
+
+    // COMPARATIVA FOTOS PACIENTE
+    if(S.fotos&&S.fotos.length>=2){
+      if(y>200){doc.addPage();y=20;}
+      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(27,191,176);
+      doc.text('Tu evolución — comparativa fotográfica',10,y);y+=6;
+      const fotoIni=S.fotos[0];
+      const fotoFin=S.fotos[S.fotos.length-1];
+      try{
+        doc.addImage(fotoIni.src,'JPEG',10,y,60,75);
+        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(107,114,128);
+        doc.text('Sesión 1',40,y+78,{align:'center'});
+        doc.addImage(fotoFin.src,'JPEG',W/2,y,60,75);
+        doc.text(`Sesión ${S.sesiones.length||'actual'}`,W/2+30,y+78,{align:'center'});
+      }catch(e){}
+      y+=90;
+    }
 
     doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(27,191,176);
     doc.text('Agenda tu próxima cita:',10,y);y+=5;
@@ -2231,6 +2315,74 @@ async function generarPDFAlta(){
     W/2,doc.internal.pageSize.getHeight()-5,{align:'center'});
   doc.save(`alta_${(S.hc.nombre||'paciente').replace(/ /g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`);
   toast('PDF de alta generado ✓','ok');
+}
+
+// ══════════════════════════════════════
+// ENVÍO POR CORREO — EmailJS
+// ══════════════════════════════════════
+// CONFIGURACIÓN: reemplaza estos 3 valores con los de tu cuenta en emailjs.com
+const EMAILJS_PUBLIC_KEY  = 'TU_PUBLIC_KEY_AQUI';
+const EMAILJS_SERVICE_ID  = 'TU_SERVICE_ID_AQUI';
+const EMAILJS_TEMPLATE_ID = 'TU_TEMPLATE_ID_AQUI';
+
+function abrirModalEmail(){
+  if(S.hc.email)document.getElementById('emailDestino').value=S.hc.email;
+  document.getElementById('emailStatus').textContent='';
+  document.getElementById('emailMensaje').value='';
+  document.getElementById('modalEmail').style.display='flex';
+}
+
+async function enviarPorCorreo(){
+  const email=document.getElementById('emailDestino').value.trim();
+  const tipo=document.getElementById('emailTipo').value;
+  const mensaje=document.getElementById('emailMensaje').value.trim();
+  const statusEl=document.getElementById('emailStatus');
+
+  if(!email||!email.includes('@')){
+    statusEl.textContent='⚠️ Ingresa un correo válido';
+    statusEl.style.color='#dc2626';
+    return;
+  }
+
+  // Verificar configuración
+  if(EMAILJS_PUBLIC_KEY==='TU_PUBLIC_KEY_AQUI'){
+    statusEl.innerHTML='⚙️ Configura tu cuenta de EmailJS primero.<br><span style="font-size:.75rem">Sigue los 4 pasos del recuadro de arriba.</span>';
+    statusEl.style.color='#d97706';
+    return;
+  }
+
+  statusEl.textContent='⏳ Enviando...';
+  statusEl.style.color='var(--muted)';
+
+  const tipoLabels={paciente:'Reporte de evolución',tecnico:'Historia clínica',ejercicios:'Plan de ejercicios'};
+  const nombre=(S.hc.nombre||'Paciente').split(' ')[0];
+  const mensajeFinal=mensaje||`Hola ${nombre}, te enviamos el resumen de tu proceso de fisioterapia. Cualquier duda, contáctanos. WhatsApp: 3136467945`;
+
+  try{
+    // Inicializar EmailJS con la public key
+    if(typeof emailjs!=='undefined'){
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+      await emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
+        to_name:S.hc.nombre||'Paciente',
+        to_email:email,
+        from_name:'Jessica Ocampo Fisioterapeuta',
+        message:mensajeFinal,
+        tipo_reporte:tipoLabels[tipo]||tipo,
+        eva_inicial:S.hc.eva||'—',
+        sesiones_completadas:S.sesiones.filter(s=>s.estado==='Completada').length,
+        fecha:new Date().toLocaleDateString('es-CO')
+      });
+      statusEl.textContent='✅ Correo enviado exitosamente a '+email;
+      statusEl.style.color='#16a34a';
+      toast('Correo enviado a '+email,'ok');
+      setTimeout(()=>{document.getElementById('modalEmail').style.display='none';},2500);
+    }else{
+      throw new Error('EmailJS no cargó. Verifica tu conexión.');
+    }
+  }catch(err){
+    statusEl.innerHTML=`❌ Error al enviar: ${err.message||err.text||'revisa la configuración'}<br><span style="font-size:.75rem;color:var(--muted)">Verifica tu Service ID, Template ID y Public Key en emailjs.com</span>`;
+    statusEl.style.color='#dc2626';
+  }
 }
 
 // ══════════════════════════════════════
