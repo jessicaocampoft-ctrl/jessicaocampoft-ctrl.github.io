@@ -11,6 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -173,6 +174,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 .toast.ok{background:var(--ok)}.toast.err{background:var(--err)}.toast.warn{background:var(--warn)}
 @keyframes tin{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
 
+/* SUPABASE AUTH MODAL */
+#authModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:3000;backdrop-filter:blur(4px)}
+#authModal.open{display:flex}
+.auth-card{background:var(--s1);border-radius:16px;padding:36px 32px;width:370px;max-width:94vw;box-shadow:0 24px 60px rgba(0,0,0,.2)}
+.auth-title{font-family:var(--font-h);font-size:1.4rem;font-weight:600;margin-bottom:6px}
+.auth-sub{color:var(--muted);font-size:.84rem;margin-bottom:22px;line-height:1.5}
+.auth-err{display:none;color:#dc2626;font-size:.8rem;margin-bottom:12px;padding:9px 12px;background:#fef2f2;border-radius:8px;border:1px solid #fecaca;line-height:1.5}
+/* SYNC BADGE */
+.sync-dot{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-family:var(--font-m);color:var(--primary);padding:3px 9px;border-radius:99px;background:rgba(27,191,176,.1)}
+.sync-dot.err{color:#dc2626;background:rgba(220,38,38,.08)}
+.sync-dot.spin{animation:spinpulse 1.2s ease infinite}
+@keyframes spinpulse{0%,100%{opacity:1}50%{opacity:.4}}
+
 /* CONSENT */
 .consent-text{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:.8rem;color:var(--muted);line-height:1.75;max-height:160px;overflow-y:auto;margin-bottom:12px}
 .check-row{display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.85rem}
@@ -268,6 +282,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
     <span>Guardar</span>
   </button>
+  <div id="sbUserInfo" style="padding:4px 0"></div>
 </nav>
 
 <!-- MAIN -->
@@ -951,6 +966,28 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 <!-- TOAST CONTAINER -->
 <div class="toast-wrap" id="toastWrap"></div>
 
+<!-- MODAL AUTH SUPABASE -->
+<div id="authModal">
+  <div class="auth-card">
+    <div class="auth-title">Acceso a la nube ☁️</div>
+    <p class="auth-sub">Inicia sesión para sincronizar evaluaciones en todos tus dispositivos automáticamente.</p>
+    <div class="auth-err" id="authError"></div>
+    <div class="field"><label>Correo electrónico</label>
+      <input type="email" id="authEmail" placeholder="correo@ejemplo.com" autocomplete="email">
+    </div>
+    <div class="field" style="margin-top:10px"><label>Contraseña <span style="font-size:.72rem;color:var(--muted)">(mín. 6 caracteres)</span></label>
+      <input type="password" id="authPwd" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')sbLogin()">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-teal" id="authBtn" onclick="sbLogin()" style="flex:1">Iniciar sesión</button>
+      <button class="btn btn-ghost" onclick="sbRegister()">Registrarse</button>
+    </div>
+    <div style="text-align:center;margin-top:14px">
+      <button class="btn btn-ghost btn-sm" onclick="cerrarModalAuth()" style="color:var(--muted)">Cancelar — usar solo local</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL EJERCICIOS -->
 <div id="modalEjercicios" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9001;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--s1);border-radius:14px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;position:relative">
@@ -1077,6 +1114,159 @@ function dbGet(store,key){return new Promise((res,rej)=>{const tx=db.transaction
 function dbDelete(store,key){return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(key).onsuccess=()=>res();tx.onerror=()=>rej(tx.error)});}
 
 // ══════════════════════════════════════
+// SUPABASE — SINCRONIZACIÓN EN NUBE
+// ══════════════════════════════════════
+// ⚙️  Pega aquí los valores de tu proyecto (Settings → API en supabase.com)
+const SB_URL='SUPABASE_URL';
+const SB_KEY='SUPABASE_ANON_KEY';
+// ──────────────────────────────────────
+
+let _sb=null,_sbUser=null,_syncingNow=false;
+
+function sbConfigured(){return!SB_URL.includes('SUPABASE_URL');}
+
+async function initSupabase(){
+  if(!sbConfigured()){renderSbUser();return;}
+  _sb=window.supabase.createClient(SB_URL,SB_KEY);
+  const {data:{session}}=await _sb.auth.getSession();
+  _sbUser=session?.user||null;
+  _sb.auth.onAuthStateChange((_,ses)=>{
+    _sbUser=ses?.user||null;
+    renderSbUser();
+    if(_sbUser) sincronizarDesdeNube();
+  });
+  renderSbUser();
+}
+
+function renderSbUser(){
+  const el=document.getElementById('sbUserInfo');
+  if(!el)return;
+  if(!sbConfigured()){
+    el.innerHTML=`<div style="font-size:.68rem;color:var(--muted);padding:4px 14px;line-height:1.5">
+      <span style="color:#d97706">⚠️</span> Nube no configurada</div>`;
+    return;
+  }
+  if(_sbUser){
+    const e=_sbUser.email;const sh=e.length>21?e.slice(0,19)+'…':e;
+    el.innerHTML=`<div style="padding:4px 14px">
+      <span class="sync-dot" id="syncDot">☁️ ${sh}</span></div>
+      <button class="sb-link" onclick="sbLogout()" style="color:var(--muted);font-size:.82rem">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Cerrar sesión</span></button>`;
+  }else{
+    el.innerHTML=`<button class="sb-link" onclick="abrirModalAuth()" style="color:var(--primary)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      <span>Iniciar sesión en nube</span></button>`;
+  }
+}
+
+function setSyncDot(estado){
+  const el=document.getElementById('syncDot');if(!el)return;
+  if(estado==='ok'){el.textContent='☁️ Sincronizado';el.className='sync-dot';}
+  else if(estado==='up'){el.textContent='↑ Guardando…';el.className='sync-dot spin';}
+  else if(estado==='down'){el.textContent='↓ Descargando…';el.className='sync-dot spin';}
+  else if(estado==='err'){el.textContent='⚠️ Error sync';el.className='sync-dot err';}
+}
+
+function abrirModalAuth(){document.getElementById('authModal').classList.add('open');setTimeout(()=>document.getElementById('authEmail').focus(),100);}
+function cerrarModalAuth(){document.getElementById('authModal').classList.remove('open');document.getElementById('authError').style.display='none';}
+
+async function sbLogin(){
+  const email=document.getElementById('authEmail').value.trim();
+  const pwd=document.getElementById('authPwd').value;
+  if(!email||!pwd){mostrarAuthErr('Completa correo y contraseña');return;}
+  document.getElementById('authBtn').textContent='Verificando…';
+  const {error}=await _sb.auth.signInWithPassword({email,password:pwd});
+  document.getElementById('authBtn').textContent='Iniciar sesión';
+  if(error){mostrarAuthErr(traducirAuthErr(error.message));return;}
+  cerrarModalAuth();
+  toast('¡Sesión iniciada! Sincronizando evaluaciones…','ok');
+}
+
+async function sbRegister(){
+  const email=document.getElementById('authEmail').value.trim();
+  const pwd=document.getElementById('authPwd').value;
+  if(!email||!pwd){mostrarAuthErr('Completa correo y contraseña');return;}
+  if(pwd.length<6){mostrarAuthErr('La contraseña debe tener al menos 6 caracteres');return;}
+  const {error}=await _sb.auth.signUp({email,password:pwd,options:{emailRedirectTo:window.location.href}});
+  if(error){mostrarAuthErr(traducirAuthErr(error.message));return;}
+  mostrarAuthErr('✅ Cuenta creada — revisa tu correo para confirmar y luego inicia sesión.');
+}
+
+async function sbLogout(){
+  if(_sb)await _sb.auth.signOut();
+  _sbUser=null;renderSbUser();toast('Sesión cerrada');
+}
+
+function mostrarAuthErr(msg){const el=document.getElementById('authError');el.textContent=msg;el.style.display='block';}
+function traducirAuthErr(msg){
+  if(msg.includes('Invalid login'))return'Correo o contraseña incorrectos';
+  if(msg.includes('Email not confirmed'))return'Confirma tu correo antes de iniciar sesión';
+  if(msg.includes('already registered'))return'Este correo ya tiene cuenta — inicia sesión';
+  return msg;
+}
+
+// Comprime imagen base64 para optimizar el almacenamiento en nube
+function comprimirImagen(dataUrl,maxDim=1300,calidad=0.75){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const ratio=Math.min(maxDim/img.width,maxDim/img.height,1);
+      const w=Math.round(img.width*ratio),h=Math.round(img.height*ratio);
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      res(c.toDataURL('image/jpeg',calidad));
+    };
+    img.onerror=()=>res(dataUrl);
+    img.src=dataUrl;
+  });
+}
+
+// Guarda evaluación en Supabase (fire-and-forget OK)
+async function guardarEnNube(){
+  if(!_sb||!_sbUser||!S.evalId)return;
+  setSyncDot('up');
+  const datos={...S,fotos:S.fotos||[]};
+  const {error}=await _sb.from('evaluaciones').upsert({
+    id:S.evalId,
+    user_id:_sbUser.id,
+    nombre:S.hc?.nombre||'',
+    perfil:S.perfil||'',
+    data:datos,
+    updated_at:new Date().toISOString()
+  },{onConflict:'id'});
+  if(error){setSyncDot('err');console.error('Supabase upsert:',error);}
+  else setSyncDot('ok');
+}
+
+// Sincroniza toda la nube → IndexedDB
+async function sincronizarDesdeNube(){
+  if(_syncingNow||!_sb||!_sbUser)return;
+  _syncingNow=true;setSyncDot('down');
+  const {data,error}=await _sb.from('evaluaciones')
+    .select('id,nombre,perfil,updated_at,data')
+    .order('updated_at',{ascending:false});
+  if(error){setSyncDot('err');_syncingNow=false;return;}
+  for(const r of(data||[])){
+    const local=await dbGet('evaluaciones',r.id);
+    const localTs=local?._sbTs||'';
+    if(!local||r.updated_at>localTs){
+      const obj={...r.data,id:r.id,evalId:r.id,_sbTs:r.updated_at};
+      await dbGuardar('evaluaciones',{...obj,fotos:[]});
+      // Restaurar fotos en IndexedDB si vienen de la nube
+      if(r.data?.fotos?.length){
+        for(const f of r.data.fotos){
+          if(f.src)await dbGuardar('fotos',f);
+        }
+      }
+    }
+  }
+  setSyncDot('ok');_syncingNow=false;
+  // Refrescar lista si está visible
+  if(document.getElementById('viewLista')?.style.display!=='none') abrirListaEvals();
+}
+
+// ══════════════════════════════════════
 // WIZARD
 // ══════════════════════════════════════
 const WIZ={
@@ -1109,7 +1299,8 @@ function renderWizSteps(){
 // NUEVA EVALUACIÓN
 // ══════════════════════════════════════
 function nuevaEval(){
-  S={evalId:'eval_'+Date.now(),perfil:'',
+  const eid='eval_'+Date.now();
+  S={evalId:eid,id:eid,perfil:'',
     hc:{nombre:'',fechaNac:'',edad:0,sexo:'',peso:0,talla:0,imc:0,imcClasif:'',
       telefono:'',email:'',ocupacion:'',deporte:'',frecuenciaDeporte:0,
       motivo:'',zonas:[],eva:5,tiempoEvolucion:'',tiempoUnidad:'Días',tipoLesion:'',
@@ -1129,32 +1320,61 @@ async function abrirListaEvals(){
   document.getElementById('viewLista').style.display='block';
   document.getElementById('wizProgress').style.display='none';
   const evals=await dbGetAll('evaluaciones');
+  renderListaEvals(evals);
+  // Si está logueado, sincronizar nube en background (el sync refrescará la lista al terminar)
+  if(_sb&&_sbUser) sincronizarDesdeNube();
+}
+
+function renderListaEvals(evals){
   const wrap=document.getElementById('evalListWrap');
-  if(!evals.length){wrap.innerHTML='<p style="color:var(--muted);font-size:.85rem;text-align:center">No hay evaluaciones guardadas aún.</p>';return;}
+  if(!evals.length){
+    wrap.innerHTML=`<div style="text-align:center;padding:20px 0">
+      <p style="color:var(--muted);font-size:.85rem">No hay evaluaciones guardadas aún.</p>
+      ${(!_sb||!_sbUser)?`<p style="color:var(--muted);font-size:.78rem;margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="abrirModalAuth()">☁️ Iniciar sesión</button> para cargar evaluaciones de la nube.
+      </p>`:''}
+    </div>`;
+    return;
+  }
+  const sorted=evals.filter(e=>e.id||e.evalId).sort((a,b)=>{
+    const aid=a.id||a.evalId||'';const bid=b.id||b.evalId||'';
+    return bid.localeCompare(aid);
+  });
   wrap.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+
-    evals.sort((a,b)=>b.id.localeCompare(a.id)).map(e=>`
-      <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--s2);border-radius:10px;border:1px solid var(--border)">
+    sorted.map(e=>{
+      const eid=e.id||e.evalId||'';
+      const ts=+eid.replace('eval_','');
+      const fecha=ts?new Date(ts).toLocaleDateString('es-CO'):'—';
+      const nube=e._sbTs?'<span title="Sincronizado con nube" style="color:var(--primary);font-size:.8rem">☁️</span>':'';
+      return `<div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--s2);border-radius:10px;border:1px solid var(--border)">
         <div style="flex:1">
           <div style="font-weight:600">${e.hc&&e.hc.nombre?e.hc.nombre:'Sin nombre'}</div>
-          <div style="font-size:.78rem;color:var(--muted)">${e.perfil||'Sin perfil'} · ${new Date(+e.id.replace('eval_','')).toLocaleDateString('es-CO')}</div>
+          <div style="font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px">${e.perfil||'Sin perfil'} · ${fecha} ${nube}</div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="cargarEval('${e.id}')">Abrir</button>
-        <button class="btn btn-danger btn-sm" onclick="eliminarEval('${e.id}')">🗑️</button>
-      </div>`).join('')+'</div>';
+        <button class="btn btn-ghost btn-sm" onclick="cargarEval('${eid}')">Abrir</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarEval('${eid}')">🗑️</button>
+      </div>`;
+    }).join('')+'</div>';
 }
 
 async function cargarEval(id){
-  const e=await dbGet('evaluaciones',id);
+  let e=await dbGet('evaluaciones',id);
+  // Si no está local, intentar cargar de Supabase
+  if(!e&&_sb&&_sbUser){
+    const {data}=await _sb.from('evaluaciones').select('data,updated_at').eq('id',id).single();
+    if(data){e={...data.data,id,evalId:id,_sbTs:data.updated_at};}
+  }
   if(!e){toast('No se encontró la evaluación','err');return;}
-  S=e;
-  // Restaurar fotos del estado
-  const fotos=await dbGetAll('fotos');
-  S.fotos=fotos.filter(f=>f.evalId===id);
+  S={...e,evalId:e.evalId||id,id:id};
+  // Restaurar fotos: primero local, si no las hay buscar en el objeto cargado
+  const todFotos=await dbGetAll('fotos');
+  let fotosEval=todFotos.filter(f=>f.evalId===id);
+  if(!fotosEval.length&&e.fotos?.length) fotosEval=e.fotos;
+  S.fotos=fotosEval;
   llenarHCForm();
   document.getElementById('viewLista').style.display='none';
   iniciarAutoguardado();
   WIZ.go(0);
-  // Restaurar perfil visual
   if(S.perfil) document.querySelectorAll('.pc').forEach(el=>{el.classList.toggle('sel',el.getAttribute('onclick').includes(S.perfil))});
 }
 
@@ -1163,6 +1383,8 @@ async function eliminarEval(id){
   await dbDelete('evaluaciones',id);
   const fotos=await dbGetAll('fotos');
   for(const f of fotos.filter(f=>f.evalId===id)) await dbDelete('fotos',f.id);
+  // Eliminar de Supabase si está logueado
+  if(_sb&&_sbUser) await _sb.from('evaluaciones').delete().eq('id',id);
   toast('Evaluación eliminada');
   abrirListaEvals();
 }
@@ -1171,8 +1393,9 @@ async function autoGuardar(){
   if(!S.evalId)return;
   const sig=document.getElementById('sigCanvas');
   if(sig) S.hc.firma=sig.toDataURL();
-  await dbGuardar('evaluaciones',{...S,fotos:[]});
-  toast('Guardado automático ✓','ok');
+  await dbGuardar('evaluaciones',{...S,id:S.evalId,fotos:[]});
+  guardarEnNube(); // sincroniza con Supabase en background
+  toast('Guardado ✓','ok');
 }
 
 function iniciarAutoguardado(){
@@ -2654,10 +2877,11 @@ function subirFotos(files){
     if(!file.type.startsWith('image/'))return;
     const reader=new FileReader();
     reader.onload=async e=>{
+      const srcComp=await comprimirImagen(e.target.result,1400,0.78);
       const foto={
         id:'foto_'+Date.now()+'_'+Math.random().toString(36).slice(2),
         evalId:S.evalId,
-        src:e.target.result,
+        src:srcComp,
         categoria:document.getElementById('fotoCategoria').value,
         sesion:+document.getElementById('fotoSesionNum').value||1,
         fecha:new Date().toLocaleDateString('es-CO')
@@ -2708,8 +2932,8 @@ function subirFotoTest(testId,file){
   if(!file)return;
   if(file.size>10*1024*1024){toast('Foto demasiado grande (máx 10MB)','err');return;}
   const reader=new FileReader();
-  reader.onload=e=>{
-    S.tests[testId+'_foto']=e.target.result;
+  reader.onload=async e=>{
+    S.tests[testId+'_foto']=await comprimirImagen(e.target.result,1000,0.75);
     autoGuardar();
     renderTests(); // re-render to show thumbnail
     toast('Foto del test guardada ✓','ok');
@@ -3657,6 +3881,7 @@ function toast(msg,tipo=''){
 // ══════════════════════════════════════
 window.addEventListener('DOMContentLoaded',async()=>{
   await abrirDB();
+  await initSupabase();
   abrirListaEvals();
   window.addEventListener('beforeunload',e=>{
     if(S.evalId){e.preventDefault();e.returnValue='';}
