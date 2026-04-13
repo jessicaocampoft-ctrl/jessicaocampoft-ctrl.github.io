@@ -74,26 +74,42 @@ function doPost(e) {
 // -------------------------------------------------------------
 //  CREAR RESERVA
 // -------------------------------------------------------------
+// Servicios que son solo registro de paciente — NO crean cita en Google Calendar
+var SERVICIOS_SOLO_REGISTRO = ['Registro', 'Registro paciente', 'Registro de paciente'];
+
+function esRegistro(servicio) {
+  if (!servicio) return false;
+  var s = servicio.trim().toLowerCase();
+  for (var i = 0; i < SERVICIOS_SOLO_REGISTRO.length; i++) {
+    if (s === SERVICIOS_SOLO_REGISTRO[i].toLowerCase()) return true;
+  }
+  return s.indexOf('registro') === 0; // cualquier cosa que empiece con "Registro"
+}
+
 function createBooking(d, isAdmin) {
   if (!isAdmin) {
     var avail = checkAvailability(d.date, d.time, d.modality, d.service);
     if (!avail.available) return {ok: false, error: avail.reason};
   }
 
-  var cal   = CalendarApp.getDefaultCalendar();
-  var start = parseDT(d.date, d.time);
-  var mins  = getServiceDuration(d.service) + (d.modality === 'Domicilio' ? 30 : 0);
-  var end   = new Date(start.getTime() + mins * 60000);
+  var soloRegistro = esRegistro(d.service);
   var price = d.modality === 'Presencial' ? d.priceP : d.priceD;
 
-  var event = cal.createEvent('[CITA] ' + d.service + ' - ' + d.name, start, end, {
-    description: buildDesc(d, price),
-    location: d.modality === 'Domicilio' ? (d.address || 'Domicilio - Pereira / Dosquebradas') : 'Pereira, Colombia'
-  });
-  event.addEmailReminder(60);
-  event.addPopupReminder(30);
+  // Solo crear evento en Google Calendar si es una cita real (no un registro)
+  if (!soloRegistro) {
+    var cal   = CalendarApp.getDefaultCalendar();
+    var start = parseDT(d.date, d.time);
+    var mins  = getServiceDuration(d.service) + (d.modality === 'Domicilio' ? 30 : 0);
+    var end   = new Date(start.getTime() + mins * 60000);
+    var event = cal.createEvent('[CITA] ' + d.service + ' - ' + d.name, start, end, {
+      description: buildDesc(d, price),
+      location: d.modality === 'Domicilio' ? (d.address || 'Domicilio - Pereira / Dosquebradas') : 'Pereira, Colombia'
+    });
+    event.addEmailReminder(60);
+    event.addPopupReminder(30);
+  }
 
-  // Guardar en Google Sheets
+  // Guardar en Google Sheets (siempre, tanto citas como registros)
   var id    = 'C' + new Date().getTime();
   var ss    = getOrCreateSheet();
   var cSheet = ss.getSheetByName('Citas');
@@ -104,29 +120,37 @@ function createBooking(d, isAdmin) {
     d.name, phoneClean, d.email,
     d.service, d.modality,
     d.date, d.time, price,
-    'Confirmada',
+    soloRegistro ? 'Registro' : 'Confirmada',
     d.address || '', d.notes || '', ''
   ]);
   // Forzar columna Telefono como texto para evitar #ERROR! en Sheets
   cSheet.getRange(cSheet.getLastRow(), 4).setNumberFormat('@').setValue(phoneClean);
 
-  // Guardar/actualizar paciente en hoja Pacientes
+  // Guardar/actualizar paciente en hoja Pacientes (siempre)
   upsertPaciente(d.name, d.phone, d.email);
 
-  // Link de WhatsApp para Jessica
+  // Para registros: solo notificar a Jessica, sin correo de confirmación de cita al paciente
+  if (soloRegistro) {
+    GmailApp.sendEmail(
+      JESSICA_EMAIL,
+      'Nuevo registro: ' + d.name,
+      'Se registró un nuevo paciente:\n\nNombre: ' + d.name + '\nTeléfono: ' + d.phone + '\nCorreo: ' + (d.email || '—') + '\nNotas: ' + (d.notes || '—') + '\n\nID: ' + id
+    );
+    return {ok: true, id: id};
+  }
+
+  // Para citas reales: enviar todos los correos y WhatsApp
   var tel  = (d.phone || '').replace(/\D/g,'');
   if (tel.length <= 10) tel = '57' + tel;
   var waConfirm = 'Hola ' + d.name + ', te confirmo tu cita de ' + d.service + ' el ' + d.date + ' a las ' + d.time + '. Quedo pendiente! - Jessica Ocampo Fisioterapeuta';
   var waLink = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(waConfirm);
 
-  // Email a Jessica con link de WhatsApp
   GmailApp.sendEmail(
     JESSICA_EMAIL,
     'Nueva cita: ' + d.name + ' - ' + d.service + ' | ' + d.date,
     buildEmailJessica(d, price) + '\n\n>> Confirmar al paciente por WhatsApp (1 clic):\n' + waLink + '\n\nID cita: ' + id
   );
 
-  // Confirmacion al cliente (HTML)
   if (d.email && d.email.indexOf('@') > 0) {
     GmailApp.sendEmail(
       d.email,
