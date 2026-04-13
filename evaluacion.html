@@ -1378,6 +1378,27 @@ const TESTS_PERFIL={
     {id:'schober',nombre:'Modified Schober (lumbar)',tag:'cm',repeticiones:true,lbl:'Distancia (cm)',refValues:true,refId:'schober'},
     {id:'slump',nombre:'Slump Test (tensión neural)',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
     {id:'romCervical',nombre:'Movilidad cervical activa',tag:'ROM °',romCervical:true},
+    // ── HOMBRO ──
+    {id:'romHombro',nombre:'ROM glenohumeral activo',tag:'Grados bilateral',romHombro:true},
+    {id:'neer',nombre:'Test de Neer (pinzamiento subacromial)',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    {id:'hawkins',nombre:'Test Hawkins-Kennedy',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    {id:'emptyCan',nombre:'Empty Can Test (supraespinoso)',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    {id:'painfulArc',nombre:'Painful Arc (60°–120°)',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    {id:'speeds',nombre:"Speed's Test (bíceps / SLAP)",tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    // ── COLUMNA TORÁCICA ──
+    {id:'wallAngel',nombre:'Wall Angel Test',tag:'0-3',comps:['Lumbar en extensión','Cabeza despegada de pared','Brazos no llegan a pared','Hombros elevados','Costillas abiertas']},
+    {id:'rotToracica',nombre:'Rotación torácica en sedente',tag:'Grados + Extensión',romToracica:true},
+    // ── LUMBAR / NEURAL ──
+    {id:'slr',nombre:'Straight Leg Raise (SLR)',tag:'Grados + Positivo/Negativo',slr:true},
+    {id:'proneInstab',nombre:'Prone Instability Test (inestabilidad lumbar)',tag:'Positivo/Negativo',posNeg:true},
+    {id:'kemp',nombre:'Test de Kemp (compresión lumbar)',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    // ── MUÑECA / MANO ──
+    {id:'phalen',nombre:"Test de Phalen (túnel carpiano)",tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    {id:'tinel',nombre:"Test de Tinel (túnel carpiano)",tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    {id:'finkelstein',nombre:"Test de Finkelstein (De Quervain)",tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    // ── CUESTIONARIOS ──
+    {id:'ndi',nombre:'NDI — Neck Disability Index',tag:'0-50',ndi:true},
+    {id:'oswestry',nombre:'Oswestry Disability Index (lumbar)',tag:'0-100%',oswestry:true},
   ]
 };
 
@@ -1438,6 +1459,12 @@ const SCORING_CRITERIA={
     {n:1,c:'#d97706',t:'1 — No completa',d:'Incapaz de completar la transición RI→RE, ROM articular limitado (<30° RI o RE), o requiere apoyo de manos para moverse. Restricción articular severa de cadera (Meehan et al., 2018).'},
     {n:2,c:'#2563eb',t:'2 — Con compensación',d:'Completa la transición con compensaciones: elevación de hemipelvis ipsilateral, inclinación de tronco >15° o desplazamiento de peso significativo. Restricción articular moderada (FMI, 2014).'},
     {n:3,c:'#16a34a',t:'3 — Fluida y controlada',d:'Transición fluida y controlada RI→RE, ≥45° en ambas rotaciones, puede cargar la posición sin compensaciones observables. Movilidad de cadera óptima para el deporte (FMI, 2014).'},
+  ],
+  wallAngel:[
+    {n:0,c:'#dc2626',t:'0 — Dolor durante la prueba',d:'Dolor en hombros, columna cervical o torácica durante la ejecución. Indica patología articular o inflamatoria activa que requiere evaluación antes de prescribir ejercicio (Sahrmann, 2002).'},
+    {n:1,c:'#d97706',t:'1 — No puede realizar el movimiento',d:'Incapaz de mantener cabeza, columna dorsal y sacro en contacto con la pared. Brazos se despegan significativamente (>10 cm). Rigidez torácica severa y/o acortamiento marcado de pectorales y capsúla anterior de hombro.'},
+    {n:2,c:'#2563eb',t:'2 — Realiza con compensaciones',d:'Puede aproximar los brazos hacia la pared pero con compensaciones evidentes: hiperlordosis lumbar, costillas abiertas, lordosis cervical marcada o elevación de hombros. Disfunción de movilidad torácica y control escapular (Comerford & Mottram, 2012).'},
+    {n:3,c:'#16a34a',t:'3 — Óptimo sin compensaciones',d:'Cabeza, columna y sacro en contacto con pared durante todo el movimiento, brazos completan el arco completo sin separar la columna ni abrir las costillas. Indica movilidad torácica, escapular y de hombros funcional (Sahrmann, 2002; Comerford & Mottram, 2012).'},
   ],
 };
 
@@ -1592,6 +1619,32 @@ const REFERENCE_VALUES={
       ]},
     ],
     nota:'Los deportistas con ACL-RSI < 56 tienen 4× más riesgo de no retornar al deporte (Webster et al., 2008; Ardern et al., 2013). Escala validada al español.'
+  },
+  ndi:{
+    titulo:'NDI — Neck Disability Index (Vernon & Mior, 1991)',
+    tabla:[
+      {cat:'Puntuación total (0-50)',rows:[
+        ['0–8','Discapacidad mínima — vida normal con dolor manejable'],
+        ['9–18','Discapacidad moderada — dolor interfiere con actividades de alta demanda'],
+        ['19–28','Discapacidad severa — dolor interfiere con la mayoría de actividades diarias'],
+        ['29–38','Discapacidad completa — dolor interfiere con todas las actividades'],
+        ['≥39','Discapacidad máxima — dolor es el mayor problema de la vida del consultante'],
+      ]},
+    ],
+    nota:'Cambio clínicamente significativo mínimo (MCID): 7.5 puntos (Young et al., 2009). Sensibilidad al cambio: ICC = 0.89. Validado en español y ampliamente usado en dolor cervical crónico (Vernon, 2008).'
+  },
+  oswestry:{
+    titulo:'Oswestry Disability Index — ODI (Fairbank et al., 1980)',
+    tabla:[
+      {cat:'Porcentaje de discapacidad (0-100%)',rows:[
+        ['0–20%','Discapacidad mínima — vida casi normal, trabajo posible'],
+        ['21–40%','Discapacidad moderada — dolor interfiere en actividades de esfuerzo'],
+        ['41–60%','Discapacidad severa — dolor afecta la mayoría de actividades diarias'],
+        ['61–80%','Discapacidad inhabilitante — afecta todas las áreas de la vida'],
+        ['81–100%','Discapacidad máxima — encamado o síntomas exagerados'],
+      ]},
+    ],
+    nota:'MCID (cambio mínimo clínico): 10 puntos / 20%. Escala de referencia mundial para dolor lumbar crónico. Versión 2.0 vigente desde 2000 (Fairbank & Pynsent, Spine 2000).'
   },
 };
 
@@ -1878,6 +1931,170 @@ function buildTestCard(t){
         </div>
       </div>
     </div>`;
+  }else if(t.romHombro){
+    body=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${['Derecho','Izquierdo'].map(l=>`
+      <div>
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${l}</div>
+        ${[['Flexión','0-180°','rh_flex'],['Abducción','0-180°','rh_abd'],['RI (90° abd)','60-70°','rh_ri'],['RE (90° abd)','80-90°','rh_re'],['Extensión','0-60°','rh_ext']].map(([m,ref,key])=>`
+        <div class="field" style="margin-bottom:6px">
+          <label>${m} (°) <span style="color:var(--muted);font-size:.7rem">ref: ${ref}</span></label>
+          <input type="number" min="0" max="180" placeholder="0"
+            onchange="S.tests['${key}_${l.toLowerCase()}']=+this.value"
+            value="${S.tests[key+'_'+l.toLowerCase()]||''}">
+        </div>`).join('')}
+      </div>`).join('')}
+    </div>
+    <div class="sg-wrap" style="margin-top:10px">
+      <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+        <span class="sg-toggle-lbl">📊 Valores normales ROM glenohumeral (AAOS / AMA Guides)</span>
+        <span class="sg-arrow">▼</span>
+      </button>
+      <div class="sg-body">
+        <div style="padding:10px 13px;font-size:.72rem">
+          <table style="width:100%;border-collapse:collapse">
+            <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Flexión</td><td style="padding:4px 8px;font-weight:600">0–180° (< 150° = déficit)</td></tr>
+            <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">Abducción</td><td style="padding:4px 8px;font-weight:600">0–180° (< 150° = déficit)</td></tr>
+            <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Rot. interna (90° abd)</td><td style="padding:4px 8px;font-weight:600">60–70° (< 45° = déficit clínico)</td></tr>
+            <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">Rot. externa (90° abd)</td><td style="padding:4px 8px;font-weight:600">80–90° (< 60° = déficit clínico)</td></tr>
+            <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Extensión</td><td style="padding:4px 8px;font-weight:600">0–60° (< 45° = déficit)</td></tr>
+            <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">Asimetría bilateral</td><td style="padding:4px 8px;font-weight:600;color:#d97706">> 10° = clínicamente significativa</td></tr>
+          </table>
+          <div style="color:var(--muted);margin-top:8px;line-height:1.5">ℹ️ Déficit de RI > 20° comparado con lado dominante predice pinzamiento subacromial interno. Déficit de RE > 15° asociado a tendinopatía de manguito (Tyler et al., 2010; AAOS Guidelines).</div>
+        </div>
+      </div>
+    </div>`;
+  }else if(t.romToracica){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+      Posición: sedente, caderas fijas. Brazos cruzados en pecho o con palo horizontal en hombros. Medir con goniómetro o estimación visual comparativa.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${['Derecha','Izquierda'].map(l=>`
+      <div>
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">Rot. ${l}</div>
+        <div class="field">
+          <label>Grados (°) <span style="color:var(--muted);font-size:.7rem">ref: 35-45°</span></label>
+          <input type="number" min="0" max="90" placeholder="0"
+            onchange="S.tests['rott_${l.toLowerCase()}']=+this.value"
+            value="${S.tests['rott_'+l.toLowerCase()]||''}">
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="field" style="margin-top:10px">
+      <label>Extensión torácica (°) <span style="color:var(--muted);font-size:.7rem">ref: 25-40°</span></label>
+      <input type="number" min="0" max="60" placeholder="0"
+        onchange="S.tests.rott_ext=+this.value" value="${S.tests.rott_ext||''}">
+    </div>
+    <div class="sg-wrap" style="margin-top:10px">
+      <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+        <span class="sg-toggle-lbl">📊 Valores normales ROM torácico (AMA / AAOS)</span>
+        <span class="sg-arrow">▼</span>
+      </button>
+      <div class="sg-body">
+        <div style="padding:10px 13px;font-size:.72rem">
+          <table style="width:100%;border-collapse:collapse">
+            <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Rotación torácica</td><td style="padding:4px 8px;font-weight:600">35–45° c/lado (< 25° = restricción)</td></tr>
+            <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">Extensión torácica</td><td style="padding:4px 8px;font-weight:600">25–40° (< 20° = hipomobilidad)</td></tr>
+            <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Asimetría rotación</td><td style="padding:4px 8px;font-weight:600;color:#d97706">> 10° entre lados = disfunción unilateral</td></tr>
+          </table>
+          <div style="color:var(--muted);margin-top:8px;line-height:1.5">ℹ️ Restricción de rotación torácica se compensa con hipermovilidad cervical o lumbar — causa frecuente de dolor cervical y lumbar crónico en sedentarios (Edmondston & Singer, 2008; Lee & Lee, 2011).</div>
+        </div>
+      </div>
+    </div>`;
+  }else if(t.slr){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+      Posición: decúbito supino, elevación lenta y pasiva de la extremidad con rodilla extendida. <strong>Positivo:</strong> reproducción del dolor irradiado por la pierna (patrón ciático) antes de 60°. Anotar el ángulo exacto de aparición del síntoma.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${['Derecho','Izquierdo'].map(l=>`
+      <div>
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${l}</div>
+        <div class="field" style="margin-bottom:6px">
+          <label>Resultado</label>
+          <select onchange="S.tests['slr_res_${l.toLowerCase()}']=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none;width:100%">
+            <option value="">—</option>
+            <option>Negativo (sin dolor irradiado)</option>
+            <option>Positivo (dolor irradiado reproducido)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Ángulo de aparición del dolor (°)</label>
+          <input type="number" min="0" max="90" placeholder="ej: 45"
+            onchange="S.tests['slr_ang_${l.toLowerCase()}']=+this.value"
+            value="${S.tests['slr_ang_'+l.toLowerCase()]||''}">
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="sg-wrap" style="margin-top:10px">
+      <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+        <span class="sg-toggle-lbl">📊 Interpretación SLR — Hakelius & Hindmarsh (1972)</span>
+        <span class="sg-arrow">▼</span>
+      </button>
+      <div class="sg-body">
+        <div style="padding:10px 13px;font-size:.72rem">
+          <table style="width:100%;border-collapse:collapse">
+            <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">< 30°</td><td style="padding:4px 8px;font-weight:600;color:#dc2626">Severo — alta probabilidad de hernia discal con compromiso radicular</td></tr>
+            <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">30–60°</td><td style="padding:4px 8px;font-weight:600;color:#d97706">Moderado — alta especificidad para radiculopatía lumbar (L4-S1)</td></tr>
+            <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">60–70°</td><td style="padding:4px 8px;font-weight:600;color:#d97706">Leve positivo — sensible pero poco específico</td></tr>
+            <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">> 70°</td><td style="padding:4px 8px;font-weight:600;color:#16a34a">Sin compromiso radicular significativo (tensión neural leve o normal)</td></tr>
+            <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Negativo bilateral</td><td style="padding:4px 8px;font-weight:600;color:#16a34a">Sin irritación de raíz nerviosa — Sens: 91%, Esp: 26%</td></tr>
+          </table>
+          <div style="color:var(--muted);margin-top:8px;line-height:1.5">ℹ️ SLR cruzado (dolor en pierna contraria al elevar): Sens: 29%, Esp: 88% — muy específico para hernia discal extruida (Devillé et al., 2000; van der Windt et al., 2010).</div>
+        </div>
+      </div>
+    </div>`;
+  }else if(t.ndi){
+    const ndiItems=[
+      ['Intensidad del dolor',['Sin dolor','Dolor leve (no limita)','Dolor moderado (limita algo)','Dolor severo (limita bastante)','Dolor muy severo','Peor dolor imaginable']],
+      ['Cuidado personal (lavarse, vestirse…)',['Me cuido sin dolor extra','Me cuido normalmente con algo de dolor','Necesito cuidarme lentamente y con cuidado','Necesito ayuda parcial en el aseo','Necesito ayuda total diaria','No me puedo vestir, me baño con gran dificultad']],
+      ['Levantar objetos',['Sin dificultad','Levanto objetos pesados sin dolor extra','Levanto objetos pesados con dolor','El dolor me impide levantar del suelo, manejo en superficies','Solo levanto objetos muy livianos','No puedo levantar ni cargar nada']],
+      ['Leer',['Sin molestias','Puedo leer sin límite con leve incomodidad','Puedo leer hasta 1 hora con dolor','Puedo leer hasta 30 min con dolor','Puedo leer hasta 10 min con dolor','No puedo leer por el dolor de cuello']],
+      ['Dolor de cabeza',['Sin cefalea','Cefalea leve e infrecuente','Cefalea moderada e infrecuente','Cefalea moderada y frecuente','Cefalea severa y frecuente','Cefalea constante e intolerable']],
+      ['Concentración',['Concentración normal sin dificultad','Leve dificultad de concentración','Moderada dificultad, requiero esfuerzo','Mucha dificultad de concentración','Mucha dificultad, trabajo muy lento','No puedo concentrarme en absoluto']],
+      ['Trabajo / actividades habituales',['Trabajo normal sin dolor extra','Solo puedo hacer actividades habituales con algo de dolor','Trabajo doméstico ligero posible','Solo trabajo ligero y la mitad del tiempo habitual','Apenas puedo trabajar','No puedo trabajar en absoluto']],
+      ['Conducir',['Sin dolor al conducir','Leve dolor al conducir, sin limitación de tiempo','Leve dolor limita trayectos a 2 horas','Dolor moderado limita trayectos a 1 hora','Dolor severo limita trayectos a 30 min','No puedo conducir por el dolor']],
+      ['Dormir',['Sin dificultad para dormir','Leve dificultad esporádica para dormir','El dolor interrumpe el sueño (<6 h)','El dolor interrumpe el sueño (<4 h)','El dolor interrumpe el sueño (<2 h)','El dolor me impide dormir en absoluto']],
+      ['Actividades de ocio / recreación',['Sin restricción en ocio','Leve dolor en actividad física intensa','Algo de restricción por el dolor','Restricción moderada, solo actividades suaves','Apenas puedo hacer actividades de ocio','No puedo hacer ninguna actividad recreativa']],
+    ];
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;background:var(--s2);border-radius:8px;padding:10px">
+      <strong>Instrucciones:</strong> Seleccione en cada sección la frase que mejor describe su situación. <strong>Puntuación: 0–50</strong> (suma de 10 ítems × 0-5 cada uno).
+    </div>
+    ${ndiItems.map(([nombre,opciones],i)=>`
+    <div style="margin-bottom:8px;background:var(--s2);border-radius:8px;padding:10px">
+      <div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:6px">${i+1}. ${nombre}</div>
+      <select onchange="S.tests['ndi_${i}']=+this.value;calcNDI()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:.74rem;width:100%;outline:none">
+        <option value="">— seleccionar —</option>
+        ${opciones.map((o,j)=>`<option value="${j}" ${S.tests['ndi_'+i]===j?'selected':''}>${j} — ${o}</option>`).join('')}
+      </select>
+    </div>`).join('')}
+    <div id="ndiResult" style="background:var(--s2);border-radius:8px;padding:12px;margin-top:4px;font-size:.82rem"></div>
+    ${buildRefValues('ndi')}`;
+  }else if(t.oswestry){
+    const oswItems=[
+      ['Intensidad del dolor',['Sin dolor ahora mismo','Dolor muy leve en este momento','Dolor moderado en este momento','Dolor bastante fuerte en este momento','Dolor muy severo en este momento','El dolor es el peor imaginable']],
+      ['Cuidado personal (lavarse, vestirse…)',['Me puedo cuidar normalmente sin dolor extra','Me cuido normalmente pero con bastante dolor','Necesito cuidarme lentamente y con cuidado','Necesito ayuda parcial pero me manejo bastante solo','Necesito ayuda todos los días en la mayoría de aspectos del cuidado','No me puedo vestir, me baño con mucha dificultad']],
+      ['Levantar objetos',['Puedo levantar objetos pesados sin dolor extra','Puedo levantar objetos pesados pero con algo más de dolor','El dolor me impide levantar objetos pesados del suelo, pero puedo si están en lugar conveniente','El dolor me impide levantar objetos pesados pero puedo manejar objetos ligeros a medianos si están en lugar conveniente','Solo puedo levantar objetos muy ligeros','No puedo levantar ni cargar absolutamente nada']],
+      ['Caminar',['El dolor no me impide caminar cualquier distancia','El dolor me impide caminar más de 1 km','El dolor me impide caminar más de 500 m','El dolor me impide caminar más de 200 m','Solo puedo caminar con bastón o muletas','Permanezco en cama la mayor parte del tiempo']],
+      ['Sentarse',['Puedo sentarme en cualquier tipo de silla durante el tiempo que quiera','Solo puedo sentarme en mi silla preferida durante el tiempo que quiera','El dolor me impide permanecer sentado más de 1 hora','El dolor me impide permanecer sentado más de 30 min','El dolor me impide permanecer sentado más de 10 min','El dolor me impide sentarme en absoluto']],
+      ['Estar de pie',['Puedo permanecer de pie el tiempo que quiera sin dolor extra','Puedo permanecer de pie el tiempo que quiera pero con algo más de dolor','El dolor me impide permanecer de pie más de 1 hora','El dolor me impide permanecer de pie más de 30 min','El dolor me impide permanecer de pie más de 10 min','El dolor me impide permanecer de pie en absoluto']],
+      ['Dormir',['El dolor no me impide dormir bien','Solo puedo dormir bien tomando medicación','Incluso tomando medicación duermo menos de 6 horas','Incluso tomando medicación duermo menos de 4 horas','Incluso tomando medicación duermo menos de 2 horas','El dolor me impide completamente dormir']],
+      ['Vida social',['Mi vida social es normal y no me causa dolor extra','Mi vida social es normal pero aumenta mi dolor','El dolor limita mis actividades más enérgicas (ej. deporte)','El dolor limita mi vida social y no salgo de casa con frecuencia','El dolor limita mi vida social y casi no salgo de casa','No tengo vida social por culpa del dolor']],
+      ['Viajar',['Puedo viajar a cualquier lugar sin dolor extra','Puedo viajar a cualquier lugar pero con algo más de dolor','El dolor es bastante molesto pero puedo hacer viajes de más de 2 horas','El dolor me limita a viajes de menos de 1 hora','El dolor me limita a trayectos cortos de menos de 30 min','El dolor me impide viajar excepto para ir al médico']],
+      ['Cambios en el grado de dolor',['Mi dolor mejora y empeora según mi actividad física','Mi dolor se mantiene igual estén cuales sean mis actividades','El dolor mejora lentamente sin importar mi actividad','El dolor empeora si me muevo pero si estoy quieto mejora un poco','El dolor empeora sin remedio esté como esté','El dolor es constante e insoportable en todas las posiciones'],],
+    ];
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;background:var(--s2);border-radius:8px;padding:10px">
+      <strong>Instrucciones:</strong> Lea cada sección y marque la frase que mejor describe su dolor lumbar hoy. <strong>Puntuación: 0–50 pts → convertida a 0–100%</strong>.
+    </div>
+    ${oswItems.map(([nombre,opciones],i)=>`
+    <div style="margin-bottom:8px;background:var(--s2);border-radius:8px;padding:10px">
+      <div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:6px">${i+1}. ${nombre}</div>
+      <select onchange="S.tests['osw_${i}']=+this.value;calcOswestry()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:.74rem;width:100%;outline:none">
+        <option value="">— seleccionar —</option>
+        ${opciones.map((o,j)=>`<option value="${j}" ${S.tests['osw_'+i]===j?'selected':''}>${j} — ${o}</option>`).join('')}
+      </select>
+    </div>`).join('')}
+    <div id="oswResult" style="background:var(--s2);border-radius:8px;padding:12px;margin-top:4px;font-size:.82rem"></div>
+    ${buildRefValues('oswestry')}`;
   }else if(t.mcmurray){
     body=`<div class="fg2">
       <div class="field"><label>Menisco medial</label>
@@ -2007,6 +2224,29 @@ function calcLSI(){
   const ok=lsi>=90;
   document.getElementById('lsiResult').innerHTML=
     `LSI: <strong style="color:${ok?'#16a34a':'#dc2626'}">${lsi.toFixed(1)}%</strong> ${ok?'✓ Apto para retorno':'⚠️ Requiere más rehabilitación (meta: ≥90%)'}`;
+}
+
+function calcNDI(){
+  const vals=[0,1,2,3,4,5,6,7,8,9].map(i=>S.tests['ndi_'+i]).filter(v=>v!==undefined&&v!=='');
+  if(!vals.length)return;
+  const total=vals.reduce((a,b)=>a+(+b),0);
+  S.tests.ndi_total=total;
+  const cat=total<=8?'Mínima':total<=18?'Moderada':total<=28?'Severa':total<=38?'Completa':'Máxima';
+  const col=total<=8?'#16a34a':total<=18?'#d97706':total<=28?'#dc2626':'#7c2d12';
+  const el=document.getElementById('ndiResult');
+  if(el)el.innerHTML=`<strong>NDI Total: ${total}/50</strong> — <span style="color:${col};font-weight:700">Discapacidad ${cat}</span><br><span style="font-size:.75rem;color:var(--muted)">${vals.length}/10 ítems completados${vals.length<10?' (score parcial)':''}</span>`;
+}
+
+function calcOswestry(){
+  const vals=[0,1,2,3,4,5,6,7,8,9].map(i=>S.tests['osw_'+i]).filter(v=>v!==undefined&&v!=='');
+  if(!vals.length)return;
+  const total=vals.reduce((a,b)=>a+(+b),0);
+  const pct=Math.round(total/(vals.length*5)*100);
+  S.tests.osw_total=total;S.tests.osw_pct=pct;
+  const cat=pct<=20?'Mínima':pct<=40?'Moderada':pct<=60?'Severa':pct<=80?'Inhabilitante':'Máxima';
+  const col=pct<=20?'#16a34a':pct<=40?'#d97706':pct<=60?'#dc2626':'#7c2d12';
+  const el=document.getElementById('oswResult');
+  if(el)el.innerHTML=`<strong>ODI Total: ${total}/${vals.length*5} = ${pct}%</strong> — <span style="color:${col};font-weight:700">Discapacidad ${cat}</span><br><span style="font-size:.75rem;color:var(--muted)">${vals.length}/10 ítems completados${vals.length<10?' (score parcial)':''}</span>`;
 }
 
 function actualizarSemaforo(){
