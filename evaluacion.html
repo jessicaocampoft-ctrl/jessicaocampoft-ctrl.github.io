@@ -1094,15 +1094,21 @@ let wizStep=0;
 // ══════════════════════════════════════
 // INDEXEDDB
 // ══════════════════════════════════════
-const DB_NAME='JessicaEval',DB_VER=1;
+const DB_NAME='JessicaEval',DB_VER=2;
 let db=null;
 function abrirDB(){
   return new Promise((res,rej)=>{
     const req=indexedDB.open(DB_NAME,DB_VER);
     req.onupgradeneeded=e=>{
       const d=e.target.result;
-      if(!d.objectStoreNames.contains('evaluaciones')) d.createObjectStore('evaluaciones',{keyPath:'id'});
-      if(!d.objectStoreNames.contains('fotos')) d.createObjectStore('fotos',{keyPath:'id'});
+      const oldVer=e.oldVersion;
+      // v1→v2: recrear store evaluaciones con keyPath correcto (evalId)
+      if(oldVer<2){
+        // Migrar datos existentes si la store vieja existe
+        if(d.objectStoreNames.contains('evaluaciones')) d.deleteObjectStore('evaluaciones');
+        d.createObjectStore('evaluaciones',{keyPath:'evalId'});
+        if(!d.objectStoreNames.contains('fotos')) d.createObjectStore('fotos',{keyPath:'id'});
+      }
     };
     req.onsuccess=e=>{db=e.target.result;res(db)};
     req.onerror=()=>rej(req.error);
@@ -1251,7 +1257,7 @@ async function sincronizarDesdeNube(){
     const local=await dbGet('evaluaciones',r.id);
     const localTs=local?._sbTs||'';
     if(!local||r.updated_at>localTs){
-      const obj={...r.data,id:r.id,evalId:r.id,_sbTs:r.updated_at};
+      const obj={...r.data,evalId:r.id,_sbTs:r.updated_at};
       await dbGuardar('evaluaciones',{...obj,fotos:[]});
       // Restaurar fotos en IndexedDB si vienen de la nube
       if(r.data?.fotos?.length){
@@ -1272,12 +1278,15 @@ async function sincronizarDesdeNube(){
 const WIZ={
   go(n){
     if(n<0||n>6)return;
+    // Guardar antes de cambiar de paso (si hay evaluación activa)
+    if(S.evalId && n!==wizStep) autoGuardar();
     wizStep=n;
     document.querySelectorAll('[id^="view"]').forEach(el=>el.style.display='none');
     document.getElementById('view'+n).style.display='block';
     document.getElementById('wizProgress').style.display='block';
     renderWizSteps();
     if(n===2){renderTests();setTimeout(calcularRiesgoLesion,500);}
+    if(n===3)renderFotos();
     if(n===4)renderSesiones();
     if(n===5)initPDF();
     if(n===6)initAlta();
@@ -1312,6 +1321,7 @@ function nuevaEval(){
   document.getElementById('fechaConsentimiento').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   initSig();
   iniciarAutoguardado();
+  autoGuardar(); // guardar estado inicial inmediatamente
   WIZ.go(0);
 }
 
@@ -1336,13 +1346,13 @@ function renderListaEvals(evals){
     </div>`;
     return;
   }
-  const sorted=evals.filter(e=>e.id||e.evalId).sort((a,b)=>{
-    const aid=a.id||a.evalId||'';const bid=b.id||b.evalId||'';
+  const sorted=evals.filter(e=>e.evalId||e.id).sort((a,b)=>{
+    const aid=a.evalId||a.id||'';const bid=b.evalId||b.id||'';
     return bid.localeCompare(aid);
   });
   wrap.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+
     sorted.map(e=>{
-      const eid=e.id||e.evalId||'';
+      const eid=e.evalId||e.id||'';
       const ts=+eid.replace('eval_','');
       const fecha=ts?new Date(ts).toLocaleDateString('es-CO'):'—';
       const nube=e._sbTs?'<span title="Sincronizado con nube" style="color:var(--primary);font-size:.8rem">☁️</span>':'';
@@ -1358,23 +1368,29 @@ function renderListaEvals(evals){
 }
 
 async function cargarEval(id){
+  // Buscar por evalId (keyPath del store v2)
   let e=await dbGet('evaluaciones',id);
   // Si no está local, intentar cargar de Supabase
   if(!e&&_sb&&_sbUser){
-    const {data}=await _sb.from('evaluaciones').select('data,updated_at').eq('id',id).single();
-    if(data){e={...data.data,id,evalId:id,_sbTs:data.updated_at};}
+    const {data:sbRow}=await _sb.from('evaluaciones').select('data,updated_at').eq('id',id).single();
+    if(sbRow){e={...sbRow.data,evalId:id,_sbTs:sbRow.updated_at};}
   }
   if(!e){toast('No se encontró la evaluación','err');return;}
   S={...e,evalId:e.evalId||id,id:id};
-  // Restaurar fotos: primero local, si no las hay buscar en el objeto cargado
+  // Restaurar fotos posturales: buscar en store local, si no hay usar las del objeto cargado
   const todFotos=await dbGetAll('fotos');
-  let fotosEval=todFotos.filter(f=>f.evalId===id);
+  let fotosEval=todFotos.filter(f=>f.evalId===id||f.evalId===S.evalId);
   if(!fotosEval.length&&e.fotos?.length) fotosEval=e.fotos;
   S.fotos=fotosEval;
+  // Si las fotos vinieron del cloud (no estaban en local), guardarlas en IndexedDB
+  if(fotosEval.length&&!todFotos.some(f=>f.evalId===id)){
+    for(const f of fotosEval) if(f.src) dbGuardar('fotos',f);
+  }
   llenarHCForm();
   document.getElementById('viewLista').style.display='none';
   iniciarAutoguardado();
   WIZ.go(0);
+  renderFotos(); // mostrar fotos aunque el usuario no haya ido al paso 3 todavía
   if(S.perfil) document.querySelectorAll('.pc').forEach(el=>{el.classList.toggle('sel',el.getAttribute('onclick').includes(S.perfil))});
 }
 
@@ -1391,11 +1407,17 @@ async function eliminarEval(id){
 
 async function autoGuardar(){
   if(!S.evalId)return;
-  const sig=document.getElementById('sigCanvas');
-  if(sig) S.hc.firma=sig.toDataURL();
-  await dbGuardar('evaluaciones',{...S,id:S.evalId,fotos:[]});
-  guardarEnNube(); // sincroniza con Supabase en background
-  toast('Guardado ✓','ok');
+  try{
+    const sig=document.getElementById('sigCanvas');
+    if(sig) S.hc.firma=sig.toDataURL();
+    // Guardar en IndexedDB usando evalId como clave (keyPath:'evalId')
+    await dbGuardar('evaluaciones',{...S,evalId:S.evalId,fotos:[]});
+    guardarEnNube(); // sincroniza con nube en background (incluye S.fotos)
+    toast('Guardado ✓','ok');
+  }catch(err){
+    console.error('Error al guardar:',err);
+    toast('Error al guardar','err');
+  }
 }
 
 function iniciarAutoguardado(){
