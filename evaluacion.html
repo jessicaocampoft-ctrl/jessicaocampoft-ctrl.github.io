@@ -532,7 +532,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
     <!-- BOTONES ACCIÓN IA -->
     <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
       <button id="btnIA" class="btn btn-teal" onclick="evaluarConIA()">
-        🧠 Evaluar con IA — Diagnóstico y plan de tratamiento
+        📊 Resultados de evaluación
       </button>
       <button class="btn btn-ghost" onclick="generarEjercicios()">
         🏋 Generar ejercicios para casa
@@ -1314,6 +1314,7 @@ const TESTS_COMUNES=[
    comps:['Pérdida de neutral lumbar','Rotación de pelvis','Falta control escapular','Temblor','Pérdida de equilibrio']},
   {id:'deadBug',nombre:'Dead Bug',tag:'0-3',bilateral:true,
    comps:['Pérdida lumbar en extensión','Compensación cervical','Falta de coordinación','Apnea respiratoria']},
+  {id:'trendelenburg',nombre:'Trendelenburg estático',tag:'Positivo/Negativo',bilateral:true,posNeg:true,refValues:true,refId:'trendelenburg'},
 ];
 
 const TESTS_PERFIL={
@@ -1332,8 +1333,8 @@ const TESTS_PERFIL={
      ]},
     {id:'thomas',nombre:'Thomas Test',tag:'Positivo/Negativo',bilateral:true,posNeg:true,comps:['Flexión residual de cadera','Abducción de rodilla','Rotación externa de cadera']},
     {id:'ober',nombre:'Ober Test (IT Band)',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
-    {id:'pushup',nombre:'Push Up Test',tag:'Repeticiones',repeticiones:true},
-    {id:'plank',nombre:'Plank (segundos)',tag:'Tiempo',tiempo:true,comps:['Caída de cadera','Elevación de glúteos','Pérdida de respiración','Anteriorización cefálica']},
+    {id:'pushup',nombre:'Push Up Test',tag:'Repeticiones',repeticiones:true,refValues:true,refId:'pushup'},
+    {id:'plank',nombre:'Plank (segundos)',tag:'Tiempo',tiempo:true,refValues:true,refId:'plank',comps:['Caída de cadera','Elevación de glúteos','Pérdida de respiración','Anteriorización cefálica']},
   ],
   retorno:[
     {id:'rom',nombre:'Rango de movimiento articular',tag:'Goniometría',rom:true},
@@ -1344,11 +1345,15 @@ const TESTS_PERFIL={
     {id:'aclrsi',nombre:'ACL-RSI (confianza retorno)',tag:'0-10',slider:true,max:10,lbl:'Confianza'},
   ],
   empresarial:[
-    {id:'sitreach',nombre:'Sit and Reach',tag:'cm',repeticiones:true,lbl:'Distancia (cm)'},
-    {id:'chairstand',nombre:'30s Chair Stand Test',tag:'Repeticiones',repeticiones:true,lbl:'N° repeticiones'},
-    {id:'marcha4m',nombre:'Test marcha 4 metros',tag:'Segundos',tiempo:true},
-    {id:'equilibrio',nombre:'Equilibrio monopodal',tag:'Segundos',equilibrio:true},
-    {id:'trendelenburg',nombre:'Trendelenburg estático',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    {id:'sitreach',nombre:'Sit and Reach',tag:'cm',repeticiones:true,lbl:'Distancia (cm)',refValues:true,refId:'sitreach'},
+    {id:'chairstand',nombre:'30s Chair Stand Test',tag:'Repeticiones',repeticiones:true,lbl:'N° repeticiones',refValues:true,refId:'chairstand'},
+    {id:'marcha4m',nombre:'Test marcha 4 metros',tag:'Segundos',tiempo:true,refValues:true,refId:'marcha4m'},
+    {id:'equilibrio',nombre:'Equilibrio monopodal',tag:'Segundos',equilibrio:true,refValues:true,refId:'equilibrio'},
+    {id:'ccft',nombre:'Test craneocervical (CCFT)',tag:'Nivel mmHg',ccft:true},
+    {id:'endCervical',nombre:'Resistencia flexores cervicales',tag:'Segundos',tiempo:true,refValues:true,refId:'endCervical'},
+    {id:'schober',nombre:'Modified Schober (lumbar)',tag:'cm',repeticiones:true,lbl:'Distancia (cm)',refValues:true,refId:'schober'},
+    {id:'slump',nombre:'Slump Test (tensión neural)',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
+    {id:'romCervical',nombre:'Movilidad cervical activa',tag:'ROM °',romCervical:true},
   ]
 };
 
@@ -1411,6 +1416,202 @@ const SCORING_CRITERIA={
     {n:3,c:'#16a34a',t:'3 — Fluida y controlada',d:'Transición fluida y controlada RI→RE, ≥45° en ambas rotaciones, puede cargar la posición sin compensaciones observables. Movilidad de cadera óptima para el deporte (FMI, 2014).'},
   ],
 };
+
+// ══════════════════════════════════════
+// VALORES DE REFERENCIA (evidencia científica)
+// ══════════════════════════════════════
+const REFERENCE_VALUES={
+  pushup:{
+    titulo:'Valores de referencia — Push Up Test (ACSM, 2021)',
+    tabla:[
+      {cat:'Hombres 20-29',rows:[['Excelente','≥36'],['Bueno','29–35'],['Promedio','22–28'],['Bajo','≤21']]},
+      {cat:'Hombres 30-39',rows:[['Excelente','≥30'],['Bueno','22–29'],['Promedio','17–21'],['Bajo','≤16']]},
+      {cat:'Mujeres 20-29',rows:[['Excelente','≥30'],['Bueno','21–29'],['Promedio','15–20'],['Bajo','≤14']]},
+      {cat:'Mujeres 30-39',rows:[['Excelente','≥27'],['Bueno','20–26'],['Promedio','13–19'],['Bajo','≤12']]},
+    ],
+    nota:'Técnica: posición plank completo (hombres) o rodillas (mujeres si aplica). Contar hasta el fallo técnico (ACSM Guidelines for Exercise Testing, 12th ed.).'
+  },
+  plank:{
+    titulo:'Valores de referencia — Plank (McGill, 2010)',
+    tabla:[
+      {cat:'Adultos sanos (ambos sexos)',rows:[['Excelente (hombre)','≥120 s'],['Bueno (hombre)','90–119 s'],['Promedio (hombre)','60–89 s'],['Bajo (hombre)','< 60 s'],['Excelente (mujer)','≥105 s'],['Bueno (mujer)','75–104 s'],['Promedio (mujer)','45–74 s'],['Bajo (mujer)','< 45 s']]},
+    ],
+    nota:'Ratio de referencia McGill: Flexión:Extensión = 0.99 (hombre) / 1.0 (mujer). Un ratio Lateral/Extensión >0.75 indica asimetría significativa (McGill, Stuart M. — Low Back Disorders, 2010).'
+  },
+  sitreach:{
+    titulo:'Valores de referencia — Sit and Reach (ACSM, 2021)',
+    tabla:[
+      {cat:'Hombres 20-29',rows:[['Excelente','≥40 cm'],['Bueno','34–39 cm'],['Promedio','27–33 cm'],['Bajo','< 27 cm']]},
+      {cat:'Hombres 30-39',rows:[['Excelente','≥37 cm'],['Bueno','28–36 cm'],['Promedio','22–27 cm'],['Bajo','< 22 cm']]},
+      {cat:'Mujeres 20-29',rows:[['Excelente','≥41 cm'],['Bueno','37–40 cm'],['Promedio','28–36 cm'],['Bajo','< 28 cm']]},
+      {cat:'Mujeres 30-39',rows:[['Excelente','≥38 cm'],['Bueno','33–37 cm'],['Promedio','25–32 cm'],['Bajo','< 25 cm']]},
+    ],
+    nota:'El 0 cm = los dedos tocan los pies. Valores positivos = mayor alcance. Valores negativos = no alcanza los pies. (ACSM Guidelines, 12th ed. / Wells & Dillon, 1952).'
+  },
+  chairstand:{
+    titulo:'Valores de referencia — 30s Chair Stand Test (Jones et al., 1999)',
+    tabla:[
+      {cat:'60–64 años',rows:[['Por encima promedio (M)','≥16'],['Promedio (M)','14–15'],['Por debajo (M)','≤13'],['Por encima promedio (F)','≥15'],['Promedio (F)','12–14'],['Por debajo (F)','≤11']]},
+      {cat:'65–69 años',rows:[['Por encima promedio (M)','≥15'],['Promedio (M)','12–14'],['Por debajo (M)','≤11'],['Por encima promedio (F)','≥14'],['Promedio (F)','11–13'],['Por debajo (F)','≤10']]},
+      {cat:'Adultos 30-59 años',rows:[['Normal','≥16 (M) / ≥14 (F)'],['Bajo','< 16 (M) / < 14 (F)']]},
+    ],
+    nota:'Silla de 43 cm, brazos cruzados en pecho. Contar levantamientos completos en 30 segundos. (Jones, Rikli & Beam, 1999 — Senior Fitness Test).'
+  },
+  marcha4m:{
+    titulo:'Valores de referencia — Velocidad de marcha 4 metros (Studenski et al., 2011)',
+    tabla:[
+      {cat:'Interpretación clínica',rows:[
+        ['Excelente','>1.2 m/s (< 3.3 s)'],
+        ['Normal','0.8–1.2 m/s (3.3–5 s)'],
+        ['Riesgo leve','0.6–0.8 m/s (5–6.7 s)'],
+        ['Alto riesgo de caída','< 0.6 m/s (> 6.7 s)'],
+      ]},
+    ],
+    nota:'Velocidad < 0.8 m/s predice hospitalización, discapacidad y mortalidad (Studenski et al., JAMA 2011). Inicio desde parado, medir la fase central de 4 m.'
+  },
+  equilibrio:{
+    titulo:'Valores de referencia — Equilibrio monopodal (Springer et al., 2007)',
+    tabla:[
+      {cat:'Ojos abiertos',rows:[
+        ['Normal 18-39 años','≥ 30 s'],
+        ['Normal 40-49 años','≥ 25 s'],
+        ['Normal 50-59 años','≥ 20 s'],
+        ['Riesgo caída (cualquier edad)','< 10 s'],
+      ]},
+      {cat:'Ojos cerrados',rows:[
+        ['Normal 18-39 años','≥ 25 s'],
+        ['Normal 40-49 años','≥ 15 s'],
+        ['Normal 50-59 años','≥ 8 s'],
+        ['Riesgo caída (cualquier edad)','< 5 s'],
+      ]},
+    ],
+    nota:'Incapacidad de mantener < 5 s en ojos cerrados = riesgo significativo de caída. (Springer et al., Phys Ther 2007; Bohannon et al., 2006).'
+  },
+  trendelenburg:{
+    titulo:'Signo de Trendelenburg (Hardcastle & Nade, 1985)',
+    tabla:[
+      {cat:'Resultado',rows:[
+        ['Negativo (normal)','Pelvis se mantiene horizontal o sube al cargar un lado — glúteo medio funcional'],
+        ['Positivo leve','Caída pélvica contralateral < 5° — debilidad inicial de glúteo medio'],
+        ['Positivo moderado','Caída pélvica 5–10° + inclinación lateral de tronco ipsilateral'],
+        ['Positivo severo','Caída > 10° — disfunción severa de glúteo medio / patología de cadera'],
+      ]},
+    ],
+    nota:'Predictor de dolor de rodilla, LCA y síndrome de la IT band. Bilateral positivo = evaluar columna lumbar / cadera (Hardcastle & Nade, JBJS 1985).'
+  },
+  endCervical:{
+    titulo:'Resistencia de flexores cervicales profundos (Jull et al., 2008)',
+    tabla:[
+      {cat:'Referencia',rows:[
+        ['Normal','≥ 38 s (población sana)'],
+        ['Leve déficit','25–38 s'],
+        ['Déficit moderado','15–25 s'],
+        ['Déficit severo','< 15 s — asociado a dolor cervical crónico'],
+      ]},
+    ],
+    nota:'Posición: decúbito supino, flexión craneocervical (chin tuck), se sostiene la cabeza a 2,5 cm de la camilla. Fuertemente correlacionado con dolor cervical inespecífico (Jull et al., 2008).'
+  },
+  schober:{
+    titulo:'Modified Schober Test — Movilidad lumbar (Macrae & Wright, 1969)',
+    tabla:[
+      {cat:'Flexión lumbar (incremento)',rows:[
+        ['Normal','≥ 5 cm (desde 10 cm marcados en L5–S1)'],
+        ['Leve restricción','3–5 cm'],
+        ['Restricción moderada','< 3 cm — considerar espondilitis o rigidez'],
+      ]},
+    ],
+    nota:'Marcar 10 cm sobre L5 y 5 cm abajo. Medir incremento en máxima flexión. Valores < 4 cm tienen alta especificidad para espondiloartropatía (van der Heijde et al., 1999).'
+  },
+  thomas:{
+    titulo:'Thomas Test — Flexibilidad de flexores de cadera (Reese & Bandy, 2003)',
+    tabla:[
+      {cat:'Resultado',rows:[
+        ['Negativo (normal)','Muslo paralelo a camilla, rodilla a 90° — flexores de cadera normales'],
+        ['Positivo: Psoas','Muslo en flexión residual > 10° — acortamiento de iliopsoas'],
+        ['Positivo: Recto femoral','Rodilla no dobla a 90° — acortamiento del recto femoral'],
+        ['Positivo: TFL/IT Band','Muslo en abducción — tensión de tensor de fascia lata'],
+      ]},
+    ],
+    nota:'Gold standard para evaluar acortamiento del iliopsoas. Positivo bilateral en sedentarios con dolor lumbar crónico es muy prevalente (Harvey, 1998; Reese & Bandy, 2003).'
+  },
+  ober:{
+    titulo:'Ober Test — IT Band / TFL (Reese & Bandy, 2003)',
+    tabla:[
+      {cat:'Resultado',rows:[
+        ['Negativo (normal)','Cadera baja a la horizontal o más — IT band flexible'],
+        ['Positivo leve','Cadera queda 1–10° sobre horizontal'],
+        ['Positivo moderado','Cadera queda 10–20° sobre horizontal — IT band acortada'],
+        ['Positivo severo','Cadera no baja al nivel de la camilla (> 20°) — restricción severa'],
+      ]},
+    ],
+    nota:'>10° de restricción es clínicamente significativo y se correlaciona con dolor lateral de rodilla (síndrome de la banda iliotibial). Prevalente en corredores y ciclistas (Reese & Bandy, 2003).'
+  },
+  ikdc:{
+    titulo:'IKDC — International Knee Documentation Committee (Irrgang et al., 2001)',
+    tabla:[
+      {cat:'Puntuación (0-100)',rows:[
+        ['Normal (A)','≥ 84 — sin restricciones funcionales'],
+        ['Casi normal (B)','70–83 — restricción mínima'],
+        ['Anormal (C)','55–69 — restricción moderada'],
+        ['Muy anormal (D)','< 55 — restricción severa'],
+      ]},
+    ],
+    nota:'Escala de 10 ítems convertida a 0–100. Usada como criterio de retorno al deporte: ≥84 puntos = grado A (Irrgang et al., AJSM 2001; Moksnes & Risberg, 2009).'
+  },
+  aclrsi:{
+    titulo:'ACL-RSI — Confianza psicológica para retorno (Webster et al., 2008)',
+    tabla:[
+      {cat:'Puntuación (0-100)',rows:[
+        ['Preparado','≥ 77 — apto para retorno al deporte'],
+        ['Dudoso','56–76 — trabajar componente psicológico'],
+        ['No preparado','≤ 55 — alto riesgo re-lesión por factores psicológicos'],
+      ]},
+    ],
+    nota:'Los deportistas con ACL-RSI < 56 tienen 4× más riesgo de no retornar al deporte (Webster et al., 2008; Ardern et al., 2013). Escala validada al español.'
+  },
+};
+
+function buildRefValues(refId){
+  const rv=REFERENCE_VALUES[refId];
+  if(!rv)return'';
+  return `<div class="sg-wrap" style="margin-top:10px">
+    <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+      <span class="sg-toggle-lbl">📊 Valores de referencia (evidencia científica)</span>
+      <span class="sg-arrow">▼</span>
+    </button>
+    <div class="sg-body">
+      <div style="padding:10px 13px">
+        <div style="font-size:.75rem;font-weight:600;color:var(--text);margin-bottom:8px">${rv.titulo}</div>
+        ${rv.tabla.map(cat=>`
+          <div style="margin-bottom:8px">
+            ${rv.tabla.length>1?`<div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);margin-bottom:4px">${cat.cat}</div>`:''}
+            <table style="width:100%;border-collapse:collapse;font-size:.72rem">
+              ${cat.rows.map((r,i)=>`<tr style="background:${i%2?'var(--s2)':'var(--s1)'}">
+                <td style="padding:4px 8px;color:var(--muted)">${r[0]}</td>
+                <td style="padding:4px 8px;font-weight:600;color:var(--text)">${r[1]}</td>
+              </tr>`).join('')}
+            </table>
+          </div>`).join('')}
+        <div style="font-size:.7rem;color:var(--muted);margin-top:8px;padding-top:6px;border-top:1px solid var(--border);line-height:1.5">ℹ️ ${rv.nota}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildTestPhotoUpload(testId){
+  const foto=S.tests[testId+'_foto']||null;
+  return `<div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fotoTest_${testId}').click()" style="font-size:.75rem">
+      📷 ${foto?'Cambiar foto':'Agregar foto (opcional)'}
+    </button>
+    <input type="file" id="fotoTest_${testId}" accept="image/*" style="display:none"
+      onchange="subirFotoTest('${testId}',this.files[0])">
+    ${foto?`<div style="position:relative;display:inline-block">
+      <img src="${foto}" style="height:52px;border-radius:6px;border:1px solid var(--border);cursor:pointer" onclick="verFotoTest('${testId}')">
+      <button onclick="borrarFotoTest('${testId}')" style="position:absolute;top:-5px;right:-5px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:.65rem;cursor:pointer;line-height:1">×</button>
+    </div>`:''}
+  </div>`;
+}
 
 function buildScoringGuide(testId){
   const uid='sg_'+testId+'_'+(Math.random()*9999|0);
@@ -1478,16 +1679,65 @@ function buildTestCard(t){
       </div>
       <div id="ybResult" style="background:var(--s2);border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"></div>`;
     }else if(t.apley){
-      body=`<div class="fg2">
+      body=`
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+        <strong>Cómo medir:</strong> (+) si los dedos se solapan = movilidad sobre-normal · (0) si se tocan = normal · (−) si hay distancia = déficit (anotar cm de diferencia).<br>
+        Mover 1 mano desde arriba (ER+Flex) y la otra desde abajo (IR+Ext). Medir separación o solapamiento entre dedos.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         ${['Derecho','Izquierdo'].map(l=>`
-        <div class="field"><label>${l} — Alcance (cm)</label>
-          <input type="number" placeholder="0" onchange="S.tests['apley_${l.toLowerCase()}']=+this.value" value="${S.tests['apley_'+l.toLowerCase()]||''}">
+        <div>
+          <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${l}</div>
+          <div class="field" style="margin-bottom:6px">
+            <label>Mano superior (ER+Flex) — cm alcanzados</label>
+            <input type="number" placeholder="ej: 15" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none;width:100%"
+              onchange="S.tests['apley_sup_${l.toLowerCase()}']=+this.value" value="${S.tests['apley_sup_'+l.toLowerCase()]||''}">
+          </div>
+          <div class="field" style="margin-bottom:6px">
+            <label>Mano inferior (IR+Ext) — cm alcanzados</label>
+            <input type="number" placeholder="ej: 12" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none;width:100%"
+              onchange="S.tests['apley_inf_${l.toLowerCase()}']=+this.value" value="${S.tests['apley_inf_'+l.toLowerCase()]||''}">
+          </div>
+          <div class="field">
+            <label>Distancia entre dedos</label>
+            <select onchange="S.tests['apley_res_${l.toLowerCase()}']=this.value"
+              style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none;width:100%">
+              <option value="">—</option>
+              <option>Se solapan (movilidad sobre-normal)</option>
+              <option>Se tocan (movilidad normal)</option>
+              <option>Distancia 1–4 cm (leve déficit)</option>
+              <option>Distancia 5–8 cm (moderado déficit)</option>
+              <option>Distancia > 8 cm (déficit severo)</option>
+            </select>
+          </div>
         </div>`).join('')}
       </div>
-      <div class="field" style="margin-top:8px"><label>¿Simétrico?</label>
-        <select onchange="S.tests.apley_simetrico=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:6px;outline:none">
-          <option>—</option><option>Simétrico</option><option>Asimétrico</option>
+      <div class="field" style="margin-top:10px"><label>Asimetría bilateral</label>
+        <select onchange="S.tests.apley_simetrico=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none">
+          <option value="">—</option>
+          <option>Simétrico (diferencia < 2 cm)</option>
+          <option>Asimetría leve (2–4 cm)</option>
+          <option>Asimetría significativa (> 4 cm)</option>
         </select>
+      </div>
+      <div class="sg-wrap" style="margin-top:10px">
+        <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+          <span class="sg-toggle-lbl">📊 Valores de referencia — Apley Scratch Test (ACSM / Kendall, 2005)</span>
+          <span class="sg-arrow">▼</span>
+        </button>
+        <div class="sg-body">
+          <div style="padding:10px 13px;font-size:.72rem">
+            <table style="width:100%;border-collapse:collapse">
+              <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">Se solapan</td><td style="padding:4px 8px;font-weight:600;color:#16a34a">Sobre-normal — hiperlaxitud o movilidad excelente</td></tr>
+              <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Se tocan (0 cm)</td><td style="padding:4px 8px;font-weight:600;color:#16a34a">Normal — movilidad glenohumeral adecuada</td></tr>
+              <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">1–4 cm de diferencia</td><td style="padding:4px 8px;font-weight:600;color:#d97706">Leve — posible tensión capsular posterior o acortamiento de rotadores</td></tr>
+              <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">5–8 cm de diferencia</td><td style="padding:4px 8px;font-weight:600;color:#d97706">Moderado — déficit de movilidad glenohumeral con impacto funcional</td></tr>
+              <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">> 8 cm de diferencia</td><td style="padding:4px 8px;font-weight:600;color:#dc2626">Severo — restricción articular significativa, derivar</td></tr>
+              <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Asimetría > 4 cm</td><td style="padding:4px 8px;font-weight:600;color:#dc2626">Asimetría clínicamente significativa (Clapis et al., 2008)</td></tr>
+            </table>
+            <div style="color:var(--muted);margin-top:8px;line-height:1.5">ℹ️ La asimetría > 4 cm bilateral en mano superior predice riesgo de lesión de hombro en deportistas (Clapis et al., 2008; Kendall, McCreary & Provance, 2005).</div>
+          </div>
+        </div>
       </div>`;
     }else{
       body=lados.map(l=>`
@@ -1548,6 +1798,61 @@ function buildTestCard(t){
       <div class="field"><label>${k} (seg)</label>
         <input type="number" min="0" max="120" placeholder="0" onchange="S.tests['eq_${k.replace(/ /g,'_').toLowerCase()}']=+this.value" value="${S.tests['eq_'+k.replace(/ /g,'_').toLowerCase()]||''}">
       </div>`).join('')}
+    </div>`;
+    body+=buildRefValues('equilibrio');
+  }else if(t.ccft){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+      Posición: decúbito supino. El paciente hace chin tuck (asiente levemente la cabeza) hasta elevar la cabeza 2,5 cm de la camilla. Cronometrar cuánto mantiene la posición sin compensar con ECM o escalenos.
+    </div>
+    <div class="fg2">
+      <div class="field"><label>Tiempo mantenido (seg)</label>
+        <input type="number" min="0" max="120" placeholder="0"
+          onchange="S.tests.ccft_tiempo=+this.value" value="${S.tests.ccft_tiempo||''}">
+      </div>
+      <div class="field"><label>Nivel de presión alcanzado (mmHg)</label>
+        <select onchange="S.tests.ccft_nivel=this.value" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none">
+          <option value="">—</option>
+          <option>22 mmHg — nivel base</option>
+          <option>24 mmHg</option>
+          <option>26 mmHg</option>
+          <option>28 mmHg</option>
+          <option>30 mmHg — nivel óptimo</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px">Compensaciones observadas</label>
+      <div class="checks-wrap">${['Activación ECM visible','Activación escalenos','Retracción mandibular','Elevación de hombros','No puede mantener el nivel'].map(c=>`
+        <label class="chk-pill ${S.tests['ccft_comp_'+c]?'on':''}" onclick="togTestChk(this,'ccft_comp','${c}')"><input type="checkbox"> ${c}</label>`).join('')}
+      </div>
+    </div>
+    ${buildRefValues('endCervical')}`;
+  }else if(t.romCervical){
+    body=`<div class="fg" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
+      ${[['Flexión','0-50°'],['Extensión','0-60°'],['Lat. derecha','0-45°'],['Lat. izquierda','0-45°'],['Rot. derecha','0-80°'],['Rot. izquierda','0-80°']].map(([m,ref])=>`
+      <div class="field">
+        <label>${m} (°) <span style="color:var(--muted);font-size:.7rem">ref: ${ref}</span></label>
+        <input type="number" min="0" max="90" placeholder="0"
+          onchange="S.tests['romc_${m.replace(/[. ]/g,'_').toLowerCase()}']=+this.value"
+          value="${S.tests['romc_'+m.replace(/[. ]/g,'_').toLowerCase()]||''}">
+      </div>`).join('')}
+    </div>
+    <div class="sg-wrap" style="margin-top:10px">
+      <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+        <span class="sg-toggle-lbl">📊 Valores normales ROM cervical (ACSM / AMA Guides)</span>
+        <span class="sg-arrow">▼</span>
+      </button>
+      <div class="sg-body">
+        <div style="padding:10px 13px;font-size:.72rem">
+          <table style="width:100%;border-collapse:collapse">
+            <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Flexión</td><td style="padding:4px 8px;font-weight:600">0–50° (< 40° = déficit)</td></tr>
+            <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">Extensión</td><td style="padding:4px 8px;font-weight:600">0–60° (< 45° = déficit)</td></tr>
+            <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Lateroflexión</td><td style="padding:4px 8px;font-weight:600">0–45° c/lado (< 30° = déficit)</td></tr>
+            <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">Rotación</td><td style="padding:4px 8px;font-weight:600">0–80° c/lado (< 60° = déficit)</td></tr>
+          </table>
+          <div style="color:var(--muted);margin-top:8px;line-height:1.5">ℹ️ Asimetría rotación > 10° entre lados indica disfunción cervical unilateral (Youdas et al., 1992; AMA Guides to the Evaluation of Permanent Impairment).</div>
+        </div>
+      </div>
     </div>`;
   }else if(t.mcmurray){
     body=`<div class="fg2">
@@ -1617,6 +1922,8 @@ function buildTestCard(t){
     body+=buildScoringGuide(t.id);
     if(t.comps)body+=buildComps(t.id,t.comps);
   }
+  if(t.refValues&&t.refId&&!body.includes('Valores de referencia'))body+=buildRefValues(t.refId);
+  body+=buildTestPhotoUpload(t.id);
   body+=`<div class="field" style="margin-top:10px"><label>Observaciones</label>
     <textarea rows="2" placeholder="Observaciones del test..." onchange="S.tests['${t.id}_obs']=this.value">${S.tests[t.id+'_obs']||''}</textarea>
   </div>`;
@@ -1964,6 +2271,32 @@ async function borrarFoto(id){
   await dbDelete('fotos',id);
   S.fotos=S.fotos.filter(f=>f.id!==id);
   renderFotos();actualizarSelectores();
+}
+
+function subirFotoTest(testId,file){
+  if(!file)return;
+  if(file.size>10*1024*1024){toast('Foto demasiado grande (máx 10MB)','err');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    S.tests[testId+'_foto']=e.target.result;
+    autoGuardar();
+    renderTests(); // re-render to show thumbnail
+    toast('Foto del test guardada ✓','ok');
+  };
+  reader.readAsDataURL(file);
+}
+
+function borrarFotoTest(testId){
+  delete S.tests[testId+'_foto'];
+  autoGuardar();
+  renderTests();
+}
+
+function verFotoTest(testId){
+  const src=S.tests[testId+'_foto'];
+  if(!src)return;
+  document.getElementById('modalFotoImg').src=src;
+  document.getElementById('modalFoto').style.display='flex';
 }
 
 function verFoto(id){
@@ -2682,7 +3015,7 @@ Usa terminología fisioterapéutica profesional. No repitas datos del paciente. 
       <button class="btn btn-ghost btn-sm" onclick="abrirModalAPIKey()">🔑 Verificar API key</button>
     </div>`;
   }
-  if(btnIA){btnIA.disabled=false;btnIA.innerHTML='🧠 Volver a evaluar con IA';}
+  if(btnIA){btnIA.disabled=false;btnIA.innerHTML='📊 Actualizar resultados';}
 }
 
 function copiarIA(){
