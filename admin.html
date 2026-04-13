@@ -2649,6 +2649,7 @@ async function renderCalendar() {
       // Citas del sistema
       allData.citas.forEach(c => {
         if (c.estado === 'Cancelada') return;
+        if (c.servicio === 'Registro') return;
         if (normDate(c.fecha) !== ds) return;
         const [ch] = c.hora.split(':').map(Number);
         if (ch !== h) return;
