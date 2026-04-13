@@ -193,6 +193,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 .ia-btn-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 
 /* RESPONSIVE */
+/* IA POSTURA VISION */
+.ia-postura-result{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px}
+.ia-postura-hallazgo{display:flex;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.ia-postura-hallazgo:last-child{border-bottom:none}
+.ia-postura-badge{border-radius:20px;padding:2px 9px;font-size:.67rem;font-weight:700;flex-shrink:0;margin-top:2px;white-space:nowrap}
+.ia-postura-scanning{display:flex;align-items:center;gap:10px;padding:16px;color:var(--muted);font-size:.85rem}
+
 /* SCORING GUIDE */
 .sg-wrap{margin-top:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden}
 .sg-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:8px 13px;background:var(--s2);border:none;cursor:pointer;font-family:var(--font-b);gap:8px}
@@ -615,22 +622,39 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
         <div style="background:linear-gradient(135deg,rgba(27,191,176,.09),rgba(27,191,176,.03));border:1.5px solid rgba(27,191,176,.35);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
           <div>
             <div style="font-weight:600;font-size:.92rem;color:var(--text)">📐 Resultados de la evaluación postural</div>
-            <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Registra hallazgos, tipo de postura y genera el reporte en PDF</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:3px">La IA puede analizar las fotos y detectar hallazgos automáticamente</div>
           </div>
-          <button class="btn btn-teal btn-sm" onclick="document.getElementById('reportePosturalCard').scrollIntoView({behavior:'smooth'})">Ir al análisis →</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-teal btn-sm" onclick="analizarFotosPosturalesConIA();document.getElementById('reportePosturalCard').scrollIntoView({behavior:'smooth'})">🤖 Analizar con IA</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('reportePosturalCard').scrollIntoView({behavior:'smooth'})">Ver análisis →</button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- REPORTE POSTURAL -->
     <div class="card" id="reportePosturalCard" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
         <div class="card-title" style="margin-bottom:0">📐 Análisis postural</div>
         <button class="btn btn-teal btn-sm" onclick="generarReportePostural()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Generar PDF postural
         </button>
       </div>
+
+      <!-- ANÁLISIS IA VISION -->
+      <div style="background:linear-gradient(135deg,rgba(27,191,176,.08),rgba(27,191,176,.02));border:1.5px solid rgba(27,191,176,.3);border-radius:10px;padding:14px 18px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-weight:600;font-size:.92rem">🤖 Análisis postural con IA Vision</div>
+            <div style="font-size:.76rem;color:var(--muted);margin-top:2px">La IA analiza las fotos y detecta automáticamente los hallazgos posturales</div>
+          </div>
+          <button id="btnAnalizarPostura" class="btn btn-teal" onclick="analizarFotosPosturalesConIA()">
+            🔍 Analizar fotos con IA
+          </button>
+        </div>
+      </div>
+      <div id="iaPosturaResultado" style="display:none;margin-bottom:20px"></div>
 
       <!-- VISTA ANTERIOR -->
       <div class="sec-title">Vista anterior</div>
@@ -2006,6 +2030,173 @@ function togPostura(el,key){
   el.classList.toggle('on');
   S.postura=S.postura||{};
   S.postura[key]=el.classList.contains('on');
+}
+
+// ══════════════════════════════════════
+// ANÁLISIS POSTURAL CON IA VISION
+// ══════════════════════════════════════
+async function analizarFotosPosturalesConIA(){
+  if(!_apiKey){abrirModalAPIKey();return;}
+
+  const categoriasPostura=['Postura anterior','Postura posterior','Lateral izquierda','Lateral derecha'];
+  const fotosPostura=(S.fotos||[]).filter(f=>categoriasPostura.includes(f.categoria));
+
+  if(!fotosPostura.length){
+    toast('Sube primero fotos posturales (anterior, posterior o lateral)','warn');
+    document.getElementById('reportePosturalCard').scrollIntoView({behavior:'smooth'});
+    return;
+  }
+
+  const btn=document.getElementById('btnAnalizarPostura');
+  const resultado=document.getElementById('iaPosturaResultado');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="ia-spinner"></div> Analizando...';}
+  resultado.style.display='block';
+  resultado.innerHTML=`<div class="ia-postura-scanning"><div class="ia-spinner"></div> La IA está escaneando las ${fotosPostura.length} foto(s) postural(es)...</div>`;
+
+  // Build image blocks (max 4, strip data URL prefix)
+  const imageBlocks=fotosPostura.slice(0,4).map(f=>({
+    type:'image',
+    source:{
+      type:'base64',
+      media_type:f.src.startsWith('data:image/png')?'image/png':'image/jpeg',
+      data:f.src.split(',')[1]
+    }
+  }));
+
+  const vistas=fotosPostura.slice(0,4).map(f=>f.categoria).join(', ');
+
+  const prompt=`Eres una fisioterapeuta experta en análisis postural clínico con 15 años de experiencia. Analiza estas ${fotosPostura.length} foto(s) postural(es) (vistas: ${vistas}) y devuelve un análisis DETALLADO.
+
+ANALIZA cada foto y detecta TODOS los hallazgos presentes o ausentes. Sé específica y clínica.
+
+Devuelve ÚNICAMENTE un objeto JSON con esta estructura exacta (sin texto antes ni después):
+
+{
+  "resumen": "descripción clínica global del patrón postural en 2-3 oraciones",
+  "tipo_postura": "uno de exactamente: Cifótico-lordótica | Espalda plana | Espalda curva | Postura ideal / neutra | Swayback | Escoliótica",
+  "riesgo": "uno de exactamente: Bajo — cambios leves | Moderado — intervención recomendada | Alto — intervención prioritaria",
+  "hallazgos": [
+    {
+      "nombre": "nombre del hallazgo en español",
+      "presente": true,
+      "lado": "derecho | izquierdo | bilateral | ninguno",
+      "severidad": "leve | moderado | severo",
+      "descripcion": "descripción clínica precisa de lo observado en la foto"
+    }
+  ],
+  "claves_positivas": ["lista de claves a marcar"],
+  "observaciones": "compensaciones adicionales, patrones relevantes, notas clínicas"
+}
+
+CLAVES DISPONIBLES (solo incluir las que están PRESENTES como alteraciones):
+Vista anterior: ant_cabeza_adelantada, ant_hombro_der_alto, ant_hombro_izq_alto, ant_cresta_der_alta, ant_cresta_izq_alta, ant_rodilla_valgo_der, ant_rodilla_valgo_izq, ant_rodilla_varo_der, ant_rodilla_varo_izq, ant_pronacion_der, ant_pronacion_izq, ant_supinacion_der, ant_supinacion_izq, ant_escoliosis_aparente
+Vista posterior: pos_escap_der_alta, pos_escap_izq_alta, pos_escap_aladas, pos_escoliosis_der, pos_escoliosis_izq, pos_talon_valgo_der, pos_talon_valgo_izq, pos_pliegues_asimetricos, pos_trapecio_der_hipertonico, pos_trapecio_izq_hipertonico
+Vista lateral: lat_cabeza_adelantada, lat_cifosis_aumentada, lat_lordosis_aumentada, lat_lordosis_reducida, lat_rodilla_hiperext, lat_rodilla_flexum, lat_pelvis_anteversion, lat_pelvis_retroversion, lat_abdomen_prominente
+
+IMPORTANTE: Analiza con precisión clínica. Si la foto no es clara para un hallazgo, no lo incluyas. Responde SOLO el JSON.`;
+
+  try{
+    const response=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':_apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:2000,
+        messages:[{role:'user',content:[...imageBlocks,{type:'text',text:prompt}]}]
+      })
+    });
+
+    if(!response.ok){const err=await response.json();throw new Error(err.error?.message||`HTTP ${response.status}`);}
+
+    const data=await response.json();
+    const texto=data.content?.[0]?.text||'';
+    const jsonMatch=texto.match(/\{[\s\S]*\}/);
+    if(!jsonMatch)throw new Error('La IA no devolvió un formato válido. Intenta de nuevo.');
+    const analisis=JSON.parse(jsonMatch[0]);
+
+    // ── Auto-marcar checkboxes ──
+    S.postura=S.postura||{};
+    // Reset all keys first (clean slate)
+    if(analisis.claves_positivas&&Array.isArray(analisis.claves_positivas)){
+      analisis.claves_positivas.forEach(key=>{
+        S.postura[key]=true;
+        const pill=document.querySelector(`#reportePosturalCard [onclick*="'${key}'"]`);
+        if(pill){
+          pill.classList.add('on');
+          const chk=pill.querySelector('input[type=checkbox]');
+          if(chk)chk.checked=true;
+        }
+      });
+    }
+
+    // Auto-fill tipo, riesgo, observaciones
+    if(analisis.tipo_postura){
+      S.postura.tipo=analisis.tipo_postura;
+      const sel=document.getElementById('postTipo');
+      if(sel)sel.value=analisis.tipo_postura;
+    }
+    if(analisis.riesgo){
+      S.postura.riesgo=analisis.riesgo;
+      const sel=document.getElementById('postRiesgo');
+      if(sel)sel.value=analisis.riesgo;
+    }
+    if(analisis.observaciones){
+      S.postura.obs=analisis.observaciones;
+      const ta=document.getElementById('postObs');
+      if(ta)ta.value=analisis.observaciones;
+    }
+    S.postura.iaAnalisis=analisis;
+
+    // ── Render resultado ──
+    const hallazgosPresentes=(analisis.hallazgos||[]).filter(h=>h.presente);
+    const riesgoColor=analisis.riesgo?.includes('Alto')?'#dc2626':analisis.riesgo?.includes('Moderado')?'#d97706':'#16a34a';
+    const severidadColor={severo:'#dc2626',moderado:'#d97706',leve:'#2563eb'};
+
+    resultado.innerHTML=`
+      <div class="ia-postura-result">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="font-weight:600;font-size:.9rem">🤖 Análisis IA — ${new Date().toLocaleDateString('es-CO')}</div>
+          <span style="background:${riesgoColor};color:#fff;padding:3px 12px;border-radius:20px;font-size:.72rem;font-weight:700">${analisis.riesgo||''}</span>
+        </div>
+        <div style="font-size:.83rem;line-height:1.75;padding:11px 14px;background:rgba(27,191,176,.07);border-radius:8px;border-left:3px solid var(--primary);margin-bottom:14px">${analisis.resumen||''}</div>
+        ${analisis.tipo_postura?`<div style="font-size:.8rem;margin-bottom:12px;display:flex;align-items:center;gap:7px">📊 Tipo de postura detectado: <strong style="background:var(--s2);padding:2px 10px;border-radius:6px">${analisis.tipo_postura}</strong></div>`:''}
+        <div style="font-size:.76rem;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">
+          ${hallazgosPresentes.length} hallazgo${hallazgosPresentes.length!==1?'s':''} detectado${hallazgosPresentes.length!==1?'s':''}
+        </div>
+        <div class="ia-postura-hallazgos-list">
+          ${hallazgosPresentes.map(h=>`
+          <div class="ia-postura-hallazgo">
+            <span class="ia-postura-badge" style="background:${severidadColor[h.severidad]||'#6B7280'};color:#fff">${h.severidad||'leve'}</span>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:.83rem">${h.nombre}
+                ${h.lado&&h.lado!=='ninguno'?`<span style="font-weight:400;color:var(--muted);font-size:.76rem"> · ${h.lado}</span>`:''}
+              </div>
+              <div style="font-size:.75rem;color:var(--muted);margin-top:1px;line-height:1.5">${h.descripcion}</div>
+            </div>
+          </div>`).join('')||'<div style="font-size:.8rem;color:var(--muted);padding:8px 0">No se detectaron alteraciones significativas en las fotos</div>'}
+        </div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:.7rem;color:var(--muted);line-height:1.5">
+          ✓ Los hallazgos se marcaron automáticamente en los checkboxes de abajo · Revisa y ajusta si es necesario · Solo uso orientativo clínico
+        </div>
+      </div>`;
+
+    autoGuardar();
+    toast(`✓ IA detectó ${hallazgosPresentes.length} hallazgos — checkboxes actualizados`,'ok');
+
+  }catch(err){
+    resultado.innerHTML=`<div style="color:#dc2626;padding:14px;font-size:.85rem;background:rgba(220,38,38,.07);border-radius:8px;border:1px solid rgba(220,38,38,.2)">
+      <strong>✗ Error al analizar las fotos</strong><br>
+      <span style="color:var(--muted);font-size:.8rem;display:block;margin-top:4px">${err.message}</span><br>
+      <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="abrirModalAPIKey()">🔑 Verificar API key</button>
+    </div>`;
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML='🔍 Volver a analizar';}
+  }
 }
 
 async function generarReportePostural(){
