@@ -2550,9 +2550,9 @@ async function analizarFotosPosturalesConIA(){
 
   const vistas=fotosPostura.slice(0,4).map(f=>f.categoria).join(', ');
 
-  const prompt=`Eres una fisioterapeuta experta en análisis postural clínico con 15 años de experiencia. Analiza estas ${fotosPostura.length} foto(s) postural(es) (vistas: ${vistas}) y devuelve un análisis DETALLADO.
+  const prompt=`Eres una fisioterapeuta experta en análisis postural clínico y prescripción de ejercicio terapéutico con 15 años de experiencia. Analiza estas ${fotosPostura.length} foto(s) postural(es) (vistas: ${vistas}) y devuelve un análisis DETALLADO con plan de tratamiento basado en evidencia científica.
 
-ANALIZA cada foto y detecta TODOS los hallazgos presentes o ausentes. Sé específica y clínica.
+ANALIZA cada foto y detecta TODOS los hallazgos presentes. Sé específica y clínica.
 
 Devuelve ÚNICAMENTE un objeto JSON con esta estructura exacta (sin texto antes ni después):
 
@@ -2570,8 +2570,28 @@ Devuelve ÚNICAMENTE un objeto JSON con esta estructura exacta (sin texto antes 
     }
   ],
   "claves_positivas": ["lista de claves a marcar"],
-  "observaciones": "compensaciones adicionales, patrones relevantes, notas clínicas"
+  "observaciones": "compensaciones adicionales, patrones relevantes, notas clínicas",
+  "tratamiento": [
+    {
+      "hallazgo": "nombre exacto del hallazgo (presente:true solamente)",
+      "objetivo": "objetivo general del tratamiento en 1 oración clara y clínica",
+      "ejercicios": [
+        {
+          "tipo": "movilidad | control_motor | fortalecimiento | estiramiento | propiocepcion",
+          "nombre": "nombre específico del ejercicio",
+          "descripcion": "descripción técnica de ejecución precisa y correcta",
+          "dosis": "X series × Y repeticiones (o tiempo)"
+        }
+      ]
+    }
+  ]
 }
+
+REGLAS PARA tratamiento:
+- Incluir SOLO los hallazgos con "presente": true
+- Cada hallazgo debe tener exactamente 3 ejercicios variando los tipos (movilidad, control_motor, fortalecimiento como mínimo)
+- Basa los ejercicios en evidencia científica reciente (Sahrmann, McGill, Janda, DNS, FRC)
+- Los ejercicios deben ser progresivos y aplicables en clínica o en casa
 
 CLAVES DISPONIBLES (solo incluir las que están PRESENTES como alteraciones):
 Vista anterior: ant_cabeza_adelantada, ant_hombro_der_alto, ant_hombro_izq_alto, ant_cresta_der_alta, ant_cresta_izq_alta, ant_rodilla_valgo_der, ant_rodilla_valgo_izq, ant_rodilla_varo_der, ant_rodilla_varo_izq, ant_pronacion_der, ant_pronacion_izq, ant_supinacion_der, ant_supinacion_izq, ant_escoliosis_aparente
@@ -2591,7 +2611,7 @@ IMPORTANTE: Analiza con precisión clínica. Si la foto no es clara para un hall
       },
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',
-        max_tokens:2000,
+        max_tokens:4000,
         messages:[{role:'user',content:[...imageBlocks,{type:'text',text:prompt}]}]
       })
     });
@@ -2635,42 +2655,14 @@ IMPORTANTE: Analiza con precisión clínica. Si la foto no es clara para un hall
       const ta=document.getElementById('postObs');
       if(ta)ta.value=analisis.observaciones;
     }
+    analisis._fecha=new Date().toLocaleDateString('es-CO');
     S.postura.iaAnalisis=analisis;
 
     // ── Render resultado ──
-    const hallazgosPresentes=(analisis.hallazgos||[]).filter(h=>h.presente);
-    const riesgoColor=analisis.riesgo?.includes('Alto')?'#dc2626':analisis.riesgo?.includes('Moderado')?'#d97706':'#16a34a';
-    const severidadColor={severo:'#dc2626',moderado:'#d97706',leve:'#2563eb'};
-
-    resultado.innerHTML=`
-      <div class="ia-postura-result">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-          <div style="font-weight:600;font-size:.9rem">🤖 Análisis IA — ${new Date().toLocaleDateString('es-CO')}</div>
-          <span style="background:${riesgoColor};color:#fff;padding:3px 12px;border-radius:20px;font-size:.72rem;font-weight:700">${analisis.riesgo||''}</span>
-        </div>
-        <div style="font-size:.83rem;line-height:1.75;padding:11px 14px;background:rgba(27,191,176,.07);border-radius:8px;border-left:3px solid var(--primary);margin-bottom:14px">${analisis.resumen||''}</div>
-        ${analisis.tipo_postura?`<div style="font-size:.8rem;margin-bottom:12px;display:flex;align-items:center;gap:7px">📊 Tipo de postura detectado: <strong style="background:var(--s2);padding:2px 10px;border-radius:6px">${analisis.tipo_postura}</strong></div>`:''}
-        <div style="font-size:.76rem;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">
-          ${hallazgosPresentes.length} hallazgo${hallazgosPresentes.length!==1?'s':''} detectado${hallazgosPresentes.length!==1?'s':''}
-        </div>
-        <div class="ia-postura-hallazgos-list">
-          ${hallazgosPresentes.map(h=>`
-          <div class="ia-postura-hallazgo">
-            <span class="ia-postura-badge" style="background:${severidadColor[h.severidad]||'#6B7280'};color:#fff">${h.severidad||'leve'}</span>
-            <div style="flex:1">
-              <div style="font-weight:600;font-size:.83rem">${h.nombre}
-                ${h.lado&&h.lado!=='ninguno'?`<span style="font-weight:400;color:var(--muted);font-size:.76rem"> · ${h.lado}</span>`:''}
-              </div>
-              <div style="font-size:.75rem;color:var(--muted);margin-top:1px;line-height:1.5">${h.descripcion}</div>
-            </div>
-          </div>`).join('')||'<div style="font-size:.8rem;color:var(--muted);padding:8px 0">No se detectaron alteraciones significativas en las fotos</div>'}
-        </div>
-        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:.7rem;color:var(--muted);line-height:1.5">
-          ✓ Los hallazgos se marcaron automáticamente en los checkboxes de abajo · Revisa y ajusta si es necesario · Solo uso orientativo clínico
-        </div>
-      </div>`;
+    renderIAPosturaResultado(analisis);
 
     autoGuardar();
+    const hallazgosPresentes=(analisis.hallazgos||[]).filter(h=>h.presente);
     toast(`✓ IA detectó ${hallazgosPresentes.length} hallazgos — checkboxes actualizados`,'ok');
 
   }catch(err){
@@ -2682,6 +2674,75 @@ IMPORTANTE: Analiza con precisión clínica. Si la foto no es clara para un hall
   }finally{
     if(btn){btn.disabled=false;btn.innerHTML='🔍 Volver a analizar';}
   }
+}
+
+// ── Render IA postural result (usado al analizar Y al restaurar al cargar) ──
+function renderIAPosturaResultado(analisis){
+  const resultado=document.getElementById('iaPosturaResultado');
+  if(!resultado)return;
+  if(!analisis){resultado.style.display='none';return;}
+  resultado.style.display='block';
+
+  const hallazgosPresentes=(analisis.hallazgos||[]).filter(h=>h.presente);
+  const riesgoColor=analisis.riesgo?.includes('Alto')?'#dc2626':analisis.riesgo?.includes('Moderado')?'#d97706':'#16a34a';
+  const sevColor={severo:'#dc2626',moderado:'#d97706',leve:'#2563eb'};
+  const tipoColor={movilidad:'#2563eb',control_motor:'#7c3aed',fortalecimiento:'#16a34a',estiramiento:'#d97706',propiocepcion:'#0891b2'};
+  const tipoLabel={movilidad:'Movilidad',control_motor:'Control motor',fortalecimiento:'Fortalecimiento',estiramiento:'Estiramiento',propiocepcion:'Propiocepción'};
+
+  // Build tratamiento section
+  const tratamiento=analisis.tratamiento||[];
+  let tratHtml='';
+  if(tratamiento.length){
+    tratHtml=`
+    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+      <div style="font-size:.76rem;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">Plan de tratamiento por hallazgo</div>
+      ${tratamiento.map(t=>`
+      <div style="margin-bottom:14px;background:var(--s1);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <div style="background:rgba(27,191,176,.08);padding:9px 13px;border-bottom:1px solid var(--border)">
+          <div style="font-weight:600;font-size:.82rem;color:var(--text)">${t.hallazgo}</div>
+          <div style="font-size:.76rem;color:var(--primary);margin-top:2px;font-style:italic">${t.objetivo||''}</div>
+        </div>
+        <div style="padding:10px 13px;display:flex;flex-direction:column;gap:8px">
+          ${(t.ejercicios||[]).map(ej=>`
+          <div style="display:flex;gap:9px;align-items:flex-start">
+            <span style="background:${tipoColor[ej.tipo]||'#6B7280'};color:#fff;border-radius:12px;padding:2px 8px;font-size:.65rem;font-weight:700;flex-shrink:0;margin-top:1px">${tipoLabel[ej.tipo]||ej.tipo}</span>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:.8rem">${ej.nombre}</div>
+              <div style="font-size:.74rem;color:var(--muted);margin-top:1px;line-height:1.5">${ej.descripcion}</div>
+              <div style="font-size:.72rem;color:var(--primary);margin-top:2px;font-weight:600">${ej.dosis}</div>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  resultado.innerHTML=`
+    <div class="ia-postura-result">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="font-weight:600;font-size:.9rem">🤖 Análisis IA — ${analisis._fecha||new Date().toLocaleDateString('es-CO')}</div>
+        <span style="background:${riesgoColor};color:#fff;padding:3px 12px;border-radius:20px;font-size:.72rem;font-weight:700">${analisis.riesgo||''}</span>
+      </div>
+      <div style="font-size:.83rem;line-height:1.75;padding:11px 14px;background:rgba(27,191,176,.07);border-radius:8px;border-left:3px solid var(--primary);margin-bottom:14px">${analisis.resumen||''}</div>
+      ${analisis.tipo_postura?`<div style="font-size:.8rem;margin-bottom:12px;display:flex;align-items:center;gap:7px">📊 Tipo de postura detectado: <strong style="background:var(--s2);padding:2px 10px;border-radius:6px">${analisis.tipo_postura}</strong></div>`:''}
+      <div style="font-size:.76rem;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">
+        ${hallazgosPresentes.length} hallazgo${hallazgosPresentes.length!==1?'s':''} detectado${hallazgosPresentes.length!==1?'s':''}
+      </div>
+      <div class="ia-postura-hallazgos-list">
+        ${hallazgosPresentes.map(h=>`
+        <div class="ia-postura-hallazgo">
+          <span class="ia-postura-badge" style="background:${sevColor[h.severidad]||'#6B7280'};color:#fff">${h.severidad||'leve'}</span>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:.83rem">${h.nombre}${h.lado&&h.lado!=='ninguno'?`<span style="font-weight:400;color:var(--muted);font-size:.76rem"> · ${h.lado}</span>`:''}</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:1px;line-height:1.5">${h.descripcion}</div>
+          </div>
+        </div>`).join('')||'<div style="font-size:.8rem;color:var(--muted);padding:8px 0">No se detectaron alteraciones significativas</div>'}
+      </div>
+      ${tratHtml}
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:.7rem;color:var(--muted);line-height:1.5">
+        ✓ Los hallazgos se marcaron automáticamente en los checkboxes de abajo · Revisa y ajusta si es necesario · Solo uso orientativo clínico
+      </div>
+    </div>`;
 }
 
 async function generarReportePostural(){
@@ -2696,23 +2757,52 @@ async function generarReportePostural(){
   let y=0;
   const P=S.postura||{};
   const hc=S.hc;
+  const TEAL=[27,191,176];
+  const DARK=[26,26,46];
+  const MUTED=[107,114,128];
+
+  // helpers
+  function addPageIfNeeded(needed=30){if(y>H-needed){doc.addPage();addFooterLine();y=22;}}
+  function addFooterLine(){}
+  function sectionHeader(title,color=TEAL){
+    addPageIfNeeded(20);
+    doc.setFillColor(...color,20);
+    doc.setFillColor(color[0],color[1],color[2]);
+    doc.setDrawColor(...TEAL);
+    doc.setLineWidth(0.4);
+    doc.line(10,y,W-10,y);
+    y+=4;
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...color);
+    doc.text(title.toUpperCase(),10,y);
+    y+=6;
+  }
 
   // ─── HEADER ───
-  doc.setFillColor(27,191,176);doc.rect(0,0,W,16,'F');
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(12);
-  doc.text('Jessica Ocampo Fisioterapeuta',10,10);
-  doc.setFontSize(8);doc.text('REPORTE DE ANÁLISIS POSTURAL',W-10,10,{align:'right'});
-  y=24;
+  doc.setFillColor(...TEAL);doc.rect(0,0,W,20,'F');
+  // Logo
+  if(_logoBase64){
+    try{doc.addImage(_logoBase64,'PNG',8,1,38,18);}catch(e){}
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(255,255,255);
+    doc.text('REPORTE DE ANÁLISIS POSTURAL',W-10,8,{align:'right'});
+    doc.text('jessicaocampoft.com  |  Pereira, Colombia',W-10,13,{align:'right'});
+  }else{
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(11);
+    doc.text('Jessica Ocampo  —  Fisioterapeuta',10,10);
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);
+    doc.text('REPORTE DE ANÁLISIS POSTURAL',W-10,9,{align:'right'});
+    doc.text('jessicaocampoft.com  |  Pereira, Colombia',W-10,14,{align:'right'});
+  }
+  y=28;
 
   // ─── DATOS PACIENTE ───
-  doc.setTextColor(26,26,46);doc.setFont('helvetica','bold');doc.setFontSize(14);
-  doc.text(hc.nombre||'Paciente',10,y);y+=6;
-  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(107,114,128);
+  doc.setTextColor(...DARK);doc.setFont('helvetica','bold');doc.setFontSize(15);
+  doc.text(hc.nombre||'Paciente',10,y);y+=7;
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...MUTED);
   doc.text(`Edad: ${hc.edad||'—'} años  |  Sexo: ${hc.sexo||'—'}  |  Perfil: ${
     {deportista:'Deportista',gimnasio:'Gimnasio/Activo',retorno:'Retorno al movimiento',empresarial:'Empresarial'}[S.perfil]||S.perfil||'—'
   }  |  Fecha: ${new Date().toLocaleDateString('es-CO')}`,10,y);y+=5;
-  if(hc.ocupacion||hc.deporte)doc.text(`Ocupación: ${hc.ocupacion||'—'}  |  Deporte: ${hc.deporte||'—'}`,10,y);
-  y+=8;doc.setDrawColor(27,191,176);doc.setLineWidth(0.3);doc.line(10,y,W-10,y);y+=8;
+  if(hc.ocupacion||hc.deporte)doc.text(`Ocupación: ${hc.ocupacion||'—'}  |  Deporte/Actividad: ${hc.deporte||'—'}`,10,y);
+  y+=6;doc.setDrawColor(...TEAL);doc.setLineWidth(0.5);doc.line(10,y,W-10,y);y+=8;
 
   // ─── FOTOS POSTURALES ───
   const fotosPost=S.fotos.filter(f=>
@@ -2721,8 +2811,9 @@ async function generarReportePostural(){
   const fotasMostrar=fotosPost.length?fotosPost:S.fotos.slice(0,4);
 
   if(fotasMostrar.length){
-    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(26,26,46);
-    doc.text('Registro fotográfico postural',10,y);y+=5;
+    doc.setFillColor(249,250,251);doc.roundedRect(10,y-2,W-20,5,1,1,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...DARK);
+    doc.text('REGISTRO FOTOGRÁFICO POSTURAL',13,y+2);y+=9;
 
     // Calcular ancho de foto según cantidad
     const n=Math.min(fotasMostrar.length,4);
@@ -2740,7 +2831,7 @@ async function generarReportePostural(){
     y+=fotoH+10;
   }
 
-  if(y>H-60){doc.addPage();y=20;}
+  if(y>H-60){doc.addPage();y=22;}
 
   // ─── HALLAZGOS POR VISTA ───
   const hallazgos={
@@ -2811,80 +2902,136 @@ async function generarReportePostural(){
 
   Object.entries(activos).forEach(([vista,items])=>{
     if(!items.length)return;
-    if(y>H-40){doc.addPage();y=20;}
-    // Header de sección
-    doc.setFillColor(245,247,250);doc.roundedRect(10,y-3,W-20,7,2,2,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(9);
+    if(y>H-40){doc.addPage();y=22;}
+    // Header de sección con color de la vista
     const col=colores[vista];
     const rgb=col==='#2563eb'?[37,99,235]:col==='#7c3aed'?[124,58,237]:[217,119,6];
+    doc.setFillColor(...rgb);doc.rect(10,y-3,3,8,'F');
+    doc.setFillColor(rgb[0],rgb[1],rgb[2],20);
+    doc.setFillColor(249,250,251);doc.roundedRect(14,y-3,W-24,8,1,1,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(8.5);
     doc.setTextColor(...rgb);
-    doc.text(vista.toUpperCase(),14,y+1);y+=9;
+    doc.text(vista.toUpperCase(),17,y+1);y+=10;
 
     const positivos=items.filter(i=>!i.includes('✓'));
     const normales=items.filter(i=>i.includes('✓'));
 
     positivos.forEach(item=>{
-      if(y>H-15){doc.addPage();y=20;}
+      if(y>H-15){doc.addPage();y=22;}
       doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(220,38,38);
-      doc.text('⚠  '+item,14,y);y+=4.5;
+      doc.text('⚠  '+item,16,y);y+=5;
     });
     normales.forEach(item=>{
-      if(y>H-15){doc.addPage();y=20;}
+      if(y>H-15){doc.addPage();y=22;}
       doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(22,163,74);
-      doc.text('✓  '+item.replace(' ✓',''),14,y);y+=4.5;
+      doc.text('✓  '+item.replace(' ✓',''),16,y);y+=5;
     });
-    y+=4;
+    y+=5;
   });
 
   // ─── TIPO DE POSTURA Y RIESGO ───
   if(P.tipo||P.riesgo){
-    if(y>H-40){doc.addPage();y=20;}
-    doc.setDrawColor(27,191,176);doc.line(10,y,W-10,y);y+=6;
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(26,26,46);
-    if(P.tipo){doc.text(`Tipo de postura global: `,10,y);doc.setFont('helvetica','normal');doc.text(P.tipo,55,y);y+=5;}
+    if(y>H-40){doc.addPage();y=22;}
+    doc.setDrawColor(...TEAL);doc.setLineWidth(0.5);doc.line(10,y,W-10,y);y+=7;
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...DARK);
+    if(P.tipo){doc.text('Tipo de postura global: ',10,y);doc.setFont('helvetica','normal');doc.text(P.tipo,57,y);y+=5.5;}
     if(P.riesgo){
       const rCol=P.riesgo.startsWith('Bajo')?[22,163,74]:P.riesgo.startsWith('Moderado')?[217,119,6]:[220,38,38];
-      doc.setFont('helvetica','bold');doc.text(`Nivel de riesgo: `,10,y);
-      doc.setTextColor(...rCol);doc.setFont('helvetica','bold');doc.text(P.riesgo,46,y);
-      doc.setTextColor(26,26,46);y+=7;
+      doc.setFont('helvetica','bold');doc.setTextColor(...DARK);doc.text('Nivel de riesgo: ',10,y);
+      doc.setTextColor(...rCol);doc.text(P.riesgo,48,y);
+      doc.setTextColor(...DARK);y+=8;
     }
   }
 
   // ─── OBSERVACIONES ───
   if(P.obs){
-    if(y>H-40){doc.addPage();y=20;}
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(26,26,46);
-    doc.text('Observaciones clínicas',10,y);y+=5;
-    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(107,114,128);
-    const obsLines=doc.splitTextToSize(P.obs,W-20);
-    doc.text(obsLines,10,y);y+=obsLines.length*4+6;
+    if(y>H-40){doc.addPage();y=22;}
+    doc.setFillColor(249,250,251);doc.roundedRect(10,y-2,W-20,5,1,1,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...DARK);
+    doc.text('Observaciones clínicas',13,y+2);y+=9;
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...MUTED);
+    const obsLines=doc.splitTextToSize(P.obs,W-24);
+    doc.text(obsLines,13,y);y+=obsLines.length*4.5+6;
   }
 
   // ─── RECOMENDACIONES ───
   if(P.recomend){
-    if(y>H-40){doc.addPage();y=20;}
-    doc.setFillColor(237,253,249);doc.roundedRect(10,y-3,W-20,6,2,2,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(27,191,176);
-    doc.text('Recomendaciones posturales',14,y+1);y+=9;
-    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(26,26,46);
-    const recLines=doc.splitTextToSize(P.recomend,W-20);
-    doc.text(recLines,10,y);y+=recLines.length*4+6;
+    if(y>H-40){doc.addPage();y=22;}
+    doc.setFillColor(230,252,248);doc.roundedRect(10,y-2,W-20,5,1,1,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...TEAL);
+    doc.text('Recomendaciones posturales',13,y+2);y+=9;
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...DARK);
+    const recLines=doc.splitTextToSize(P.recomend,W-24);
+    doc.text(recLines,13,y);y+=recLines.length*4.5+6;
+  }
+
+  // ─── PLAN DE TRATAMIENTO (desde IA) ───
+  const tratamiento=P.iaAnalisis?.tratamiento||[];
+  if(tratamiento.length){
+    if(y>H-40){doc.addPage();y=22;}
+    doc.setLineWidth(0.5);doc.setDrawColor(...TEAL);doc.line(10,y,W-10,y);y+=8;
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...TEAL);
+    doc.text('PLAN DE TRATAMIENTO POR HALLAZGO',10,y);y+=7;
+
+    const tipoColors={movilidad:[37,99,235],control_motor:[124,58,237],fortalecimiento:[22,163,74],estiramiento:[217,119,6],propiocepcion:[8,145,178]};
+    const tipoLabels={movilidad:'MOVILIDAD',control_motor:'CONTROL MOTOR',fortalecimiento:'FORTALEC.',estiramiento:'ESTIRAMIENTO',propiocepcion:'PROPIOCEP.'};
+
+    tratamiento.forEach((t,ti)=>{
+      if(y>H-55){doc.addPage();y=22;}
+      // Hallazgo header
+      doc.setFillColor(230,252,248);doc.roundedRect(10,y-2,W-20,7,1.5,1.5,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...TEAL);
+      doc.text((ti+1)+'. '+t.hallazgo,13,y+3);
+      y+=10;
+      // Objetivo
+      if(t.objetivo){
+        doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(...MUTED);
+        const objLines=doc.splitTextToSize('Objetivo: '+t.objetivo,W-26);
+        doc.text(objLines,14,y);y+=objLines.length*4+3;
+      }
+      // Ejercicios
+      (t.ejercicios||[]).forEach((ej,ei)=>{
+        if(y>H-35){doc.addPage();y=22;}
+        const tColor=tipoColors[ej.tipo]||[107,114,128];
+        const tLabel=tipoLabels[ej.tipo]||ej.tipo;
+        // Badge tipo
+        doc.setFillColor(...tColor);doc.roundedRect(14,y-2,22,5.5,1.5,1.5,'F');
+        doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(255,255,255);
+        doc.text(tLabel,25,y+1.5,{align:'center'});
+        // Nombre ejercicio
+        doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...DARK);
+        doc.text(ej.nombre,38,y+1);
+        y+=7;
+        // Descripción
+        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...MUTED);
+        const descLines=doc.splitTextToSize(ej.descripcion,W-42);
+        doc.text(descLines,38,y);y+=descLines.length*3.8;
+        // Dosis
+        doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...TEAL);
+        doc.text(ej.dosis,38,y+2);y+=7;
+      });
+      y+=4;
+    });
   }
 
   // ─── FIRMA ───
-  if(y>H-35){doc.addPage();y=20;}
-  y=Math.max(y,H-45);
-  doc.setDrawColor(200,200,200);doc.line(10,y,80,y);doc.line(W-80,y,W-10,y);
-  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(107,114,128);
+  if(y>H-35){doc.addPage();y=22;}
+  y=Math.max(y,H-42);
+  doc.setDrawColor(200,200,200);doc.setLineWidth(0.3);
+  doc.line(10,y,80,y);doc.line(W-80,y,W-10,y);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...MUTED);
   doc.text('Jessica Ocampo Fisioterapeuta',45,y+5,{align:'center'});
   doc.text('Firma del paciente',W-45,y+5,{align:'center'});
 
-  // ─── FOOTER ───
+  // ─── FOOTER EN TODAS LAS PÁGINAS ───
   const pages=doc.internal.getNumberOfPages();
   for(let p=1;p<=pages;p++){
     doc.setPage(p);
-    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(200,200,200);
-    doc.text(`Jessica Ocampo Fisioterapeuta · Pereira, Colombia · jessicaocampoft.com · Pág. ${p}/${pages}`,W/2,H-4,{align:'center'});
+    doc.setFillColor(...TEAL);doc.rect(0,H-6,W,6,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(255,255,255);
+    doc.text(`Jessica Ocampo Fisioterapeuta  ·  Pereira, Colombia  ·  jessicaocampoft.com`,W/2,H-2.5,{align:'center'});
+    doc.setTextColor(200,240,235);
+    doc.text(`Pág. ${p}/${pages}`,W-8,H-2.5,{align:'right'});
   }
 
   doc.save(`reporte_postural_${(hc.nombre||'paciente').replace(/ /g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`);
@@ -2924,6 +3071,24 @@ function onDrop(ev){
   subirFotos(ev.dataTransfer.files);
 }
 
+function restaurarPosturaForm(){
+  const P=S.postura||{};
+  // Restore checkboxes
+  document.querySelectorAll('#reportePosturalCard .chk-pill').forEach(pill=>{
+    const oc=pill.getAttribute('onclick')||'';
+    const m=oc.match(/togPostura\(this,'([^']+)'\)/);
+    if(m&&P[m[1]]){
+      pill.classList.add('on');
+      const chk=pill.querySelector('input[type=checkbox]');
+      if(chk)chk.checked=true;
+    }
+  });
+  if(P.tipo){const el=document.getElementById('postTipo');if(el)el.value=P.tipo;}
+  if(P.riesgo){const el=document.getElementById('postRiesgo');if(el)el.value=P.riesgo;}
+  if(P.obs){const el=document.getElementById('postObs');if(el)el.value=P.obs;}
+  if(P.recomend){const el=document.getElementById('postRecomend');if(el)el.value=P.recomend;}
+}
+
 function renderFotos(){
   const grid=document.getElementById('photoGrid');
   const card=document.getElementById('reportePosturalCard');
@@ -2942,6 +3107,8 @@ function renderFotos(){
     </div>`).join('');
   if(card)card.style.display='block';
   if(banner)banner.style.display='block';
+  restaurarPosturaForm();
+  if(S.postura?.iaAnalisis) renderIAPosturaResultado(S.postura.iaAnalisis);
 }
 
 async function borrarFoto(id){
@@ -3887,6 +4054,22 @@ Jessica Ocampo Fisioterapeuta 💚`;
 }
 
 // ══════════════════════════════════════
+// LOGO PRELOAD
+// ══════════════════════════════════════
+let _logoBase64=null;
+async function preloadLogo(){
+  try{
+    const r=await fetch('Logo/2.png');
+    const blob=await r.blob();
+    return new Promise(res=>{
+      const rd=new FileReader();
+      rd.onload=e=>{_logoBase64=e.target.result;res(_logoBase64);};
+      rd.readAsDataURL(blob);
+    });
+  }catch(e){return null;}
+}
+
+// ══════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════
 function toast(msg,tipo=''){
@@ -3904,6 +4087,7 @@ function toast(msg,tipo=''){
 window.addEventListener('DOMContentLoaded',async()=>{
   await abrirDB();
   await initSupabase();
+  preloadLogo();
   abrirListaEvals();
   window.addEventListener('beforeunload',e=>{
     if(S.evalId){e.preventDefault();e.returnValue='';}
