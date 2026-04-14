@@ -3748,6 +3748,7 @@ async function generarPDF(tipo){
     doc.text('"No esperes a que el dolor te obligue. Actua cuando aun puedes elegir."',W/2,y+5,{align:'center'});
     doc.setFontSize(8);doc.text('- Jessica Ocampo, Fisioterapeuta',W/2,y+11,{align:'center'});
   }catch(e2){toast('Error generando PDF paciente: '+e2.message,'err');return;}
+  } // cierra else
 
   // FOOTER
   const pages=doc.internal.getNumberOfPages();
