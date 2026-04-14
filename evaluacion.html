@@ -282,7 +282,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
     <span>Guardar</span>
   </button>
-  <div id="sbUserInfo" style="padding:4px 0"></div>
+  <!-- ESTADO SUPABASE — siempre visible -->
+  <div id="sbUserInfo" style="padding:6px 8px 8px"></div>
 </nav>
 
 <!-- MAIN -->
@@ -1094,7 +1095,7 @@ let wizStep=0;
 // ══════════════════════════════════════
 // INDEXEDDB
 // ══════════════════════════════════════
-const DB_NAME='JessicaEval',DB_VER=2;
+const DB_NAME='JessicaEval',DB_VER=3;
 let db=null;
 function abrirDB(){
   return new Promise((res,rej)=>{
@@ -1102,13 +1103,16 @@ function abrirDB(){
     req.onupgradeneeded=e=>{
       const d=e.target.result;
       const oldVer=e.oldVersion;
-      // v1→v2: recrear store evaluaciones con keyPath correcto (evalId)
-      if(oldVer<2){
-        // Migrar datos existentes si la store vieja existe
-        if(d.objectStoreNames.contains('evaluaciones')) d.deleteObjectStore('evaluaciones');
+      // Crear stores si no existen — nunca borrar datos existentes
+      if(!d.objectStoreNames.contains('evaluaciones')){
         d.createObjectStore('evaluaciones',{keyPath:'evalId'});
-        if(!d.objectStoreNames.contains('fotos')) d.createObjectStore('fotos',{keyPath:'id'});
       }
+      if(!d.objectStoreNames.contains('fotos')){
+        d.createObjectStore('fotos',{keyPath:'id'});
+      }
+      // v1→v3: si existía la store vieja con keyPath:'id', recrearla con evalId
+      // Solo si estaba en v1 (la store existe pero con keyPath incorrecto)
+      // No borramos — si hay datos en v2+ los respetamos
     };
     req.onsuccess=e=>{db=e.target.result;res(db)};
     req.onerror=()=>rej(req.error);
@@ -1136,42 +1140,57 @@ async function initSupabase(){
   _sb=window.supabase.createClient(SB_URL,SB_KEY);
   const {data:{session}}=await _sb.auth.getSession();
   _sbUser=session?.user||null;
+  renderSbUser();
+  // Si ya había sesión activa, sincronizar inmediatamente al cargar
+  if(_sbUser) sincronizarDesdeNube();
   _sb.auth.onAuthStateChange((_,ses)=>{
     _sbUser=ses?.user||null;
     renderSbUser();
     if(_sbUser) sincronizarDesdeNube();
   });
-  renderSbUser();
 }
 
 function renderSbUser(){
   const el=document.getElementById('sbUserInfo');
   if(!el)return;
-  if(!sbConfigured()){
-    el.innerHTML=`<div style="font-size:.68rem;color:var(--muted);padding:4px 14px;line-height:1.5">
-      <span style="color:#d97706">⚠️</span> Nube no configurada</div>`;
-    return;
-  }
   if(_sbUser){
-    const e=_sbUser.email;const sh=e.length>21?e.slice(0,19)+'…':e;
-    el.innerHTML=`<div style="padding:4px 14px">
-      <span class="sync-dot" id="syncDot">☁️ ${sh}</span></div>
-      <button class="sb-link" onclick="sbLogout()" style="color:var(--muted);font-size:.82rem">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span>Cerrar sesión</span></button>`;
+    const em=_sbUser.email;
+    const sh=em.length>22?em.slice(0,20)+'…':em;
+    el.innerHTML=`
+      <div style="background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.3);border-radius:10px;padding:10px 12px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+          <span style="width:8px;height:8px;background:#16a34a;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 3px rgba(22,163,74,.2)"></span>
+          <span style="font-size:.72rem;font-weight:700;color:#15803d">NUBE ACTIVA</span>
+        </div>
+        <div id="syncDot" style="font-size:.72rem;color:#166534;margin-bottom:8px;word-break:break-all">☁ ${sh}</div>
+        <button onclick="autoGuardar()" style="width:100%;background:#16a34a;color:#fff;border:none;border-radius:6px;padding:5px 0;font-size:.75rem;font-weight:600;cursor:pointer;margin-bottom:4px">
+          ↑ Guardar ahora
+        </button>
+        <button onclick="sbLogout()" style="width:100%;background:none;border:1px solid rgba(22,163,74,.4);color:#166534;border-radius:6px;padding:4px 0;font-size:.72rem;cursor:pointer">
+          Cerrar sesión
+        </button>
+      </div>`;
   }else{
-    el.innerHTML=`<button class="sb-link" onclick="abrirModalAuth()" style="color:var(--primary)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-      <span>Iniciar sesión en nube</span></button>`;
+    el.innerHTML=`
+      <div style="background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.3);border-radius:10px;padding:10px 12px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+          <span style="width:8px;height:8px;background:#dc2626;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 3px rgba(220,38,38,.2)"></span>
+          <span style="font-size:.72rem;font-weight:700;color:#b91c1c">SIN RESPALDO</span>
+        </div>
+        <div style="font-size:.7rem;color:#7f1d1d;margin-bottom:8px;line-height:1.4">Tus evaluaciones solo existen en este navegador. Si lo limpias, se pierden.</div>
+        <button onclick="abrirModalAuth()" style="width:100%;background:#dc2626;color:#fff;border:none;border-radius:6px;padding:6px 0;font-size:.75rem;font-weight:700;cursor:pointer">
+          ☁ Ingresar a la nube
+        </button>
+      </div>`;
   }
 }
 
 function setSyncDot(estado){
   const el=document.getElementById('syncDot');if(!el)return;
-  if(estado==='ok'){el.textContent='☁️ Sincronizado';el.className='sync-dot';}
-  else if(estado==='up'){el.textContent='↑ Guardando…';el.className='sync-dot spin';}
-  else if(estado==='down'){el.textContent='↓ Descargando…';el.className='sync-dot spin';}
-  else if(estado==='err'){el.textContent='⚠️ Error sync';el.className='sync-dot err';}
+  if(estado==='ok') el.textContent='☁ Guardado en la nube';
+  else if(estado==='up') el.textContent='↑ Guardando en nube…';
+  else if(estado==='down') el.textContent='↓ Descargando nube…';
+  else if(estado==='err') el.textContent='⚠ Error al sincronizar';
 }
 
 function abrirModalAuth(){document.getElementById('authModal').classList.add('open');setTimeout(()=>document.getElementById('authEmail').focus(),100);}
@@ -1410,10 +1429,13 @@ async function autoGuardar(){
   try{
     const sig=document.getElementById('sigCanvas');
     if(sig) S.hc.firma=sig.toDataURL();
-    // Guardar en IndexedDB usando evalId como clave (keyPath:'evalId')
     await dbGuardar('evaluaciones',{...S,evalId:S.evalId,fotos:[]});
-    guardarEnNube(); // sincroniza con nube en background (incluye S.fotos)
-    toast('Guardado ✓','ok');
+    if(_sb&&_sbUser){
+      guardarEnNube(); // nube en background
+      toast('Guardado ✓  —  ☁ sincronizando nube','ok');
+    }else{
+      toast('Guardado local ⚠  —  Ingresa a la nube para tener respaldo seguro','warn');
+    }
   }catch(err){
     console.error('Error al guardar:',err);
     toast('Error al guardar','err');
