@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guía de Evaluación Fisioterapéutica — Jessica Ocampo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Cormorant+Garamond:ital,wght@0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#1BBFB0;--teal-dark:#0F6E56;--teal-lite:#E1F5EE;
+  --amber:#d97706;--amber-l:#FAEEDA;
+  --red:#dc2626;--red-l:#FCEBEB;
+  --blue:#2563eb;--blue-l:#E6F1FB;
+  --green:#16a34a;--green-l:#EAF3DE;
+  --gray:#6B7280;--gray-l:#F3F4F6;
+  --dark:#1A1A2E;--white:#fff;
+  --font-h:'Cormorant Garamond',serif;
+  --font-b:'DM Sans',sans-serif;
+  --font-m:'DM Mono',monospace;
+  --r:10px;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:#F7F8FA;color:var(--dark);font-family:var(--font-b);min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--teal);border-radius:99px}
+
+/* ── SIDEBAR ── */
+#sidebar{position:fixed;top:0;left:0;height:100vh;width:240px;background:#fff;border-right:1px solid rgba(27,191,176,.15);display:flex;flex-direction:column;padding:20px 12px;z-index:100;overflow-y:auto}
+.sb-logo{padding:0 8px 16px;border-bottom:1px solid rgba(27,191,176,.15);margin-bottom:12px}
+.sb-logo-title{font-family:var(--font-h);font-size:1.1rem;font-weight:600;color:var(--dark)}
+.sb-logo-sub{font-size:.72rem;color:var(--gray);margin-top:2px}
+.sb-section{font-size:.65rem;font-family:var(--font-m);color:var(--gray);padding:6px 10px;letter-spacing:.08em;text-transform:uppercase;margin-top:8px}
+.sb-link{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;color:var(--gray);font-size:.82rem;font-weight:500;cursor:pointer;border:none;background:none;text-align:left;width:100%;transition:.15s;text-decoration:none}
+.sb-link:hover{background:var(--teal-lite);color:var(--teal-dark)}
+.sb-link.active{background:rgba(27,191,176,.1);color:var(--teal);border:1px solid rgba(27,191,176,.2)}
+.sb-num{font-family:var(--font-m);font-size:.7rem;background:var(--gray-l);border-radius:4px;padding:1px 5px;min-width:20px;text-align:center;color:var(--gray)}
+.sb-link.active .sb-num{background:var(--teal-lite);color:var(--teal-dark)}
+.sb-sep{height:1px;background:rgba(27,191,176,.12);margin:8px 0}
+.sb-print{margin-top:auto;padding-top:12px;border-top:1px solid rgba(27,191,176,.12)}
+
+/* ── MAIN ── */
+#main{margin-left:240px;padding:36px 40px;max-width:900px}
+
+/* ── PORTADA ── */
+.cover{text-align:center;padding:40px 20px 50px;border-bottom:2px solid var(--teal);margin-bottom:40px}
+.cover-tag{display:inline-block;background:var(--teal-lite);color:var(--teal-dark);border-radius:20px;padding:4px 16px;font-size:.78rem;font-weight:600;font-family:var(--font-m);letter-spacing:.04em;margin-bottom:16px}
+.cover h1{font-family:var(--font-h);font-size:2.8rem;font-weight:600;line-height:1.15;color:var(--dark);margin-bottom:8px}
+.cover h1 em{color:var(--teal);font-style:italic}
+.cover-sub{font-size:.95rem;color:var(--gray);max-width:500px;margin:0 auto 24px}
+.cover-author{font-size:.9rem;font-weight:600;color:var(--dark)}
+.cover-contact{font-size:.82rem;color:var(--gray);margin-top:4px}
+
+/* ── ÍNDICE ── */
+.index-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:40px}
+.index-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:1px solid rgba(27,191,176,.15);border-radius:8px;text-decoration:none;color:var(--dark);transition:.15s;font-size:.85rem}
+.index-item:hover{border-color:var(--teal);background:var(--teal-lite);color:var(--teal-dark)}
+.idx-num{font-family:var(--font-m);font-size:.75rem;font-weight:600;color:var(--teal);min-width:24px}
+.idx-name{flex:1;font-weight:500}
+.idx-badge{font-size:.68rem;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap}
+
+/* ── SECCIÓN ── */
+.section{margin-bottom:52px;scroll-margin-top:24px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:6px;padding-bottom:12px;border-bottom:2px solid var(--teal)}
+.section-num{font-family:var(--font-m);font-size:1rem;color:var(--teal);font-weight:600;min-width:36px}
+.section-title{font-family:var(--font-h);font-size:1.6rem;font-weight:600;flex:1}
+.profile-badge{font-size:.72rem;padding:4px 12px;border-radius:20px;font-weight:600;white-space:nowrap}
+.intro{font-size:.9rem;color:var(--gray);line-height:1.75;margin-bottom:18px}
+
+/* ── H3 ── */
+h3{font-size:1rem;font-weight:600;color:var(--dark);margin:20px 0 10px}
+
+/* ── STEPS ── */
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-l)}
+.step:last-child{border-bottom:none}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-body{flex:1}
+.step-title{font-size:.9rem;font-weight:600;color:var(--dark);margin-bottom:2px}
+.step-desc{font-size:.85rem;color:var(--gray);line-height:1.65}
+
+/* ── SCORES ── */
+.scores{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.score-card{border-radius:8px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start}
+.score-n{font-size:1.4rem;font-weight:700;min-width:20px;line-height:1}
+.score-text{font-size:.82rem;line-height:1.5}
+.s0{background:var(--red-l);color:var(--red)}
+.s1{background:var(--amber-l);color:var(--amber)}
+.s2{background:var(--blue-l);color:var(--blue)}
+.s3{background:var(--green-l);color:var(--green)}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+thead tr{background:var(--teal);color:#fff}
+thead th{padding:8px 12px;text-align:left;font-weight:600;font-size:.82rem}
+tbody tr:nth-child(even){background:var(--gray-l)}
+tbody tr:nth-child(odd){background:#fff}
+tbody td{padding:7px 12px;color:var(--dark);vertical-align:top;line-height:1.5}
+.tbl-dark thead tr{background:var(--dark)}
+.tbl-teal thead tr{background:var(--teal-dark)}
+.tbl-amber thead tr{background:var(--amber)}
+.tbl-red thead tr{background:var(--red)}
+.tbl-green thead tr{background:var(--green)}
+
+/* ── BOXES ── */
+.tip-box{background:var(--teal-lite);border-left:4px solid var(--teal);border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0}
+.tip-box strong{color:var(--teal-dark);display:block;margin-bottom:3px;font-size:.88rem}
+.tip-box p{color:var(--teal-dark);font-size:.84rem;line-height:1.65;margin:0}
+.warn-box{background:var(--amber-l);border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0}
+.warn-box strong{color:#92400e;display:block;margin-bottom:3px;font-size:.88rem}
+.warn-box p{color:#92400e;font-size:.84rem;line-height:1.65;margin:0}
+.danger-box{background:var(--red-l);border-left:4px solid var(--red);border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0}
+.danger-box strong{color:#7f1d1d;display:block;margin-bottom:3px;font-size:.88rem}
+.danger-box p{color:#7f1d1d;font-size:.84rem;line-height:1.65;margin:0}
+
+/* ── REF ── */
+.ref{font-size:.75rem;color:var(--gray);font-style:italic;margin-top:10px;padding-top:8px;border-top:1px dashed rgba(27,191,176,.3)}
+
+/* ── BADGE COLORS ── */
+.badge-blue{background:var(--blue-l);color:#1e40af}
+.badge-teal{background:var(--teal-lite);color:var(--teal-dark)}
+.badge-green{background:var(--green-l);color:#166534}
+.badge-red{background:var(--red-l);color:#7f1d1d}
+.badge-amber{background:var(--amber-l);color:#92400e}
+
+/* ── PRINT ── */
+@media print{
+  #sidebar{display:none}
+  #main{margin-left:0;padding:20px;max-width:100%}
+  .section{page-break-inside:avoid}
+  .section-header{page-break-after:avoid}
+  .no-print{display:none}
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  #sidebar{width:56px;padding:12px 8px}
+  #sidebar .sb-logo-title,#sidebar .sb-logo-sub,#sidebar .sb-section,#sidebar .sb-link span:not(.sb-num){display:none}
+  #main{margin-left:56px;padding:20px 16px}
+  .index-grid{grid-template-columns:1fr}
+  .scores{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-title">Jessica Ocampo</div>
+    <div class="sb-logo-sub">Fisioterapeuta · Guía clínica</div>
+  </div>
+
+  <div class="sb-section">Tests — todos los perfiles</div>
+  <a class="sb-link" href="#s01"><span class="sb-num">01</span><span>Análisis postural</span></a>
+  <a class="sb-link" href="#s02"><span class="sb-num">02</span><span>Deep Squat FMS</span></a>
+  <a class="sb-link" href="#s03"><span class="sb-num">03</span><span>Single Leg Squat</span></a>
+  <a class="sb-link" href="#s04"><span class="sb-num">04</span><span>Bird Dog</span></a>
+  <a class="sb-link" href="#s05"><span class="sb-num">05</span><span>Dead Bug</span></a>
+
+  <div class="sb-section">Deportista</div>
+  <a class="sb-link" href="#s06"><span class="sb-num">06</span><span>Y-Balance Test</span></a>
+  <a class="sb-link" href="#s07"><span class="sb-num">07</span><span>Apley Scratch</span></a>
+  <a class="sb-link" href="#s08"><span class="sb-num">08</span><span>Shin Box</span></a>
+
+  <div class="sb-section">Postquirúrgico</div>
+  <a class="sb-link" href="#s09"><span class="sb-num">09</span><span>Single Leg Hop</span></a>
+
+  <div class="sb-section">Gimnasio / Activo</div>
+  <a class="sb-link" href="#s10"><span class="sb-num">10</span><span>Thomas Test</span></a>
+  <a class="sb-link" href="#s11"><span class="sb-num">11</span><span>Overhead Squat</span></a>
+  <a class="sb-link" href="#s12"><span class="sb-num">12</span><span>Plank Test</span></a>
+
+  <div class="sb-section">Empresarial</div>
+  <a class="sb-link" href="#s13"><span class="sb-num">13</span><span>Sit and Reach</span></a>
+  <a class="sb-link" href="#s14"><span class="sb-num">14</span><span>Marcha 4 metros</span></a>
+  <a class="sb-link" href="#s15"><span class="sb-num">15</span><span>Equilibrio monopodal</span></a>
+
+  <div class="sb-sep"></div>
+  <a class="sb-link" href="#s16"><span class="sb-num">16</span><span>Fotografía postural</span></a>
+
+  <div class="sb-print">
+    <button class="sb-link" onclick="window.print()" style="width:100%">
+      <span class="sb-num">🖨</span><span>Imprimir / PDF</span>
+    </button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+
+  <!-- PORTADA -->
+  <div class="cover">
+    <div class="cover-tag">Protocolo clínico · Basado en evidencia</div>
+    <h1>Guía de Evaluación <em>Fisioterapéutica</em></h1>
+    <p class="cover-sub">Protocolos de evaluación, escalas de puntuación, valores normativos y fotografía postural estandarizada</p>
+    <div class="cover-author">Jessica Ocampo Fisioterapeuta</div>
+    <div class="cover-contact">jessicaocampoft.com · WhatsApp: 3136467945 · Pereira, Colombia</div>
+  </div>
+
+  <!-- ÍNDICE -->
+  <div class="index-grid">
+    <a class="index-item" href="#s01"><span class="idx-num">01</span><span class="idx-name">Análisis Postural Estático</span><span class="idx-badge badge-blue">Todos</span></a>
+    <a class="index-item" href="#s02"><span class="idx-num">02</span><span class="idx-name">Deep Squat — FMS</span><span class="idx-badge badge-blue">Todos</span></a>
+    <a class="index-item" href="#s03"><span class="idx-num">03</span><span class="idx-name">Single Leg Squat</span><span class="idx-badge badge-blue">Todos</span></a>
+    <a class="index-item" href="#s04"><span class="idx-num">04</span><span class="idx-name">Bird Dog</span><span class="idx-badge badge-blue">Todos</span></a>
+    <a class="index-item" href="#s05"><span class="idx-num">05</span><span class="idx-name">Dead Bug</span><span class="idx-badge badge-blue">Todos</span></a>
+    <a class="index-item" href="#s06"><span class="idx-num">06</span><span class="idx-name">Y-Balance Test</span><span class="idx-badge badge-teal">Deportista</span></a>
+    <a class="index-item" href="#s07"><span class="idx-num">07</span><span class="idx-name">Apley Scratch Test</span><span class="idx-badge badge-teal">Deportista</span></a>
+    <a class="index-item" href="#s08"><span class="idx-num">08</span><span class="idx-name">Shin Box Assessment</span><span class="idx-badge badge-teal">Deportista</span></a>
+    <a class="index-item" href="#s09"><span class="idx-num">09</span><span class="idx-name">Single Leg Hop / LSI</span><span class="idx-badge badge-red">Postquirúrgico</span></a>
+    <a class="index-item" href="#s10"><span class="idx-num">10</span><span class="idx-name">Thomas Test</span><span class="idx-badge badge-green">Gimnasio</span></a>
+    <a class="index-item" href="#s11"><span class="idx-num">11</span><span class="idx-name">Overhead Squat — NASM</span><span class="idx-badge badge-green">Gimnasio</span></a>
+    <a class="index-item" href="#s12"><span class="idx-num">12</span><span class="idx-name">Plank Test</span><span class="idx-badge badge-green">Gimnasio</span></a>
+    <a class="index-item" href="#s13"><span class="idx-num">13</span><span class="idx-name">Sit and Reach</span><span class="idx-badge badge-amber">Empresarial</span></a>
+    <a class="index-item" href="#s14"><span class="idx-num">14</span><span class="idx-name">Test Marcha 4 metros</span><span class="idx-badge badge-amber">Empresarial</span></a>
+    <a class="index-item" href="#s15"><span class="idx-num">15</span><span class="idx-name">Equilibrio Monopodal</span><span class="idx-badge badge-amber">Empresarial</span></a>
+    <a class="index-item" href="#s16"><span class="idx-num">16</span><span class="idx-name">Fotografía Postural</span><span class="idx-badge badge-blue">Todos</span></a>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 01 ANÁLISIS POSTURAL -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s01">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Análisis Postural Estático</span>
+      <span class="profile-badge badge-blue">Todos los perfiles</span>
+    </div>
+    <p class="intro">Evaluación visual de la alineación corporal en reposo. Es el punto de partida de toda evaluación fisioterapéutica.</p>
+
+    <h3>Preparación del paciente</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Ropa adecuada</div><div class="step-desc">Top ajustado o sin camiseta (con consentimiento), short ajustado hasta la rodilla. Sin zapatos ni medias. Sin accesorios que tapen referencias anatómicas.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Posición de inicio</div><div class="step-desc">"Párate de forma natural, como si nadie te estuviera mirando." No corrijas la postura — quieres capturar el patrón habitual, no el corregido.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Material</div><div class="step-desc">Plomada o hilo con peso. Cinta marcadora en el piso para que el paciente se ubique siempre en el mismo punto.</div></div></div>
+    </div>
+
+    <h3>Vista anterior — qué observar</h3>
+    <div class="tbl-wrap"><table class="tbl-teal">
+      <thead><tr><th>Segmento</th><th>Normal</th><th>Alteración frecuente</th></tr></thead>
+      <tbody>
+        <tr><td>Cabeza</td><td>Centrada, barbilla neutral</td><td>Inclinación o rotación lateral</td></tr>
+        <tr><td>Hombros</td><td>Simétricos, misma altura</td><td>Un hombro más alto (escoliosis, sobrecarga unilateral)</td></tr>
+        <tr><td>Crestas ilíacas</td><td>Al mismo nivel</td><td>Asimetría pélvica — evaluar dismetría de miembros</td></tr>
+        <tr><td>Rodillas</td><td>Alineadas con el 2° dedo del pie</td><td>Genu varo (O) o valgo (X)</td></tr>
+        <tr><td>Pies</td><td>Neutros, ángulo 5–7°</td><td>Pronación excesiva o supinación</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Vista posterior</h3>
+    <p class="intro">Evalúa: altura escapular (asimetría > 1 cm es relevante) · escoliosis aparente (línea de las apófisis espinosas) · pliegues glúteos simétricos · alineación de talones.</p>
+
+    <h3>Vista lateral — Línea de plomada</h3>
+    <p class="intro">La plomada debe pasar por: <strong>maléolo externo → rodilla → trocánter mayor → hombro → conducto auditivo externo.</strong></p>
+    <div class="tbl-wrap"><table class="tbl-dark">
+      <thead><tr><th>Alteración</th><th>Descripción</th><th>Implicación clínica</th></tr></thead>
+      <tbody>
+        <tr><td>Adelantamiento cefálico</td><td>Cabeza adelantada más de 2.5 cm</td><td>Sobrecarga de extensores cervicales, cefaleas, dolor cervical</td></tr>
+        <tr><td>Cifosis dorsal aumentada</td><td>Curvatura dorsal exagerada</td><td>Restricción respiratoria, dolor dorsal, síndrome cruzado superior</td></tr>
+        <tr><td>Hiperlordosis lumbar</td><td>Curvatura lumbar exagerada</td><td>Sobrecarga facetaria, dolor lumbar crónico</td></tr>
+        <tr><td>Genu recurvatum</td><td>Rodilla en hiperextensión</td><td>Sobrecarga de ligamentos posteriores, disfunción femoropatelar</td></tr>
+      </tbody>
+    </table></div>
+    <div class="ref">Evidencia: Kendall et al. (2005) — Muscles Testing and Function. Sahrmann (2002) — Diagnosis and Treatment of Movement Impairment Syndromes.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 02 DEEP SQUAT -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s02">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Deep Squat — FMS</span>
+      <span class="profile-badge badge-blue">Todos los perfiles</span>
+    </div>
+    <p class="intro">Evalúa simetría bilateral de movilidad de caderas, rodillas y tobillos, y estabilidad del core durante un movimiento funcional exigente.</p>
+
+    <h3>Protocolo de evaluación</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Posición inicial</div><div class="step-desc">De pie, pies al ancho de hombros, paralelos. Barra o palo de escoba sobre la cabeza con codos a 90°.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Instrucción exacta</div><div class="step-desc">"Baja todo lo que puedas manteniendo los talones en el suelo y los brazos arriba. Hazlo lento." 3 repeticiones — evalúas la mejor.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Puntos de observación</div><div class="step-desc">Desde el frente: alineación de rodillas, simetría. Desde el lado: posición del tronco, posición de la barra respecto a los pies.</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Si no puede completarlo</div><div class="step-desc">Eleva los talones con un disco de 2.5 cm. Si mejora → restricción de tobillo. Si no mejora → déficit de cadera o control motor.</div></div></div>
+    </div>
+
+    <h3>Puntuación FMS</h3>
+    <div class="scores">
+      <div class="score-card s3"><div class="score-n">3</div><div class="score-text">Tronco paralelo a tibias, rodillas alineadas, talones en el piso, barra sobre los pies</div></div>
+      <div class="score-card s2"><div class="score-n">2</div><div class="score-text">Talones elevados O barra cae hacia adelante — compensación leve pero funcional</div></div>
+      <div class="score-card s1"><div class="score-n">1</div><div class="score-text">No completa el movimiento ni con talones elevados — déficit de movilidad significativo</div></div>
+      <div class="score-card s0"><div class="score-n">0</div><div class="score-text">Dolor durante cualquier fase del test — suspender y evaluar fuente del dolor</div></div>
+    </div>
+
+    <h3>Compensaciones y su significado clínico</h3>
+    <div class="tbl-wrap"><table class="tbl-dark">
+      <thead><tr><th>Compensación</th><th>Causa más probable</th><th>Qué evaluar después</th></tr></thead>
+      <tbody>
+        <tr><td>Talones se levantan</td><td>Restricción de dorsiflexión de tobillo</td><td>Movilidad de tobillo activa/pasiva, Apley</td></tr>
+        <tr><td>Rodillas en valgo</td><td>Debilidad de glúteo medio, pronación</td><td>Single Leg Squat, Trendelenburg</td></tr>
+        <tr><td>Brazos caen al frente</td><td>Rigidez torácica o de hombros</td><td>Overhead mobility, Apley Scratch</td></tr>
+        <tr><td>Flexión excesiva de columna</td><td>Déficit de flexión de cadera</td><td>Thomas Test, ASLR</td></tr>
+        <tr><td>Rotación de tronco</td><td>Asimetría de movilidad de cadera</td><td>Shin Box bilateral</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="tip-box"><strong>Score FMS total ≤ 14</strong><p>La suma de los 7 tests FMS ≤ 14 puntos se asocia con mayor riesgo de lesión musculoesquelética en deportistas. Úsalo como indicador de derivación a programa de corrección.</p></div>
+    <div class="ref">Evidencia: Cook G. et al. (2014) Movement. Functional Movement Systems. / Kiesel K. et al. (2007) BJSM — FMS predicts injury in professional football players.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 03 SINGLE LEG SQUAT -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s03">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Single Leg Squat</span>
+      <span class="profile-badge badge-blue">Todos los perfiles</span>
+    </div>
+    <p class="intro">Test funcional de control neuromuscular de rodilla, cadera y core. Excelente sensibilidad para detectar disfunciones que predisponen a lesión de LCA, síndrome patelofemoral y tendinopatía rotuliana.</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Posición</div><div class="step-desc">De pie en una pierna, rodilla de apoyo ligeramente flexionada. Brazos en la cintura o cruzados al pecho.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Instrucción exacta</div><div class="step-desc">"Baja lentamente flexionando la rodilla hasta unos 45° y vuelve a subir. Haz 5 repeticiones." Evalúa cada pierna por separado.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Observación desde el frente</div><div class="step-desc">¿La rodilla cae hacia adentro (valgo dinámico)? ¿La cadera del lado libre cae (Trendelenburg)? ¿El tronco se inclina lateralmente?</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Puntúa cada pierna por separado</div><div class="step-desc">Derecho e izquierdo pueden tener puntuaciones diferentes. Registra ambas en la app — la asimetría es clínicamente relevante.</div></div></div>
+    </div>
+
+    <h3>Puntuación</h3>
+    <div class="scores">
+      <div class="score-card s3"><div class="score-n">3</div><div class="score-text">Rodilla alineada con el 2° dedo, pelvis estable, tronco erecto, movimiento controlado</div></div>
+      <div class="score-card s2"><div class="score-n">2</div><div class="score-text">Leve valgo de rodilla o inclinación de tronco — mantiene el movimiento funcional</div></div>
+      <div class="score-card s1"><div class="score-n">1</div><div class="score-text">Valgo marcado, Trendelenburg claro, pérdida de equilibrio o no puede completar</div></div>
+      <div class="score-card s0"><div class="score-n">0</div><div class="score-text">Dolor durante el test — suspender</div></div>
+    </div>
+
+    <div class="warn-box"><strong>Trendelenburg positivo</strong><p>La cadera del lado libre cae hacia abajo durante el apoyo monopodal. Indica debilidad de glúteo medio ipsilateral. Muy relevante en: postquirúrgico de cadera/rodilla, corredores con dolor iliotibial, embarazo y posparto.</p></div>
+    <div class="ref">Evidencia: Crossley KM et al. (2011) JOSPT — The single leg squat: reliability and validity. / Stensrud S. et al. (2011) JOSPT.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 04 BIRD DOG -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s04">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Bird Dog</span>
+      <span class="profile-badge badge-blue">Todos los perfiles</span>
+    </div>
+    <p class="intro">Evalúa estabilización del core y control motor lumbopélvico. Referencia para disfunción de estabilizadores profundos (multífido, transverso del abdomen).</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Posición de inicio</div><div class="step-desc">En cuadrupedia: manos bajo hombros, rodillas bajo caderas. Columna en posición neutra — ni arqueada ni redondeada.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Ejecución</div><div class="step-desc">Extiende simultáneamente el brazo derecho y la pierna izquierda. Mantén 3 segundos. Regresa con control. Alterna lados. 5 repeticiones cada lado.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Cueing clave</div><div class="step-desc">Antes de extender: "lleva el ombligo levemente hacia la columna." No permitas rotación de caderas ni pérdida de neutro lumbar.</div></div></div>
+    </div>
+
+    <h3>Puntuación</h3>
+    <div class="scores">
+      <div class="score-card s3"><div class="score-n">3</div><div class="score-text">Columna neutra, pelvis estable, brazo y pierna en línea con el tronco, sin temblor</div></div>
+      <div class="score-card s2"><div class="score-n">2</div><div class="score-text">Leve rotación de pelvis o pérdida puntual de neutro — completa las repeticiones</div></div>
+      <div class="score-card s1"><div class="score-n">1</div><div class="score-text">No puede extender brazo y pierna simultáneamente, rotación marcada o colapso lumbar</div></div>
+      <div class="score-card s0"><div class="score-n">0</div><div class="score-text">Dolor lumbar o en cadera durante el movimiento</div></div>
+    </div>
+    <div class="ref">Evidencia: McGill SM (2010) — Core training: Evidence translating to better performance and injury prevention. Strength & Conditioning Journal.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 05 DEAD BUG -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s05">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Dead Bug</span>
+      <span class="profile-badge badge-blue">Todos los perfiles</span>
+    </div>
+    <p class="intro">Evalúa control motor del core en cadena abierta en decúbito supino. Especialmente útil en dolor lumbar, postquirúrgico y perfiles sedentarios.</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Posición de inicio</div><div class="step-desc">Boca arriba. Caderas y rodillas a 90° (pies en el aire). Brazos extendidos hacia el techo.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Ejecución</div><div class="step-desc">Baja simultáneamente el brazo derecho hacia atrás y la pierna izquierda hacia el piso, sin arquear la zona lumbar. Regresa y alterna.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Error más común</div><div class="step-desc">El arco lumbar al bajar el brazo/pierna. La zona lumbar debe permanecer pegada al piso durante todo el movimiento.</div></div></div>
+    </div>
+
+    <h3>Puntuación</h3>
+    <div class="scores">
+      <div class="score-card s3"><div class="score-n">3</div><div class="score-text">Lumbar neutra en todo el recorrido, movimiento coordinado, respiración constante</div></div>
+      <div class="score-card s2"><div class="score-n">2</div><div class="score-text">Leve pérdida de neutro al final del rango — controla el movimiento</div></div>
+      <div class="score-card s1"><div class="score-n">1</div><div class="score-text">Arco lumbar evidente, falta de coordinación o apnea compensatoria</div></div>
+      <div class="score-card s0"><div class="score-n">0</div><div class="score-text">Dolor lumbar durante el test</div></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 06 Y-BALANCE -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s06">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">Y-Balance Test</span>
+      <span class="profile-badge badge-teal">Deportista</span>
+    </div>
+    <p class="intro">Test de equilibrio dinámico en apoyo monopodal. Predice riesgo de lesión de miembro inferior en deportistas. Evalúa tres direcciones de alcance.</p>
+
+    <h3>Material y preparación</h3>
+    <p class="intro">Kit YBT oficial O cinta adhesiva en el piso formando una Y (dirección anterior 0°, posteromedial 135°, posterolateral 135° al otro lado). Regla o cinta métrica.</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Posición</div><div class="step-desc">El paciente se para en el centro de la Y con una pierna. La otra pierna empuja suavemente la cinta lo más lejos posible sin perder el equilibrio.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Medición</div><div class="step-desc">Distancia desde el centro hasta donde llegó el dedo gordo. NO vale si el pie de apoyo se mueve, pierde equilibrio o apoya el pie libre en el piso.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Intentos</div><div class="step-desc">3 intentos por dirección. El primero es de práctica — descártalo. Promedia los 2 restantes. Evalúa derecho e izquierdo.</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">La app calcula automáticamente</div><div class="step-desc">Ingresa los cm en Anterior, Posteromedial y Posterolateral de cada lado. La app calcula el composite score y la asimetría.</div></div></div>
+    </div>
+
+    <h3>Criterios de riesgo</h3>
+    <div class="tbl-wrap"><table class="tbl-teal">
+      <thead><tr><th>Indicador</th><th>Fórmula</th><th>Criterio de riesgo</th></tr></thead>
+      <tbody>
+        <tr><td>Composite Score</td><td>(A + PM + PL) / (Long. miembro × 3) × 100</td><td>&lt; 89% → riesgo aumentado</td></tr>
+        <tr><td>Asimetría anterior</td><td>|Der – Izq| en cm</td><td>&gt; 4 cm → riesgo lesión tobillo/rodilla</td></tr>
+        <tr><td>Asimetría posterior</td><td>|PM Der – PM Izq|</td><td>&gt; 6 cm → evaluar con más tests</td></tr>
+      </tbody>
+    </table></div>
+    <div class="ref">Evidencia: Plisky PJ et al. (2006) J Athletic Training — YBT predicts MSK injury in high school basketball players. / Gribble PA et al. (2012) JOSPT — meta-analysis.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 07 APLEY -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s07">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">Apley Scratch Test</span>
+      <span class="profile-badge badge-teal">Deportista</span>
+    </div>
+    <p class="intro">Evalúa movilidad combinada del hombro: abducción + rotación externa (alcance superior) y aducción + rotación interna (alcance inferior). Ideal para detección rápida de asimetrías.</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Alcance superior</div><div class="step-desc">Lleva la mano por encima del hombro hacia la espalda. Mide la distancia desde el dedo índice hasta el proceso espinoso de C7. Si toca o supera = normal.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Alcance inferior</div><div class="step-desc">Lleva la mano por detrás de la espalda hacia arriba. Mide la distancia entre los dedos índices de ambas manos. Cuanto menor la distancia, mejor.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Clasificación</div><div class="step-desc">Simétrico = normal. Asimetría > 1.5 cm entre lados = hallazgo relevante. Documenta en cm en la app.</div></div></div>
+    </div>
+
+    <div class="warn-box"><strong>Señal de alerta</strong><p>Dolor durante el test puede indicar síndrome subacromial, lesión del manguito rotador o inestabilidad glenohumeral. Suspende y realiza evaluación específica de hombro.</p></div>
+    <div class="ref">Evidencia: Magee DJ (2014) — Orthopedic Physical Assessment, 6th Ed. Saunders.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 08 SHIN BOX -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s08">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <span class="section-title">Shin Box Assessment</span>
+      <span class="profile-badge badge-teal">Deportista</span>
+    </div>
+    <p class="intro">Evalúa movilidad de rotación interna y externa de cadera en posición de sedestación. Relevante en crossfit, artes marciales, deportes de campo y cualquier actividad que demande movilidad de cadera en el piso.</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Posición de inicio</div><div class="step-desc">Sentado en el piso, ambas piernas en configuración 90-90 (cadera en RI anterior, RE posterior). Manos en el piso como apoyo inicial.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Medición con goniómetro</div><div class="step-desc">Coloca el goniómetro en el eje de la rodilla. Mide la rotación interna activa y la rotación externa activa de cada cadera por separado.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Transición activa</div><div class="step-desc">Pide que pase de RI a RE de forma activa sin apoyo de manos. Observa: elevación de pelvis, inclinación de tronco, bloqueo articular.</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Capacidad de carga</div><div class="step-desc">Con la pierna en RI, pide que levante ligeramente las manos del piso. ¿Puede cargar peso en esa posición? Clasifica: completa / parcial / no tolera.</div></div></div>
+    </div>
+
+    <h3>Valores normativos y criterios de alerta</h3>
+    <div class="tbl-wrap"><table class="tbl-teal">
+      <thead><tr><th>Movimiento</th><th>Rango normal</th><th>Alerta clínica</th></tr></thead>
+      <tbody>
+        <tr><td>Rotación interna de cadera</td><td>30 – 40°</td><td>&lt; 20° → sospecha FAI o displasia</td></tr>
+        <tr><td>Rotación externa de cadera</td><td>40 – 60°</td><td>&lt; 30° → rigidez capsular posterior</td></tr>
+        <tr><td>Asimetría RI bilateral</td><td>&lt; 10°</td><td>&gt; 10° → evaluar estructura hip / lumbopélvica</td></tr>
+        <tr><td>Asimetría RE bilateral</td><td>&lt; 10°</td><td>&gt; 10° → evaluar oblicuidad pélvica</td></tr>
+      </tbody>
+    </table></div>
+    <div class="warn-box"><strong>Restricción de RI de cadera</strong><p>Frecuentemente asociada a FAI (impingement femoroacetabular) o displasia acetabular. Deriva si hay dolor en rango final o clic articular.</p></div>
+    <div class="ref">Evidencia: Reiman MP & Manske RC (2009) — Functional Testing in Human Performance. / Prather H et al. (2010) AJSM — Hip ROM in athletes.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 09 HOP TEST -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s09">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <span class="section-title">Single Leg Hop Test / LSI</span>
+      <span class="profile-badge badge-red">Postquirúrgico LCA</span>
+    </div>
+    <p class="intro">Criterio funcional clave para el retorno al deporte post-reconstrucción de LCA. Evalúa potencia, confianza y simetría de miembro inferior.</p>
+
+    <div class="danger-box"><strong>¿Cuándo aplicar?</strong><p>NO antes de la semana 16–20 post-reconstrucción. Requiere: extensión completa sin déficit, sin derrame articular, cuádriceps > 70% de fuerza isométrica comparado con el lado sano.</p></div>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Instrucción exacta</div><div class="step-desc">"Salta lo más lejos posible con una sola pierna y aterriza en esa misma pierna. Mantén el equilibrio 2 segundos antes de medir."</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Medición</div><div class="step-desc">Marca el punto de despegue (talón) y el punto de aterrizaje (talón). Distancia en cm. 3 intentos por lado — toma el mejor.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">LSI — Limb Symmetry Index</div><div class="step-desc">La app lo calcula: LSI = (pierna operada ÷ pierna sana) × 100. Meta de retorno al deporte: ≥ 90%.</div></div></div>
+    </div>
+
+    <h3>Interpretación del LSI</h3>
+    <div class="tbl-wrap"><table class="tbl-red">
+      <thead><tr><th>LSI obtenido</th><th>Interpretación</th><th>Decisión clínica</th></tr></thead>
+      <tbody>
+        <tr><td>≥ 90%</td><td>Simetría funcional adecuada</td><td>Avanzar en protocolo de retorno</td></tr>
+        <tr><td>80 – 89%</td><td>Déficit moderado</td><td>Continuar rehabilitación 4–6 semanas más</td></tr>
+        <tr><td>&lt; 80%</td><td>Déficit significativo</td><td>Revisar fuerza de cuádriceps, control motor y confianza psicológica</td></tr>
+      </tbody>
+    </table></div>
+    <div class="ref">Evidencia: Grindem H et al. (2016) BJSM — Single-leg hop test after ACL reconstruction. / Kyritsis P et al. (2016) BJSM — Criteria for return to sport.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 10 THOMAS TEST -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s10">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <span class="section-title">Thomas Test</span>
+      <span class="profile-badge badge-green">Gimnasio / Activo</span>
+    </div>
+    <p class="intro">Evalúa flexibilidad del iliopsoas, recto femoral y tensor de la fascia lata (TFL). Fundamental en sedentarios, runners y personas con dolor lumbar.</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Posición</div><div class="step-desc">Paciente sentado al borde de la camilla. Se acuesta hacia atrás mientras abraza ambas rodillas al pecho.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Ejecución</div><div class="step-desc">Suelta una pierna y déjala colgar libremente. Observa la posición del muslo, la rodilla y la cadera en relación con la camilla.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Qué observar</div><div class="step-desc">¿El muslo queda paralelo a la camilla (normal)? ¿La rodilla puede doblar a 90° (normal)? ¿La cadera se abduce (TFL rígido)?</div></div></div>
+    </div>
+
+    <h3>Hallazgos y estructuras implicadas</h3>
+    <div class="tbl-wrap"><table class="tbl-green">
+      <thead><tr><th>Hallazgo</th><th>Estructura implicada</th></tr></thead>
+      <tbody>
+        <tr><td>Muslo elevado — no toca la camilla</td><td>Acortamiento de iliopsoas</td></tr>
+        <tr><td>Rodilla no llega a 90°</td><td>Acortamiento de recto femoral</td></tr>
+        <tr><td>Cadera en abducción</td><td>Rigidez de TFL / banda iliotibial</td></tr>
+        <tr><td>Rotación externa del muslo</td><td>Rigidez de piriforme o cápsula posterior de cadera</td></tr>
+      </tbody>
+    </table></div>
+    <div class="ref">Evidencia: Harvey D (1998) — Assessment of the flexibility of elite athletes. BJSM. / Peeler J & Anderson JE (2007) — Reliability of the Thomas test. J Orthop Sports Phys Ther.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 11 OVERHEAD SQUAT -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s11">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <span class="section-title">Overhead Squat — NASM</span>
+      <span class="profile-badge badge-green">Gimnasio / Activo</span>
+    </div>
+    <p class="intro">Evaluación de compensaciones en cadena cinética cerrada. Identifica desequilibrios musculares en toda la cadena posterior y anterior.</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Posición</div><div class="step-desc">Pies al ancho de hombros, paralelos. Brazos extendidos sobre la cabeza. 5 repeticiones lentas y controladas.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Vista anterior</div><div class="step-desc">Observa: ¿caen los arcos plantares (pronación)? ¿Las rodillas colapsan en valgo? ¿Hay asimetría lateral?</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Vista lateral</div><div class="step-desc">Observa: ¿Los brazos caen hacia adelante? ¿El tronco se inclina excesivamente? ¿Los talones se levantan?</div></div></div>
+    </div>
+
+    <h3>Compensaciones — músculos a inhibir y activar</h3>
+    <div class="tbl-wrap"><table class="tbl-dark">
+      <thead><tr><th>Compensación</th><th>Músculos sobreactivos (inhibir)</th><th>Músculos débiles (activar)</th></tr></thead>
+      <tbody>
+        <tr><td>Rodillas en valgo</td><td>Aductores, TFL, gastrocnemio</td><td>Glúteo medio, vasto medial, tibial anterior</td></tr>
+        <tr><td>Brazos hacia adelante</td><td>Pectoral menor, dorsal ancho</td><td>Trapecio inferior, manguito rotador</td></tr>
+        <tr><td>Talones elevados</td><td>Gastrocnemio, sóleo</td><td>Tibial anterior, peroneales</td></tr>
+        <tr><td>Tronco inclinado adelante</td><td>Psoas, aductores</td><td>Glúteo mayor, core profundo</td></tr>
+      </tbody>
+    </table></div>
+    <div class="ref">Evidencia: Clark MA & Lucett SC (2011) — NASM Essentials of Corrective Exercise Training. Lippincott Williams & Wilkins.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 12 PLANK -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s12">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <span class="section-title">Plank Test</span>
+      <span class="profile-badge badge-green">Gimnasio / Activo</span>
+    </div>
+    <p class="intro">Evalúa resistencia de los estabilizadores del core (transverso del abdomen, multífido, glúteos). Fácil de aplicar y muy sensible a deterioro del control motor.</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Posición</div><div class="step-desc">En plancha sobre antebrazos. Codos bajo hombros. Cuerpo recto como tabla desde talones hasta cabeza. Sin elevar glúteos ni hundir la cadera.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Instrucción</div><div class="step-desc">"Mantén la posición respirando con normalidad." Cronometra el tiempo hasta que aparezca compensación significativa.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Cuándo detener</div><div class="step-desc">Cuando la cadera caiga más de 2 cm de la posición neutra, el paciente contenga la respiración o pida parar.</div></div></div>
+    </div>
+
+    <h3>Valores de referencia (adulto activo)</h3>
+    <div class="tbl-wrap"><table class="tbl-green">
+      <thead><tr><th>Tiempo sostenido</th><th>Interpretación</th></tr></thead>
+      <tbody>
+        <tr><td>&lt; 30 segundos</td><td>Déficit significativo de resistencia de core</td></tr>
+        <tr><td>30 – 60 segundos</td><td>Rango bajo — trabajar progresión</td></tr>
+        <tr><td>60 – 120 segundos</td><td>Rango funcional aceptable</td></tr>
+        <tr><td>&gt; 120 segundos</td><td>Buena resistencia de core</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 13 SIT AND REACH -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s13">
+    <div class="section-header">
+      <span class="section-num">13</span>
+      <span class="section-title">Sit and Reach</span>
+      <span class="profile-badge badge-amber">Empresarial</span>
+    </div>
+    <p class="intro">Test de flexibilidad de isquiotibiales y zona lumbar baja. Ampliamente utilizado en programas de salud ocupacional y adulto mayor.</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Material</div><div class="step-desc">Cajón de Sit and Reach (estándar: línea de los pies en el cm 26) o cinta en el piso con regla.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Posición</div><div class="step-desc">Sentado en el piso, rodillas completamente extendidas, pies contra el cajón o la pared. Sin zapatos.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Instrucción exacta</div><div class="step-desc">"Inclínate lentamente hacia adelante con las dos manos juntas. Llega todo lo que puedas sin doblar las rodillas. Mantén 2 segundos." 3 intentos — toma el mejor.</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Medición</div><div class="step-desc">Distancia en cm que pasan los dedos más allá de los pies (positivo) o que quedan antes (negativo).</div></div></div>
+    </div>
+
+    <h3>Clasificación por sexo</h3>
+    <div class="tbl-wrap"><table class="tbl-amber">
+      <thead><tr><th>Clasificación</th><th>Mujeres (cm)</th><th>Hombres (cm)</th></tr></thead>
+      <tbody>
+        <tr><td>Excelente</td><td>&gt; 27</td><td>&gt; 27</td></tr>
+        <tr><td>Buena</td><td>21 – 27</td><td>17 – 27</td></tr>
+        <tr><td>Media</td><td>11 – 20</td><td>6 – 16</td></tr>
+        <tr><td>Baja</td><td>1 – 10</td><td>0 – 5</td></tr>
+        <tr><td>Muy baja</td><td>&lt; 0</td><td>&lt; 0</td></tr>
+      </tbody>
+    </table></div>
+    <div class="ref">Evidencia: ACSM Guidelines for Exercise Testing and Prescription, 11th Ed. (2022). / Wells KF & Dillon EK (1952) — The Sit and Reach Test. Res Q.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 14 MARCHA 4M -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s14">
+    <div class="section-header">
+      <span class="section-num">14</span>
+      <span class="section-title">Test de Marcha 4 metros</span>
+      <span class="profile-badge badge-amber">Empresarial</span>
+    </div>
+    <p class="intro">Medida de velocidad de marcha habitual. Marcador funcional del estado de salud general, sarcopenia y riesgo de caída en adulto mayor.</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Preparación</div><div class="step-desc">Marca 4 metros con cinta en el suelo (superficie plana, sin obstáculos). El paciente sin zapatos de tacón. Cronómetro en mano.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Instrucción exacta</div><div class="step-desc">"Camina a tu velocidad normal, como si fueras por el pasillo de tu casa." No correr. Mide desde el primer pie que pasa la línea de inicio hasta el primero que pasa la de llegada.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Cálculo</div><div class="step-desc">Velocidad (m/s) = 4 ÷ tiempo en segundos. 2 intentos — toma el promedio.</div></div></div>
+    </div>
+
+    <h3>Interpretación</h3>
+    <div class="tbl-wrap"><table class="tbl-amber">
+      <thead><tr><th>Velocidad (m/s)</th><th>Interpretación</th><th>Acción recomendada</th></tr></thead>
+      <tbody>
+        <tr><td>&gt; 1.0 m/s</td><td>Normal — buen pronóstico funcional</td><td>Mantenimiento y prevención</td></tr>
+        <tr><td>0.8 – 1.0 m/s</td><td>Límite — monitorear</td><td>Programa de fortalecimiento y equilibrio</td></tr>
+        <tr><td>&lt; 0.8 m/s</td><td>Bajo — mayor riesgo de caída</td><td>Intervención prioritaria</td></tr>
+        <tr><td>&lt; 0.6 m/s</td><td>Muy bajo — señal de alarma</td><td>Derivación médica urgente si no hay causa conocida</td></tr>
+      </tbody>
+    </table></div>
+    <div class="ref">Evidencia: Studenski S et al. (2011) JAMA — Gait speed and survival in older adults. / Middleton A et al. (2015) Gait & Posture — normative values.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 15 EQUILIBRIO MONOPODAL -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s15">
+    <div class="section-header">
+      <span class="section-num">15</span>
+      <span class="section-title">Equilibrio Monopodal</span>
+      <span class="profile-badge badge-amber">Empresarial</span>
+    </div>
+    <p class="intro">Evalúa el sistema de control postural y es predictor independiente de caídas en adulto mayor. Se evalúa con ojos abiertos y ojos cerrados.</p>
+
+    <h3>Protocolo</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Preparación</div><div class="step-desc">El paciente descalzo, de pie cerca de una pared (seguridad). Manos en la cintura. Cronómetro.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Instrucción</div><div class="step-desc">"Levanta un pie y mantén el equilibrio. Avísame si vas a perderlo." Detén cuando: toca el suelo con el pie libre, mueve los brazos bruscamente, o mueve el pie de apoyo.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">4 variantes</div><div class="step-desc">1) Ojos abiertos — derecho · 2) Ojos abiertos — izquierdo · 3) Ojos cerrados — derecho · 4) Ojos cerrados — izquierdo. Máximo 60 segundos por intento.</div></div></div>
+    </div>
+
+    <h3>Valores normativos</h3>
+    <div class="tbl-wrap"><table class="tbl-amber">
+      <thead><tr><th>Condición</th><th>Normal (adulto joven)</th><th>Alerta (adulto mayor)</th><th>Alto riesgo caída</th></tr></thead>
+      <tbody>
+        <tr><td>Ojos abiertos</td><td>&gt; 30 segundos</td><td>&lt; 10 segundos</td><td>&lt; 5 segundos</td></tr>
+        <tr><td>Ojos cerrados</td><td>&gt; 20 segundos</td><td>&lt; 5 segundos</td><td>No puede sostener</td></tr>
+      </tbody>
+    </table></div>
+    <div class="ref">Evidencia: Springer BA et al. (2007) J Geriatric PT — Normative values for single leg stance test. / Bohannon RW et al. (1984) PT — Standing balance in the elderly.</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 16 FOTOGRAFÍA POSTURAL -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <section class="section" id="s16">
+    <div class="section-header">
+      <span class="section-num">16</span>
+      <span class="section-title">Fotografía Postural</span>
+      <span class="profile-badge badge-blue">Todos los perfiles</span>
+    </div>
+    <p class="intro">La fotografía postural estandarizada es la herramienta más poderosa para mostrar evolución al paciente y para el expediente clínico. Su valor está en la consistencia del protocolo.</p>
+
+    <h3>Configuración del espacio (fija y permanente)</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Fondo</div><div class="step-desc">Pared lisa de un solo color — blanco, gris claro o azul claro. Sin muebles, ventanas activas ni distracciones. Una pared de tu consulta dedicada exclusivamente a esto.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Marca en el piso</div><div class="step-desc">Cinta adhesiva en X donde el paciente se para siempre. A 2–2.5 metros de la cámara. No la muevas nunca.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Cámara</div><div class="step-desc">Teléfono en trípode a la altura del ombligo del paciente (aprox. 95–100 cm del suelo). Modo retrato DESACTIVADO. Sin zoom. Misma configuración siempre.</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Iluminación</div><div class="step-desc">Luz natural lateral (ventana al lado) o luz artificial difusa. Nunca detrás del paciente — el cuerpo queda en sombra. Evita sombras duras sobre el cuerpo.</div></div></div>
+    </div>
+
+    <h3>Ropa e instrucción exacta al paciente</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">✓</div><div class="step-body"><div class="step-title">Ropa</div><div class="step-desc">Mujer: top deportivo ajustado + short o licra hasta la rodilla. Hombre: short ajustado. Sin zapatos ni medias. Sin accesorios que tapen referencias anatómicas.</div></div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body"><div class="step-title">Instrucción exacta</div><div class="step-desc">"Párate en la marca, pies paralelos al ancho de tus caderas. Brazos relajados a los lados. Mira un punto fijo a la altura de tus ojos. Respira normal. NO te corrijas." Espera 5 segundos antes de capturar.</div></div></div>
+      <div class="step"><div class="step-num">✗</div><div class="step-body"><div class="step-title">Lo que NUNCA debes decir</div><div class="step-desc">"Párate derecho" — esto distorsiona la postura habitual. Quieres documentar el patrón real del paciente, no uno corregido artificialmente.</div></div></div>
+    </div>
+
+    <h3>Las 4 fotos del set básico</h3>
+    <div class="tbl-wrap"><table class="tbl-teal">
+      <thead><tr><th>Vista</th><th>Descripción</th><th>Referencias a capturar</th></tr></thead>
+      <tbody>
+        <tr><td>Anterior</td><td>Paciente de frente, mira a la cámara</td><td>Cabeza completa hasta pies. Hombros, crestas ilíacas, rodillas, pies.</td></tr>
+        <tr><td>Posterior</td><td>Paciente de espaldas</td><td>Cabeza completa hasta pies. Escápulas, columna, talones.</td></tr>
+        <tr><td>Lateral izquierda</td><td>Perfil izquierdo, mira al frente (no a la cámara)</td><td>Maléolo externo visible. Oído, hombro, trocánter, rodilla, maléolo.</td></tr>
+        <tr><td>Lateral derecha</td><td>Perfil derecho, mira al frente</td><td>Mismo protocolo que lateral izq. Indispensable para comparar.</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="tip-box">
+      <strong>Regla de oro de la fotografía postural</strong>
+      <p>Para que la comparativa de evolución sea válida, SIEMPRE usa la misma marca en el piso, la misma distancia de cámara, la misma altura del teléfono y la misma iluminación. Una diferencia de 20 cm en la posición de la cámara hace la comparativa completamente inútil. Registra las condiciones de la primera sesión y reprodúcelas exactamente en cada sesión posterior.</p>
+    </div>
+
+    <h3>Fotos adicionales según el caso</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">+</div><div class="step-body"><div class="step-title">Zona de lesión</div><div class="step-desc">Foto de cerca (30–40 cm) de la zona si hay edema, hematoma, cicatriz o asimetría muscular visible. Incluye referencia de tamaño (regla o moneda).</div></div></div>
+      <div class="step"><div class="step-num">+</div><div class="step-body"><div class="step-title">Durante test funcional</div><div class="step-desc">Captura el peor momento del movimiento — no el inicio. Ej: en Single Leg Squat, el punto de mayor valgo de rodilla. En Deep Squat, el punto más bajo.</div></div></div>
+      <div class="step"><div class="step-num">+</div><div class="step-body"><div class="step-title">Comparativa de evolución</div><div class="step-desc">Cada 4–6 sesiones con las mismas condiciones. Usa el comparador de la app. Es la herramienta más motivadora para el paciente — ver el cambio con sus propios ojos.</div></div></div>
+    </div>
+  </section>
+
+  <!-- PIE DE PÁGINA -->
+  <div style="margin-top:60px;padding-top:20px;border-top:2px solid var(--teal);text-align:center;color:var(--gray);font-size:.82rem">
+    <div style="font-family:var(--font-h);font-size:1.1rem;color:var(--teal-dark);font-weight:600;margin-bottom:4px">Jessica Ocampo Fisioterapeuta</div>
+    <div>jessicaocampoft.com · WhatsApp: 3136467945 · Pereira, Colombia</div>
+    <div style="margin-top:8px;font-size:.75rem;font-style:italic">Los valores normativos y protocolos están basados en evidencia científica publicada. Consulta las fuentes primarias para mayor detalle clínico.</div>
+  </div>
+
+</main>
+
+<script>
+// Marcar link activo en sidebar según scroll
+const sections = document.querySelectorAll('.section');
+const links = document.querySelectorAll('.sb-link');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.sb-link[href="#${e.target.id}"]`);
+      if(active) active.classList.add('active');
+    }
+  });
+}, {threshold: 0.3});
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

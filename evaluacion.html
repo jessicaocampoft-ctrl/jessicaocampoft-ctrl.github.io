@@ -991,13 +991,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 
 <!-- MODAL EJERCICIOS -->
 <div id="modalEjercicios" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9001;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--s1);border-radius:14px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;position:relative">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:600">Plan de ejercicios para casa</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-teal btn-sm" onclick="exportarEjerciciosPDF()">📄 Exportar PDF</button>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modalEjercicios').style.display='none'">✕ Cerrar</button>
-      </div>
+  <div style="background:var(--s1);border-radius:14px;max-width:620px;width:100%;max-height:88vh;overflow-y:auto;padding:28px;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:600">🏋 Plan de ejercicios para casa</div>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modalEjercicios').style.display='none'">✕ Cerrar</button>
+    </div>
+    <p style="color:var(--muted);font-size:.82rem;margin-bottom:14px">Basado en evidencia científica (McGill, Sahrmann, Janda). Personalizado según los hallazgos del paciente.</p>
+    <!-- Barra de acciones -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      <button class="btn btn-teal btn-sm" onclick="exportarEjerciciosPDF()">📄 Descargar PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="enviarEjerciciosPorCorreo()">📧 Enviar por correo</button>
+      <button class="btn btn-ghost btn-sm" style="border-color:#25d366;color:#25d366" onclick="enviarEjerciciosPorWpp()">💬 Enviar por WhatsApp</button>
     </div>
     <div id="ejerciciosBody"></div>
   </div>
@@ -1028,15 +1032,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
   </div>
 </div>
 
-<!-- MODAL CORREO -->
+<!-- MODAL CORREO / WHATSAPP -->
 <div id="modalEmail" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9002;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--s1);border-radius:14px;max-width:480px;width:100%;padding:28px">
-    <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:600;margin-bottom:6px">📧 Enviar reporte por correo</div>
-    <p style="color:var(--muted);font-size:.82rem;margin-bottom:16px">Se abrirá tu correo (Gmail, Outlook, etc.) con el mensaje listo — solo haz clic en <strong>Enviar</strong>.</p>
-    <div class="field" style="margin-bottom:12px">
-      <label>Correo del paciente *</label>
-      <input id="emailDestino" type="email" placeholder="paciente@correo.com" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;outline:none;font-family:var(--font-b)">
-    </div>
+  <div style="background:var(--s1);border-radius:14px;max-width:500px;width:100%;padding:28px">
+    <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:600;margin-bottom:4px">📤 Enviar reporte al paciente</div>
+    <p style="color:var(--muted);font-size:.82rem;margin-bottom:16px">Elige cómo enviar el reporte. Puedes previsualizarlo antes de enviar.</p>
+
+    <!-- Tipo de reporte -->
     <div class="field" style="margin-bottom:12px">
       <label>Tipo de reporte</label>
       <select id="emailTipo" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;outline:none;font-family:var(--font-b)">
@@ -1045,18 +1047,62 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
         <option value="ejercicios">Plan de ejercicios para casa</option>
       </select>
     </div>
-    <div class="field" style="margin-bottom:18px">
+
+    <!-- Tabs canal -->
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button id="tabCorreo" onclick="seleccionarCanal('correo')" style="flex:1;padding:9px;border-radius:8px;border:2px solid var(--primary);background:var(--primary);color:#fff;font-family:var(--font-b);font-size:.85rem;cursor:pointer;transition:all .2s">📧 Correo electrónico</button>
+      <button id="tabWpp" onclick="seleccionarCanal('wpp')" style="flex:1;padding:9px;border-radius:8px;border:2px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-b);font-size:.85rem;cursor:pointer;transition:all .2s">💬 WhatsApp</button>
+    </div>
+
+    <!-- Campo correo -->
+    <div id="campoCorreo" class="field" style="margin-bottom:12px">
+      <label>Correo del paciente *</label>
+      <input id="emailDestino" type="email" placeholder="paciente@correo.com" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;outline:none;font-family:var(--font-b)">
+    </div>
+
+    <!-- Campo WhatsApp -->
+    <div id="campoWpp" class="field" style="display:none;margin-bottom:12px">
+      <label>Teléfono WhatsApp del paciente *</label>
+      <input id="wppDestino" type="tel" placeholder="3136467945" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;outline:none;font-family:var(--font-b)">
+      <div class="field-note">Solo el número, sin espacios (ej: 3136467945) — se agrega el +57 automáticamente</div>
+    </div>
+
+    <!-- Frase adicional -->
+    <div class="field" style="margin-bottom:16px">
       <label>Frase adicional (opcional)</label>
       <textarea id="emailMensaje" rows="2" placeholder="Recuerda tu cita el viernes a las 10am..." style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;resize:vertical;outline:none;font-family:var(--font-b)"></textarea>
     </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-teal" onclick="enviarPorCorreo()" style="flex:1">
+
+    <!-- Botones -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="previsualizarReporte()" style="flex:1;min-width:110px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-family:var(--font-b);font-size:.84rem;cursor:pointer">👁 Vista previa</button>
+      <button id="btnEnviarCorreo" onclick="enviarPorCorreo()" style="flex:2;padding:9px 14px;border-radius:8px;border:none;background:var(--primary);color:#fff;font-family:var(--font-b);font-size:.85rem;cursor:pointer;display:flex;align-items:center;gap:6px;justify-content:center">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
-        Abrir correo listo para enviar
+        Abrir correo listo
       </button>
-      <button class="btn btn-ghost" onclick="document.getElementById('modalEmail').style.display='none'">Cancelar</button>
+      <button id="btnEnviarWpp" onclick="enviarPorWhatsApp()" style="flex:2;padding:9px 14px;border-radius:8px;border:none;background:#25d366;color:#fff;font-family:var(--font-b);font-size:.85rem;cursor:pointer;display:none;align-items:center;gap:6px;justify-content:center">
+        💬 Abrir WhatsApp
+      </button>
+      <button onclick="document.getElementById('modalEmail').style.display='none'" style="padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-b);font-size:.84rem;cursor:pointer">✕</button>
     </div>
     <div id="emailStatus" style="margin-top:10px;font-size:.82rem;text-align:center"></div>
+  </div>
+</div>
+
+<!-- MODAL VISTA PREVIA REPORTE -->
+<div id="modalPreviewReporte" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9010;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--s1);border-radius:14px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;padding:28px;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-family:var(--font-h);font-size:1.1rem;font-weight:600">👁 Vista previa del reporte</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="descargarReporteTxt()" style="padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-family:var(--font-b);font-size:.8rem;cursor:pointer">⬇ Descargar .txt</button>
+        <button onclick="document.getElementById('modalPreviewReporte').style.display='none'" style="padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-b);font-size:.8rem;cursor:pointer">✕ Cerrar</button>
+      </div>
+    </div>
+    <div style="background:rgba(27,191,176,.08);border:1px solid rgba(27,191,176,.25);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:.82rem">
+      <strong>Asunto:</strong> <span id="previewAsuntoTexto" style="color:var(--text)"></span>
+    </div>
+    <pre id="previewCuerpo" style="white-space:pre-wrap;font-family:var(--font-b);font-size:.84rem;color:var(--text);line-height:1.75;background:var(--s2);border-radius:10px;padding:16px;border:1px solid var(--border);margin:0"></pre>
   </div>
 </div>
 
@@ -3869,42 +3915,145 @@ function calcularRiesgoLesion(){
 // ══════════════════════════════════════
 // GENERADOR DE EJERCICIOS (sin API)
 // ══════════════════════════════════════
+// ─── BASE DE EJERCICIOS (Evidencia: McGill 2015, Sahrmann 2002, Janda 1987, DNS, FRC) ───
 const EJERCICIOS_DB={
+
+  // ── Movilidad de sentadilla profunda ──
   deepSquat_bajo:[
-    {nombre:'Sentadilla con soporte',series:3,reps:'10',desc:'Sostente de una silla o TRX. Baja controlado hasta donde puedas sin dolor. Mantén los talones en el piso.'},
-    {nombre:'Movilidad de tobillo en pared',series:3,reps:'15 por lado',desc:'De pie frente a la pared, lleva la rodilla hacia la pared sin despegar el talón. Siente el estiramiento en la pantorrilla.'}
+    {nombre:'Sentadilla asistida con soporte',series:3,reps:'10 lentas',
+     desc:'Sostente de una silla o puerta con ambas manos. Baja lentamente doblando rodillas y cadera. Mantén el pecho arriba y los talones en el piso. Sube controlado. Si sientes dolor en rodillas, baja solo hasta la mitad.'},
+    {nombre:'Movilidad de tobillo en pared',series:3,reps:'15 por lado',
+     desc:'Párate a 10 cm de la pared, pon el pie adelante y empuja la rodilla hacia la pared sin que el talón se levante. Siente el estiramiento atrás del tobillo. Mueve el pie hacia atrás poco a poco para aumentar el rango.'},
+    {nombre:'Apertura de cadera en cuclillas',series:2,reps:'30 segundos',
+     desc:'En cuclillas con los pies separados al ancho de los hombros, apoya los codos en las rodillas y empuja suavemente hacia afuera. Mantén la espalda derecha. Respira profundo y relaja la cadera con cada exhalación.'}
   ],
+
+  // ── Control de rodilla en valgo ──
   valgus_rodilla:[
-    {nombre:'Activación de glúteo medio en banda',series:3,reps:'15 por lado',desc:'Con banda elástica en rodillas, camina de lado manteniendo los pies paralelos. No dejes que las rodillas se junten.'},
-    {nombre:'Clamshell',series:3,reps:'20 por lado',desc:'Acostado de lado con rodillas dobladas, abre y cierra la pierna de arriba como una almeja. Mantén la pelvis quieta.'}
+    {nombre:'Clamshell (almeja)',series:3,reps:'20 por lado',
+     desc:'Acuéstate de lado con rodillas dobladas a 45°. Abre la rodilla de arriba como una almeja sin que la pelvis se mueva. Siente el trabajo en el glúteo del lado de arriba. Si tienes banda elástica en las rodillas, mejor aún.'},
+    {nombre:'Puente de glúteo con rodillas separadas',series:3,reps:'15',
+     desc:'Boca arriba, pies en el piso, rodillas separadas al ancho de los hombros. Sube la cadera apretando los glúteos. Mantén 2 segundos arriba. No dejes que las rodillas se caigan hacia adentro al subir.'},
+    {nombre:'Sentadilla un solo pie en pared',series:3,reps:'8 por lado',
+     desc:'De pie a 30 cm de la pared, apoya ligeramente una mano. Levanta un pie y baja lentamente con el otro doblando la rodilla. Asegúrate que la rodilla apunte hacia el segundo dedo del pie, no hacia adentro. Sube controlado.'}
   ],
+
+  // ── Estabilidad lumbo-pélvica (McGill Big 3) ──
   bird_dog_bajo:[
-    {nombre:'Bird Dog progresivo',series:3,reps:'8 por lado',desc:'En cuatro puntos, extiende brazo y pierna opuesta simultáneamente. Mantén la espalda neutra. Aguanta 3 segundos.'},
-    {nombre:'Dead Bug',series:3,reps:'8 por lado',desc:'Boca arriba, brazos al techo y rodillas a 90°. Baja brazo y pierna opuesta simultáneamente sin arquear la espalda.'}
+    {nombre:'Bird Dog (perro pájaro)',series:3,reps:'8 por lado',
+     desc:'En cuatro apoyos (manos y rodillas), extiende el brazo derecho y la pierna izquierda al mismo tiempo. Mantén la espalda completamente recta — ni hundida ni arqueada. Aguanta 5 segundos. Cambia de lado. Este ejercicio fue diseñado por el Dr. Stuart McGill para proteger la columna.'},
+    {nombre:'Dead Bug (insecto muerto)',series:3,reps:'6 por lado',
+     desc:'Boca arriba, levanta los brazos al techo y las rodillas a 90°. Baja el brazo derecho detrás de la cabeza y la pierna izquierda hacia el piso al mismo tiempo, sin que la espalda baja se despegue del suelo. Vuelve al centro y cambia. Respira al bajar.'},
+    {nombre:'Plancha lateral modificada',series:3,reps:'20 segundos por lado',
+     desc:'De lado, apóyate en el codo y en la rodilla doblada (versión fácil) o en el pie (avanzado). Levanta la cadera formando una línea recta. Aprieta el abdomen. Si la cadera cae, descansa y vuelve a intentar.'}
   ],
+
+  // ── Movilidad de cadera ──
   hip_mobility:[
-    {nombre:'Shin Box switches',series:3,reps:'5 por lado',desc:'Sentado en el piso, pasa de rotación interna a externa de cadera de forma controlada. Usa las manos si necesitas apoyo.'},
-    {nombre:'Estiramiento de psoas en estocada',series:3,reps:'30 segundos por lado',desc:'En posición de estocada, lleva la cadera hacia adelante y arriba. Siente el estiramiento en la ingle.'}
+    {nombre:'Shin Box (caja tibial)',series:3,reps:'5 cambios por lado',
+     desc:'Siéntate en el piso con las dos piernas dobladas a 90°, una adelante y una atrás. Pasa lentamente de un lado al otro usando la fuerza de la cadera. Usa las manos para ayudarte si necesitas. Siente cómo trabaja la cadera, no la espalda.'},
+    {nombre:'Estiramiento de psoas en estocada baja',series:3,reps:'30 segundos por lado',
+     desc:'Arrodíllate con una pierna adelante a 90°. Empuja la cadera hacia adelante y arriba sin doblar la espalda. Siente el estiramiento profundo en la ingle y la parte delantera del muslo. Aprieta el glúteo de la pierna de atrás para aumentar el estiramiento.'},
+    {nombre:'Rotación interna de cadera en piso',series:2,reps:'10 por lado',
+     desc:'Boca arriba, rodillas dobladas y pies juntos. Deja caer ambas rodillas hacia un lado despacio, como abriendo una puerta. Lleva solo hasta donde sea cómodo. Vuelve al centro y cambia de lado. No fueces. Este ejercicio mejora la movilidad de la articulación de la cadera.'}
   ],
+
+  // ── Postura cervical y cefalea tensional ──
   postural_cervical:[
-    {nombre:'Retracción cervical',series:3,reps:'10',desc:'Sentado erguido, lleva la cabeza hacia atrás como haciendo "papada". Mantén 5 segundos. No bajes la barbilla.'},
-    {nombre:'Fortalecimiento de cervicales profundos',series:3,reps:'10',desc:'Boca arriba, asiente la cabeza (barbilla adentro) y levanta levemente la cabeza. Mantén 5 segundos.'}
+    {nombre:'Retracción cervical (chin tuck)',series:3,reps:'10',
+     desc:'Sentado o de pie con la espalda derecha, lleva la barbilla hacia atrás como si quisieras hacer "papada". No bajes la cabeza — solo llévala hacia atrás. Mantén 5 segundos. Siente cómo se estiran los músculos del cuello. Este ejercicio correla la posición de la cabeza adelantada.'},
+    {nombre:'Fortalecimiento flexores cervicales profundos',series:3,reps:'10',
+     desc:'Boca arriba sin almohada. Mete levemente la barbilla (como mirando hacia el pecho sin levantar la cabeza) y luego levanta muy poquito la cabeza del piso. Mantén 5 segundos. Estos son los músculos estabilizadores profundos del cuello que suelen debilitarse con el uso del celular.'},
+    {nombre:'Estiramiento trapecio superior',series:3,reps:'30 segundos por lado',
+     desc:'Sentado, agarra el asiento de la silla con una mano. Con la otra mano sobre la cabeza, inclina suavemente la cabeza hacia el hombro opuesto al que estiras. Siente el estiramiento en el cuello y el hombro. Respira profundo y relaja con cada exhalación.'}
   ],
+
+  // ── Core básico (para todos) ──
   core:[
-    {nombre:'Plank con respiración',series:3,reps:'20-30 segundos',desc:'En posición de plancha, mantén la espalda recta. Respira normalmente durante todo el ejercicio.'},
-    {nombre:'Puente de glúteos',series:3,reps:'15',desc:'Boca arriba con rodillas dobladas, sube la cadera hasta que quede alineada con hombros y rodillas. Aprieta glúteos.'}
+    {nombre:'Puente de glúteos básico',series:3,reps:'15',
+     desc:'Boca arriba, rodillas dobladas y pies planos en el piso separados al ancho de la cadera. Aprieta el abdomen y los glúteos y sube la cadera hasta que hombros, cadera y rodillas formen una línea recta. Mantén 2 segundos arriba y baja controlado. No arquees la espalda al subir.'},
+    {nombre:'Plancha frontal con rodillas',series:3,reps:'20-30 segundos',
+     desc:'Apóyate en los antebrazos y las rodillas, con el cuerpo recto desde hombros hasta rodillas. Aprieta el abdomen como si fueras a recibir un golpe. Respira normalmente. No levantes la cadera ni la dejes caer. Cuando esto sea fácil, extiende las rodillas para hacerla completa.'},
+    {nombre:'Curl-up de McGill',series:3,reps:'8',
+     desc:'Boca arriba, una pierna estirada y la otra doblada. Pon las manos bajo la espalda baja para mantenerla en su curva natural. Levanta ligeramente la cabeza y los hombros — no más de 5 cm. Mantén 8 segundos. Este ejercicio fue diseñado específicamente para fortalecer el abdomen sin cargar la columna.'}
+  ],
+
+  // ── Hombro y manguito rotador ──
+  hombro_rotador:[
+    {nombre:'Rotación externa con banda o toalla',series:3,reps:'15 por lado',
+     desc:'De pie, dobla el codo a 90° pegado al cuerpo. Con una banda elástica o toalla enrollada, lleva el antebrazo hacia afuera sin que el codo se separe del costado. Siente el trabajo en la parte posterior del hombro. Este ejercicio fortalece los músculos que estabilizan el hombro (manguito rotador).'},
+    {nombre:'Ángeles en la pared',series:3,reps:'10',
+     desc:'De pie pegado a la pared con toda la espalda apoyada, incluyendo la cabeza. Levanta los brazos en posición de "W" (codos a 90°). Sube lentamente los brazos hacia arriba formando una "Y", deslizándolos por la pared. Vuelve a la "W". Si los brazos se despegan de la pared, baja hasta donde puedas mantener el contacto.'},
+    {nombre:'Péndulo de Codman',series:2,reps:'10 círculos por lado',
+     desc:'Inclínate hacia adelante apoyando una mano en una mesa. Deja que el otro brazo cuelgue libre. Muévelo suavemente haciendo círculos pequeños, primero en un sentido y luego en otro. No uses fuerza — deja que la gravedad y el movimiento del cuerpo muevan el brazo. Excelente para aliviar el dolor de hombro.'}
+  ],
+
+  // ── Rodilla y cuádriceps ──
+  rodilla_rehab:[
+    {nombre:'Activación de cuádriceps en silla',series:3,reps:'15 por lado',
+     desc:'Sentado en una silla con la espalda derecha, extiende una pierna hasta dejarla recta apretando el muslo. Mantén 5 segundos y baja controlado. Siente cómo trabaja la parte delantera del muslo. Ideal para empezar a fortalecer la rodilla sin cargar peso.'},
+    {nombre:'Mini sentadilla en pared',series:3,reps:'12',
+     desc:'De pie con la espalda apoyada en la pared, desliza hacia abajo hasta que los muslos formen 30-45° con el piso (no más). Las rodillas deben quedar sobre los pies, no más adelante. Mantén 3 segundos y sube. Aumenta el ángulo muy poco a poco a medida que progresas.'},
+    {nombre:'Subida de escalón controlada',series:3,reps:'10 por lado',
+     desc:'Usa el primer escalón o un libro grueso. Sube con un pie y controla la bajada con el mismo pie, sin golpear. El pie de apoyo debe estar completamente plano, la rodilla apuntando al segundo dedo del pie. Sube despacio — el control importa más que la velocidad.'}
+  ],
+
+  // ── Espalda baja y lumbar ──
+  lumbar_dolor:[
+    {nombre:'Respiración diafragmática en piso',series:3,reps:'8 respiraciones',
+     desc:'Boca arriba con rodillas dobladas. Pon una mano en el pecho y otra en el abdomen. Inhala por la nariz inflando el abdomen (la mano de abajo sube, la de arriba no se mueve). Exhala lento por la boca. Esta respiración activa el diafragma y reduce la tensión en la espalda baja. Haz esto antes de los demás ejercicios.'},
+    {nombre:'Rotaciones de columna en piso',series:3,reps:'10 por lado',
+     desc:'Boca arriba, rodillas juntas y dobladas. Lleva las rodillas hacia un lado despacio hasta donde sea cómodo, sin que los hombros se levanten. Vuelve al centro y cambia de lado. Este ejercicio moviliza la columna lumbar y libera tensión. No fuerces el rango.'},
+    {nombre:'Extensión de cadera boca abajo',series:3,reps:'10 por lado',
+     desc:'Boca abajo con las piernas estiradas. Aprieta el glúteo de un lado y levanta esa pierna 15-20 cm del piso sin doblar la rodilla. Mantén 2 segundos. Baja controlado. No arquees la espalda — el movimiento viene de la cadera, no de la espalda. Esto fortalece los glúteos que suelen estar débiles en el dolor lumbar.'}
+  ],
+
+  // ── Tobillo y equilibrio ──
+  tobillo_estabilidad:[
+    {nombre:'Elevación de talones de pie',series:3,reps:'15',
+     desc:'De pie, apóyate ligeramente en una pared o silla. Sube en puntas de pies lo más alto que puedas. Mantén 2 segundos arriba y baja muy lentamente — cuenta hasta 3 al bajar. El control al bajar es lo más importante. Esto fortalece la pantorrilla y estabiliza el tobillo.'},
+    {nombre:'Equilibrio en un solo pie',series:3,reps:'20-30 segundos por lado',
+     desc:'De pie cerca de la pared por seguridad. Levanta un pie del piso y mantén el equilibrio. Empieza con los ojos abiertos. Cuando esto sea fácil, intenta con los ojos cerrados. Si te cuesta mucho, apoya los dedos en la pared. El equilibrio mejora la propiocepción del tobillo.'},
+    {nombre:'Abecedario con el tobillo',series:2,reps:'1 abecedario por pie',
+     desc:'Sentado en una silla, levanta un pie del piso. Traza cada letra del abecedario en el aire con los dedos del pie, usando el movimiento del tobillo. Muévelo en todas las direcciones. Este ejercicio moviliza el tobillo en todos los planos y es excelente para la recuperación post-esguince.'}
+  ],
+
+  // ── Postura general y columna torácica ──
+  postura_toracica:[
+    {nombre:'Extensión torácica sobre rodillo o toalla',series:2,reps:'60 segundos',
+     desc:'Enrolla una toalla grande o usa un rodillo de espuma. Apóyalo debajo de la espalda media (entre los omóplatos) con las rodillas dobladas. Deja que la espalda se doble suavemente sobre el rodillo. Respira profundo. Mueve el rodillo un poco más arriba y repite. Esto abre la espalda media que se tensa con el trabajo de escritorio.'},
+    {nombre:'Apertura de pecho con brazos en W',series:3,reps:'10',
+     desc:'De pie o sentado, lleva los brazos a los costados con codos doblados a 90° formando una "W". Junta los omóplatos y lleva los codos hacia atrás. Mantén 3 segundos. Siente cómo se abre el pecho y se activa la parte posterior de los hombros. Perfecto para contrarrestar horas frente al computador.'},
+    {nombre:'Rotación torácica en cuatro apoyos',series:3,reps:'8 por lado',
+     desc:'En cuatro apoyos (manos y rodillas). Pon una mano detrás de la cabeza. Rota el codo hacia el techo, siguiendo con la mirada hacia arriba. Siente la rotación en la espalda media, no en la espalda baja. Vuelve al centro y repite. La espalda baja debe quedarse quieta — solo gira la parte del medio.'}
   ]
 };
 
 function generarEjercicios(){
   let ejercicios=[];
+  // Sentadilla profunda deteriorada
   if((S.tests.deepSquat||3)<=1)ejercicios.push(...EJERCICIOS_DB.deepSquat_bajo);
+  // Control de rodilla en valgo
   if(S.tests['singleLegSquat_comp_Valgo de rodilla'])ejercicios.push(...EJERCICIOS_DB.valgus_rodilla);
+  // Estabilidad lumbo-pélvica (Bird Dog, Dead Bug - McGill)
   if((S.tests['birdDog_derecho']||3)<=1||(S.tests['birdDog_izquierdo']||3)<=1)ejercicios.push(...EJERCICIOS_DB.bird_dog_bajo);
+  // Movilidad de cadera
   if(S.tests.shinbox_ri_derecho&&S.tests.shinbox_ri_derecho<25)ejercicios.push(...EJERCICIOS_DB.hip_mobility);
+  // Postura cervical / cabeza adelantada
   if(S.tests['postura_Vista lateral_Adelantamiento cefálico'])ejercicios.push(...EJERCICIOS_DB.postural_cervical);
+  // Dolor lumbar
+  if((S.hc.zonas||[]).some(z=>z.region&&z.region.toLowerCase().includes('lumbar')))ejercicios.push(...EJERCICIOS_DB.lumbar_dolor);
+  // Hombro / manguito
+  if((S.hc.zonas||[]).some(z=>z.region&&(z.region.toLowerCase().includes('hombro')||z.region.toLowerCase().includes('shoulder'))))ejercicios.push(...EJERCICIOS_DB.hombro_rotador);
+  // Rodilla
+  if((S.hc.zonas||[]).some(z=>z.region&&z.region.toLowerCase().includes('rodilla')))ejercicios.push(...EJERCICIOS_DB.rodilla_rehab);
+  // Tobillo
+  if((S.hc.zonas||[]).some(z=>z.region&&(z.region.toLowerCase().includes('tobillo')||z.region.toLowerCase().includes('pie'))))ejercicios.push(...EJERCICIOS_DB.tobillo_estabilidad);
+  // Postura torácica deteriorada
+  if(S.tests['postura_Vista lateral_Hipercifosis dorsal']||S.tests['postura_Vista posterior_Escoliosis'])ejercicios.push(...EJERCICIOS_DB.postura_toracica);
+  // Core siempre se incluye
   ejercicios.push(...EJERCICIOS_DB.core);
-  ejercicios=ejercicios.filter((e,i,a)=>a.findIndex(x=>x.nombre===e.nombre)===i).slice(0,8);
+  ejercicios=ejercicios.filter((e,i,a)=>a.findIndex(x=>x.nombre===e.nombre)===i).slice(0,10);
   if(!ejercicios.length){toast('No hay hallazgos suficientes para generar ejercicios aún','warn');return;}
   S.ejercicios=ejercicios;
   const modal=document.getElementById('modalEjercicios');
@@ -3920,6 +4069,20 @@ function generarEjercicios(){
       <p style="font-size:.82rem;color:var(--muted);margin-top:6px;line-height:1.6">${e.desc}</p>
     </div>`).join('')}`;
   modal.style.display='flex';
+}
+
+function enviarEjerciciosPorCorreo(){
+  document.getElementById('modalEjercicios').style.display='none';
+  document.getElementById('emailTipo').value='ejercicios';
+  abrirModalEmail();
+  seleccionarCanal('correo');
+}
+
+function enviarEjerciciosPorWpp(){
+  document.getElementById('modalEjercicios').style.display='none';
+  document.getElementById('emailTipo').value='ejercicios';
+  abrirModalEmail();
+  seleccionarCanal('wpp');
 }
 
 function exportarEjerciciosPDF(){
@@ -4184,35 +4347,47 @@ async function generarPDFAlta(){
 }
 
 // ══════════════════════════════════════
-// ENVÍO POR CORREO
+// ENVÍO DE REPORTES (Correo + WhatsApp + Vista Previa)
 // ══════════════════════════════════════
+let _canalEnvio='correo';
+
 function abrirModalEmail(){
   if(S.hc.email)document.getElementById('emailDestino').value=S.hc.email;
+  if(S.hc.telefono)document.getElementById('wppDestino').value=S.hc.telefono.replace(/\D/g,'');
   document.getElementById('emailStatus').textContent='';
   document.getElementById('emailMensaje').value='';
+  seleccionarCanal('correo');
   document.getElementById('modalEmail').style.display='flex';
 }
 
-function enviarPorCorreo(){
-  const email=document.getElementById('emailDestino').value.trim();
+function seleccionarCanal(canal){
+  _canalEnvio=canal;
+  const esWpp=canal==='wpp';
+  document.getElementById('campoCorreo').style.display=esWpp?'none':'block';
+  document.getElementById('campoWpp').style.display=esWpp?'block':'none';
+  document.getElementById('btnEnviarCorreo').style.display=esWpp?'none':'flex';
+  document.getElementById('btnEnviarWpp').style.display=esWpp?'flex':'none';
+  // Estilos de tabs
+  const tC=document.getElementById('tabCorreo');
+  const tW=document.getElementById('tabWpp');
+  tC.style.background=esWpp?'transparent':'var(--primary)';
+  tC.style.color=esWpp?'var(--muted)':'#fff';
+  tC.style.borderColor=esWpp?'var(--border)':'var(--primary)';
+  tW.style.background=esWpp?'#25d366':'transparent';
+  tW.style.color=esWpp?'#fff':'var(--muted)';
+  tW.style.borderColor=esWpp?'#25d366':'var(--border)';
+}
+
+function _generarContenidoReporte(){
   const tipo=document.getElementById('emailTipo').value;
   const mensajeExtra=document.getElementById('emailMensaje').value.trim();
-  const statusEl=document.getElementById('emailStatus');
-
-  if(!email||!email.includes('@')){
-    statusEl.textContent='⚠️ Ingresa un correo válido';
-    statusEl.style.color='#dc2626';
-    return;
-  }
-
   const nombre=(S.hc.nombre||'Paciente').split(' ')[0];
   const fecha=new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const sesionesOk=S.sesiones.filter(s=>s.estado==='Completada').length;
   const evaIni=S.sesiones.length?S.sesiones[0].evaIni:S.hc.eva;
   const evaFin=S.sesiones.length?S.sesiones[S.sesiones.length-1].evaFin:S.hc.eva;
 
-  let asunto='';
-  let cuerpo='';
+  let asunto='',cuerpo='';
 
   if(tipo==='paciente'){
     asunto=`Tu reporte de fisioterapia — Jessica Ocampo`;
@@ -4222,70 +4397,123 @@ Te enviamos el resumen de tu proceso de recuperación con Jessica Ocampo Fisiote
 
 📅 Fecha: ${fecha}
 ✅ Sesiones completadas: ${sesionesOk}
-📉 EVA inicial: ${evaIni}/10 → EVA final: ${evaFin}/10
-${S.hc.objetivos.length?'🎯 Objetivos: '+S.hc.objetivos.join(', '):''}
+📉 Dolor inicial: ${evaIni}/10 → Dolor final: ${evaFin}/10
+${S.hc.objetivos&&S.hc.objetivos.length?'🎯 Objetivos trabajados: '+S.hc.objetivos.join(', '):''}
 
 ${mensajeExtra||'Recuerda seguir con los ejercicios en casa y escribirnos si tienes alguna duda.'}
 
-Si quieres agendar tu próxima cita:
+Para agendar tu próxima cita:
 🌐 jessicaocampoft.com
 📱 WhatsApp: 3136467945
 
 Con cariño,
 Jessica Ocampo Fisioterapeuta 💚`;
+
   }else if(tipo==='tecnico'){
     asunto=`Historia clínica — ${S.hc.nombre||'Paciente'} — ${new Date().toLocaleDateString('es-CO')}`;
-    cuerpo=`Historia clínica fisioterapéutica
+    cuerpo=`HISTORIA CLÍNICA FISIOTERAPÉUTICA
 Generada el ${fecha}
 
-PACIENTE: ${S.hc.nombre||'—'}
+━━━ DATOS DEL PACIENTE ━━━
+Nombre: ${S.hc.nombre||'—'}
 Edad: ${S.hc.edad||'—'} años | Sexo: ${S.hc.sexo||'—'} | IMC: ${S.hc.imc||'—'} (${S.hc.imcClasif||'—'})
-Perfil: ${S.perfil||'—'} | Deporte: ${S.hc.deporte||'—'}
+Perfil: ${S.perfil||'—'} | Ocupación: ${S.hc.ocupacion||'—'}
+Deporte: ${S.hc.deporte||'—'}
 
-MOTIVO DE CONSULTA:
+━━━ MOTIVO DE CONSULTA ━━━
 ${S.hc.motivo||'—'}
 
-EVA INICIAL: ${S.hc.eva}/10 | Tipo lesión: ${S.hc.tipoLesion||'—'} | Evolución: ${S.hc.tiempoEvolucion||'—'} ${S.hc.tiempoUnidad||''}
+━━━ EXAMEN INICIAL ━━━
+EVA: ${S.hc.eva}/10 | Tipo lesión: ${S.hc.tipoLesion||'—'} | Evolución: ${S.hc.tiempoEvolucion||'—'} ${S.hc.tiempoUnidad||''}
 Zonas de dolor: ${(S.hc.zonas||[]).map(z=>z.region).join(', ')||'—'}
-Patologías: ${S.hc.patologias.join(', ')||'Ninguna'}
+Patologías: ${(S.hc.patologias||[]).join(', ')||'Ninguna'}
 Medicamentos: ${S.hc.medicamentos||'Ninguno'} | Alergias: ${S.hc.alergias||'Ninguna'}
 
-OBJETIVOS: ${S.hc.objetivos.join(', ')||'—'}
+━━━ OBJETIVOS TERAPÉUTICOS ━━━
+${(S.hc.objetivos||[]).join(', ')||'—'}
 
-SEGUIMIENTO: ${sesionesOk} sesiones completadas
+━━━ SEGUIMIENTO ━━━
+Sesiones completadas: ${sesionesOk}
 EVA inicial: ${evaIni}/10 → EVA final: ${evaFin}/10
 
-${mensajeExtra}
-
-Jessica Ocampo Fisioterapeuta
+${mensajeExtra?'━━━ NOTA ADICIONAL ━━━\n'+mensajeExtra+'\n\n':''}Jessica Ocampo Fisioterapeuta
 jessicaocampoft.com | WhatsApp: 3136467945`;
+
   }else{
-    // ejercicios
     asunto=`Plan de ejercicios para casa — ${nombre}`;
     const lista=(S.ejercicios||[]).map((e,i)=>
-      `${i+1}. ${e.nombre} — ${e.series} series × ${e.reps}\n   ${e.desc}`
+      `${i+1}. ${e.nombre}\n   Series: ${e.series} × ${e.reps}\n   ➤ ${e.desc}`
     ).join('\n\n');
     cuerpo=`Hola ${nombre}! 🏃
 
-Aquí tienes tu plan de ejercicios personalizado:
+Aquí está tu plan de ejercicios personalizado para hacer en casa.
+Recuerda: empieza despacio, sin dolor, y consulta si algo no se siente bien.
 
-${lista||'(Genera primero el plan en el módulo de tests)'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${lista||'(Primero genera el plan de ejercicios en la app)'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-${mensajeExtra||'Recuerda realizar los ejercicios con cuidado y detenerte si sientes dolor.'}
+${mensajeExtra||'Haz los ejercicios 3 veces por semana. Para si sientes dolor agudo.'}
 
-Cualquier duda:
+¿Tienes dudas? Escríbenos:
 🌐 jessicaocampoft.com | 📱 WhatsApp: 3136467945
 
 Jessica Ocampo Fisioterapeuta 💚`;
   }
+  return {asunto,cuerpo};
+}
 
-  // Abre el cliente de correo de la computadora con todo pre-llenado
+function previsualizarReporte(){
+  const {asunto,cuerpo}=_generarContenidoReporte();
+  document.getElementById('previewAsuntoTexto').textContent=asunto;
+  document.getElementById('previewCuerpo').textContent=cuerpo;
+  document.getElementById('modalPreviewReporte').style.display='flex';
+}
+
+function descargarReporteTxt(){
+  const {asunto,cuerpo}=_generarContenidoReporte();
+  const nombre=(S.hc.nombre||'paciente').replace(/ /g,'_');
+  const contenido=`Asunto: ${asunto}\n\n${cuerpo}`;
+  const blob=new Blob([contenido],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`reporte_${nombre}.txt`;a.click();
+  URL.revokeObjectURL(url);
+  toast('Reporte descargado ✓','ok');
+}
+
+function enviarPorCorreo(){
+  const email=document.getElementById('emailDestino').value.trim();
+  const statusEl=document.getElementById('emailStatus');
+  if(!email||!email.includes('@')){
+    statusEl.textContent='⚠️ Ingresa un correo válido';
+    statusEl.style.color='#dc2626';
+    return;
+  }
+  const {asunto,cuerpo}=_generarContenidoReporte();
   const mailtoLink=`mailto:${email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
   window.open(mailtoLink,'_blank');
-
   statusEl.innerHTML='✅ Se abrió tu cliente de correo con el mensaje listo.<br><span style="font-size:.75rem;color:var(--muted)">Solo da clic en <strong>Enviar</strong> desde tu correo (Gmail, Outlook, etc.)</span>';
   statusEl.style.color='#16a34a';
   toast('Correo preparado — solo haz clic en Enviar 📧','ok');
+}
+
+function enviarPorWhatsApp(){
+  const tel=document.getElementById('wppDestino').value.replace(/\D/g,'');
+  const statusEl=document.getElementById('emailStatus');
+  if(!tel||tel.length<7){
+    statusEl.textContent='⚠️ Ingresa un número de teléfono válido';
+    statusEl.style.color='#dc2626';
+    return;
+  }
+  const {cuerpo}=_generarContenidoReporte();
+  // Si no tiene código de país y parece colombiano, agrega +57
+  const numCompleto=tel.startsWith('57')||tel.startsWith('+57')?tel:'57'+tel;
+  const wppLink=`https://wa.me/${numCompleto}?text=${encodeURIComponent(cuerpo)}`;
+  window.open(wppLink,'_blank');
+  statusEl.innerHTML='✅ Se abrió WhatsApp con el mensaje listo.<br><span style="font-size:.75rem;color:var(--muted)">Solo da clic en <strong>Enviar</strong> en WhatsApp.</span>';
+  statusEl.style.color='#16a34a';
+  toast('WhatsApp abierto — solo haz clic en Enviar 💬','ok');
 }
 
 // ══════════════════════════════════════
