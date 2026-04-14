@@ -890,7 +890,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
         <div class="card" style="border:2px solid var(--border);cursor:pointer;transition:var(--tr)" onclick="generarPDF('paciente')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
           <div style="font-size:2rem;margin-bottom:10px">🧡</div>
           <div class="card-title" style="margin-bottom:6px;font-size:1rem">Reporte para el consultante</div>
-          <p style="font-size:.8rem;color:var(--muted)">Resumen visual y motivador: fotos comparativas, evolución de la molestia, logros del proceso y recomendaciones de movimiento.</p>
+          <p style="font-size:.8rem;color:var(--muted)">3 páginas: hallazgos en lenguaje simple con su impacto real, fotos posturales y una página de cierre que invita a agendar. Ideal para entregar al paciente.</p>
           <div class="btn-row" style="margin-top:14px"><button class="btn btn-teal btn-sm" onclick="event.stopPropagation();generarPDF('paciente')">Generar</button></div>
         </div>
       </div>
@@ -2918,13 +2918,15 @@ async function generarReportePostural(){
 
     positivos.forEach(item=>{
       if(y>H-15){doc.addPage();y=22;}
+      doc.setFillColor(220,38,38);doc.circle(17.5,y-1.2,1.2,'F');
       doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(220,38,38);
-      doc.text('⚠  '+item,16,y);y+=5;
+      doc.text(item,21,y);y+=5.5;
     });
     normales.forEach(item=>{
       if(y>H-15){doc.addPage();y=22;}
+      doc.setFillColor(22,163,74);doc.circle(17.5,y-1.2,1.2,'F');
       doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(22,163,74);
-      doc.text('✓  '+item.replace(' ✓',''),16,y);y+=5;
+      doc.text(item.replace(' ✓',''),21,y);y+=5.5;
     });
     y+=5;
   });
@@ -3456,63 +3458,273 @@ async function generarPDF(tipo){
     }
 
   }else{
-    // PDF PACIENTE — lenguaje simple
-    doc.setFont('helvetica','bold');doc.setFontSize(16);
-    doc.text(`¡Hola, ${(hc.nombre||'').split(' ')[0]}! 👋`,10,y);y+=8;
-    doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(107,114,128);
-    doc.text('Este es el resumen de tu proceso con Jessica Ocampo Fisioterapeuta',10,y);y+=10;
+    // ══════════════════════════════════════════════
+    // PDF PACIENTE — Diagnóstico + Estrategia ventas
+    // ══════════════════════════════════════════════
+    const T=[27,191,176],DK=[26,26,46],MT=[107,114,128],WH=[255,255,255];
+    const RD=[220,38,38],OR=[217,119,6],GR=[22,163,74];
 
-    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(27,191,176);
-    doc.text('Cómo llegaste',10,y);y+=5;
-    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
-    const motivoS=doc.splitTextToSize(`Tu motivo de consulta fue: ${hc.motivo||'—'}. Con un dolor inicial de ${hc.eva}/10.`,W-20);
-    doc.text(motivoS,10,y);y+=motivoS.length*4+6;
+    // Traducciones posturales
+    const tradP={
+      'Adelantamiento cefalico':      {s:'Cabeza proyectada hacia adelante',        e:'Genera tension en cuello y dolores de cabeza frecuentes'},
+      'Cabeza adelantada':            {s:'Cabeza adelantada de su posicion ideal',  e:'Cada cm adelante suma 5 kg de carga extra en tu cuello'},
+      'Cifosis dorsal aumentada':     {s:'Espalda media encorvada hacia adelante',  e:'Limita la respiracion y genera tension cronica en hombros'},
+      'Hiperlordosis lumbar':         {s:'Curvatura excesiva en la espalda baja',   e:'Causa n.1 de dolor lumbar — puede irradiar hacia las piernas'},
+      'Lordosis reducida / rectificada':{s:'Espalda baja perdio su curva natural',  e:'Dolor al sentarse mucho tiempo y rigidez matutina'},
+      'Hombro derecho elevado':       {s:'Hombro derecho mas alto que el izquierdo',e:'Tension cervical y posible dolor de cabeza'},
+      'Hombro izquierdo elevado':     {s:'Hombro izquierdo mas alto que el derecho',e:'Tension cervical y posible dolor de cabeza'},
+      'Escapulas aladas':             {s:'Omoplatos que sobresalen de la espalda',  e:'Debilidad en la espalda que afecta postura y fuerza'},
+      'Escoliosis aparente':          {s:'Columna con curvatura lateral visible',   e:'Sin correccion puede avanzar y causar dolor cronico'},
+      'Curva escoliotica derecha':    {s:'Columna desviada hacia la derecha',       e:'Genera compensaciones en todo el cuerpo'},
+      'Curva escoliotica izquierda':  {s:'Columna desviada hacia la izquierda',     e:'Genera compensaciones en todo el cuerpo'},
+      'Pelvis en anteversion':        {s:'Cadera inclinada hacia adelante',         e:'La causa mas comun de dolor lumbar'},
+      'Pelvis en retroversion':       {s:'Cadera inclinada hacia atras',            e:'Tension en gluteos y cadena posterior'},
+      'Valgo rodilla derecha':        {s:'Rodilla derecha apunta hacia adentro',    e:'Mayor desgaste del cartilago y riesgo de lesion'},
+      'Valgo rodilla izquierda':      {s:'Rodilla izquierda apunta hacia adentro',  e:'Mayor desgaste del cartilago y riesgo de lesion'},
+      'Varo rodilla derecha':         {s:'Rodilla derecha apunta hacia afuera',     e:'Riesgo de artrosis y dolor lateral de rodilla'},
+      'Varo rodilla izquierda':       {s:'Rodilla izquierda apunta hacia afuera',   e:'Riesgo de artrosis y dolor lateral de rodilla'},
+      'Pronacion pie derecho':        {s:'Pie derecho cae hacia adentro',           e:'Afecta toda la alineacion de la pierna'},
+      'Pronacion pie izquierdo':      {s:'Pie izquierdo cae hacia adentro',         e:'Afecta toda la alineacion de la pierna'},
+      'Rodilla en hiperextension':    {s:'Rodilla se bloquea hacia atras al pararte',e:'Sobrecarga articular que puede volverse lesion cronica'},
+      'Abdomen prominente':           {s:'Baja activacion de la zona central',      e:'La espalda baja compensa — riesgo de dolor lumbar'},
+      'Pliegues gluteos asimetricos': {s:'Caderas a diferente altura',              e:'Toda la cadena postural esta compensando'},
+      'Trapecio der. hipertonico':    {s:'Hombro derecho en tension constante',     e:'Genera rigidez y puede causar cefaleas tensionales'},
+      'Trapecio izq. hipertonico':    {s:'Hombro izquierdo en tension constante',   e:'Genera rigidez y puede causar cefaleas tensionales'},
+      'Escapula derecha elevada':     {s:'Omoplato derecho elevado',                e:'Tension muscular que limita el movimiento del brazo'},
+      'Escapula izquierda elevada':   {s:'Omoplato izquierdo elevado',              e:'Tension muscular que limita el movimiento del brazo'},
+    };
 
-    if(S.sesiones.length){
-      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(27,191,176);
-      doc.text('Tu proceso de recuperación',10,y);y+=5;
-      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
-      doc.text(`Completaste ${S.sesiones.filter(s=>s.estado==='Completada').length} sesiones.`,10,y);y+=4;
-      const ul=S.sesiones[S.sesiones.length-1];
-      if(ul){
-        const mejora=S.sesiones[0].evaIni-ul.evaFin;
-        if(mejora>0)doc.text(`Tu dolor bajó de ${S.sesiones[0].evaIni} a ${ul.evaFin} — ¡${mejora} puntos de mejora! 🎉`,10,y);y+=8;
+    // Obtener hallazgos posturales activos
+    const labsP={
+      ant_cabeza_adelantada:'Cabeza adelantada',ant_hombro_der_alto:'Hombro derecho elevado',
+      ant_hombro_izq_alto:'Hombro izquierdo elevado',ant_rodilla_valgo_der:'Valgo rodilla derecha',
+      ant_rodilla_valgo_izq:'Valgo rodilla izquierda',ant_rodilla_varo_der:'Varo rodilla derecha',
+      ant_rodilla_varo_izq:'Varo rodilla izquierda',ant_pronacion_der:'Pronacion pie derecho',
+      ant_pronacion_izq:'Pronacion pie izquierdo',ant_escoliosis_aparente:'Escoliosis aparente',
+      pos_escap_der_alta:'Escapula derecha elevada',pos_escap_izq_alta:'Escapula izquierda elevada',
+      pos_escap_aladas:'Escapulas aladas',pos_escoliosis_der:'Curva escoliotica derecha',
+      pos_escoliosis_izq:'Curva escoliotica izquierda',pos_pliegues_asimetricos:'Pliegues gluteos asimetricos',
+      pos_trapecio_der_hipertonico:'Trapecio der. hipertonico',pos_trapecio_izq_hipertonico:'Trapecio izq. hipertonico',
+      lat_cabeza_adelantada:'Adelantamiento cefalico',lat_cifosis_aumentada:'Cifosis dorsal aumentada',
+      lat_lordosis_aumentada:'Hiperlordosis lumbar',lat_lordosis_reducida:'Lordosis reducida / rectificada',
+      lat_rodilla_hiperext:'Rodilla en hiperextension',lat_pelvis_anteversion:'Pelvis en anteversion',
+      lat_pelvis_retroversion:'Pelvis en retroversion',lat_abdomen_prominente:'Abdomen prominente',
+    };
+    const P2=S.postura||{};
+    const hallazgosP=[...new Set(
+      Object.entries(P2).filter(([k,v])=>v&&labsP[k]).map(([k])=>labsP[k])
+    )];
+    const totalH=hallazgosP.length;
+    const riesgoLabel=P2.riesgo||P2.iaAnalisis?.riesgo||'';
+    const rColor=riesgoLabel.toLowerCase().includes('alto')?RD:riesgoLabel.toLowerCase().includes('moder')?OR:T;
+    const nombre1=(hc.nombre||'').split(' ')[0]||'Paciente';
+
+    // ── PAGINA 1: PORTADA ──
+    // Header clínica
+    doc.setFillColor(...T);doc.rect(0,0,W,20,'F');
+    if(_logoBase64){try{doc.addImage(_logoBase64,'PNG',7,1,38,18);}catch{}}
+    else{
+      doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...WH);
+      doc.text('Jessica Ocampo',10,10);
+      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text('FISIOTERAPEUTA · PEREIRA',10,16);
+    }
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...WH);
+    doc.text('jessicaocampoft.com',W-10,10,{align:'right'});
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);
+    doc.text('WhatsApp: 313 646 7945',W-10,16,{align:'right'});
+    y=30;
+
+    // Saludo paciente
+    doc.setFont('helvetica','bold');doc.setFontSize(22);doc.setTextColor(...DK);
+    doc.text('Hola, '+nombre1+'!',10,y);y+=9;
+    doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...MT);
+    doc.text('Este es tu reporte de postura y salud del movimiento.',10,y);y+=5;
+    doc.setFontSize(8);doc.text(new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'}),10,y);y+=10;
+
+    // Caja resumen con nivel de hallazgos
+    doc.setFillColor(...rColor);doc.roundedRect(10,y-3,W-20,18,3,3,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...WH);
+    const msgH=totalH>0?totalH+' hallazgo'+(totalH===1?'':'s')+' encontrado'+(totalH===1?'':'s')+' en tu postura':'Postura sin alteraciones significativas';
+    doc.text(msgH,W/2,y+5,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);
+    const subH=totalH>3?'Tu cuerpo necesita atencion — cada dia que pasa las compensaciones se vuelven habito':
+               totalH>0?'Hay puntos importantes a trabajar. Con el programa correcto, mejoras desde la 1a semana':
+               'Continua con prevencion y mantenimiento activo.';
+    const subHLines=doc.splitTextToSize(subH,W-30);
+    doc.text(subHLines,W/2,y+11,{align:'center'});
+    y+=22;
+
+    // Fotos posturales
+    if(S.fotos&&S.fotos.length){
+      const fp=S.fotos.filter(f=>['Postura anterior','Postura posterior','Lateral izquierda','Lateral derecha'].includes(f.categoria));
+      const fm=(fp.length?fp:S.fotos).slice(0,2);
+      const fW=(W-26)/2,fH=fW*1.35;
+      doc.setFillColor(249,250,251);doc.roundedRect(10,y-2,W-20,fH+14,2,2,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...DK);
+      doc.text('REGISTRO FOTOGRAFICO POSTURAL',13,y+4);y+=9;
+      let xF=12;
+      fm.forEach(foto=>{
+        try{doc.addImage(foto.src,'JPEG',xF,y,fW,fH);}catch{}
+        doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...MT);
+        doc.text(foto.categoria,xF+fW/2,y+fH+4.5,{align:'center'});
+        xF+=fW+5;
+      });
+      y+=fH+10;
+    }
+
+    // Motivo de consulta
+    if(hc.motivo){
+      y+=4;
+      doc.setFillColor(248,250,252);doc.roundedRect(10,y-2,W-20,5,1,1,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...T);
+      doc.text('Por que consultaste:',13,y+2);y+=8;
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...DK);
+      const mL=doc.splitTextToSize(hc.motivo,W-22);doc.text(mL,13,y);y+=mL.length*4.5+2;
+      if(+hc.eva>0){
+        doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...OR);
+        doc.text('Nivel de molestia al llegar: '+hc.eva+'/10',13,y);y+=6;
       }
     }
 
-    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(27,191,176);
-    doc.text('Lo que lograste',10,y);y+=5;
-    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
-    const objetivosTexto=hc.objetivos.length?hc.objetivos.join(', '):'mejorar tu calidad de vida';
-    doc.text(`Tus metas eran: ${objetivosTexto}.`,10,y);y+=10;
+    // ── PAGINA 2: LO QUE ENCONTRAMOS ──
+    doc.addPage();
+    doc.setFillColor(...T);doc.rect(0,0,W,16,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...WH);
+    doc.text('Lo que encontramos en tu cuerpo',10,11);
+    doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.text('Pagina 2 de 3',W-10,11,{align:'right'});
+    y=24;
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...MT);
+    doc.text('Aqui te explicamos cada hallazgo en un lenguaje claro, sin terminos tecnicos.',10,y);y+=9;
 
-    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(27,191,176);
-    doc.text('Recomendaciones para casa',10,y);y+=5;
-    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
-    const recLines=doc.splitTextToSize(S.alta?.recomend||'Continúa con los ejercicios indicados. Si el dolor regresa, no esperes — agenda tu sesión de seguimiento.',W-20);
-    doc.text(recLines,10,y);y+=recLines.length*4+10;
+    if(hallazgosP.length===0){
+      doc.setFillColor(240,253,244);doc.roundedRect(10,y-2,W-20,16,3,3,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...GR);
+      doc.text('Tu postura no mostro alteraciones significativas.',W/2,y+6,{align:'center'});
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...DK);
+      doc.text('El trabajo preventivo es clave para mantener este resultado.',W/2,y+12,{align:'center'});
+      y+=22;
+    }else{
+      // Intro box
+      doc.setFillColor(255,251,235);doc.roundedRect(10,y-2,W-20,10,2,2,'F');
+      doc.setFillColor(...OR);doc.roundedRect(10,y-2,3,10,1,1,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...DK);
+      doc.text('Estos son los '+totalH+' puntos que encontramos. No son solo "feos para la foto" —',14,y+2.5);
+      doc.setFont('helvetica','normal');
+      doc.text('son tensiones, cargas y compensaciones que tu cuerpo carga cada dia.',14,y+7);
+      y+=15;
 
-    // COMPARATIVA FOTOS PACIENTE
-    if(S.fotos&&S.fotos.length>=2){
-      if(y>200){doc.addPage();y=20;}
-      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(27,191,176);
-      doc.text('Tu evolución — comparativa fotográfica',10,y);y+=6;
-      const fotoIni=S.fotos[0];
-      const fotoFin=S.fotos[S.fotos.length-1];
-      try{
-        doc.addImage(fotoIni.src,'JPEG',10,y,60,75);
-        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(107,114,128);
-        doc.text('Sesión 1',40,y+78,{align:'center'});
-        doc.addImage(fotoFin.src,'JPEG',W/2,y,60,75);
-        doc.text(`Sesión ${S.sesiones.length||'actual'}`,W/2+30,y+78,{align:'center'});
-      }catch(e){}
-      y+=90;
+      hallazgosP.forEach((hallazgo,idx)=>{
+        if(y>H-38){doc.addPage();y=22;}
+        const tr=tradP[hallazgo]||{s:hallazgo,e:'Requiere evaluacion personalizada'};
+        const eLines=doc.splitTextToSize('Por que importa: '+tr.e,W-32);
+        const boxH=16+Math.max(0,(eLines.length-1)*4);
+        doc.setFillColor(248,250,252);doc.roundedRect(10,y-2,W-20,boxH,2,2,'F');
+        doc.setFillColor(...OR);doc.rect(10,y-2,3,boxH,'F');
+        doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(...DK);
+        doc.text((idx+1)+'.  '+tr.s,16,y+4);
+        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...MT);
+        doc.text(eLines,16,y+11);
+        y+=boxH+4;
+      });
     }
 
-    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(27,191,176);
-    doc.text('Agenda tu próxima cita:',10,y);y+=5;
-    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(26,26,46);
-    doc.text('jessicaocampoft.com  |  WhatsApp: 3136467945',10,y);
+    // Resumen IA si hay
+    if(P2.iaAnalisis?.resumen){
+      if(y>H-35){doc.addPage();y=22;}
+      y+=4;
+      doc.setFillColor(230,252,248);doc.roundedRect(10,y-3,W-20,6,1,1,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...T);
+      doc.text('Evaluacion con Inteligencia Artificial:',13,y+1.5);y+=10;
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...DK);
+      const iaL=doc.splitTextToSize(P2.iaAnalisis.resumen.replace(/[^\x00-\x7F]/g,' '),W-24);
+      doc.text(iaL,13,y);y+=iaL.length*4.5;
+    }
+
+    // Evolucion dolor si hay sesiones
+    if(S.sesiones&&S.sesiones.length>=2){
+      if(y>H-30){doc.addPage();y=22;}
+      y+=6;
+      const evaI=S.sesiones[0].evaIni,evaF=S.sesiones[S.sesiones.length-1].evaFin;
+      const mejora=evaI-evaF;
+      if(mejora>0){
+        doc.setFillColor(240,253,244);doc.roundedRect(10,y-2,W-20,14,2,2,'F');
+        doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...GR);
+        doc.text('Tu dolor bajo de '+evaI+' a '+evaF+' de 10  —  '+mejora+' puntos de mejora',W/2,y+5,{align:'center'});
+        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...DK);
+        doc.text('Completaste '+S.sesiones.filter(s=>s.estado==='Completada').length+' sesiones durante el proceso.',W/2,y+11,{align:'center'});
+        y+=18;
+      }
+    }
+
+    // ── PAGINA 3: TU PROXIMO PASO (VENTAS) ──
+    doc.addPage();y=0;
+
+    // Hero oscuro con urgencia
+    doc.setFillColor(...DK);doc.rect(0,0,W,50,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(17);doc.setTextColor(...WH);
+    doc.text('Tu cuerpo tiene solucion.',10,18);
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(200,240,235);
+    const hLines=doc.splitTextToSize('Cada semana sin tratamiento correcto, las compensaciones se vuelven mas profundas — y mas dificiles de corregir.',W-22);
+    doc.text(hLines,10,27);
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...T);
+    doc.text('Lo importante: con un programa personalizado, los resultados se ven desde la primera semana.',10,41);
+    y=60;
+
+    // Por que actuar ahora
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...DK);
+    doc.text('Por que actuar ahora y no esperar?',10,y);y+=8;
+    const razones2=[
+      {n:'1',t:'Las compensaciones posturales se vuelven habito en semanas. Mas tiempo esperando = mas sesiones necesarias.'},
+      {n:'2',t:'El dolor que aun no sientes es una lesion en formacion. Prevenirlo cuesta mucho menos que tratarlo.'},
+      {n:'3',t:'Con el programa correcto puedes ver cambios reales en postura, dolor y movilidad desde la primera sesion.'},
+    ];
+    razones2.forEach(r=>{
+      const rL=doc.splitTextToSize(r.t,W-38);
+      const bH=12+Math.max(0,(rL.length-1)*4.5);
+      doc.setFillColor(255,251,235);doc.roundedRect(10,y-2,W-20,bH,2,2,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...OR);
+      doc.text(r.n+'.',13,y+bH/2+2);
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...DK);
+      doc.text(rL,24,y+5);
+      y+=bH+5;
+    });
+    y+=4;
+
+    // Tu programa incluye
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...T);
+    doc.text('Tu programa de readaptacion incluye:',10,y);y+=7;
+    const beneficios2=[
+      'Evaluacion funcional completa de tu movimiento',
+      'Ejercicios diseñados especificamente para TUS hallazgos',
+      'Seguimiento sesion a sesion con fotos comparativas reales',
+      'Resultados medibles: dolor, movilidad y postura documentados',
+    ];
+    beneficios2.forEach(b=>{
+      doc.setFillColor(...T);doc.circle(13,y-1.2,1.5,'F');
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...DK);
+      doc.text(b,18,y);y+=6;
+    });
+    y+=6;
+
+    // CTA grande — el cierre
+    const ctaH=45;
+    doc.setFillColor(...T);doc.roundedRect(10,y-4,W-20,ctaH,4,4,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(...WH);
+    doc.text('Agenda tu primera sesion HOY',W/2,y+8,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);
+    doc.text('Los cupos son limitados — no dejes que otro tome el tuyo',W/2,y+15,{align:'center'});
+    // Botón WhatsApp visual
+    doc.setFillColor(...WH);doc.roundedRect(W/2-45,y+19,90,12,3,3,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...T);
+    doc.text('WhatsApp: 313 646 7945',W/2,y+27,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...WH);
+    doc.text('jessicaocampoft.com  |  Pereira, Colombia',W/2,y+37,{align:'center'});
+    y+=ctaH+6;
+
+    // Frase cierre
+    doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(...MT);
+    doc.text('"No esperes a que el dolor te obligue. Actua cuando aun puedes elegir."',W/2,y+5,{align:'center'});
+    doc.setFontSize(8);doc.text('— Jessica Ocampo, Fisioterapeuta',W/2,y+11,{align:'center'});
   }
 
   // FOOTER
