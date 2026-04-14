@@ -2918,13 +2918,13 @@ async function generarReportePostural(){
 
     positivos.forEach(item=>{
       if(y>H-15){doc.addPage();y=22;}
-      doc.setFillColor(220,38,38);doc.circle(17.5,y-1.2,1.2,'F');
+      doc.setFillColor(220,38,38);doc.rect(16,y-2.5,3,3,'F');
       doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(220,38,38);
       doc.text(item,21,y);y+=5.5;
     });
     normales.forEach(item=>{
       if(y>H-15){doc.addPage();y=22;}
-      doc.setFillColor(22,163,74);doc.circle(17.5,y-1.2,1.2,'F');
+      doc.setFillColor(22,163,74);doc.rect(16,y-2.5,3,3,'F');
       doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(22,163,74);
       doc.text(item.replace(' ✓',''),21,y);y+=5.5;
     });
@@ -3457,7 +3457,7 @@ async function generarPDF(tipo){
       try{doc.addImage(hc.firma,'PNG',10,y,80,25);}catch{}y+=30;
     }
 
-  }else{
+  }else{ try{
     // ══════════════════════════════════════════════
     // PDF PACIENTE — Diagnóstico + Estrategia ventas
     // ══════════════════════════════════════════════
@@ -3522,7 +3522,7 @@ async function generarPDF(tipo){
     // ── PAGINA 1: PORTADA ──
     // Header clínica
     doc.setFillColor(...T);doc.rect(0,0,W,20,'F');
-    if(_logoBase64){try{doc.addImage(_logoBase64,'PNG',7,1,38,18);}catch{}}
+    if(_logoBase64){try{doc.addImage(_logoBase64,'PNG',7,1,38,18);}catch(e){}}
     else{
       doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...WH);
       doc.text('Jessica Ocampo',10,10);
@@ -3564,7 +3564,7 @@ async function generarPDF(tipo){
       doc.text('REGISTRO FOTOGRAFICO POSTURAL',13,y+4);y+=9;
       let xF=12;
       fm.forEach(foto=>{
-        try{doc.addImage(foto.src,'JPEG',xF,y,fW,fH);}catch{}
+        try{doc.addImage(foto.src,'JPEG',xF,y,fW,fH);}catch(e){}
         doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...MT);
         doc.text(foto.categoria,xF+fW/2,y+fH+4.5,{align:'center'});
         xF+=fW+5;
@@ -3700,7 +3700,7 @@ async function generarPDF(tipo){
       'Resultados medibles: dolor, movilidad y postura documentados',
     ];
     beneficios2.forEach(b=>{
-      doc.setFillColor(...T);doc.circle(13,y-1.2,1.5,'F');
+      doc.setFillColor(...T);doc.rect(11,y-3,3,3,'F');
       doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...DK);
       doc.text(b,18,y);y+=6;
     });
@@ -3724,8 +3724,8 @@ async function generarPDF(tipo){
     // Frase cierre
     doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(...MT);
     doc.text('"No esperes a que el dolor te obligue. Actua cuando aun puedes elegir."',W/2,y+5,{align:'center'});
-    doc.setFontSize(8);doc.text('— Jessica Ocampo, Fisioterapeuta',W/2,y+11,{align:'center'});
-  }
+    doc.setFontSize(8);doc.text('- Jessica Ocampo, Fisioterapeuta',W/2,y+11,{align:'center'});
+  }catch(e2){toast('Error generando PDF paciente: '+e2.message,'err');return;}
 
   // FOOTER
   const pages=doc.internal.getNumberOfPages();
