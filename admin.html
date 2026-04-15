@@ -2198,10 +2198,12 @@ function searchPatient(q) {
   });
 
   const term = q.toLowerCase();
-  const matches = Object.values(map).filter(p =>
-    (p.nombre||'').toLowerCase().includes(term) ||
-    (p.telefono||'').replace(/\D/g,'').includes(term.replace(/\D/g,''))
-  ).slice(0, 8);
+  const termDigits = term.replace(/\D/g,'');
+  const matches = Object.values(map).filter(p => {
+    const nameMatch  = (p.nombre||'').toLowerCase().includes(term);
+    const phoneMatch = termDigits.length > 0 && (p.telefono||'').replace(/\D/g,'').includes(termDigits);
+    return nameMatch || phoneMatch;
+  }).slice(0, 8);
 
   if (!matches.length) { dd.style.display='none'; return; }
 
