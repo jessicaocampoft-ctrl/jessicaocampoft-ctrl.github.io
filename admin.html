@@ -1621,7 +1621,7 @@ function initDashboard() {
   const m    = now.getMonth()+1;
   const y    = now.getFullYear();
 
-  const citas = allData.citas.filter(c => c.estado !== 'Cancelada');
+  const citas = allData.citas.filter(c => c.estado !== 'Cancelada' && c.estado !== 'Registro');
 
   const hoy    = citas.filter(c => normDate(c.fecha) === todayStr).length;
   const semana = citas.filter(c => { const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; }).length;
@@ -1656,7 +1656,7 @@ function initDashboard() {
   window._alertInterval = setInterval(checkUpcomingAlerts, 60000);
 
   // Timeline hoy
-  const citasHoy = allData.citas.filter(c => normDate(c.fecha) === todayStr).sort((a,b) => a.hora.localeCompare(b.hora));
+  const citasHoy = allData.citas.filter(c => c.estado !== 'Registro' && normDate(c.fecha) === todayStr).sort((a,b) => a.hora.localeCompare(b.hora));
   const tlHoy = document.getElementById('tlHoy');
   if (citasHoy.length === 0) {
     tlHoy.innerHTML = '<div class="empty"><p>No hay citas hoy</p></div>';
@@ -1681,7 +1681,7 @@ function initDashboard() {
   const tm = new Date(); tm.setDate(tm.getDate()+1);
   const in7 = new Date(); in7.setDate(in7.getDate()+7);
   const proximas = allData.citas
-    .filter(c => { if(c.estado==='Cancelada') return false; const [y2,m2,d2]=normDate(c.fecha).split('-'); const dt=new Date(+y2,+m2-1,+d2); return dt>=tm && dt<=in7; })
+    .filter(c => { if(c.estado==='Cancelada'||c.estado==='Registro') return false; const [y2,m2,d2]=normDate(c.fecha).split('-'); const dt=new Date(+y2,+m2-1,+d2); return dt>=tm && dt<=in7; })
     .sort((a,b) => (normDate(a.fecha)+a.hora).localeCompare(normDate(b.fecha)+b.hora))
     .slice(0, 8);
 
@@ -2175,13 +2175,26 @@ function searchPatient(q) {
   const dd = document.getElementById('pacDropdown');
   if (!q || q.length < 2) { dd.style.display='none'; return; }
 
-  // Construir mapa de pacientes únicos desde allData.citas
+  // Construir mapa de pacientes únicos desde allData.citas (excluir registros)
   const map = {};
-  allData.citas.forEach(c => {
-    const key = (c.telefono||'') + '|' + (c.nombre||'');
+  allData.citas.filter(c => c.estado !== 'Registro').forEach(c => {
+    const phone = (c.telefono||'').replace(/\D/g,'').slice(-10);
+    const key = phone || (c.nombre||'').toLowerCase();
     if (!map[key]) map[key] = {nombre:c.nombre, telefono:c.telefono, email:c.email, sesiones:0, ultimaDir:c.direccion||''};
     map[key].sesiones++;
     if (c.direccion) map[key].ultimaDir = c.direccion;
+  });
+
+  // Añadir pacientes de la hoja Pacientes que no estén ya en el mapa
+  (allData.pacientes || []).forEach(p => {
+    const phone = (p.telefono||'').replace(/\D/g,'').slice(-10);
+    const key = phone || (p.nombre||'').toLowerCase();
+    if (!map[key]) {
+      map[key] = {nombre: p.nombre, telefono: p.telefono, email: p.email, sesiones: 0, ultimaDir: ''};
+    } else {
+      // Si ya existe por citas, actualizar email si faltaba
+      if (p.email && !map[key].email) map[key].email = p.email;
+    }
   });
 
   const term = q.toLowerCase();
@@ -2246,7 +2259,7 @@ function renderPacientes() {
   const search = (document.getElementById('pSearch').value||'').toLowerCase();
   const map = {};
 
-  allData.citas.forEach(c => {
+  allData.citas.filter(c => c.estado !== 'Registro').forEach(c => {
     const phone  = (c.telefono||'').replace(/\D/g,'').slice(-10);
     const email  = (c.email||'').toLowerCase().trim();
     const nombre = (c.nombre||'').trim();
