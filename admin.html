@@ -374,6 +374,56 @@ tr:hover td{background:rgba(126,221,208,.03)}
 @keyframes voiceBlink{0%,100%{opacity:1}50%{opacity:.2}}
 .voice-transcript{color:var(--primary);font-style:italic;flex:1}
 
+/* ── META MENSUAL ── */
+.meta-bar-wrap{background:var(--s2);border-radius:99px;height:10px;overflow:hidden;margin:10px 0 4px}
+.meta-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),#0e9a8e);transition:width .6s ease}
+.meta-pct{font-family:var(--font-m);font-size:.72rem;color:var(--primary);font-weight:700}
+.meta-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;grid-column:1/-1;margin-top:0}
+
+/* ── GRÁFICO BARRAS ── */
+.chart-bar-group{display:flex;align-items:flex-end;gap:6px;height:120px;padding-bottom:0}
+.chart-bar{
+  flex:1;border-radius:5px 5px 0 0;background:rgba(27,191,176,.3);
+  transition:height .5s ease,background .2s;position:relative;cursor:default;min-width:24px;
+}
+.chart-bar:hover{background:var(--primary)}
+.chart-bar.current{background:var(--primary)}
+.chart-bar-label{font-family:var(--font-m);font-size:.65rem;color:var(--muted);text-align:center;margin-top:4px}
+.chart-bar-val{font-family:var(--font-m);font-size:.62rem;color:var(--primary);text-align:center;position:absolute;top:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;display:none}
+.chart-bar:hover .chart-bar-val{display:block}
+.chart-wrap{overflow-x:auto}
+
+/* ── NOTAS RÁPIDAS ── */
+.notas-card{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r);padding:18px 20px}
+.notas-card textarea{
+  width:100%;background:transparent;border:none;outline:none;resize:none;
+  font-family:var(--font-b);font-size:.88rem;color:var(--text);line-height:1.6;min-height:72px;
+}
+.notas-saved{font-size:.72rem;color:#92400e;opacity:0;transition:opacity .4s}
+.notas-saved.show{opacity:1}
+
+/* ── FINANZAS ── */
+.fin-section-title{font-family:var(--font-h);font-size:1.05rem;font-weight:600;color:var(--muted);margin:20px 0 12px;text-transform:uppercase;letter-spacing:.06em;font-size:.78rem}
+.serv-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(27,191,176,.07)}
+.serv-row:last-child{border-bottom:none}
+.serv-bar-bg{flex:1;height:7px;background:var(--s2);border-radius:99px;overflow:hidden}
+.serv-bar-fill{height:100%;background:var(--primary);border-radius:99px;transition:width .5s ease}
+.serv-name{font-size:.82rem;width:200px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.serv-val{font-family:var(--font-m);font-size:.78rem;color:var(--primary);font-weight:600;min-width:90px;text-align:right}
+.fin-export-btn{
+  display:inline-flex;align-items:center;gap:7px;padding:9px 18px;
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:var(--font-b);font-size:.85rem;font-weight:500;
+  cursor:pointer;transition:var(--tr);
+}
+.fin-export-btn:hover{border-color:var(--primary);color:var(--primary)}
+.meta-input-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.meta-input-row input{
+  width:140px;background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:8px 12px;outline:none;transition:var(--tr);
+}
+.meta-input-row input:focus{border-color:var(--primary)}
+
 /* ── RESPONSIVE ── */
 @media(max-width:1300px){
   .stats-grid{grid-template-columns:repeat(3,1fr)}
@@ -395,6 +445,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
 @media(max-width:480px){
   .stats-grid{grid-template-columns:1fr}
   .login-card{padding:32px 24px}
+  .serv-name{width:120px}
 }
 </style>
 </head>
@@ -480,6 +531,11 @@ tr:hover td{background:rgba(126,221,208,.03)}
       Base de datos
     </button>
 
+    <button class="sb-link" id="sb-finanzas" onclick="showView('finanzas')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Finanzas
+    </button>
+
     <button class="sb-link" id="sb-recordatorios" onclick="showView('recordatorios')" style="justify-content:space-between">
       <span style="display:flex;align-items:center;gap:10px">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -549,17 +605,40 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <div class="stat-card">
           <div class="stat-label">Cobrado este mes</div>
           <div class="stat-val" id="stCobrado" style="font-size:1.5rem">—</div>
-          <div class="stat-desc">ingresos del mes</div>
+          <div class="stat-desc">sesiones atendidas / pagadas</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Cobrado esta semana</div>
           <div class="stat-val" id="stCobradoSemana" style="font-size:1.5rem">—</div>
-          <div class="stat-desc">ingresos de la semana</div>
+          <div class="stat-desc">sesiones atendidas / pagadas</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Cobrado hoy</div>
           <div class="stat-val" id="stCobradoHoy" style="font-size:1.5rem">—</div>
-          <div class="stat-desc">ingresos del día</div>
+          <div class="stat-desc">sesiones atendidas / pagadas</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(251,191,36,.35)">
+          <div class="stat-label" style="color:#d97706">Por cobrar este mes</div>
+          <div class="stat-val" id="stPorCobrar" style="font-size:1.5rem;color:#d97706">—</div>
+          <div class="stat-desc">citas confirmadas pendientes</div>
+        </div>
+      </div>
+
+      <!-- Meta mensual -->
+      <div class="meta-card card" id="metaCard">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div style="flex:1;min-width:200px">
+            <div style="font-family:var(--font-m);font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Meta mensual de ingresos</div>
+            <div class="meta-bar-wrap"><div class="meta-bar-fill" id="metaBarFill" style="width:0%"></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px">
+              <span class="meta-pct" id="metaPct">0%</span>
+              <span style="font-family:var(--font-m);font-size:.72rem;color:var(--muted)" id="metaTexto">Establece tu meta para comenzar</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="text" id="metaInput" placeholder="Ej: 6000000" style="width:130px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:7px 10px;outline:none" oninput="previewMeta(this.value)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+            <button class="btn btn-teal btn-sm" onclick="guardarMeta()">Guardar meta</button>
+          </div>
         </div>
       </div>
 
@@ -593,6 +672,15 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <div class="week-grid" id="weekGrid">
           <div class="loading-wrap"><div class="spinner"></div></div>
         </div>
+      </div>
+
+      <!-- Notas rápidas -->
+      <div class="notas-card" style="margin-top:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-family:var(--font-m);font-size:.75rem;color:#92400e;text-transform:uppercase;letter-spacing:.07em">📝 Notas del día</div>
+          <span class="notas-saved" id="notasSaved">Guardado ✓</span>
+        </div>
+        <textarea id="notasRapidas" placeholder="Anotaciones para hoy: materiales que faltan, pacientes a llamar, recordatorios propios..." oninput="autoGuardarNota()"></textarea>
       </div>
     </section>
 
@@ -982,6 +1070,68 @@ tr:hover td{background:rgba(126,221,208,.03)}
       </div>
     </section>
 
+    <!-- ── FINANZAS ── -->
+    <section id="vFinanzas" style="display:none">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title"><em>Módulo</em> Financiero</h1>
+          <p class="page-sub">Ingresos reales, tendencias y exportación de reportes</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="fin-export-btn" onclick="exportarCSV('mes')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar mes CSV
+          </button>
+          <button class="fin-export-btn" onclick="exportarCSV('todo')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar todo CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Meta mensual -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">🎯 Meta mensual de ingresos</div>
+        <div class="meta-input-row">
+          <label style="font-size:.85rem;color:var(--muted)">Meta:</label>
+          <input type="text" id="metaInputFin" placeholder="Ej: 6000000" oninput="previewMetaFin(this.value)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+          <button class="btn btn-teal btn-sm" onclick="guardarMetaFin()">Guardar</button>
+          <span style="font-size:.82rem;color:var(--muted)" id="metaActualTexto"></span>
+        </div>
+        <div id="metaBarFinWrap" style="display:none">
+          <div class="meta-bar-wrap" style="height:14px"><div class="meta-bar-fill" id="metaBarFinFill" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px">
+            <span class="meta-pct" id="metaBarFinPct">0%</span>
+            <span style="font-family:var(--font-m);font-size:.72rem;color:var(--muted)" id="metaBarFinTexto"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ingresos por mes (últimos 6 meses) -->
+      <div class="card" style="margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+          <div class="card-title" style="margin-bottom:0">📊 Ingresos últimos 6 meses</div>
+          <span style="font-size:.78rem;color:var(--muted)">(solo sesiones atendidas o pagadas)</span>
+        </div>
+        <div class="chart-wrap">
+          <div id="finChart" style="display:flex;align-items:flex-end;gap:8px;height:140px;padding-bottom:0;min-width:320px"></div>
+          <div id="finChartLabels" style="display:flex;gap:8px;margin-top:6px;min-width:320px"></div>
+        </div>
+      </div>
+
+      <!-- Breakdown por servicio (mes actual) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-title">🏆 Servicios más rentables (este mes)</div>
+          <div id="finServiciosMes"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Resumen del mes</div>
+          <div id="finResumenMes"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── BASE DE DATOS ── -->
     <section id="vBasedatos" style="display:none">
       <div class="page-header">
@@ -1235,7 +1385,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
-  ['dashboard','agenda','nueva','calendario','bloquear','pacientes','basedatos','recordatorios'].forEach(id => {
+  ['dashboard','agenda','nueva','calendario','bloquear','pacientes','basedatos','recordatorios','finanzas'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -1251,6 +1401,7 @@ function showView(v) {
   if (v === 'calendario')     renderCalendar();
   if (v === 'recordatorios')  cargarRecordatorios();
   if (v === 'basedatos')      { renderBasedatos(); initFormDB(); }
+  if (v === 'finanzas')       renderFinanzas();
 }
 
 function toggleSidebar() {
@@ -1453,7 +1604,7 @@ function renderWeekGrid() {
   if (!grid) return;
   grid.innerHTML = days.map((d, i) => {
     const ds = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
-    const count = allData.citas.filter(c => c.estado !== 'Cancelada' && normDate(c.fecha) === ds).length;
+    const count = citasReales().filter(c => normDate(c.fecha) === ds).length;
     const isToday = ds === todayStr;
     return `<div class="wday ${isToday ? 'wday-today' : ''}" onclick="filtrarDia('${ds}')">
       <span class="wday-name">${dayNames[i]}</span>
@@ -1611,6 +1762,23 @@ async function reload() {
   } catch(e) {}
 }
 
+// ── HELPERS FINANCIEROS ──
+const esRegistroServ = s => (s || '').toLowerCase().trim().startsWith('registro');
+
+// Una cita se considera "cobrada" si está Atendida O fue marcada manualmente como pagada
+function esCobrada(c) {
+  return c.estado === 'Atendida' || isPagada(c.id);
+}
+
+// Citas reales (sin registros, sin canceladas)
+function citasReales() {
+  return allData.citas.filter(c =>
+    c.estado !== 'Cancelada' &&
+    c.estado !== 'Registro' &&
+    !esRegistroServ(c.servicio)
+  );
+}
+
 // ── DASHBOARD ──
 function initDashboard() {
   const todayStr = today();
@@ -1621,7 +1789,7 @@ function initDashboard() {
   const m    = now.getMonth()+1;
   const y    = now.getFullYear();
 
-  const citas = allData.citas.filter(c => c.estado !== 'Cancelada' && c.estado !== 'Registro');
+  const citas = citasReales();
 
   const hoy    = citas.filter(c => normDate(c.fecha) === todayStr).length;
   const semana = citas.filter(c => { const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; }).length;
@@ -1633,30 +1801,45 @@ function initDashboard() {
   document.getElementById('stMes').textContent      = mes;
   document.getElementById('stPacientes').textContent = pacs;
 
+  // Cobrado = solo citas Atendidas o marcadas como pagadas
   const cobrado = citas
     .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
+    .filter(esCobrada)
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stCobrado').textContent = cobrado > 0 ? '$'+cobrado.toLocaleString('es-CO') : '—';
 
   const cobradoSemana = citas
     .filter(c => { const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; })
+    .filter(esCobrada)
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stCobradoSemana').textContent = cobradoSemana > 0 ? '$'+cobradoSemana.toLocaleString('es-CO') : '—';
 
   const cobradoHoy = citas
     .filter(c => normDate(c.fecha) === todayStr)
+    .filter(esCobrada)
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stCobradoHoy').textContent = cobradoHoy > 0 ? '$'+cobradoHoy.toLocaleString('es-CO') : '—';
+
+  // Por cobrar = citas confirmadas/pendientes del mes que no se han atendido ni pagado
+  const porCobrar = citas
+    .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
+    .filter(c => !esCobrada(c))
+    .reduce((s,c) => s + parsePrecio(c.precio), 0);
+  document.getElementById('stPorCobrar').textContent = porCobrar > 0 ? '$'+porCobrar.toLocaleString('es-CO') : '—';
+
+  // Meta mensual
+  actualizarMetaBarra(cobrado);
 
   updateBadge();
   renderWeekGrid();
   checkUpcomingAlerts();
+  initQuickNotes();
   // Revisar alerta cada minuto
   if (window._alertInterval) clearInterval(window._alertInterval);
   window._alertInterval = setInterval(checkUpcomingAlerts, 60000);
 
   // Timeline hoy
-  const citasHoy = allData.citas.filter(c => c.estado !== 'Registro' && normDate(c.fecha) === todayStr).sort((a,b) => a.hora.localeCompare(b.hora));
+  const citasHoy = citas.filter(c => normDate(c.fecha) === todayStr).sort((a,b) => a.hora.localeCompare(b.hora));
   const tlHoy = document.getElementById('tlHoy');
   if (citasHoy.length === 0) {
     tlHoy.innerHTML = '<div class="empty"><p>No hay citas hoy</p></div>';
@@ -1680,8 +1863,8 @@ function initDashboard() {
   // Proximas citas (7 dias excluyendo hoy)
   const tm = new Date(); tm.setDate(tm.getDate()+1);
   const in7 = new Date(); in7.setDate(in7.getDate()+7);
-  const proximas = allData.citas
-    .filter(c => { if(c.estado==='Cancelada'||c.estado==='Registro') return false; const [y2,m2,d2]=normDate(c.fecha).split('-'); const dt=new Date(+y2,+m2-1,+d2); return dt>=tm && dt<=in7; })
+  const proximas = citas
+    .filter(c => { const [y2,m2,d2]=normDate(c.fecha).split('-'); const dt=new Date(+y2,+m2-1,+d2); return dt>=tm && dt<=in7; })
     .sort((a,b) => (normDate(a.fecha)+a.hora).localeCompare(normDate(b.fecha)+b.hora))
     .slice(0, 8);
 
@@ -3169,6 +3352,262 @@ function agendarDesdePacienteRec(encNombre, encTel, encEmail) {
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+
+// ── ENVIAR EMAIL A UN SOLO PACIENTE (recordatorio) ──
+async function enviarEmailUno(encNombre, semanas) {
+  const nombre = decodeURIComponent(encNombre);
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=sendReminders&token=${encodeURIComponent(TOKEN)}`);
+    const d = await r.json();
+    if (d.ok) {
+      localStorage.setItem('rec_email_'+nombre, '1');
+      toast('Email de recordatorio enviado a ' + nombre.split(' ')[0]);
+      if (_remData) renderRecordatorios(_remData);
+    } else toast('Error al enviar email', 'err');
+  } catch(e) { toast('Error de conexión', 'err'); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── META MENSUAL ──
+// ══════════════════════════════════════════════════════════════
+function getMeta() { return parseInt(localStorage.getItem('metaMensual')||'0', 10); }
+
+function actualizarMetaBarra(cobrado) {
+  const meta = getMeta();
+  const fill = document.getElementById('metaBarFill');
+  const pct  = document.getElementById('metaPct');
+  const txt  = document.getElementById('metaTexto');
+  const inp  = document.getElementById('metaInput');
+  if (!fill) return;
+  if (!meta) {
+    if (pct) pct.textContent = '';
+    if (txt) txt.textContent = 'Establece tu meta en Finanzas →';
+    if (fill) fill.style.width = '0%';
+    return;
+  }
+  const p = Math.min(Math.round(cobrado / meta * 100), 100);
+  if (fill) fill.style.width = p + '%';
+  if (pct)  pct.textContent  = p + '%';
+  if (txt)  txt.textContent  = '$' + cobrado.toLocaleString('es-CO') + ' de $' + meta.toLocaleString('es-CO') + ' meta';
+  if (inp && !inp.value) inp.value = meta.toLocaleString('es-CO');
+}
+
+function previewMeta(v) {
+  const n = parseInt(v.replace(/\D/g,''), 10);
+  if (!n) return;
+  const cobrado = calcCobradoMes();
+  const p = Math.min(Math.round(cobrado / n * 100), 100);
+  const fill = document.getElementById('metaBarFill');
+  const pct  = document.getElementById('metaPct');
+  if (fill) fill.style.width = p + '%';
+  if (pct)  pct.textContent  = p + '%';
+}
+
+function guardarMeta() {
+  const val = parseInt((document.getElementById('metaInput').value||'').replace(/\D/g,''), 10);
+  if (!val || val < 100000) { toast('Ingresa una meta válida (mínimo $100.000)', 'err'); return; }
+  localStorage.setItem('metaMensual', val);
+  actualizarMetaBarra(calcCobradoMes());
+  toast('Meta guardada: $' + val.toLocaleString('es-CO'));
+}
+
+function previewMetaFin(v) { previewMeta(v); }
+
+function guardarMetaFin() {
+  const val = parseInt((document.getElementById('metaInputFin').value||'').replace(/\D/g,''), 10);
+  if (!val || val < 100000) { toast('Ingresa una meta válida (mínimo $100.000)', 'err'); return; }
+  localStorage.setItem('metaMensual', val);
+  renderFinanzas();
+  actualizarMetaBarra(calcCobradoMes());
+  toast('Meta guardada: $' + val.toLocaleString('es-CO'));
+}
+
+function calcCobradoMes() {
+  const now = new Date();
+  const m = now.getMonth()+1, y = now.getFullYear();
+  return citasReales()
+    .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
+    .filter(esCobrada)
+    .reduce((s,c) => s + parsePrecio(c.precio), 0);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── NOTAS RÁPIDAS ──
+// ══════════════════════════════════════════════════════════════
+let _notasTimer = null;
+function initQuickNotes() {
+  const el = document.getElementById('notasRapidas');
+  if (!el) return;
+  const key = 'notasRapidas_' + today();
+  el.value = localStorage.getItem(key) || '';
+}
+function autoGuardarNota() {
+  clearTimeout(_notasTimer);
+  _notasTimer = setTimeout(() => {
+    const el = document.getElementById('notasRapidas');
+    if (!el) return;
+    localStorage.setItem('notasRapidas_' + today(), el.value);
+    const saved = document.getElementById('notasSaved');
+    if (saved) { saved.classList.add('show'); setTimeout(() => saved.classList.remove('show'), 1800); }
+  }, 600);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── MÓDULO FINANZAS ──
+// ══════════════════════════════════════════════════════════════
+function renderFinanzas() {
+  const now = new Date();
+  const m   = now.getMonth()+1;
+  const y   = now.getFullYear();
+  const citas = citasReales();
+
+  // ── Meta ──
+  const meta = getMeta();
+  const cobradoMes = calcCobradoMes();
+  const metaInp = document.getElementById('metaInputFin');
+  const metaActTxt = document.getElementById('metaActualTexto');
+  if (metaInp && meta) metaInp.value = meta.toLocaleString('es-CO');
+  if (metaActTxt) metaActTxt.textContent = meta ? 'Meta actual: $' + meta.toLocaleString('es-CO') : '';
+  const barWrap = document.getElementById('metaBarFinWrap');
+  const barFill = document.getElementById('metaBarFinFill');
+  const barPct  = document.getElementById('metaBarFinPct');
+  const barTxt  = document.getElementById('metaBarFinTexto');
+  if (barWrap) barWrap.style.display = meta ? 'block' : 'none';
+  if (meta && barFill) {
+    const p = Math.min(Math.round(cobradoMes / meta * 100), 100);
+    barFill.style.width = p + '%';
+    if (barPct) barPct.textContent = p + '%';
+    if (barTxt) barTxt.textContent = '$' + cobradoMes.toLocaleString('es-CO') + ' de $' + meta.toLocaleString('es-CO');
+  }
+
+  // ── Gráfico últimos 6 meses ──
+  const chartEl     = document.getElementById('finChart');
+  const chartLabels = document.getElementById('finChartLabels');
+  const MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const meses6 = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(y, m-1-i, 1);
+    meses6.push({ m: d.getMonth()+1, y: d.getFullYear(), label: MESES_CORTO[d.getMonth()] });
+  }
+  const totales = meses6.map(mes => ({
+    ...mes,
+    total: citas
+      .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===mes.m && +cy===mes.y; })
+      .filter(esCobrada)
+      .reduce((s,c) => s + parsePrecio(c.precio), 0)
+  }));
+  const maxVal = Math.max(...totales.map(t => t.total), 1);
+  if (chartEl) {
+    chartEl.innerHTML = totales.map((t, i) => {
+      const pct = Math.max(Math.round(t.total / maxVal * 100), t.total > 0 ? 5 : 0);
+      const isCurrent = t.m === m && t.y === y;
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:0;height:100%">
+        <div style="font-family:var(--font-m);font-size:.62rem;color:var(--primary);text-align:center;margin-bottom:3px;white-space:nowrap">${t.total > 0 ? '$'+Math.round(t.total/1000)+'k' : ''}</div>
+        <div class="chart-bar ${isCurrent?'current':''}" style="width:100%;height:${pct}%;min-height:${t.total>0?'6px':'2px'}" title="$${t.total.toLocaleString('es-CO')}"></div>
+      </div>`;
+    }).join('');
+  }
+  if (chartLabels) {
+    chartLabels.innerHTML = totales.map(t => {
+      const isCurrent = t.m === m && t.y === y;
+      return `<div style="flex:1;text-align:center;font-family:var(--font-m);font-size:.65rem;color:${isCurrent?'var(--primary)':'var(--muted)'};font-weight:${isCurrent?'700':'400'}">${t.label}</div>`;
+    }).join('');
+  }
+
+  // ── Servicios más rentables (mes actual) ──
+  const servMap = {};
+  citas
+    .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
+    .filter(esCobrada)
+    .forEach(c => {
+      const s = c.servicio || 'Sin servicio';
+      servMap[s] = (servMap[s] || 0) + parsePrecio(c.precio);
+    });
+  const servArr = Object.entries(servMap).sort((a,b) => b[1]-a[1]);
+  const maxServ = servArr[0] ? servArr[0][1] : 1;
+  const servEl = document.getElementById('finServiciosMes');
+  if (servEl) {
+    if (!servArr.length) {
+      servEl.innerHTML = '<div class="empty" style="padding:30px 0"><p>Sin datos para este mes</p></div>';
+    } else {
+      servEl.innerHTML = servArr.slice(0,8).map(([s, v]) => `
+        <div class="serv-row">
+          <div class="serv-name" title="${s}">${s}</div>
+          <div class="serv-bar-bg"><div class="serv-bar-fill" style="width:${Math.round(v/maxServ*100)}%"></div></div>
+          <div class="serv-val">$${Math.round(v/1000)}k</div>
+        </div>`).join('');
+    }
+  }
+
+  // ── Resumen del mes ──
+  const citasMes     = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
+  const atendidas    = citasMes.filter(c => c.estado === 'Atendida').length;
+  const pagadasLS    = citasMes.filter(c => isPagada(c.id) && c.estado !== 'Atendida').length;
+  const pendienteN   = citasMes.filter(c => !esCobrada(c)).length;
+  const canceladasN  = allData.citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y && c.estado === 'Cancelada'; }).length;
+  const porCobrarVal = citasMes.filter(c => !esCobrada(c)).reduce((s,c) => s + parsePrecio(c.precio), 0);
+  const ticketProm   = atendidas + pagadasLS > 0 ? Math.round(cobradoMes / (atendidas + pagadasLS)) : 0;
+
+  const resEl = document.getElementById('finResumenMes');
+  if (resEl) {
+    resEl.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${resRow('Total citas del mes', citasMes.length + canceladasN, '')}
+        ${resRow('Sesiones atendidas', atendidas, 'color:var(--ok)')}
+        ${resRow('Marcadas como pagadas', pagadasLS, 'color:var(--ok)')}
+        ${resRow('Pendientes de atención', pendienteN, pendienteN>0?'color:var(--warn)':'')}
+        ${resRow('Canceladas', canceladasN, canceladasN>0?'color:var(--err)':'')}
+        <div style="height:1px;background:var(--border);margin:4px 0"></div>
+        ${resRow('Total cobrado', '$' + cobradoMes.toLocaleString('es-CO'), 'color:var(--primary);font-weight:700')}
+        ${resRow('Por cobrar', porCobrarVal > 0 ? '$' + porCobrarVal.toLocaleString('es-CO') : '—', 'color:var(--warn)')}
+        ${resRow('Ticket promedio', ticketProm > 0 ? '$' + ticketProm.toLocaleString('es-CO') : '—', '')}
+        ${meta ? resRow('Meta cumplida', Math.min(Math.round(cobradoMes/meta*100),100) + '%', cobradoMes >= meta ? 'color:var(--ok);font-weight:700' : 'color:var(--warn)') : ''}
+      </div>`;
+  }
+}
+
+function resRow(label, val, style='') {
+  return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;padding:3px 0">
+    <span style="color:var(--muted)">${label}</span>
+    <span style="${style}">${val}</span>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── EXPORTAR CSV ──
+// ══════════════════════════════════════════════════════════════
+function exportarCSV(modo) {
+  const now = new Date();
+  const m   = now.getMonth()+1;
+  const y   = now.getFullYear();
+  let citas = citasReales().filter(esCobrada);
+
+  if (modo === 'mes') {
+    citas = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
+  }
+
+  citas.sort((a,b) => normDate(a.fecha).localeCompare(normDate(b.fecha)));
+
+  const header = ['Fecha','Hora','Paciente','Teléfono','Email','Servicio','Modalidad','Valor','Estado'];
+  const rows = citas.map(c => [
+    normDate(c.fecha), c.hora||'', c.nombre||'', c.telefono||'', c.email||'',
+    c.servicio||'', c.modalidad||'', c.precio||'', c.estado||''
+  ]);
+
+  const csvContent = [header, ...rows]
+    .map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))
+    .join('\n');
+
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const nombre = modo === 'mes'
+    ? `ingresos_${y}-${pad(m)}.csv`
+    : `ingresos_completo_${y}-${pad(m)}-${pad(now.getDate())}.csv`;
+  a.href = url; a.download = nombre; a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV descargado: ' + nombre);
+}
 </script>
 </body>
 </html>

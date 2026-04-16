@@ -109,7 +109,13 @@ function createBooking(d, isAdmin) {
     event.addPopupReminder(30);
   }
 
-  // Guardar en Google Sheets (siempre, tanto citas como registros)
+  // Para registros de paciente: solo guardar en hoja Pacientes, sin cita ni email
+  if (soloRegistro) {
+    upsertPaciente(d.name, d.phone, d.email);
+    return {ok: true, id: 'REG-' + new Date().getTime()};
+  }
+
+  // Guardar en Google Sheets (solo citas reales)
   var id    = 'C' + new Date().getTime();
   var ss    = getOrCreateSheet();
   var cSheet = ss.getSheetByName('Citas');
@@ -120,24 +126,14 @@ function createBooking(d, isAdmin) {
     d.name, phoneClean, d.email,
     d.service, d.modality,
     d.date, d.time, price,
-    soloRegistro ? 'Registro' : 'Confirmada',
+    'Confirmada',
     d.address || '', d.notes || '', ''
   ]);
   // Forzar columna Telefono como texto para evitar #ERROR! en Sheets
   cSheet.getRange(cSheet.getLastRow(), 4).setNumberFormat('@').setValue(phoneClean);
 
-  // Guardar/actualizar paciente en hoja Pacientes (siempre)
+  // Guardar/actualizar paciente en hoja Pacientes
   upsertPaciente(d.name, d.phone, d.email);
-
-  // Para registros: solo notificar a Jessica, sin correo de confirmación de cita al paciente
-  if (soloRegistro) {
-    GmailApp.sendEmail(
-      JESSICA_EMAIL,
-      'Nuevo registro: ' + d.name,
-      'Se registró un nuevo paciente:\n\nNombre: ' + d.name + '\nTeléfono: ' + d.phone + '\nCorreo: ' + (d.email || '—') + '\nNotas: ' + (d.notes || '—') + '\n\nID: ' + id
-    );
-    return {ok: true, id: id};
-  }
 
   // Para citas reales: enviar todos los correos y WhatsApp
   var tel  = (d.phone || '').replace(/\D/g,'');
@@ -476,7 +472,21 @@ function getAdminData() {
     });
   }
 
-  return {ok: true, citas: citas, bloqueos: bloqueos};
+  var pRows = ss.getSheetByName('Pacientes').getDataRange().getValues();
+  var pacientes = [];
+  for (var k = 1; k < pRows.length; k++) {
+    var p = pRows[k];
+    var pPhone = ('' + (p[1]||'')).replace(/\D/g,'');
+    pacientes.push({
+      nombre:      ('' + (p[0]||'')).trim(),
+      telefono:    pPhone,
+      email:       ('' + (p[2]||'')).trim(),
+      primeraVisita: (p[3] instanceof Date) ? fmtDate(p[3]) : ('' + (p[3]||'')),
+      ultimaVisita:  (p[4] instanceof Date) ? fmtDate(p[4]) : ('' + (p[4]||''))
+    });
+  }
+
+  return {ok: true, citas: citas, bloqueos: bloqueos, pacientes: pacientes};
 }
 
 // -------------------------------------------------------------
