@@ -605,22 +605,22 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <div class="stat-card">
           <div class="stat-label">Cobrado este mes</div>
           <div class="stat-val" id="stCobrado" style="font-size:1.5rem">—</div>
-          <div class="stat-desc">sesiones atendidas / pagadas</div>
+          <div class="stat-desc">ingresos del mes</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Cobrado esta semana</div>
           <div class="stat-val" id="stCobradoSemana" style="font-size:1.5rem">—</div>
-          <div class="stat-desc">sesiones atendidas / pagadas</div>
+          <div class="stat-desc">ingresos de la semana</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Cobrado hoy</div>
           <div class="stat-val" id="stCobradoHoy" style="font-size:1.5rem">—</div>
-          <div class="stat-desc">sesiones atendidas / pagadas</div>
+          <div class="stat-desc">ingresos del día</div>
         </div>
         <div class="stat-card" style="border-color:rgba(251,191,36,.35)">
           <div class="stat-label" style="color:#d97706">Por cobrar este mes</div>
           <div class="stat-val" id="stPorCobrar" style="font-size:1.5rem;color:#d97706">—</div>
-          <div class="stat-desc">citas confirmadas pendientes</div>
+          <div class="stat-desc">citas futuras pendientes</div>
         </div>
       </div>
 
@@ -1801,29 +1801,24 @@ function initDashboard() {
   document.getElementById('stMes').textContent      = mes;
   document.getElementById('stPacientes').textContent = pacs;
 
-  // Cobrado = solo citas Atendidas o marcadas como pagadas
-  const cobrado = citas
-    .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
-    .filter(esCobrada)
-    .reduce((s,c) => s + parsePrecio(c.precio), 0);
+  // Cobrado = todas las citas del mes no canceladas (pasadas y futuras)
+  const citasMesAll = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
+  const cobrado = citasMesAll.reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stCobrado').textContent = cobrado > 0 ? '$'+cobrado.toLocaleString('es-CO') : '—';
 
   const cobradoSemana = citas
     .filter(c => { const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; })
-    .filter(esCobrada)
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stCobradoSemana').textContent = cobradoSemana > 0 ? '$'+cobradoSemana.toLocaleString('es-CO') : '—';
 
   const cobradoHoy = citas
     .filter(c => normDate(c.fecha) === todayStr)
-    .filter(esCobrada)
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stCobradoHoy').textContent = cobradoHoy > 0 ? '$'+cobradoHoy.toLocaleString('es-CO') : '—';
 
-  // Por cobrar = citas confirmadas/pendientes del mes que no se han atendido ni pagado
-  const porCobrar = citas
-    .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
-    .filter(c => !esCobrada(c))
+  // Por cobrar = solo citas FUTURAS del mes (aún no han ocurrido)
+  const porCobrar = citasMesAll
+    .filter(c => normDate(c.fecha) > todayStr)
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stPorCobrar').textContent = porCobrar > 0 ? '$'+porCobrar.toLocaleString('es-CO') : '—';
 
@@ -3427,7 +3422,6 @@ function calcCobradoMes() {
   const m = now.getMonth()+1, y = now.getFullYear();
   return citasReales()
     .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
-    .filter(esCobrada)
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
 }
 
@@ -3493,7 +3487,6 @@ function renderFinanzas() {
     ...mes,
     total: citas
       .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===mes.m && +cy===mes.y; })
-      .filter(esCobrada)
       .reduce((s,c) => s + parsePrecio(c.precio), 0)
   }));
   const maxVal = Math.max(...totales.map(t => t.total), 1);
@@ -3518,7 +3511,6 @@ function renderFinanzas() {
   const servMap = {};
   citas
     .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
-    .filter(esCobrada)
     .forEach(c => {
       const s = c.servicio || 'Sin servicio';
       servMap[s] = (servMap[s] || 0) + parsePrecio(c.precio);
