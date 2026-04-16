@@ -95,7 +95,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 .page-sub{color:var(--muted);font-size:.9rem;margin-top:6px}
 
 /* ── STATS GRID ── */
-.stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-bottom:28px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:0}
 /* ── SIDEBAR SEARCH ── */
 .sb-search{
   display:flex;align-items:center;gap:6px;margin:0 0 8px;
@@ -426,7 +426,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
 
 /* ── RESPONSIVE ── */
 @media(max-width:1300px){
-  .stats-grid{grid-template-columns:repeat(3,1fr)}
+  .stats-grid{grid-template-columns:repeat(4,1fr)}
 }
 @media(max-width:900px){
   .stats-grid{grid-template-columns:repeat(2,1fr)}
@@ -581,7 +581,8 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <button type="button" class="btn btn-ghost btn-sm" onclick="showView('agenda');filtrarHoy()">Ver agenda</button>
       </div>
 
-      <div class="stats-grid">
+      <!-- Fila 1: Citas -->
+      <div class="stats-grid" style="margin-bottom:12px">
         <div class="stat-card">
           <div class="stat-label">Citas hoy</div>
           <div class="stat-val" id="stHoy">—</div>
@@ -602,6 +603,10 @@ tr:hover td{background:rgba(126,221,208,.03)}
           <div class="stat-val" id="stPacientes">—</div>
           <div class="stat-desc">pacientes únicos</div>
         </div>
+      </div>
+
+      <!-- Fila 2: Finanzas -->
+      <div class="stats-grid" style="margin-bottom:16px">
         <div class="stat-card">
           <div class="stat-label">Cobrado este mes</div>
           <div class="stat-val" id="stCobrado" style="font-size:1.5rem">—</div>
