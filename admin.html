@@ -1116,7 +1116,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
       <div class="card" style="margin-bottom:20px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
           <div class="card-title" style="margin-bottom:0">📊 Ingresos últimos 6 meses</div>
-          <span style="font-size:.78rem;color:var(--muted)">(solo sesiones atendidas o pagadas)</span>
+          <span style="font-size:.78rem;color:var(--muted)">(citas no canceladas del mes)</span>
         </div>
         <div class="chart-wrap">
           <div id="finChart" style="display:flex;align-items:flex-end;gap:8px;height:140px;padding-bottom:0;min-width:320px"></div>
@@ -3537,26 +3537,25 @@ function renderFinanzas() {
   }
 
   // ── Resumen del mes ──
+  const todayStr2    = today();
   const citasMes     = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
-  const atendidas    = citasMes.filter(c => c.estado === 'Atendida').length;
-  const pagadasLS    = citasMes.filter(c => isPagada(c.id) && c.estado !== 'Atendida').length;
-  const pendienteN   = citasMes.filter(c => !esCobrada(c)).length;
-  const canceladasN  = allData.citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y && c.estado === 'Cancelada'; }).length;
-  const porCobrarVal = citasMes.filter(c => !esCobrada(c)).reduce((s,c) => s + parsePrecio(c.precio), 0);
-  const ticketProm   = atendidas + pagadasLS > 0 ? Math.round(cobradoMes / (atendidas + pagadasLS)) : 0;
+  const canceladasN  = allData.citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y && c.estado==='Cancelada' && !esRegistroServ(c.servicio); }).length;
+  const pasadasN     = citasMes.filter(c => normDate(c.fecha) <= todayStr2).length;
+  const futurasN     = citasMes.filter(c => normDate(c.fecha) > todayStr2).length;
+  const futurasVal   = citasMes.filter(c => normDate(c.fecha) > todayStr2).reduce((s,c) => s + parsePrecio(c.precio), 0);
+  const ticketProm   = citasMes.length > 0 ? Math.round(cobradoMes / citasMes.length) : 0;
 
   const resEl = document.getElementById('finResumenMes');
   if (resEl) {
     resEl.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:10px">
         ${resRow('Total citas del mes', citasMes.length + canceladasN, '')}
-        ${resRow('Sesiones atendidas', atendidas, 'color:var(--ok)')}
-        ${resRow('Marcadas como pagadas', pagadasLS, 'color:var(--ok)')}
-        ${resRow('Pendientes de atención', pendienteN, pendienteN>0?'color:var(--warn)':'')}
+        ${resRow('Sesiones realizadas', pasadasN, 'color:var(--ok)')}
+        ${resRow('Próximas (futuras)', futurasN, futurasN>0?'color:var(--info)':'')}
         ${resRow('Canceladas', canceladasN, canceladasN>0?'color:var(--err)':'')}
         <div style="height:1px;background:var(--border);margin:4px 0"></div>
         ${resRow('Total cobrado', '$' + cobradoMes.toLocaleString('es-CO'), 'color:var(--primary);font-weight:700')}
-        ${resRow('Por cobrar', porCobrarVal > 0 ? '$' + porCobrarVal.toLocaleString('es-CO') : '—', 'color:var(--warn)')}
+        ${resRow('Por cobrar (futuras)', futurasVal > 0 ? '$' + futurasVal.toLocaleString('es-CO') : '—', 'color:var(--warn)')}
         ${resRow('Ticket promedio', ticketProm > 0 ? '$' + ticketProm.toLocaleString('es-CO') : '—', '')}
         ${meta ? resRow('Meta cumplida', Math.min(Math.round(cobradoMes/meta*100),100) + '%', cobradoMes >= meta ? 'color:var(--ok);font-weight:700' : 'color:var(--warn)') : ''}
       </div>`;
