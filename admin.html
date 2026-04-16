@@ -410,6 +410,43 @@ tr:hover td{background:rgba(126,221,208,.03)}
 .serv-bar-fill{height:100%;background:var(--primary);border-radius:99px;transition:width .5s ease}
 .serv-name{font-size:.82rem;width:200px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .serv-val{font-family:var(--font-m);font-size:.78rem;color:var(--primary);font-weight:600;min-width:90px;text-align:right}
+/* ── SEGUIMIENTO ── */
+.seg-chip{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
+  border-radius:99px;font-family:var(--font-m);font-size:.75rem;font-weight:700;
+  cursor:pointer;border:1.5px solid;transition:var(--tr);
+}
+.seg-chip.sem3 {color:#7c3aed;border-color:rgba(124,58,237,.35);background:rgba(124,58,237,.07)}
+.seg-chip.sem4 {color:var(--warn);border-color:rgba(217,119,6,.35);background:rgba(217,119,6,.07)}
+.seg-chip.sem5 {color:var(--err);border-color:rgba(220,38,38,.35);background:rgba(220,38,38,.07)}
+.seg-chip.reagendo{color:var(--ok);border-color:rgba(22,163,74,.35);background:rgba(22,163,74,.07)}
+.seg-chip.active.sem3{background:rgba(124,58,237,.18)}
+.seg-chip.active.sem4{background:rgba(217,119,6,.18)}
+.seg-chip.active.sem5{background:rgba(220,38,38,.18)}
+.seg-chip.active.reagendo{background:rgba(22,163,74,.18)}
+.seg-card{
+  display:flex;align-items:center;gap:14px;padding:16px 18px;
+  background:var(--s1);border:1px solid var(--border);border-radius:10px;
+  transition:var(--tr);flex-wrap:wrap;
+}
+.seg-card:hover{border-color:rgba(27,191,176,.3)}
+.seg-card.reagendado{opacity:.55;border-style:dashed}
+.seg-days-bar{height:6px;border-radius:99px;background:var(--s2);overflow:hidden;margin-top:5px;width:100%}
+.seg-days-fill{height:100%;border-radius:99px;transition:width .5s ease}
+.seg-log-item{
+  display:flex;align-items:flex-start;gap:10px;padding:9px 0;
+  border-bottom:1px solid rgba(27,191,176,.07);font-size:.82rem;
+}
+.seg-log-item:last-child{border-bottom:none}
+.seg-log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.seg-log-time{font-family:var(--font-m);font-size:.72rem;color:var(--muted);white-space:nowrap;min-width:80px}
+.seg-section-label{
+  font-family:var(--font-m);font-size:.72rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.1em;margin:20px 0 10px;
+}
+.btn-purple{background:transparent;color:#7c3aed;border-color:rgba(124,58,237,.35)}
+.btn-purple:hover{background:rgba(124,58,237,.08)}
+
 .fin-export-btn{
   display:inline-flex;align-items:center;gap:7px;padding:9px 18px;
   background:var(--s2);border:1px solid var(--border);border-radius:8px;
@@ -542,6 +579,14 @@ tr:hover td{background:rgba(126,221,208,.03)}
         Recordatorios
       </span>
       <span id="badgeRecordatorios" style="display:none;background:#dc2626;color:#fff;border-radius:99px;font-size:.68rem;font-weight:700;padding:1px 7px;line-height:1.6">0</span>
+    </button>
+
+    <button class="sb-link" id="sb-seguimiento" onclick="showView('seguimiento')" style="justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Seguimiento
+      </span>
+      <span id="badgeSeguimiento" style="display:none;background:#7c3aed;color:#fff;border-radius:99px;font-size:.68rem;font-weight:700;padding:1px 7px;line-height:1.6">0</span>
     </button>
 
     <div class="sb-sep"></div>
@@ -1044,6 +1089,61 @@ tr:hover td{background:rgba(126,221,208,.03)}
       </div>
     </section>
 
+    <!-- ── SEGUIMIENTO ── -->
+    <section id="vSeguimiento" style="display:none">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title"><em>Seguimiento</em> de pacientes</h1>
+          <p class="page-sub">Pacientes con sesiones de Descarga Muscular que necesitan reagendar</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="renderSeguimiento()">🔄 Actualizar</button>
+          <button class="fin-export-btn" onclick="exportarSeguimientoCSV()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Chips de filtro + contadores -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+        <button class="seg-chip sem3 active" id="segChip3" onclick="toggleSegFiltro('sem3')">
+          <span id="segCount3">0</span> · Semana 3 — aviso previo
+        </button>
+        <button class="seg-chip sem4 active" id="segChip4" onclick="toggleSegFiltro('sem4')">
+          <span id="segCount4">0</span> · Semana 4 — momento ideal
+        </button>
+        <button class="seg-chip sem5 active" id="segChip5" onclick="toggleSegFiltro('sem5')">
+          <span id="segCount5">0</span> · Semana 5+ — urgente
+        </button>
+        <button class="seg-chip reagendo active" id="segChipR" onclick="toggleSegFiltro('reagendo')">
+          <span id="segCountR">0</span> · Reagendaron ✓
+        </button>
+      </div>
+
+      <!-- Info banner -->
+      <div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);border-radius:10px;padding:12px 18px;margin-bottom:22px;font-size:.83rem;color:#5b21b6;display:flex;gap:10px;align-items:flex-start">
+        <span style="font-size:1.1rem;flex-shrink:0">💡</span>
+        <span>Semana 3 (21-27 días): aviso previo para que agenden antes de cumplir el mes. Semana 4 (28-34 días): momento óptimo de reagendamiento. Semana 5+ (35+ días): seguimiento urgente. Cuando el paciente agende, márcalo como <strong>Reagendó ✓</strong>.</span>
+      </div>
+
+      <!-- Lista de pacientes -->
+      <div id="segLista" style="display:flex;flex-direction:column;gap:10px">
+        <div class="loading-wrap"><div class="spinner"></div> Cargando...</div>
+      </div>
+
+      <!-- Historial de acciones -->
+      <div class="card" style="margin-top:28px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="card-title" style="margin-bottom:0">📋 Historial de seguimientos</div>
+          <button class="btn btn-ghost btn-sm" onclick="limpiarLogSeguimiento()">Limpiar historial</button>
+        </div>
+        <div id="segLog">
+          <div class="empty" style="padding:24px 0"><p>Aún no hay acciones registradas</p></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── PACIENTES ── -->
     <section id="vPacientes" style="display:none">
       <div class="page-header">
@@ -1390,7 +1490,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
-  ['dashboard','agenda','nueva','calendario','bloquear','pacientes','basedatos','recordatorios','finanzas'].forEach(id => {
+  ['dashboard','agenda','nueva','calendario','bloquear','pacientes','basedatos','recordatorios','finanzas','seguimiento'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -1407,6 +1507,7 @@ function showView(v) {
   if (v === 'recordatorios')  cargarRecordatorios();
   if (v === 'basedatos')      { renderBasedatos(); initFormDB(); }
   if (v === 'finanzas')       renderFinanzas();
+  if (v === 'seguimiento')    renderSeguimiento();
 }
 
 function toggleSidebar() {
@@ -3346,6 +3447,235 @@ function agendarDesdePacienteRec(encNombre, encTel, encEmail) {
   document.getElementById('ncEmail').value = email;
   document.getElementById('pacSearch').value = nombre + (telefono ? ' — ' + telefono : '');
   toast('Datos de ' + nombre.split(' ')[0] + ' cargados. Completa fecha, hora y servicio.');
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── SEGUIMIENTO DE PACIENTES ──
+// ══════════════════════════════════════════════════════════════
+
+// Filtros activos
+let _segFiltros = new Set(['sem3','sem4','sem5','reagendo']);
+
+function toggleSegFiltro(f) {
+  if (_segFiltros.has(f)) _segFiltros.delete(f);
+  else _segFiltros.add(f);
+  const chip = document.getElementById('segChip' + (f==='sem3'?'3':f==='sem4'?'4':f==='sem5'?'5':'R'));
+  if (chip) chip.classList.toggle('active', _segFiltros.has(f));
+  _renderSegLista(window._segData || []);
+}
+
+// Helpers localStorage
+function segReagendo(nombre)    { return !!localStorage.getItem('seg_reagendo_'+nombre); }
+function segToggleR(nombre)     {
+  if (segReagendo(nombre)) localStorage.removeItem('seg_reagendo_'+nombre);
+  else { localStorage.setItem('seg_reagendo_'+nombre,'1'); segLogAction(nombre,'reagendo','Marcado como Reagendó ✓'); }
+  renderSeguimiento();
+}
+function segWaSent(nombre, tipo){ return !!localStorage.getItem('seg_wa_'+tipo+'_'+nombre); }
+function segMarkWa(nombre, tipo, dias) {
+  localStorage.setItem('seg_wa_'+tipo+'_'+nombre, Date.now());
+  const label = tipo==='sem3' ? 'WA aviso 3 semanas' : tipo==='sem4' ? 'WA semana 4' : 'WA semana 5+';
+  segLogAction(nombre, tipo, label + ' enviado (' + dias + ' días sin descarga)');
+  renderSeguimiento();
+}
+
+// Log de acciones
+function segLogAction(nombre, tipo, accion) {
+  const log = JSON.parse(localStorage.getItem('seg_log') || '[]');
+  log.unshift({ nombre, tipo, accion, fecha: new Date().toLocaleString('es-CO',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) });
+  if (log.length > 80) log.length = 80;
+  localStorage.setItem('seg_log', JSON.stringify(log));
+}
+function limpiarLogSeguimiento() {
+  if (!confirm('¿Limpiar todo el historial de seguimientos?')) return;
+  localStorage.removeItem('seg_log');
+  _renderSegLog();
+  toast('Historial limpiado');
+}
+
+function esDescargaMusc(serv) {
+  const s = (serv||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  return s.includes('descarga');
+}
+
+function renderSeguimiento() {
+  const lista = document.getElementById('segLista');
+  if (!lista) return;
+  lista.innerHTML = '<div class="loading-wrap"><div class="spinner"></div></div>';
+
+  const now = new Date(); now.setHours(0,0,0,0);
+
+  // Construir mapa: última descarga por paciente
+  const map = {};
+  allData.citas
+    .filter(c => c.estado !== 'Cancelada' && !esRegistroServ(c.servicio) && esDescargaMusc(c.servicio))
+    .forEach(c => {
+      const nombre = (c.nombre||'').trim();
+      const fecha  = normDate(c.fecha);
+      if (!nombre || !fecha) return;
+      if (!map[nombre] || fecha > map[nombre].fecha) {
+        map[nombre] = { nombre, telefono: c.telefono||'', email: c.email||'', fecha, servicio: c.servicio };
+      }
+    });
+
+  // Calcular días y semana
+  const pacientes = Object.values(map).map(p => {
+    const [y,m,d] = p.fecha.split('-');
+    const last = new Date(+y,+m-1,+d);
+    const dias = Math.floor((now - last) / 86400000);
+    let semana = null;
+    if      (dias >= 21 && dias < 28) semana = 'sem3';
+    else if (dias >= 28 && dias < 35) semana = 'sem4';
+    else if (dias >= 35)              semana = 'sem5';
+    return { ...p, dias, semana };
+  }).filter(p => p.semana !== null);
+
+  // Contar
+  const c3 = pacientes.filter(p=>p.semana==='sem3').length;
+  const c4 = pacientes.filter(p=>p.semana==='sem4').length;
+  const c5 = pacientes.filter(p=>p.semana==='sem5').length;
+  const cR = pacientes.filter(p=>segReagendo(p.nombre)).length;
+
+  ['3','4','5','R'].forEach(k => {
+    const el = document.getElementById('segCount'+k);
+    if (el) el.textContent = k==='3'?c3:k==='4'?c4:k==='5'?c5:cR;
+  });
+
+  // Badge sidebar
+  const pendientes = c3 + c4 + c5;
+  const badge = document.getElementById('badgeSeguimiento');
+  if (badge) { badge.textContent = pendientes; badge.style.display = pendientes > 0 ? 'inline':'none'; }
+
+  window._segData = pacientes;
+  _renderSegLista(pacientes);
+  _renderSegLog();
+}
+
+function _renderSegLista(pacientes) {
+  const lista = document.getElementById('segLista');
+  if (!lista) return;
+
+  // Separar reagendados
+  const activos    = pacientes.filter(p => !segReagendo(p.nombre));
+  const reagendados = pacientes.filter(p =>  segReagendo(p.nombre));
+
+  // Filtrar
+  const mostrar = [
+    ...(_segFiltros.has('sem3') ? activos.filter(p=>p.semana==='sem3').sort((a,b)=>a.dias-b.dias) : []),
+    ...(_segFiltros.has('sem4') ? activos.filter(p=>p.semana==='sem4').sort((a,b)=>a.dias-b.dias) : []),
+    ...(_segFiltros.has('sem5') ? activos.filter(p=>p.semana==='sem5').sort((a,b)=>b.dias-a.dias) : []),
+    ...(_segFiltros.has('reagendo') ? reagendados : []),
+  ];
+
+  if (!mostrar.length) {
+    lista.innerHTML = '<div class="empty" style="padding:50px 20px"><p>No hay pacientes en estas categorías</p></div>';
+    return;
+  }
+
+  lista.innerHTML = mostrar.map(p => _segCard(p)).join('');
+}
+
+function _segCard(p) {
+  const reagendado = segReagendo(p.nombre);
+  const initials   = p.nombre.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2);
+  const pct        = Math.min(Math.round(p.dias / 35 * 100), 100);
+  const waSent3    = segWaSent(p.nombre,'sem3');
+  const waSent4    = segWaSent(p.nombre,'sem4');
+  const waSent5    = segWaSent(p.nombre,'sem5');
+
+  const colorMap   = { sem3:'#7c3aed', sem4:'var(--warn)', sem5:'var(--err)' };
+  const fillMap    = { sem3:'rgba(124,58,237,.5)', sem4:'#d97706', sem5:'#dc2626' };
+  const color      = colorMap[p.semana] || 'var(--primary)';
+  const fillColor  = fillMap[p.semana]  || 'var(--primary)';
+
+  const labelMap   = { sem3:'Semana 3 — aviso previo', sem4:'Semana 4 — momento ideal', sem5:'Semana 5+ — urgente' };
+  const label      = labelMap[p.semana] || '';
+
+  const tel   = String(p.telefono||'').replace(/\D/g,'');
+  const phone = tel.length<=10 ? '57'+tel : tel;
+  const hasWA = tel.length >= 7;
+
+  // Mensajes WA
+  const primero = p.nombre.split(' ')[0];
+  const msg3 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Ya van 3 semanas desde tu última sesión de descarga muscular. La próxima semana sería el momento ideal para reagendar antes de que el cuerpo empiece a acumular tensión. ¿Te agendo?`;
+  const msg4 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Ya se cumplieron las 4 semanas desde tu última descarga muscular — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ¿Te agendo esta semana?`;
+  const msg5 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Hace más de un mes desde tu última sesión de descarga. El cuerpo ya empieza a acumular tensión de nuevo. ¿Cuándo te viene bien retomar? Cuéntame y coordinamos 💪`;
+
+  const wa3 = hasWA ? `https://wa.me/${phone}?text=${encodeURIComponent(msg3)}` : null;
+  const wa4 = hasWA ? `https://wa.me/${phone}?text=${encodeURIComponent(msg4)}` : null;
+  const wa5 = hasWA ? `https://wa.me/${phone}?text=${encodeURIComponent(msg5)}` : null;
+
+  return `<div class="seg-card ${reagendado?'reagendado':''}">
+    <div class="pac-badge" style="flex-shrink:0;background:rgba(27,191,176,.08);border-color:${reagendado?'var(--ok)':color}">${initials}</div>
+    <div style="flex:1;min-width:160px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-weight:600;font-size:.9rem">${p.nombre}</span>
+        ${reagendado
+          ? `<span style="font-size:.72rem;color:var(--ok);font-weight:700;background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.3);border-radius:99px;padding:1px 8px">✓ Reagendó</span>`
+          : `<span style="font-size:.72rem;color:${color};font-weight:700;font-family:var(--font-m)">${label}</span>`}
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);margin-top:2px">${p.servicio} · última: ${fmtDate(p.fecha)}</div>
+      <div class="seg-days-bar" style="width:180px">
+        <div class="seg-days-fill" style="width:${pct}%;background:${reagendado?'var(--ok)':fillColor}"></div>
+      </div>
+      <div style="font-family:var(--font-m);font-size:.7rem;color:${reagendado?'var(--ok)':color};margin-top:2px;font-weight:600">${p.dias} días sin descarga muscular</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0">
+      ${reagendado ? `
+        <button class="btn btn-ghost btn-sm" onclick="segToggleR('${p.nombre.replace(/'/g,"\\'")}')">↩ Desmarcar</button>
+      ` : `
+        ${p.semana==='sem3' && wa3 ? `<a href="${wa3}" target="_blank" class="btn btn-sm btn-purple" onclick="segMarkWa('${p.nombre.replace(/'/g,"\\'")}','sem3',${p.dias})" style="${waSent3?'opacity:.55':''}">💬 WA ${waSent3?'(enviado)':'Sem 3'}</a>` : ''}
+        ${(p.semana==='sem4'||p.semana==='sem3') && wa4 ? `<a href="${wa4}" target="_blank" class="btn btn-wa btn-sm" onclick="segMarkWa('${p.nombre.replace(/'/g,"\\'")}','sem4',${p.dias})" style="${waSent4?'opacity:.55':''}">💬 WA ${waSent4?'(enviado)':'Sem 4'}</a>` : ''}
+        ${p.semana==='sem5' && wa5 ? `<a href="${wa5}" target="_blank" class="btn btn-err btn-sm" onclick="segMarkWa('${p.nombre.replace(/'/g,"\\'")}','sem5',${p.dias})" style="${waSent5?'opacity:.55':''}">💬 WA ${waSent5?'(enviado)':'Sem 5+'}</a>` : ''}
+        ${p.email && p.email.includes('@') ? `<a href="mailto:${p.email}" class="btn btn-ghost btn-sm">📧</a>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="agendarDesdeSeg('${encodeURIComponent(p.nombre)}','${encodeURIComponent(p.telefono)}','${encodeURIComponent(p.email)}')">+ Agendar</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--ok);border-color:rgba(22,163,74,.3)" onclick="segToggleR('${p.nombre.replace(/'/g,"\\'")}')">✓ Reagendó</button>
+      `}
+    </div>
+  </div>`;
+}
+
+function _renderSegLog() {
+  const el = document.getElementById('segLog');
+  if (!el) return;
+  const log = JSON.parse(localStorage.getItem('seg_log') || '[]');
+  if (!log.length) {
+    el.innerHTML = '<div class="empty" style="padding:24px 0"><p>Aún no hay acciones registradas</p></div>';
+    return;
+  }
+  const dotColors = { sem3:'#7c3aed', sem4:'#d97706', sem5:'#dc2626', reagendo:'#16a34a' };
+  el.innerHTML = `<div style="max-height:320px;overflow-y:auto;padding-right:4px">` +
+    log.map(l => `<div class="seg-log-item">
+      <div class="seg-log-dot" style="background:${dotColors[l.tipo]||'var(--primary)'}"></div>
+      <div class="seg-log-time">${l.fecha}</div>
+      <div style="flex:1"><strong style="font-size:.83rem">${l.nombre}</strong> — <span style="color:var(--muted)">${l.accion}</span></div>
+    </div>`).join('') + `</div>`;
+}
+
+function agendarDesdeSeg(encNombre, encTel, encEmail) {
+  showView('nueva');
+  document.getElementById('ncName').value  = decodeURIComponent(encNombre);
+  document.getElementById('ncPhone').value = decodeURIComponent(encTel);
+  document.getElementById('ncEmail').value = decodeURIComponent(encEmail);
+  document.getElementById('pacSearch').value = decodeURIComponent(encNombre);
+  toast('Datos cargados. Completa fecha, hora y servicio.');
+}
+
+function exportarSeguimientoCSV() {
+  const data = window._segData || [];
+  if (!data.length) { toast('No hay datos para exportar', 'err'); return; }
+  const header = ['Nombre','Teléfono','Email','Última descarga','Días sin sesión','Semana','Reagendó','WA Enviado'];
+  const rows = data.map(p => [
+    p.nombre, p.telefono, p.email, p.fecha, p.dias,
+    p.semana==='sem3'?'Semana 3':p.semana==='sem4'?'Semana 4':'Semana 5+',
+    segReagendo(p.nombre)?'Sí':'No',
+    (segWaSent(p.nombre,'sem3')||segWaSent(p.nombre,'sem4')||segWaSent(p.nombre,'sem5'))?'Sí':'No'
+  ]);
+  const csv = [header,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'seguimiento_'+today()+'.csv'; a.click();
+  toast('CSV exportado');
 }
 
 // ── MODALS ──
