@@ -135,6 +135,9 @@ function createBooking(d, isAdmin) {
   // Guardar/actualizar paciente en hoja Pacientes
   upsertPaciente(d.name, d.phone, d.email);
 
+  // No enviar correos cuando la cita la crea el admin
+  if (isAdmin) return {ok: true, id: id};
+
   // Para citas reales: enviar todos los correos y WhatsApp
   var tel  = (d.phone || '').replace(/\D/g,'');
   if (tel.length <= 10) tel = '57' + tel;
