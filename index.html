@@ -22,6 +22,7 @@
   <meta name="twitter:image"       content="https://jessicaocampoft-ctrl.github.io/Imagen%20de%20perfil%201.jpg">
 
   <link rel="icon" href="Logo/4.png">
+  <link rel="preload" as="image" href="Readaptacion%20Mafe.jpg" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -112,10 +113,12 @@
       opacity: 0;
       transform: translateY(30px);
       transition: opacity 0.7s ease, transform 0.7s ease;
+      will-change: opacity, transform;
     }
     .fade-up.visible {
       opacity: 1;
       transform: translateY(0);
+      will-change: auto;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -172,6 +175,7 @@
     }
     .nav-links a:hover, .nav-links a.active { color: var(--primary); }
     .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+    .nav-pasaporte { color: var(--primary) !important; font-weight: 600; display: inline-flex !important; align-items: center; gap: 6px; }
     .nav-cta {
       display: inline-flex;
       align-items: center;
@@ -1524,7 +1528,7 @@
         <li><a href="#faq">Preguntas frecuentes</a></li>
         <li><a href="#agenda">Agenda</a></li>
         <li><a href="#contacto">Contacto</a></li>
-        <li><a href="pasaporte.html" style="color:var(--primary); font-weight:600; display:inline-flex; align-items:center; gap:6px;">🎯 Mi Pasaporte</a></li>
+        <li><a href="pasaporte.html" class="nav-pasaporte">🎯 Mi Pasaporte</a></li>
         <li><a href="https://wa.me/573136467945" target="_blank" rel="noopener" class="nav-cta">Agendar Cita</a></li>
       </ul>
       <button class="hamburger" id="hamburger" aria-label="Menú de navegación" aria-expanded="false">
@@ -1580,7 +1584,7 @@
             <span class="corner tr"></span>
             <span class="corner bl"></span>
             <span class="corner br"></span>
-            <img src="Readaptacion%20Mafe.jpg" alt="Jessica Ocampo fisioterapeuta" loading="eager" width="440" height="587">
+            <img src="Readaptacion%20Mafe.jpg" alt="Jessica Ocampo fisioterapeuta" loading="eager" fetchpriority="high" decoding="sync" width="440" height="587">
             <div class="overlay"></div>
             <span class="hero-photo-chip">Pereira · Dosquebradas</span>
           </div>
@@ -1594,7 +1598,7 @@
     <div class="container">
       <div class="about-grid">
         <div class="about-photo-wrap fade-up">
-          <img src="Imagen%20de%20perfil%201.jpg" alt="Jessica Ocampo fisioterapeuta" loading="lazy">
+          <img src="Imagen%20de%20perfil%201.jpg" alt="Jessica Ocampo fisioterapeuta" loading="lazy" decoding="async">
           <div class="about-badge">
             <span class="big">4+</span>
             <span class="small">Años de experiencia</span>
@@ -1629,7 +1633,7 @@
         <!-- Card 1 -->
         <div class="service-card fade-up">
           <div class="service-card-img">
-            <img src="Liberacion%20instrumental%20trapecio.jpg" alt="Descarga muscular cuello y espalda" loading="lazy">
+            <img src="Liberacion%20instrumental%20trapecio.jpg" alt="Descarga muscular cuello y espalda" loading="lazy" decoding="async">
           </div>
           <div class="service-card-body">
             <h3>Descarga Muscular — Cuello y Espalda</h3>
@@ -1642,7 +1646,7 @@
         <!-- Card 2 -->
         <div class="service-card fade-up">
           <div class="service-card-img">
-            <img src="Pistola%20percutora.jpg" alt="Descarga muscular piernas" loading="lazy">
+            <img src="Pistola%20percutora.jpg" alt="Descarga muscular piernas" loading="lazy" decoding="async">
           </div>
           <div class="service-card-body">
             <h3>Descarga Muscular — Piernas</h3>
@@ -1655,7 +1659,7 @@
         <!-- Card 3 -->
         <div class="service-card fade-up">
           <div class="service-card-img">
-            <img src="Ventosas.jpg" alt="Descarga muscular completa" loading="lazy">
+            <img src="Ventosas.jpg" alt="Descarga muscular completa" loading="lazy" decoding="async">
           </div>
           <div class="service-card-body">
             <h3>Descarga Muscular Completa</h3>
@@ -1668,7 +1672,7 @@
         <!-- Card 4 -->
         <div class="service-card fade-up">
           <div class="service-card-img">
-            <img src="Valoraci%C3%B3n%20rodilla.jpg" alt="Valoración funcional" loading="lazy">
+            <img src="Valoraci%C3%B3n%20rodilla.jpg" alt="Valoración funcional" loading="lazy" decoding="async">
           </div>
           <div class="service-card-body">
             <h3>Valoración Funcional</h3>
@@ -1681,7 +1685,7 @@
         <!-- Card 5 -->
         <div class="service-card fade-up">
           <div class="service-card-img">
-            <img src="Readaptacion%20Mafe.jpg" alt="Readaptación funcional" loading="lazy">
+            <img src="Readaptacion%20Mafe.jpg" alt="Readaptación funcional" loading="lazy" decoding="async">
           </div>
           <div class="service-card-body">
             <h3>Readaptación Funcional</h3>
@@ -2332,7 +2336,6 @@
   <script>
     // ─── Nav scroll compact ───
     const nav = document.getElementById('nav');
-    let lastScroll = 0;
     window.addEventListener('scroll', () => {
       nav.classList.toggle('scrolled', window.scrollY > 60);
     }, { passive: true });
@@ -2375,7 +2378,12 @@
         }
       });
     }
-    window.addEventListener('scroll', highlightNav, { passive: true });
+    let _navRaf = false;
+    window.addEventListener('scroll', () => {
+      if (_navRaf) return;
+      _navRaf = true;
+      requestAnimationFrame(() => { highlightNav(); _navRaf = false; });
+    }, { passive: true });
 
     // ─── Intersection Observer fade-up ───
     const observer = new IntersectionObserver((entries) => {
@@ -2389,8 +2397,13 @@
 
     document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 
+    // ─── Time slot selection via event delegation ───
+    document.getElementById('timeGrid').addEventListener('click', e => {
+      const t = e.target.closest('.bk-time');
+      if (t && !t.classList.contains('taken')) selectTime(t);
+    });
+
     // ─── Booking form ───
-    // ⚠ Reemplaza esta URL con la de tu Google Apps Script (ver instrucciones)
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_r7Kr-9Uvu0qIVAJpyu8nzhmcJ9fzpqo2pspvFFHV_14cLzb9qUN9k3Lj8cdXFdIW/exec';
 
     const bk = {
@@ -2472,7 +2485,7 @@
       });
 
       grid.innerHTML = slots.map(s =>
-        `<span class="bk-time" onclick="selectTime(this)">${s}</span>`
+        `<span class="bk-time">${s}</span>`
       ).join('');
       return true;
     }
