@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script>if(localStorage.getItem('adminDarkMode')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
 <title>Admin — Jessica Ocampo Fisioterapeuta</title>
 <link rel="icon" href="Logo/4.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Cormorant+Garamond:ital,wght@0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -16,6 +17,11 @@
   --font-h:'Cormorant Garamond',serif;--font-b:'DM Sans',sans-serif;--font-m:'DM Mono',monospace;
   --r:10px;--tr:.2s ease;
   --ok:#16a34a;--warn:#d97706;--err:#dc2626;--info:#2563eb;
+}
+[data-theme="dark"]{
+  --bg:#0F1117;--s1:#1A1D24;--s2:#22262E;--s3:#2A2F3A;
+  --text:#E8EAF0;--muted:#8B929E;
+  --border:rgba(27,191,176,.22);--glow:rgba(27,191,176,.15);
 }
 html{font-size:16px;scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
@@ -598,6 +604,11 @@ tr:hover td{background:rgba(126,221,208,.03)}
       Evaluación
     </a>
 
+    <div style="font-size:.68rem;color:var(--muted);text-align:center;padding:2px 8px;margin-bottom:2px" id="lastUpdated"></div>
+    <button class="sb-link" id="darkModeBtn" onclick="toggleDarkMode()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <span id="darkModeTxt">Modo oscuro</span>
+    </button>
     <button class="sb-link sb-signout" onclick="logout()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Cerrar sesión
@@ -758,6 +769,15 @@ tr:hover td{background:rgba(126,221,208,.03)}
           <option value="Presencial">Presencial</option>
           <option value="Domicilio">Domicilio</option>
         </select>
+        <select id="fService" onchange="renderAgenda()">
+          <option value="">Todos los servicios</option>
+          <option value="Descarga Muscular — Cuello y Espalda">Descarga — Cuello/Espalda</option>
+          <option value="Descarga Muscular — Piernas">Descarga — Piernas</option>
+          <option value="Descarga Muscular Completa">Descarga Completa</option>
+          <option value="Valoración Funcional">Valoración Funcional</option>
+          <option value="Readaptación Funcional">Readaptación Funcional</option>
+          <option value="__planes__">Solo planes</option>
+        </select>
         <input type="date" id="fDesde" onchange="renderAgenda()" title="Desde">
         <input type="date" id="fHasta" onchange="renderAgenda()" title="Hasta">
         <button class="btn btn-teal btn-sm" onclick="filtrarHoy()">Hoy</button>
@@ -782,6 +802,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
           </tbody>
         </table>
       </div>
+      <div id="agendaPagination" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:14px;font-size:.82rem;color:var(--muted)"></div>
     </section>
 
     <!-- ── NUEVA CITA (ADMIN) ── -->
@@ -790,7 +811,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <h1 class="page-title"><em>Nueva cita</em> manual</h1>
         <p class="page-sub">Como administrador puedes agendar sin restricción de horario ni buffer de domicilio</p>
       </div>
-      <div class="card" style="max-width:640px">
+      <div class="card nc-form" style="max-width:640px">
 
         <!-- ── COMANDO DE VOZ ── -->
         <button type="button" id="voiceBtn" onclick="toggleVoicePanel()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(27,191,176,.08);border:1.5px solid var(--primary);border-radius:10px;color:var(--primary);font-family:var(--font-b);font-size:.95rem;font-weight:600;padding:13px;margin-bottom:0;cursor:pointer">
@@ -1505,7 +1526,21 @@ function showView(v) {
   document.getElementById('sb-' + v).classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
 
-  if (v === 'agenda')         renderAgenda();
+  if (v === 'agenda') {
+    const _saved = sessionStorage.getItem('agendaFilters');
+    if (_saved) {
+      try {
+        const _f = JSON.parse(_saved);
+        if (_f.search  !== undefined) document.getElementById('fSearch').value  = _f.search;
+        if (_f.status  !== undefined) document.getElementById('fStatus').value  = _f.status;
+        if (_f.mod     !== undefined) document.getElementById('fMod').value     = _f.mod;
+        if (_f.service !== undefined) document.getElementById('fService').value = _f.service;
+        if (_f.desde   !== undefined) document.getElementById('fDesde').value   = _f.desde;
+        if (_f.hasta   !== undefined) document.getElementById('fHasta').value   = _f.hasta;
+      } catch(e) {}
+    }
+    renderAgenda();
+  }
   if (v === 'bloquear')       renderBloqueos();
   if (v === 'pacientes')      renderPacientes();
   if (v === 'calendario')     renderCalendar();
@@ -1939,6 +1974,8 @@ function initDashboard() {
   updateBadge();
   renderWeekGrid();
   checkUpcomingAlerts();
+  const _lu = document.getElementById('lastUpdated');
+  if (_lu) _lu.textContent = 'Act. ' + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   initQuickNotes();
   // Revisar alerta cada minuto
   if (window._alertInterval) clearInterval(window._alertInterval);
@@ -1997,28 +2034,50 @@ function initDashboard() {
 }
 
 // ── AGENDA ──
-function renderAgenda() {
-  const search = (document.getElementById('fSearch').value||'').toLowerCase();
-  const fSt    = document.getElementById('fStatus').value;
-  const fMod   = document.getElementById('fMod').value;
-  const fDesde = document.getElementById('fDesde').value;
-  const fHasta = document.getElementById('fHasta').value;
+let _agendaPage = 0;
+const AGENDA_PER_PAGE = 25;
+
+function renderAgenda(keepPage = false) {
+  if (!keepPage) _agendaPage = 0;
+
+  const search   = (document.getElementById('fSearch').value||'').toLowerCase();
+  const fSt      = document.getElementById('fStatus').value;
+  const fMod     = document.getElementById('fMod').value;
+  const fService = document.getElementById('fService').value;
+  const fDesde   = document.getElementById('fDesde').value;
+  const fHasta   = document.getElementById('fHasta').value;
+
+  // Persistir filtros en sessionStorage
+  sessionStorage.setItem('agendaFilters', JSON.stringify(
+    {search, status: fSt, mod: fMod, service: fService, desde: fDesde, hasta: fHasta}
+  ));
 
   let citas = [...allData.citas].sort((a,b) => (normDate(b.fecha)+b.hora).localeCompare(normDate(a.fecha)+a.hora));
 
-  if (search) citas = citas.filter(c => (c.nombre+c.servicio+c.email+c.telefono).toLowerCase().includes(search));
-  if (fSt)    citas = citas.filter(c => c.estado === fSt);
-  if (fMod)   citas = citas.filter(c => c.modalidad === fMod);
-  if (fDesde) citas = citas.filter(c => normDate(c.fecha) >= fDesde);
-  if (fHasta) citas = citas.filter(c => normDate(c.fecha) <= fHasta);
+  if (search)                  citas = citas.filter(c => (c.nombre+c.servicio+c.email+c.telefono).toLowerCase().includes(search));
+  if (fSt)                     citas = citas.filter(c => c.estado === fSt);
+  if (fMod)                    citas = citas.filter(c => c.modalidad === fMod);
+  if (fService === '__planes__') citas = citas.filter(c => (c.servicio||'').startsWith('Plan'));
+  else if (fService)           citas = citas.filter(c => c.servicio === fService);
+  if (fDesde)                  citas = citas.filter(c => normDate(c.fecha) >= fDesde);
+  if (fHasta)                  citas = citas.filter(c => normDate(c.fecha) <= fHasta);
+
+  const total      = citas.length;
+  const totalPages = Math.max(1, Math.ceil(total / AGENDA_PER_PAGE));
+  if (_agendaPage >= totalPages) _agendaPage = totalPages - 1;
+  const start     = _agendaPage * AGENDA_PER_PAGE;
+  const pageCitas = citas.slice(start, start + AGENDA_PER_PAGE);
 
   const tbody = document.getElementById('agendaTbody');
-  if (citas.length === 0) {
+  const pag   = document.getElementById('agendaPagination');
+
+  if (total === 0) {
     tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><p>No se encontraron citas</p></div></td></tr>';
+    if (pag) pag.innerHTML = '';
     return;
   }
 
-  tbody.innerHTML = citas.map(c => `
+  tbody.innerHTML = pageCitas.map(c => `
     <tr>
       <td><span style="font-family:var(--font-m);font-size:.8rem">${fmtDate(c.fecha)}</span><br><small style="color:var(--muted)">${c.hora}</small></td>
       <td>
@@ -2050,11 +2109,27 @@ function renderAgenda() {
         </div>
       </td>
     </tr>`).join('');
+
+  // Paginación
+  if (pag) {
+    if (total <= AGENDA_PER_PAGE) {
+      pag.innerHTML = `<span>${total} cita(s)</span>`;
+    } else {
+      pag.innerHTML = `
+        <span>${start+1}–${Math.min(start+AGENDA_PER_PAGE,total)} de ${total} citas</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn btn-ghost btn-sm" ${_agendaPage===0?'disabled':''} onclick="_agendaPage--;renderAgenda(true)">← Ant.</button>
+          <span style="font-family:var(--font-m);font-size:.78rem">Pág. ${_agendaPage+1} / ${totalPages}</span>
+          <button class="btn btn-ghost btn-sm" ${_agendaPage>=totalPages-1?'disabled':''} onclick="_agendaPage++;renderAgenda(true)">Sig. →</button>
+        </div>`;
+    }
+  }
 }
 
 function clearFilters() {
   ['fSearch','fDesde','fHasta'].forEach(id => document.getElementById(id).value='');
-  ['fStatus','fMod'].forEach(id => document.getElementById(id).selectedIndex=0);
+  ['fStatus','fMod','fService'].forEach(id => document.getElementById(id).selectedIndex=0);
+  sessionStorage.removeItem('agendaFilters');
   renderAgenda();
 }
 
@@ -2064,6 +2139,7 @@ function filtrarHoy() {
   document.getElementById('fSearch').value = '';
   document.getElementById('fStatus').selectedIndex = 0;
   document.getElementById('fMod').selectedIndex = 0;
+  document.getElementById('fService').selectedIndex = 0;
   showView('agenda');
   renderAgenda();
 }
@@ -2585,12 +2661,16 @@ function renderPacientes() {
     const topServ  = Object.entries(p.servicios).sort((a,b)=>b[1]-a[1])[0]||['—',0];
     const initials = p.nombre.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2);
     const idx      = _pacs.indexOf(p); // índice real en _pacs
+    const _dias = p.ultima ? Math.floor((new Date()-new Date(p.ultima+'T00:00:00'))/86400000) : null;
+    const _ultimaHtml = fmtDate(p.ultima) + (_dias !== null
+      ? `<br><span style="font-size:.7rem;color:${_dias>30?'var(--warn)':'var(--muted)'}">hace ${_dias} días</span>`
+      : '');
     return `<tr>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="pac-badge">${initials}</div><strong>${p.nombre}</strong></div></td>
       <td style="font-family:var(--font-m);font-size:.82rem">${p.telefono||'—'}</td>
       <td style="font-size:.82rem;color:var(--muted)">${p.email||'—'}</td>
       <td><span class="chip chip-ok">${p.sesiones}</span></td>
-      <td style="font-size:.82rem">${fmtDate(p.ultima)}</td>
+      <td style="font-size:.82rem">${_ultimaHtml}</td>
       <td style="font-size:.82rem;color:var(--muted)">${topServ[0]}</td>
       <td>
         <div style="display:flex;gap:5px;flex-wrap:wrap">
@@ -2627,6 +2707,7 @@ function _renderHistorial(nombre, citas) {
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <p style="color:var(--muted);font-size:.85rem;margin:0">${citas.length} cita(s) registrada(s)</p>
       <button class="btn btn-teal btn-sm" onclick="agendarDesdePaciente('${encodeURIComponent(nombre)}','${encodeURIComponent(ref.telefono||'')}','${encodeURIComponent(ref.email||'')}')">+ Nueva cita para ${nombre.split(' ')[0]}</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportarHistorialPaciente('${nombre.replace(/'/g,"\\'")}')">📥 CSV</button>
     </div>
     ${citas.map(c => `
     <div style="padding:12px;background:var(--s2);border-radius:8px;margin-bottom:8px;border:1px solid var(--border)">
@@ -2638,6 +2719,21 @@ function _renderHistorial(nombre, citas) {
       ${c.notas ? `<div style="font-size:.8rem;color:var(--muted);margin-top:4px">${c.notas}</div>` : ''}
     </div>`).join('')}`;
   openModal('modalHistorial');
+}
+
+function exportarHistorialPaciente(nombre) {
+  const citas = allData.citas.filter(c => c.nombre === nombre)
+    .sort((a,b) => (b.fecha+b.hora).localeCompare(a.fecha+a.hora));
+  if (!citas.length) { toast('Sin citas para exportar', 'err'); return; }
+  const header = ['Fecha','Hora','Servicio','Modalidad','Valor','Estado','Notas'];
+  const rows = citas.map(c => [normDate(c.fecha),c.hora,c.servicio,c.modalidad,c.precio||'',c.estado,c.notas||'']);
+  const csv = [header,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'historial_'+nombre.replace(/\s+/g,'_')+'_'+today()+'.csv';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('Historial exportado: '+citas.length+' cita(s)');
 }
 
 // ── EDITAR / BORRAR PACIENTE ──
@@ -3811,6 +3907,41 @@ function exportarSeguimientoCSV() {
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+
+// ── DARK MODE ──
+function toggleDarkMode() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = isDark ? '' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('adminDarkMode', next);
+  const txt = document.getElementById('darkModeTxt');
+  if (txt) txt.textContent = next === 'dark' ? 'Modo claro' : 'Modo oscuro';
+}
+// Sincronizar texto del botón al cargar
+window.addEventListener('DOMContentLoaded', () => {
+  const txt = document.getElementById('darkModeTxt');
+  if (txt && document.documentElement.getAttribute('data-theme') === 'dark') {
+    txt.textContent = 'Modo claro';
+  }
+});
+
+// ── ATAJOS DE TECLADO ──
+document.addEventListener('keydown', e => {
+  // Esc → cerrar modal abierto
+  if (e.key === 'Escape') {
+    const m = document.querySelector('.modal-bg.open');
+    if (m) { m.classList.remove('open'); return; }
+  }
+  // No activar atajos cuando el usuario escribe
+  const tag = document.activeElement ? document.activeElement.tagName : '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  // Ctrl/Cmd + K → búsqueda global
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    const s = document.getElementById('globalSearchInput');
+    if (s) { s.focus(); s.select(); }
+  }
+});
 
 // ── ENVIAR EMAIL A UN SOLO PACIENTE (recordatorio) ──
 async function enviarEmailUno(encNombre, semanas) {
