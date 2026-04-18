@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jessica Ocampo — Fisioterapeuta en Pereira</title>
   <meta name="description" content="Fisioterapia profesional en Pereira y Dosquebradas. Atención presencial, a domicilio y en gimnasios. Descarga muscular, valoración y readaptación funcional.">
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://jessicaocampoft-ctrl.github.io/">
+  <meta property="og:title"       content="Jessica Ocampo — Fisioterapeuta en Pereira">
+  <meta property="og:description" content="Fisioterapia real con quien ha vivido las lesiones desde adentro. Descarga muscular, valoración funcional y readaptación. Presencial y a domicilio en Pereira y Dosquebradas.">
+  <meta property="og:image"       content="https://jessicaocampoft-ctrl.github.io/Imagen%20de%20perfil%201.jpg">
+  <meta property="og:locale"      content="es_CO">
+  <meta property="og:site_name"   content="Jessica Ocampo Fisioterapeuta">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="Jessica Ocampo — Fisioterapeuta en Pereira">
+  <meta name="twitter:description" content="Fisioterapia real con quien ha vivido las lesiones desde adentro. Presencial y a domicilio en Pereira y Dosquebradas.">
+  <meta name="twitter:image"       content="https://jessicaocampoft-ctrl.github.io/Imagen%20de%20perfil%201.jpg">
+
   <link rel="icon" href="Logo/4.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -198,6 +214,7 @@
 
     @media (max-width: 768px) {
       .hamburger { display: flex; }
+      .nav-logo img { height: 44px; }
       .nav-links {
         position: fixed;
         top: 0; right: -100%;
@@ -206,16 +223,21 @@
         height: 100vh;
         flex-direction: column;
         justify-content: center;
-        gap: 32px;
+        gap: 28px;
         background: rgba(245,245,242,0.97);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        padding: 40px;
+        padding: 40px 24px;
         transition: right 0.35s ease;
         border-left: 1px solid var(--border);
+        z-index: 999;
       }
       .nav-links.open { right: 0; }
-      .nav-links a { font-size: 1rem; }
+      .nav-links a { font-size: 0.9rem; white-space: nowrap; }
+      .nav-links li:last-child {
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+      }
     }
 
     /* ─── HERO ─── */
@@ -1417,7 +1439,7 @@
         <li><a href="#faq">Preguntas frecuentes</a></li>
         <li><a href="#agenda">Agenda</a></li>
         <li><a href="#contacto">Contacto</a></li>
-        <li><a href="pasaporte.html" style="color:var(--primary); font-weight:600;">🎯 Mi Pasaporte</a></li>
+        <li><a href="pasaporte.html" style="color:var(--primary); font-weight:600; display:inline-flex; align-items:center; gap:6px;">🎯 Mi Pasaporte</a></li>
         <li><a href="https://wa.me/573136467945" target="_blank" rel="noopener" class="nav-cta">Agendar Cita</a></li>
       </ul>
       <button class="hamburger" id="hamburger" aria-label="Menú de navegación" aria-expanded="false">
@@ -1469,7 +1491,7 @@
             <span class="corner tr"></span>
             <span class="corner bl"></span>
             <span class="corner br"></span>
-            <img src="Readaptacion%20Mafe.jpg" alt="Jessica Ocampo fisioterapeuta" loading="eager">
+            <img src="Readaptacion%20Mafe.jpg" alt="Jessica Ocampo fisioterapeuta" loading="eager" width="440" height="587">
             <div class="overlay"></div>
             <span class="hero-photo-chip">Pereira · Dosquebradas</span>
           </div>
@@ -1492,12 +1514,12 @@
         <div class="about-content fade-up">
           <div class="section-tag">Sobre mí</div>
           <h2><em>Conozco el dolor</em> desde adentro</h2>
-          <p class="about-body">Soy Jessica Ocampo, fisioterapeuta con 4 años de experiencia atendiendo personas de todas las edades y condiciones. Soy deportista activa de Jiu-Jitsu, fuí campeona panamericana (3 veces), suramericana y nacional de judo. A lo largo de mi carrera he enfrentado multiples esguinces de tobillo, rodilla, fracturas y dos cirugías de ligamento cruzado anterior. Sé exactamente lo que se siente el dolor, la incertidumbre y las ganas de volver. Por eso acompaño cada recuperación con experiencia real. Atiendo a niños, adultos mayores, deportistas y personas que simplemente quieren moverse sin dolor.</p>
+          <p class="about-body">Soy Jessica Ocampo, fisioterapeuta con 4 años de experiencia atendiendo personas de todas las edades y condiciones. Soy deportista activa de Jiu-Jitsu, fui campeona panamericana (3 veces), suramericana y nacional de judo. A lo largo de mi carrera he enfrentado múltiples esguinces de tobillo, rodilla, fracturas y dos cirugías de ligamento cruzado anterior. Sé exactamente lo que se siente el dolor, la incertidumbre y las ganas de volver. Por eso acompaño cada recuperación con experiencia real. Atiendo a niños, adultos mayores, deportistas y personas que simplemente quieren moverse sin dolor.</p>
           <ul class="about-list">
             <li>3× Campeona Panamericana de Judo</li>
             <li>Campeona Suramericana de Judo</li>
             <li>Deportista activa de Jiu-Jitsu del alto rendimiento</li>
-            <li>2 Cirugias de ligamento cruzado anterior en rodilla izquierda</li>
+            <li>2 Cirugías de ligamento cruzado anterior en rodilla izquierda</li>
             <li>Múltiples lesiones vividas y recuperadas</li>
             <li>Fisioterapia para todas las poblaciones y edades</li>
           </ul>
@@ -2290,7 +2312,7 @@
 
     // ─── Booking form ───
     // ⚠ Reemplaza esta URL con la de tu Google Apps Script (ver instrucciones)
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz9IpyJi9o1HKeHQ00gf6DmSn0eYYj3mzYG-naiXg-MyYbiSoR9BbUQwwODcg6-20Qb/exec';
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_r7Kr-9Uvu0qIVAJpyu8nzhmcJ9fzpqo2pspvFFHV_14cLzb9qUN9k3Lj8cdXFdIW/exec';
 
     const bk = {
       service: '', priceP: '', priceD: '',
@@ -2631,20 +2653,21 @@
           document.getElementById('reviewsBadge').style.display   = 'flex';
         }
 
-        // Tarjetas
-        if (!data.reviews || !data.reviews.length) {
+        // Tarjetas — filtrar reseñas sin texto para no mostrar tarjetas vacías
+        const withText = (data.reviews || []).filter(r => (r.originalText?.text || r.text?.text)?.trim());
+        if (!withText.length) {
           grid.innerHTML = '<div class="reviews-loading">Aún no hay reseñas disponibles.</div>';
           return;
         }
         const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
-        grid.innerHTML = data.reviews.map(r => {
+        grid.innerHTML = withText.map(r => {
           const name    = r.authorAttribution?.displayName || 'Paciente';
           const photo   = r.authorAttribution?.photoUri;
           const initial = name.charAt(0).toUpperCase();
           const avatar  = photo
             ? `<img src="${photo}" alt="${name}" referrerpolicy="no-referrer">`
             : initial;
-          const rawText = r.text?.text || '';
+          const rawText = (r.originalText?.text || r.text?.text || '').trim();
           const text    = rawText.length > 240 ? rawText.slice(0, 240) + '…' : rawText;
           return `<div class="review-card fade-up">
             <div class="review-top">
@@ -2655,13 +2678,18 @@
               </div>
             </div>
             <div class="review-stars">${stars(r.rating)}</div>
-            ${text ? `<p class="review-text">${text}</p>` : ''}
+            <p class="review-text">${text}</p>
           </div>`;
         }).join('');
         grid.querySelectorAll('.review-card.fade-up').forEach(el => observer.observe(el));
       } catch(e) {
-        grid.innerHTML = `<div class="reviews-loading">
-          <a href="https://search.google.com/local/reviews?placeid=ChIJVwU1iJ15sCARAQ_jFCdVsXI" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;font-weight:600">Ver reseñas en Google →</a>
+        grid.innerHTML = `<div class="reviews-loading" style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+          <p style="color:var(--text-muted);font-size:0.9rem;margin:0">Mira lo que dicen mis pacientes en Google</p>
+          <a href="https://search.google.com/local/reviews?placeid=ChIJVwU1iJ15sCARAQ_jFCdVsXI" target="_blank" rel="noopener"
+             style="display:inline-flex;align-items:center;gap:8px;background:var(--primary);color:#0D0D0D;font-weight:600;font-size:0.9rem;padding:12px 24px;border-radius:100px;text-decoration:none;">
+            <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Ver reseñas en Google
+          </a>
         </div>`;
       }
     }
@@ -2675,5 +2703,74 @@
       <span>Agendar por WhatsApp</span>
     </a>
   </div>
+  <!-- Schema: LocalBusiness + FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "LocalBusiness",
+        "@id": "https://jessicaocampoft-ctrl.github.io/#business",
+        "name": "Jessica Ocampo Fisioterapeuta",
+        "description": "Fisioterapia profesional en Pereira y Dosquebradas. Descarga muscular, valoración funcional y readaptación. Atención presencial y a domicilio.",
+        "url": "https://jessicaocampoft-ctrl.github.io/",
+        "telephone": "+573136467945",
+        "email": "jessica.ocampo.ft@gmail.com",
+        "image": "https://jessicaocampoft-ctrl.github.io/Imagen%20de%20perfil%201.jpg",
+        "priceRange": "$70.000 - $125.000 COP",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Dosquebradas",
+          "addressRegion": "Risaralda",
+          "addressCountry": "CO"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 4.8375,
+          "longitude": -75.6940
+        },
+        "openingHoursSpecification": [
+          { "@type": "OpeningHoursSpecification", "dayOfWeek": "Monday",    "opens": "08:00", "closes": "16:30" },
+          { "@type": "OpeningHoursSpecification", "dayOfWeek": "Tuesday",   "opens": "08:00", "closes": "17:00" },
+          { "@type": "OpeningHoursSpecification", "dayOfWeek": "Wednesday", "opens": "08:00", "closes": "17:00" },
+          { "@type": "OpeningHoursSpecification", "dayOfWeek": "Thursday",  "opens": "08:00", "closes": "20:00" },
+          { "@type": "OpeningHoursSpecification", "dayOfWeek": "Friday",    "opens": "08:00", "closes": "20:00" },
+          { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday",  "opens": "07:00", "closes": "18:00" }
+        ],
+        "sameAs": ["https://www.instagram.com/jessicaocampofiso"]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "¿Cuánto dura cada sesión?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Descarga muscular Express (cuello/espalda o piernas): 50 minutos. Descarga Completa (cuerpo completo): 1 hora 20 minutos. Valoración Funcional: 50 minutos. Readaptación Funcional: 40 a 45 minutos." }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Atienden a domicilio?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Sí, se atiende en toda el área metropolitana de Pereira y Dosquebradas. Algunos sectores alejados como Cerritos, Condina y Santa Rosa tienen recargo por desplazamiento." }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Trabajan con EPS?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. Se trabaja únicamente con pago particular. Se aceptan Bancolombia, Nequi y Llave." }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Cuáles son los horarios de atención?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Lunes 8am–4:30pm, Martes a Miércoles 8am–5pm, Jueves y Viernes 8am–8pm, Sábado 7am–9:30am y 2pm–6pm. Domingos sin servicio." }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Puedo cancelar o reagendar mi cita?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Sí, con mínimo 12 horas de anticipación por WhatsApp al 313 646 7945 o por Instagram @jessicaocampofiso." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </body>
 </html>

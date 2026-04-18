@@ -948,7 +948,7 @@ function getGoogleReviews() {
   try {
     var url = 'https://places.googleapis.com/v1/places/' + PLACE_ID + '?key=' + API_KEY;
     var res  = UrlFetchApp.fetch(url, {
-      headers: { 'X-Goog-FieldMask': 'rating,userRatingCount,reviews' },
+      headers: { 'X-Goog-FieldMask': 'rating,userRatingCount,reviews.rating,reviews.text,reviews.originalText,reviews.authorAttribution,reviews.relativePublishTimeDescription' },
       muteHttpExceptions: true
     });
     var data = JSON.parse(res.getContentText());
