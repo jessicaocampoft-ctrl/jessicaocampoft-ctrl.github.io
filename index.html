@@ -519,6 +519,8 @@
       .about-photo-wrap { margin: 0 auto 20px; max-width: 320px; }
       .about-badge { right: -10px; }
       .about-list { align-items: center; }
+      .about-list li { justify-content: center; }
+      .about-list li::before { display: none; }
     }
 
     /* ─── SERVICIOS ─── */
@@ -1416,6 +1418,89 @@
       transition: opacity 0.3s ease;
     }
     .nav-overlay.active { opacity: 1; pointer-events: auto; }
+
+    /* ─── URGENCY COUNTER ─── */
+    .hero-urgency {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(251,191,36,0.1);
+      border: 1px solid rgba(251,191,36,0.35);
+      color: #92400e;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      padding: 7px 16px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+    .hero-urgency .urgency-dot {
+      width: 6px; height: 6px;
+      background: #f59e0b;
+      border-radius: 50%;
+      animation: blink 1.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @media (max-width: 900px) { .hero-urgency { font-size: 0.7rem; } }
+
+    /* ─── PASAPORTE SECTION ─── */
+    .pasaporte-section {
+      padding: 80px 0;
+      background: var(--surface-1);
+    }
+    .pasaporte-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .pasaporte-inner .section-tag { justify-content: center; }
+    .pasaporte-title {
+      font-family: var(--font-heading);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-style: italic;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .pasaporte-subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 36px;
+      line-height: 1.7;
+    }
+    .pasaporte-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 36px;
+    }
+    .pasaporte-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .pasaporte-chip span { color: var(--primary); }
+    .pasaporte-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--primary);
+      color: #0A1A12;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 16px 36px;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: background 0.2s;
+      letter-spacing: 0.01em;
+    }
+    .pasaporte-cta:hover { background: var(--primary-hover); }
   </style>
 </head>
 <body>
@@ -1468,6 +1553,10 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               Agendar por WhatsApp
             </a>
+          </div>
+          <div class="hero-urgency" id="heroUrgency" style="display:none">
+            <span class="urgency-dot"></span>
+            <span id="heroUrgencyText">Cargando cupos...</span>
           </div>
           <p class="hero-trust-note">✓ Respondo en menos de 1 hora por WhatsApp &nbsp;·&nbsp; ✓ Cupos limitados por semana</p>
           <div class="hero-stats">
@@ -1800,31 +1889,21 @@
   </section>
 
   <!-- PASAPORTE DE MOVIMIENTO -->
-  <section style="padding:80px 0; background:var(--surface-1);">
+  <section class="pasaporte-section" id="pasaporte">
     <div class="container">
-      <div class="fade-up" style="max-width:680px; margin:0 auto; text-align:center;">
-        <div class="section-tag" style="justify-content:center;">✦ Programa de fidelidad</div>
-        <h2 style="font-family:var(--font-heading); font-size:clamp(2rem,5vw,3rem); font-style:italic; line-height:1.1; margin-bottom:16px;">
-          Tu <em>Pasaporte</em> de Movimiento
-        </h2>
-        <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:36px; line-height:1.7;">
+      <div class="pasaporte-inner fade-up">
+        <div class="section-tag">✦ Programa de fidelidad</div>
+        <h2 class="pasaporte-title">Tu <em>Pasaporte</em> de Movimiento</h2>
+        <p class="pasaporte-subtitle">
           Completa 8 sesiones y desbloquea una recompensa exclusiva.<br>
           Lleva tu progreso siempre contigo desde tu celular.
         </p>
-        <div style="display:flex; flex-wrap:wrap; gap:16px; justify-content:center; margin-bottom:36px;">
-          <div style="display:flex; align-items:center; gap:10px; background:white; border:1px solid var(--border); border-radius:50px; padding:10px 20px; font-size:0.875rem; font-weight:600;">
-            <span style="color:var(--primary);">●</span> 8 sesiones → Premio desbloqueado
-          </div>
-          <div style="display:flex; align-items:center; gap:10px; background:white; border:1px solid var(--border); border-radius:50px; padding:10px 20px; font-size:0.875rem; font-weight:600;">
-            <span style="color:var(--primary);">●</span> Reto Descarga → 30% OFF
-          </div>
-          <div style="display:flex; align-items:center; gap:10px; background:white; border:1px solid var(--border); border-radius:50px; padding:10px 20px; font-size:0.875rem; font-weight:600;">
-            <span style="color:var(--primary);">●</span> Progreso guardado en tu celular
-          </div>
+        <div class="pasaporte-chips">
+          <div class="pasaporte-chip"><span>●</span> 8 sesiones → Premio desbloqueado</div>
+          <div class="pasaporte-chip"><span>●</span> Reto Descarga → 30% OFF</div>
+          <div class="pasaporte-chip"><span>●</span> Progreso guardado en tu celular</div>
         </div>
-        <a href="pasaporte.html" style="display:inline-flex; align-items:center; gap:10px; background:var(--primary); color:#0A1A12; font-weight:700; font-size:1rem; padding:16px 36px; border-radius:50px; text-decoration:none; transition:background .2s; letter-spacing:.01em;">
-          Ver mi Pasaporte →
-        </a>
+        <a href="pasaporte.html" class="pasaporte-cta">Ver mi Pasaporte →</a>
       </div>
     </div>
   </section>
@@ -2694,6 +2773,47 @@
       }
     }
     loadReviews();
+
+    // ─── Contador de urgencia — cupos disponibles esta semana ───
+    async function loadUrgencyCounter() {
+      try {
+        const today = new Date();
+        const day   = today.getDay(); // 0=dom,1=lun,...,6=sáb
+        // Días laborales restantes de la semana (lunes a sábado)
+        const weekDays = [];
+        for (let d = 1; d <= 6; d++) {
+          const diff = d - day;
+          if (diff >= 0) {
+            const dt = new Date(today);
+            dt.setDate(today.getDate() + diff);
+            weekDays.push(dt.toISOString().slice(0, 10));
+          }
+        }
+        if (!weekDays.length) return; // domingo y no hay más días esta semana
+
+        const results = await Promise.all(
+          weekDays.map(date =>
+            fetch(APPS_SCRIPT_URL + '?action=availability&date=' + date)
+              .then(r => r.json())
+              .catch(() => null)
+          )
+        );
+
+        let total = 0;
+        results.forEach(res => {
+          if (res && res.ok && res.slots && typeof res.slots === 'object') {
+            total += Object.values(res.slots).filter(v => v === true).length;
+          }
+        });
+
+        if (total > 0 && total <= 15) {
+          document.getElementById('heroUrgencyText').textContent =
+            total === 1 ? 'Solo queda 1 cupo esta semana' : `Solo quedan ${total} cupos esta semana`;
+          document.getElementById('heroUrgency').style.display = 'inline-flex';
+        }
+      } catch(e) { /* silently ignore */ }
+    }
+    loadUrgencyCounter();
   </script>
 
   <!-- WhatsApp flotante -->
