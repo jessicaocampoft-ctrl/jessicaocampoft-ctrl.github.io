@@ -510,6 +510,8 @@
       line-height: 1.8;
       margin-bottom: 28px;
     }
+    .about-body p { margin-bottom: 14px; }
+    .about-body p:last-child { margin-bottom: 0; }
     .about-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
     .about-list li {
       display: flex;
@@ -531,7 +533,8 @@
       .about-badge { right: -10px; }
     }
     @media (max-width: 600px) {
-      .about-body.clamped { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+      .about-body.clamped { max-height: 6.5rem; overflow: hidden; position: relative; }
+      .about-body.clamped::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2rem; background: linear-gradient(to bottom, transparent, var(--surface-1)); pointer-events: none; }
       .about-read-more { display: inline; background: none; border: none; color: var(--primary); font-family: var(--font-body); font-size: 0.85rem; cursor: pointer; padding: 4px 0; text-decoration: underline; }
     }
     .about-read-more { display: none; }
@@ -1640,13 +1643,20 @@
         <div class="about-content fade-up">
           <div class="section-tag">Sobre mí</div>
           <h2><em>Conozco el dolor</em> desde adentro</h2>
-          <p class="about-body clamped" id="aboutBody">Soy Jessica Ocampo, fisioterapeuta con 4 años de experiencia atendiendo personas de todas las edades y condiciones. Soy deportista activa de Jiu-Jitsu, fui campeona panamericana (3 veces), suramericana y nacional de judo. A lo largo de mi carrera he enfrentado múltiples esguinces de tobillo, rodilla, fracturas y dos cirugías de ligamento cruzado anterior. Sé exactamente lo que se siente el dolor, la incertidumbre y las ganas de volver. Por eso acompaño cada recuperación con experiencia real. Atiendo a niños, adultos mayores, deportistas y personas que simplemente quieren moverse sin dolor.</p>
+          <div class="about-body clamped" id="aboutBody">
+            <p>Soy Jessica Ocampo, fisioterapeuta deportiva con 4 años de experiencia atendiendo personas de todas las edades y condiciones.</p>
+            <p>Soy deportista activa de Jiu-Jitsu y fui campeona panamericana, suramericana y nacional de judo. A lo largo de mi carrera he enfrentado múltiples esguinces de tobillo, rodilla, fracturas y dos cirugías de ligamento cruzado anterior.</p>
+            <p>Sé exactamente lo que se siente el dolor, la incertidumbre y las ganas de volver.</p>
+            <p>Por eso acompaño cada recuperación con experiencia real. Atiendo a niños, adultos mayores, deportistas y personas que simplemente quieren moverse sin dolor.</p>
+          </div>
           <button class="about-read-more" id="aboutReadMore" onclick="(function(){var p=document.getElementById('aboutBody'),b=document.getElementById('aboutReadMore');p.classList.toggle('clamped');b.textContent=p.classList.contains('clamped')?'Leer más':'Leer menos';})()">Leer más</button>
+          <p style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--primary);margin:24px 0 10px">Mi trayectoria</p>
           <ul class="about-list">
             <li>3× Campeona Panamericana de Judo</li>
             <li>Campeona Suramericana de Judo</li>
-            <li>Deportista activa de Jiu-Jitsu del alto rendimiento</li>
-            <li>2 Cirugías de ligamento cruzado anterior en rodilla izquierda</li>
+            <li>Campeona Nacional de Judo</li>
+            <li>Deportista activa de Jiu-Jitsu de alto rendimiento</li>
+            <li>2 cirugías de ligamento cruzado anterior superadas</li>
             <li>Múltiples lesiones vividas y recuperadas</li>
             <li>Fisioterapia para todas las poblaciones y edades</li>
           </ul>
