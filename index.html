@@ -436,9 +436,17 @@
       .hero-photo-wrap { order: -1; margin-bottom: 20px; }
       .hero-photo-frame { max-width: 320px; }
     }
+    @media (max-width: 768px) {
+      .hero-photo-frame { max-width: 100%; width: 100%; }
+      .hero-photo-frame img {
+        aspect-ratio: unset !important;
+        width: 100% !important;
+        height: 240px !important;
+        object-fit: cover;
+        object-position: center 20%;
+      }
+    }
     @media (max-width: 600px) {
-      .hero-photo-frame { max-width: 340px; }
-      .hero-photo-frame img { aspect-ratio: 3/2; object-position: center 15%; }
       .hero-buttons { flex-direction: column; align-items: stretch; }
       .hero-buttons .btn-solid,
       .hero-buttons .btn-outline { width: 100%; justify-content: center; }
