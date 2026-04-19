@@ -101,7 +101,7 @@
 
     h1, h2, h3 { font-family: var(--font-heading); font-weight: 600; line-height: 1.15; }
     h1 { font-size: clamp(2.4rem, 5vw, 3.6rem); }
-    h2 { font-size: clamp(2rem, 4vw, 2.8rem); }
+    h2 { font-size: clamp(2rem, 4vw, 3.2rem); }
     h1 em, h2 em {
       color: var(--primary);
       font-style: italic;
@@ -436,6 +436,11 @@
       .hero-photo-wrap { order: -1; margin-bottom: 20px; }
       .hero-photo-frame { max-width: 320px; }
     }
+    @media (max-width: 600px) {
+      .hero-buttons { flex-direction: column; align-items: stretch; }
+      .hero-buttons .btn-solid,
+      .hero-buttons .btn-outline { width: 100%; justify-content: center; }
+    }
 
     /* ─── SOBRE MÍ ─── */
     .about {
@@ -676,7 +681,12 @@
     .packages-category-header { text-align: center; margin-bottom: 36px; }
     .packages-category-header h3 { font-family: var(--font-heading); font-size: clamp(1.6rem,3vw,2.2rem); color: var(--text); margin-bottom: 8px; }
     .packages-category-header p { color: var(--text-muted); font-size: 0.9rem; font-style: italic; }
-    .packages-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 20px; }
+    .packages-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    /* ─── CAROUSEL DOTS ─── */
+    .carousel-dots { display: none; justify-content: center; align-items: center; gap: 6px; margin-top: 14px; }
+    .carousel-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); border: none; padding: 0; cursor: pointer; transition: background 0.2s ease, width 0.2s ease, border-radius 0.2s ease; flex-shrink: 0; }
+    .carousel-dot.active { background: var(--primary); width: 20px; border-radius: 4px; }
+    @media (max-width: 768px) { .carousel-dots { display: flex; } }
     .plan-card {
       background: var(--surface-2);
       border: 1px solid var(--border);
@@ -934,7 +944,7 @@
     .faq-header { text-align: center; margin-bottom: 48px; }
     .faq-grid { max-width: 760px; margin: 0 auto; }
     .faq-item { border-bottom: 1px solid var(--border); }
-    .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; cursor: pointer; font-size: .95rem; font-weight: 600; color: var(--text); gap: 16px; -webkit-user-select: none; user-select: none; }
+    .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; min-height: 48px; cursor: pointer; font-size: .95rem; font-weight: 600; color: var(--text); gap: 16px; -webkit-user-select: none; user-select: none; }
     .faq-q svg { flex-shrink: 0; transition: transform .3s ease; color: var(--primary); }
     .faq-item.open .faq-q svg { transform: rotate(180deg); }
     .faq-a { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
@@ -1763,6 +1773,7 @@
         </div>
 
       </div>
+      <div class="carousel-dots" id="servicesDots"></div>
     </div>
   </section>
 
@@ -1837,6 +1848,7 @@
           </div>
         </div>
       </div>
+      <div class="carousel-dots" id="pkgDots1"></div>
 
       <hr class="packages-divider">
 
@@ -1889,6 +1901,7 @@
           </div>
         </div>
       </div>
+      <div class="carousel-dots" id="pkgDots2"></div>
 
       <hr class="packages-divider">
 
@@ -1941,6 +1954,7 @@
           </div>
         </div>
       </div>
+      <div class="carousel-dots" id="pkgDots3"></div>
 
       <p class="plan-note fade-up">📍 En sitio &nbsp;·&nbsp; 🏠 Domicilio sujeto a disponibilidad &nbsp;·&nbsp; * Condina, Cerritos y alrededores tienen recargo adicional por desplazamiento</p>
       <div style="text-align:center;margin-top:36px" class="fade-up">
@@ -2808,6 +2822,36 @@
       }
     }
     loadReviews();
+
+    // ─── Carousel Dots ───
+    function initDots(scrollEl, dotsEl) {
+      if (!scrollEl || !dotsEl) return;
+      const cards = Array.from(scrollEl.children).filter(el => el.nodeType === 1);
+      if (cards.length < 2) return;
+      cards.forEach((_, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+        btn.setAttribute('aria-label', 'Elemento ' + (i + 1));
+        btn.addEventListener('click', () => {
+          cards[i].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+        });
+        dotsEl.appendChild(btn);
+      });
+      let raf;
+      scrollEl.addEventListener('scroll', () => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          const cardW = cards[0].offsetWidth + parseInt(getComputedStyle(scrollEl).gap || 0);
+          const idx = Math.min(Math.round(scrollEl.scrollLeft / cardW), cards.length - 1);
+          dotsEl.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+        });
+      }, { passive: true });
+    }
+    initDots(document.querySelector('.services-grid'), document.getElementById('servicesDots'));
+    [['packages-category', 'pkgDots1'], ['packages-category', 'pkgDots2'], ['packages-category', 'pkgDots3']].forEach(([cls, id], i) => {
+      const grids = document.querySelectorAll('.packages-grid');
+      initDots(grids[i], document.getElementById(id));
+    });
 
     // ─── Contador de urgencia — cupos disponibles esta semana ───
     async function loadUrgencyCounter() {
