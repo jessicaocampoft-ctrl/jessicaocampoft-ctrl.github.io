@@ -519,13 +519,15 @@
     }
 
     @media (max-width: 900px) {
-      .about-grid { grid-template-columns: 1fr; text-align: center; }
+      .about-grid { grid-template-columns: 1fr; text-align: left; }
       .about-photo-wrap { margin: 0 auto 20px; max-width: 320px; }
       .about-badge { right: -10px; }
-      .about-list { align-items: center; }
-      .about-list li { justify-content: center; }
-      .about-list li::before { display: none; }
     }
+    @media (max-width: 600px) {
+      .about-body.clamped { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+      .about-read-more { display: inline; background: none; border: none; color: var(--primary); font-family: var(--font-body); font-size: 0.85rem; cursor: pointer; padding: 4px 0; text-decoration: underline; }
+    }
+    .about-read-more { display: none; }
 
     /* ─── SERVICIOS ─── */
     .services {
@@ -737,6 +739,25 @@
     .plan-card-duo { grid-column: 1 / -1; }
     .plan-note { text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 20px; }
     .packages-divider { border: none; border-top: 1px solid var(--border); margin: 60px 0; }
+    @media (max-width: 768px) {
+      .packages-grid {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 12px;
+        gap: 16px;
+      }
+      .packages-grid::-webkit-scrollbar { height: 4px; }
+      .packages-grid .plan-card {
+        min-width: 270px;
+        scroll-snap-align: start;
+        flex-shrink: 0;
+        transform: none !important;
+      }
+      .packages-grid .plan-card-duo { min-width: 300px; grid-column: unset; }
+    }
 
     /* ── CÓMO FUNCIONA ── */
     .how { padding: 100px 0; }
@@ -1607,7 +1628,8 @@
         <div class="about-content fade-up">
           <div class="section-tag">Sobre mí</div>
           <h2><em>Conozco el dolor</em> desde adentro</h2>
-          <p class="about-body">Soy Jessica Ocampo, fisioterapeuta con 4 años de experiencia atendiendo personas de todas las edades y condiciones. Soy deportista activa de Jiu-Jitsu, fui campeona panamericana (3 veces), suramericana y nacional de judo. A lo largo de mi carrera he enfrentado múltiples esguinces de tobillo, rodilla, fracturas y dos cirugías de ligamento cruzado anterior. Sé exactamente lo que se siente el dolor, la incertidumbre y las ganas de volver. Por eso acompaño cada recuperación con experiencia real. Atiendo a niños, adultos mayores, deportistas y personas que simplemente quieren moverse sin dolor.</p>
+          <p class="about-body clamped" id="aboutBody">Soy Jessica Ocampo, fisioterapeuta con 4 años de experiencia atendiendo personas de todas las edades y condiciones. Soy deportista activa de Jiu-Jitsu, fui campeona panamericana (3 veces), suramericana y nacional de judo. A lo largo de mi carrera he enfrentado múltiples esguinces de tobillo, rodilla, fracturas y dos cirugías de ligamento cruzado anterior. Sé exactamente lo que se siente el dolor, la incertidumbre y las ganas de volver. Por eso acompaño cada recuperación con experiencia real. Atiendo a niños, adultos mayores, deportistas y personas que simplemente quieren moverse sin dolor.</p>
+          <button class="about-read-more" id="aboutReadMore" onclick="(function(){var p=document.getElementById('aboutBody'),b=document.getElementById('aboutReadMore');p.classList.toggle('clamped');b.textContent=p.classList.contains('clamped')?'Leer más':'Leer menos';})()">Leer más</button>
           <ul class="about-list">
             <li>3× Campeona Panamericana de Judo</li>
             <li>Campeona Suramericana de Judo</li>
@@ -1617,6 +1639,41 @@
             <li>Fisioterapia para todas las poblaciones y edades</li>
           </ul>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESEÑAS GOOGLE -->
+  <section class="reviews" id="reseñas">
+    <div class="container">
+      <div class="reviews-header fade-up">
+        <div class="section-tag">Reseñas verificadas</div>
+        <h2>Lo que dicen mis <em>pacientes</em></h2>
+      </div>
+
+      <div class="reviews-overall fade-up" id="reviewsOverall" style="display:none">
+        <div class="reviews-score-wrap">
+          <div class="reviews-score" id="reviewsScore">—</div>
+          <div class="reviews-stars-big" id="reviewsStarsBig">★★★★★</div>
+          <div class="reviews-count" id="reviewsCount">reseñas en Google</div>
+        </div>
+        <div class="reviews-divider"></div>
+        <div class="reviews-google-label">
+          <svg width="80" viewBox="0 0 272 92" fill="none" xmlns="http://www.w3.org/2000/svg"><text y="70" font-size="70" font-family="Arial,sans-serif" fill="#4285F4" font-weight="700">G</text><text x="52" y="70" font-size="48" font-family="Arial,sans-serif" fill="#555">oogle</text></svg>
+          <span>Reseñas reales de Google Business</span>
+        </div>
+      </div>
+
+      <div class="reviews-grid" id="reviewsGrid">
+        <div class="reviews-loading">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="animation:spin 1s linear infinite;margin-bottom:12px"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          <br>Cargando reseñas...
+        </div>
+      </div>
+
+      <div class="reviews-badge fade-up" id="reviewsBadge" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        <span>Reseñas verificadas de Google Business</span>
       </div>
     </div>
   </section>
@@ -2057,41 +2114,6 @@
           </div></div>
         </div>
 
-      </div>
-    </div>
-  </section>
-
-  <!-- RESEÑAS GOOGLE -->
-  <section class="reviews" id="reseñas">
-    <div class="container">
-      <div class="reviews-header fade-up">
-        <div class="section-tag">Reseñas verificadas</div>
-        <h2>Lo que dicen mis <em>pacientes</em></h2>
-      </div>
-
-      <div class="reviews-overall fade-up" id="reviewsOverall" style="display:none">
-        <div class="reviews-score-wrap">
-          <div class="reviews-score" id="reviewsScore">—</div>
-          <div class="reviews-stars-big" id="reviewsStarsBig">★★★★★</div>
-          <div class="reviews-count" id="reviewsCount">reseñas en Google</div>
-        </div>
-        <div class="reviews-divider"></div>
-        <div class="reviews-google-label">
-          <svg width="80" viewBox="0 0 272 92" fill="none" xmlns="http://www.w3.org/2000/svg"><text y="70" font-size="70" font-family="Arial,sans-serif" fill="#4285F4" font-weight="700">G</text><text x="52" y="70" font-size="48" font-family="Arial,sans-serif" fill="#555">oogle</text></svg>
-          <span>Reseñas reales de Google Business</span>
-        </div>
-      </div>
-
-      <div class="reviews-grid" id="reviewsGrid">
-        <div class="reviews-loading">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="animation:spin 1s linear infinite;margin-bottom:12px"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-          <br>Cargando reseñas...
-        </div>
-      </div>
-
-      <div class="reviews-badge fade-up" id="reviewsBadge" style="display:none">
-        <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-        <span>Reseñas verificadas de Google Business</span>
       </div>
     </div>
   </section>
