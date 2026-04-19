@@ -310,10 +310,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
       <div style="font-size:3rem;margin-bottom:16px">📋</div>
       <div class="card-title" style="margin-bottom:8px">Módulo de Valoración Funcional</div>
       <p style="color:var(--muted);margin-bottom:28px;max-width:420px;margin-inline:auto">Crea valoraciones funcionales completas, tests funcionales, fotos y generación de PDF profesional.</p>
-      <button class="btn btn-teal" onclick="nuevaEval()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        Nueva evaluación
-      </button>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-teal" onclick="nuevaEval()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          Nueva evaluación
+        </button>
+        <button class="btn btn-ghost" onclick="abrirExpress()" style="border-color:var(--primary);color:var(--primary)">
+          ⚡ Evaluación Express CrossFit
+        </button>
+      </div>
       <div id="evalListWrap" style="margin-top:28px;text-align:left"></div>
     </div>
   </div>
@@ -959,6 +964,129 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
           Cerrar proceso y registrar egreso
         </button>
         <button class="btn btn-ghost" onclick="WIZ.prev()">← Atrás</button>
+      </div>
+    </div>
+  </div>
+  <!-- MÓDULO EXPRESS: CROSSFIT -->
+  <div id="viewExpress" style="display:none">
+    <!-- PASO 0: CHECK-IN -->
+    <div id="expStep0">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <span style="font-size:2rem">⚡</span>
+          <div><div class="card-title" style="margin-bottom:2px">Evaluación Express CrossFit</div>
+          <div style="font-size:.82rem;color:var(--muted)">5 screens · 15-18 minutos · Resultado semáforo por categoría de movimiento</div></div>
+        </div>
+        <div class="sec-title">1. Check-in rápido</div>
+        <div class="fg">
+          <div class="field span-full"><label>Nombre del atleta *</label>
+            <input id="expNombre" type="text" placeholder="Nombre completo" oninput="EX.data.nombre=this.value">
+          </div>
+          <div class="field"><label>Edad</label>
+            <input id="expEdad" type="number" min="14" max="80" placeholder="25" oninput="EX.data.edad=+this.value">
+          </div>
+          <div class="field"><label>Sexo</label>
+            <select id="expSexo" onchange="EX.data.sexo=this.value">
+              <option value="">—</option><option>Masculino</option><option>Femenino</option>
+            </select>
+          </div>
+          <div class="field"><label>¿Tiene dolor activo?</label>
+            <select id="expDolor" onchange="EX.data.dolorActivo=this.value">
+              <option value="no">No</option>
+              <option value="leve">Sí, leve (1-3/10)</option>
+              <option value="moderado">Sí, moderado (4-6/10)</option>
+              <option value="severo">Sí, severo (7-10/10)</option>
+            </select>
+          </div>
+          <div class="field"><label>¿Cirugía últimos 6 meses?</label>
+            <select id="expCirugia" onchange="EX.data.cirugia=this.value">
+              <option value="no">No</option><option value="si">Sí</option>
+            </select>
+          </div>
+          <div class="field span-full"><label>¿Qué 3 movimientos de CrossFit le resultan más difíciles o generan molestia?</label>
+            <input id="expMovimientos" type="text" placeholder="ej: Snatch, pistol squat, pull-up" oninput="EX.data.movimientos=this.value">
+          </div>
+        </div>
+        <div class="sec-title">Zonas de tensión o molestia</div>
+        <div class="bmap-wrap">
+          <div class="bmap-col"><label>Anterior</label>
+            <svg id="expBmapAnt" width="100" height="200" viewBox="0 0 120 240" onclick="expAddZona(event,'ant')">
+              <ellipse cx="60" cy="22" rx="18" ry="20" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="38" y="44" width="44" height="55" rx="6" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="10" y="46" width="26" height="48" rx="8" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="84" y="46" width="26" height="48" rx="8" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="38" y="100" width="20" height="55" rx="5" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="62" y="100" width="20" height="55" rx="5" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="38" y="156" width="20" height="50" rx="5" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="62" y="156" width="20" height="50" rx="5" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+              <g id="expDotsAnt"></g>
+            </svg>
+          </div>
+          <div class="bmap-col"><label>Posterior</label>
+            <svg id="expBmapPos" width="100" height="200" viewBox="0 0 120 240" onclick="expAddZona(event,'pos')">
+              <ellipse cx="60" cy="22" rx="18" ry="20" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="38" y="44" width="44" height="55" rx="6" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="10" y="46" width="26" height="48" rx="8" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="84" y="46" width="26" height="48" rx="8" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="38" y="100" width="20" height="55" rx="5" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="62" y="100" width="20" height="55" rx="5" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="38" y="156" width="20" height="50" rx="5" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+              <rect x="62" y="156" width="20" height="50" rx="5" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+              <g id="expDotsPos"></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="cerrarExpress()">← Volver</button>
+        <button class="btn btn-teal" onclick="EX.nextStep()">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- PASO 1: RED FLAGS -->
+    <div id="expStep1" style="display:none">
+      <div class="card">
+        <div class="card-title" style="color:#dc2626;margin-bottom:4px">🚨 Screening de banderas rojas</div>
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px">5 preguntas de seguridad. Si alguna es positiva, aparecerá en el resultado final.</p>
+        <div id="expFlagsWrap"></div>
+        <div id="expRedFlagAlert" style="display:none;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);border-radius:8px;padding:12px;margin-top:10px;font-size:.85rem;color:#dc2626"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="EX.prevStep()">← Atrás</button>
+        <button class="btn btn-teal" onclick="EX.nextStep()">Continuar a screens →</button>
+      </div>
+    </div>
+
+    <!-- PASO 2: 5 SCREENS -->
+    <div id="expStep2" style="display:none">
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-title">5 Screens funcionales</div>
+        <p style="color:var(--muted);font-size:.82rem;margin-bottom:0">Evalúa cada movimiento. El semáforo se calcula automáticamente.</p>
+      </div>
+      <div id="expScreensWrap"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="EX.prevStep()">← Atrás</button>
+        <button class="btn btn-teal" onclick="EX.nextStep()">Ver resultados →</button>
+      </div>
+    </div>
+
+    <!-- PASO 3: RESULTADO -->
+    <div id="expStep3" style="display:none">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px">
+          <div>
+            <div class="card-title" style="margin-bottom:4px">⚡ Resultado Evaluación Express</div>
+            <div id="expNombreResult" style="font-size:.85rem;color:var(--muted)"></div>
+          </div>
+          <div style="font-size:.75rem;color:var(--muted)" id="expFechaResult"></div>
+        </div>
+        <div id="expResultadoSemaforo"></div>
+        <div id="expRecomendaciones" style="margin-top:20px"></div>
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-teal" onclick="expGuardar()">💾 Guardar evaluación</button>
+          <button class="btn btn-ghost" style="border-color:#25d366;color:#25d366" onclick="expEnviarWpp()">💬 Enviar por WhatsApp</button>
+          <button class="btn btn-ghost" onclick="cerrarExpress()">← Nueva evaluación</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1662,6 +1790,15 @@ const TESTS_PERFIL={
     {id:'ybalance',nombre:'Y-Balance Test',tag:'Distancias cm',ybalance:true},
     {id:'apley',nombre:'Apley Scratch Test (hombros)',tag:'cm bilateral',apley:true},
     {id:'shinbox',nombre:'Shin Box Assessment',tag:'RI/RE + Carga',shinbox:true},
+    {id:'wblt',nombre:'Ankle Dorsiflexion (WBLT)',tag:'cm bilateral',wblt:true},
+    {id:'tuckJump',nombre:'Tuck Jump Landing Screen',tag:'Checklist',secciones:[
+      {titulo:'Compensaciones de aterrizaje (Meylan et al., 2017)',checks:['Valgus de rodilla bilateral al aterrizar','Valgus de rodilla unilateral al aterrizar','Aterrizaje rígido sin triple flexión','Asimetría bilateral evidente','Desplazamiento anterior excesivo del tronco','Pronación de pie al aterrizar','Caída pélvica (Trendelenburg de aterrizaje)','Desequilibrio lateral del tronco','Sin compensaciones (aterrizaje óptimo) ✓']}
+    ]},
+    {id:'hip9090',nombre:'Hip 90/90 Flexibility',tag:'RI / RE bilateral',hip9090:true},
+    {id:'breathingPattern',nombre:'Evaluación patrón respiratorio',tag:'Checklist',secciones:[
+      {titulo:'Patrón observado en reposo y bajo demanda',checks:['Respiración apical (costal alta)','ECM activo en inspiración normal','Hombros ascienden al inspirar','Sin expansión lateral del tórax','Apnea bajo carga (plank, levantamiento)','Inversión del patrón (abdomen entra al inspirar)','Diafragma funcional: expansión 360° ✓','Patrón nasodiafragmático adecuado ✓']}
+    ]},
+    {id:'psfs',nombre:'PSFS — Escala Funcional Específica del Paciente',tag:'0-10 × 3 actividades',psfs:true},
   ],
   gimnasio:[
     {id:'ohsquat',nombre:'Overhead Squat (NASM)',tag:'Checklist',
@@ -1672,6 +1809,10 @@ const TESTS_PERFIL={
     {id:'ober',nombre:'Ober Test (IT Band)',tag:'Positivo/Negativo',bilateral:true,posNeg:true},
     {id:'pushup',nombre:'Push Up Test',tag:'Repeticiones',repeticiones:true,refValues:true,refId:'pushup'},
     {id:'plank',nombre:'Plank (segundos)',tag:'Tiempo',tiempo:true,refValues:true,refId:'plank',comps:['Caída de cadera','Elevación de glúteos','Pérdida de respiración','Anteriorización cefálica']},
+    {id:'fmsShoulderMob',nombre:'FMS Shoulder Mobility',tag:'0-3 bilateral + clearing',fmsShoulderMob:true},
+    {id:'sideBridge',nombre:'McGill Side Bridge (Puente lateral)',tag:'Segundos bilateral',sideBridge:true},
+    {id:'hipAbductor',nombre:'Fuerza abductores de cadera (MMT)',tag:'Bilateral MRC 0-5',hipAbductor:true},
+    {id:'rotaryStability',nombre:'Rotary Stability (FMS)',tag:'0-3 bilateral',bilateral:true,comps:['Pérdida de neutro lumbar','Rotación de pelvis','Falta de coordinación ipsilateral','Empuje con codo contralateral']},
   ],
   retorno:[
     {id:'rom',nombre:'Rango de movimiento articular',tag:'Goniometría',rom:true},
@@ -1680,6 +1821,11 @@ const TESTS_PERFIL={
     {id:'singleHop',nombre:'Single Leg Hop Test',tag:'LSI %',hop:true},
     {id:'ikdc',nombre:'IKDC Funcionalidad subjetiva',tag:'0-10',slider:true,max:10,lbl:'Funcionalidad'},
     {id:'aclrsi',nombre:'ACL-RSI (confianza retorno)',tag:'0-10',slider:true,max:10,lbl:'Confianza'},
+    {id:'hopBattery',nombre:'Batería de Hop completa (4 tests)',tag:'LSI % por test',hopBattery:true},
+    {id:'thessaly',nombre:'Thessaly Test (meniscos dinámica)',tag:'Positivo/Negativo bilateral',bilateral:true,posNeg:true},
+    {id:'qhRatio',nombre:'Ratio Cuádriceps / Isquiotibiales (MMT)',tag:'Bilateral MRC 0-5 + ratio',qhRatio:true},
+    {id:'tsk11',nombre:'Tampa Scale for Kinesiophobia (TSK-11)',tag:'11-44 puntos',tsk11:true},
+    {id:'quickdash',nombre:'QuickDASH — Función extremidad superior',tag:'0-100 puntos',quickdash:true},
   ],
   empresarial:[
     {id:'sitreach',nombre:'Sit and Reach',tag:'cm',repeticiones:true,lbl:'Distancia (cm)',refValues:true,refId:'sitreach'},
@@ -1712,6 +1858,9 @@ const TESTS_PERFIL={
     // ── CUESTIONARIOS ──
     {id:'ndi',nombre:'NDI — Neck Disability Index',tag:'0-50',ndi:true},
     {id:'oswestry',nombre:'Oswestry Disability Index (lumbar)',tag:'0-100%',oswestry:true},
+    {id:'tug',nombre:'Timed Up and Go (TUG)',tag:'Segundos',tug:true},
+    {id:'grip',nombre:'Fuerza de agarre (dinamometría)',tag:'kg bilateral',grip:true},
+    {id:'ipaq',nombre:'IPAQ Corto — Nivel de actividad física',tag:'min/semana',ipaq:true},
   ]
 };
 
@@ -2469,6 +2618,366 @@ function buildTestCard(t){
         <input type="checkbox"> ${c}
       </label>`).join('')}
     </div>`;
+  }else if(t.wblt){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+      <strong>Protocolo WBLT:</strong> Pie descalzo, dedo gordo a 10 cm de la pared. Doblar la rodilla hacia adelante intentando tocar la pared sin levantar el talón. Si toca: avanzar el pie hasta que no pueda. Medir la distancia dedo gordo–pared cuando el talón se eleva. <strong>Punto de corte: ≥10 cm = normal.</strong>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${['Derecho','Izquierdo'].map(l=>`
+      <div>
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${l}</div>
+        <div class="field" style="margin-bottom:6px">
+          <label>Distancia máxima (cm)</label>
+          <input type="number" min="0" max="25" step="0.5" placeholder="0"
+            oninput="S.tests['wblt_${l.toLowerCase()}']=+this.value;calcWBLT()"
+            value="${S.tests['wblt_'+l.toLowerCase()]||''}">
+        </div>
+        <div id="wblt_res_${l.toLowerCase()}" style="font-size:.8rem;margin-top:4px"></div>
+      </div>`).join('')}
+    </div>
+    <div id="wblt_asimetria" style="background:var(--s2);border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"></div>
+    <div class="sg-wrap" style="margin-top:10px">
+      <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+        <span class="sg-toggle-lbl">📊 Valores de referencia WBLT (Hoch & McKeon, 2011)</span><span class="sg-arrow">▼</span>
+      </button>
+      <div class="sg-body"><div style="padding:10px 13px;font-size:.72rem">
+        <table style="width:100%;border-collapse:collapse">
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">≥10 cm</td><td style="padding:4px 8px;font-weight:600;color:#16a34a">Normal — riesgo bajo de lesión de tobillo y rodilla</td></tr>
+          <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">7–9.9 cm</td><td style="padding:4px 8px;font-weight:600;color:#d97706">Leve restricción — compensa en sentadilla y pistol</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">&lt;7 cm</td><td style="padding:4px 8px;font-weight:600;color:#dc2626">Déficit clínico — causa compensaciones en toda la cadena</td></tr>
+          <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">Asimetría &gt;1.5 cm</td><td style="padding:4px 8px;font-weight:600;color:#d97706">Asimetría significativa — factor de riesgo unilateral</td></tr>
+        </table>
+        <div style="color:var(--muted);margin-top:8px;line-height:1.5">ℹ️ Déficit de dorsiflexión es la restricción #1 en CrossFit: causa valgo de rodilla, talones elevados en sentadilla, anteriorización en thrusters (Hoch & McKeon, JOSPT 2011).</div>
+      </div></div>
+    </div>`;
+  }else if(t.hip9090){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+      <strong>Protocolo:</strong> Sentado en suelo, pierna evaluada a 90° (shin horizontal), otra pierna también a 90°. Medir grados de RI (pierna cae hacia adentro) y RE (pierna cae hacia afuera) activos. Evalúa calidad de transición RI→RE (Shin Box).
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${['Derecho','Izquierdo'].map(l=>`
+      <div>
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${l}</div>
+        <div class="field" style="margin-bottom:6px">
+          <label>Rotación interna (°) <span style="font-size:.7rem;color:var(--muted)">ref: 30–40°</span></label>
+          <input type="number" min="0" max="90" placeholder="0"
+            oninput="S.tests['h9090_ri_${l.toLowerCase()}']=+this.value;calcHip9090()"
+            value="${S.tests['h9090_ri_'+l.toLowerCase()]||''}">
+        </div>
+        <div class="field" style="margin-bottom:6px">
+          <label>Rotación externa (°) <span style="font-size:.7rem;color:var(--muted)">ref: 40–60°</span></label>
+          <input type="number" min="0" max="90" placeholder="0"
+            oninput="S.tests['h9090_re_${l.toLowerCase()}']=+this.value;calcHip9090()"
+            value="${S.tests['h9090_re_'+l.toLowerCase()]||''}">
+        </div>
+        <div class="field">
+          <label>Calidad de transición RI→RE</label>
+          <select onchange="S.tests['h9090_trans_${l.toLowerCase()}']=this.value"
+            style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none;width:100%">
+            <option value="">—</option>
+            <option>Fluida sin compensación ✓</option>
+            <option>Con elevación de pelvis</option>
+            <option>Con inclinación de tronco</option>
+            <option>Requiere apoyo de manos</option>
+            <option>No puede completar la transición</option>
+          </select>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div id="h9090_result" style="background:var(--s2);border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"></div>`;
+  }else if(t.psfs){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;background:var(--s2);border-radius:8px;padding:10px">
+      <strong>PSFS (Westaway et al., 1998):</strong> Pide al paciente que nombre hasta 3 movimientos de CrossFit que le resultan difíciles. Califica cada uno de 0 (no puede hacerlo) a 10 (nivel normal previo a la lesión). Permite monitorear progreso funcional real. MCID: mejora ≥2 puntos por actividad.
+    </div>
+    ${[0,1,2].map(i=>`
+    <div style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:8px">
+      <div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:6px">Actividad ${i+1}</div>
+      <div class="field" style="margin-bottom:8px">
+        <label>Movimiento</label>
+        <input type="text" placeholder="${['Clean & Jerk / Thruster / Snatch...','Sentadilla profunda / Pistol...','Pull-up / T2B / Rope climb...'][i]}"
+          onchange="if(!S.tests.psfs_act)S.tests.psfs_act=['','',''];S.tests.psfs_act[${i}]=this.value"
+          value="${(S.tests.psfs_act||[])[i]||''}"
+          style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;width:100%;outline:none;font-family:var(--font-b)">
+      </div>
+      <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Dificultad actual (0=imposible · 10=nivel normal)</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="range" class="eva-slider" min="0" max="10" value="${(S.tests.psfs_scores||[5,5,5])[i]}"
+          oninput="if(!S.tests.psfs_scores)S.tests.psfs_scores=[5,5,5];S.tests.psfs_scores[${i}]=+this.value;document.getElementById('psfs_v${i}').textContent=this.value;calcPSFS()" style="flex:1">
+        <span id="psfs_v${i}" style="font-weight:700;font-family:var(--font-m);min-width:20px;text-align:center">${(S.tests.psfs_scores||[5,5,5])[i]}</span>
+      </div>
+    </div>`).join('')}
+    <div id="psfs_result" style="background:var(--s2);border-radius:8px;padding:10px;font-size:.82rem"></div>`;
+  }else if(t.fmsShoulderMob){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+      <strong>Protocolo FMS:</strong> Pies juntos. Puño cerrado, pulgar dentro. Un brazo sube (ER+Flexión) y el otro baja (RI+Extensión) por detrás. Medir distancia entre nudillos. <strong>Negativo</strong> = se solapan (mejor). <strong>Positivo</strong> = no llegan. Clearing: si hay dolor al juntar → puntuación 0 automática.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${[['Derecho (arriba)','der'],['Izquierdo (arriba)','izq']].map(([lbl,k])=>`
+      <div>
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${lbl}</div>
+        <div class="field" style="margin-bottom:8px">
+          <label>Distancia nudillos (cm, negativo si se solapan)</label>
+          <input type="number" min="-10" max="40" step="0.5" placeholder="0"
+            onchange="S.tests['fmssm_cm_${k}']=+this.value;calcFMSShoulderMob()"
+            value="${S.tests['fmssm_cm_'+k]||''}">
+        </div>
+        <div class="score-row">
+          <span class="score-lbl" style="font-size:.75rem">Puntuación</span>
+          <div class="score-btns">${[0,1,2,3].map(n=>`<button class="sb ${S.tests['fmssm_score_'+k]===n?'s'+n:''}" onclick="setScore('fmssm_score_${k}',${n},this)">${n}</button>`).join('')}</div>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div style="margin-top:12px;background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:10px">
+      <div style="font-weight:600;font-size:.8rem;margin-bottom:6px">🚨 Clearing Test — Impingement de hombro</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px">Mano en hombro opuesto, levantar el codo. Si hay dolor: puntuación = 0.</div>
+      <div style="display:flex;gap:16px">
+        ${['Derecho','Izquierdo'].map(l=>`
+        <div class="field" style="flex:1"><label>${l}</label>
+          <select onchange="S.tests['fmssm_clear_${l.toLowerCase()}']=this.value"
+            style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none;width:100%">
+            <option value="">—</option><option>Sin dolor ✓</option><option>Dolor — puntuación 0</option>
+          </select>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div id="fmssm_result" style="background:var(--s2);border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"></div>
+    ${buildScoringGuide('_default')}`;
+  }else if(t.sideBridge){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+      <strong>McGill Side Bridge:</strong> De lado apoyado en codo y pies apilados (o rodillas dobladas — versión modificada). Levantar la cadera formando línea recta. Cronometrar hasta que la cadera baje o la postura se pierda. Bilateral.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${['Derecho','Izquierdo'].map(l=>`
+      <div>
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${l}</div>
+        <div class="field">
+          <label>Tiempo (segundos)</label>
+          <input type="number" min="0" max="300" placeholder="0"
+            onchange="S.tests['sbr_${l.toLowerCase()}']=+this.value;calcSideBridge()"
+            value="${S.tests['sbr_'+l.toLowerCase()]||''}">
+        </div>
+      </div>`).join('')}
+    </div>
+    <div id="sbr_result" style="background:var(--s2);border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"></div>
+    <div class="sg-wrap" style="margin-top:10px">
+      <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+        <span class="sg-toggle-lbl">📊 Valores de referencia — Side Bridge (McGill, 2010)</span><span class="sg-arrow">▼</span>
+      </button>
+      <div class="sg-body"><div style="padding:10px 13px;font-size:.72rem">
+        <table style="width:100%;border-collapse:collapse">
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Hombres &lt;40 años</td><td style="padding:4px 8px;font-weight:600">Normal: ≥90 s · Bueno: ≥70 s · Bajo: &lt;50 s</td></tr>
+          <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">Mujeres &lt;40 años</td><td style="padding:4px 8px;font-weight:600">Normal: ≥75 s · Bueno: ≥55 s · Bajo: &lt;35 s</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Asimetría bilateral</td><td style="padding:4px 8px;font-weight:600;color:#d97706">&gt;20% = predictor más fuerte de dolor lumbar crónico</td></tr>
+        </table>
+        <div style="color:var(--muted);margin-top:8px;line-height:1.5">ℹ️ Asimetría &gt;20% es el predictor individual más fuerte de dolor lumbar (McGill, Low Back Disorders 2010).</div>
+      </div></div>
+    </div>`;
+  }else if(t.hipAbductor){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+      <strong>MMT abductores:</strong> Decúbito lateral, pierna a evaluar arriba. Resistencia en tercio distal del muslo. Abducción a 30–45°. Clasificar según escala MRC 0-5.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${['Derecho','Izquierdo'].map(l=>`
+      <div>
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${l}</div>
+        <div class="field">
+          <label>Grado MRC</label>
+          <select onchange="S.tests['habd_${l.toLowerCase()}']=+this.value;calcHipAbductor()"
+            style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none;width:100%">
+            <option value="">—</option>
+            <option value="0">0 — Sin contracción visible</option>
+            <option value="1">1 — Contracción visible, sin movimiento</option>
+            <option value="2">2 — Movimiento sin gravedad</option>
+            <option value="3">3 — Vence gravedad, sin resistencia</option>
+            <option value="4">4 — Vence resistencia parcial</option>
+            <option value="5">5 — Fuerza normal bilateral</option>
+          </select>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div id="habd_result" style="background:var(--s2);border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"></div>`;
+  }else if(t.hopBattery){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;background:var(--s2);border-radius:8px;padding:10px">
+      <strong>Batería de 4 hops (Reid et al., 2007):</strong> 1) <strong>Single Hop</strong>: 1 salto máximo en distancia. 2) <strong>Triple Hop</strong>: 3 saltos consecutivos. 3) <strong>6m Timed</strong>: recorrer 6m en segundos (menor = mejor). 4) <strong>Crossover</strong>: 3 saltos cruzando línea central. <strong>Meta LSI ≥90% en todos.</strong>
+    </div>
+    ${[['single','Single Hop','cm'],['triple','Triple Hop','cm'],['timed6m','6m Timed Hop','seg (menor=mejor)'],['crossover','Crossover Hop','cm']].map(([tipo,lbl,unit])=>`
+    <div style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:8px">
+      <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${lbl} (${unit})</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:end">
+        ${['Derecho','Izquierdo'].map(l=>`
+        <div class="field">
+          <label>${l}</label>
+          <input type="number" min="0" max="1000" step="0.1" placeholder="0"
+            onchange="S.tests['hop4_${tipo}_${l.toLowerCase()}']=+this.value;calcHopBattery()"
+            value="${S.tests['hop4_'+tipo+'_'+l.toLowerCase()]||''}">
+        </div>`).join('')}
+        <div id="hop4_lsi_${tipo}" style="font-size:.8rem;padding-bottom:6px">—</div>
+      </div>
+    </div>`).join('')}
+    <div id="hop4_summary" style="background:var(--s2);border-radius:8px;padding:12px;font-size:.82rem"></div>
+    <div class="sg-wrap" style="margin-top:10px">
+      <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+        <span class="sg-toggle-lbl">📊 Criterios retorno al deporte — Batería Hop (Reid et al., 2007)</span><span class="sg-arrow">▼</span>
+      </button>
+      <div class="sg-body"><div style="padding:10px 13px;font-size:.72rem">
+        <table style="width:100%;border-collapse:collapse">
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">LSI ≥90% todos</td><td style="padding:4px 8px;font-weight:600;color:#16a34a">Criterio de retorno cumplido</td></tr>
+          <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">LSI 80–89%</td><td style="padding:4px 8px;font-weight:600;color:#d97706">Retorno con modificaciones — continuar rehab</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">LSI &lt;80%</td><td style="padding:4px 8px;font-weight:600;color:#dc2626">No apto — riesgo re-lesión 4× mayor</td></tr>
+        </table>
+        <div style="color:var(--muted);margin-top:8px;line-height:1.5">ℹ️ La batería de 4 hops tiene mejor sensibilidad que el single hop aislado (Reid et al., AJSM 2007; van Melick et al., 2016).</div>
+      </div></div>
+    </div>`;
+  }else if(t.qhRatio){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+      <strong>MMT bilateral:</strong> Cuádriceps (extensión de rodilla en sedente) e isquiotibiales (flexión en prono) en escala MRC 0-5. Ratio H:Q = isquiotibiales / cuádriceps. <strong>Meta retorno al deporte: H:Q ≥ 0.60 bilateral.</strong>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${['Derecho','Izquierdo'].map(l=>`
+      <div>
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${l}</div>
+        <div class="field" style="margin-bottom:6px">
+          <label>Cuádriceps MRC</label>
+          <select onchange="S.tests['qhr_quad_${l.toLowerCase()}']=+this.value;calcQHRatio()"
+            style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none;width:100%">
+            <option value="">—</option>
+            ${[0,1,2,3,4,5].map(n=>`<option value="${n}">${n} — ${['Sin contracción','Contracción visible','Sin gravedad','Vence gravedad','Res. parcial','Normal'][n]}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>Isquiotibiales MRC</label>
+          <select onchange="S.tests['qhr_ham_${l.toLowerCase()}']=+this.value;calcQHRatio()"
+            style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none;width:100%">
+            <option value="">—</option>
+            ${[0,1,2,3,4,5].map(n=>`<option value="${n}">${n} — ${['Sin contracción','Contracción visible','Sin gravedad','Vence gravedad','Res. parcial','Normal'][n]}</option>`).join('')}
+          </select>
+        </div>
+        <div id="qhr_res_${l.toLowerCase()}" style="margin-top:8px;font-size:.8rem;padding:8px;background:var(--bg);border-radius:6px"></div>
+      </div>`).join('')}
+    </div>
+    <div id="qhr_summary" style="background:var(--s2);border-radius:8px;padding:12px;margin-top:10px;font-size:.82rem"></div>`;
+  }else if(t.tsk11){
+    const tskItems=['Me duele y tengo miedo de lesionarme','Si me muevo podría hacerme daño','Mi cuerpo me dice que algo serio está mal','Mi lesión puso en riesgo mi salud para siempre','El dolor siempre significa que me lesioné','Me asusta pensar que pueda lesionarme haciendo ejercicio','Si ignoro el dolor podría empeorar','Por seguridad evito los movimientos que me dan dolor','No me atrevo a hacer cosas que podrían lesionarme','No puedo hacer lo que la gente normal porque me podría lastimar','Nadie debería ejercitarse cuando le duele'];
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;background:var(--s2);border-radius:8px;padding:10px">
+      <strong>TSK-11 (Woby et al., 2005):</strong> Evalúa el miedo al movimiento — predictor #1 de fracaso en retorno al deporte. Escala 1–4 por ítem (1=En desacuerdo · 4=De acuerdo). Total 11–44. <strong>Meta retorno: ≤17 pts.</strong>
+    </div>
+    ${tskItems.map((item,i)=>`
+    <div style="background:var(--s2);border-radius:8px;padding:10px;margin-bottom:6px">
+      <div style="font-size:.78rem;color:var(--text);margin-bottom:8px">${i+1}. "${item}"</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${[1,2,3,4].map(v=>`
+        <button onclick="S.tests['tsk_${i}']=${v};calcTSK11();this.closest('div').querySelectorAll('button[data-tsk]').forEach(b=>{b.style.background='transparent';b.style.color='var(--muted)';b.style.borderColor='var(--border)'});this.style.background='var(--primary)';this.style.color='#fff';this.style.borderColor='var(--primary)'"
+          data-tsk="${i}"
+          style="padding:5px 10px;border-radius:7px;border:1px solid ${S.tests['tsk_'+i]===v?'var(--primary)':'var(--border)'};background:${S.tests['tsk_'+i]===v?'var(--primary)':'transparent'};color:${S.tests['tsk_'+i]===v?'#fff':'var(--muted)'};cursor:pointer;font-size:.74rem;transition:all .15s">
+          ${['En desacuerdo','Algo desacuerdo','Algo de acuerdo','De acuerdo'][v-1]}
+        </button>`).join('')}
+      </div>
+    </div>`).join('')}
+    <div id="tsk11_result" style="background:var(--s2);border-radius:8px;padding:12px;margin-top:4px;font-size:.82rem"></div>`;
+  }else if(t.quickdash){
+    const qdItems=['Abrir un frasco apretado o nuevo','Actividades domésticas pesadas (fregar, lavar paredes)','Cargar una bolsa o maletín','Lavarte la espalda','Usar un cuchillo para cortar comida','Actividades recreativas con fuerza o impacto en brazo/hombro','Dolor en brazo, hombro o mano durante la semana','Hormigueo o adormecimiento en brazo/hombro/mano','Dificultad para dormir por dolor de brazo/hombro/mano','Sensación de debilidad en brazo/hombro/mano','Dificultad para pensar o concentrarse'];
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;background:var(--s2);border-radius:8px;padding:10px">
+      <strong>QuickDASH (Beaton et al., 2005):</strong> Función de extremidad superior. 11 ítems escala 1-5. Score 0-100 (mayor = más discapacidad). MCID: 15 puntos. Aplica en retorno post-cirugía de hombro, muñeca o codo.
+    </div>
+    ${qdItems.map((item,i)=>`
+    <div style="background:var(--s2);border-radius:8px;padding:10px;margin-bottom:6px">
+      <div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:6px">${i+1}. ${item}</div>
+      <select onchange="S.tests['qd_${i}']=+this.value;calcQuickDASH()"
+        style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:.74rem;width:100%;outline:none">
+        <option value="">— seleccionar —</option>
+        ${[1,2,3,4,5].map(v=>`<option value="${v}" ${S.tests['qd_'+i]===v?'selected':''}>${v} — ${
+          i===6?['Ninguno','Leve','Moderado','Severo','Extremo'][v-1]:
+          i===7?['Ninguno','Leve','Moderado','Severo','Extremo'][v-1]:
+          ['Sin dificultad','Dificultad leve','Dificultad moderada','Dificultad severa','No puede hacerlo'][v-1]
+        }</option>`).join('')}
+      </select>
+    </div>`).join('')}
+    <div id="qdash_result" style="background:var(--s2);border-radius:8px;padding:12px;margin-top:4px;font-size:.82rem"></div>`;
+  }else if(t.tug){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+      <strong>Protocolo TUG:</strong> Silla de 43 cm, manos en muslos. A la señal: levantarse, caminar 3 metros, dar vuelta, regresar y sentarse. Cronometrar desde "ya" hasta que se siente. Sin ayudas. Registrar mejor de 3 intentos.
+    </div>
+    <div class="fg2">
+      <div class="field">
+        <label>Tiempo (segundos) — mejor de 3 intentos</label>
+        <input type="number" min="0" max="120" step="0.1" placeholder="0"
+          onchange="S.tests.tug_tiempo=+this.value;calcTUG()"
+          value="${S.tests.tug_tiempo||''}">
+      </div>
+      <div id="tug_result" style="display:flex;align-items:center;font-size:.82rem;padding:8px"></div>
+    </div>
+    <div class="sg-wrap" style="margin-top:10px">
+      <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+        <span class="sg-toggle-lbl">📊 Valores de referencia TUG (Podsiadlo & Richardson, 1991)</span><span class="sg-arrow">▼</span>
+      </button>
+      <div class="sg-body"><div style="padding:10px 13px;font-size:.72rem">
+        <table style="width:100%;border-collapse:collapse">
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">&lt;10 s</td><td style="padding:4px 8px;font-weight:600;color:#16a34a">Independiente — sin riesgo de caída</td></tr>
+          <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">10–19 s</td><td style="padding:4px 8px;font-weight:600;color:#d97706">Independiente con riesgo leve</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">20–29 s</td><td style="padding:4px 8px;font-weight:600;color:#d97706">Riesgo moderado de caída</td></tr>
+          <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">≥30 s</td><td style="padding:4px 8px;font-weight:600;color:#dc2626">Alto riesgo — dependencia funcional</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">MCID</td><td style="padding:4px 8px;font-weight:600">Mejora ≥3.5 s = clínicamente significativa</td></tr>
+        </table>
+        <div style="color:var(--muted);margin-top:8px;line-height:1.5">ℹ️ TUG &gt;13.5 s predice caída en adultos mayores (Shumway-Cook et al., 2000). Combinar con equilibrio monopodal y marcha 4m.</div>
+      </div></div>
+    </div>`;
+  }else if(t.grip){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+      <strong>Dinamometría:</strong> Sentado, codo a 90°, muñeca neutra. 3 intentos alternados por lado. Registrar el mejor valor. Sin dinamómetro: anotar estimación MMT 0-5 en observaciones.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      ${['Derecho','Izquierdo'].map(l=>`
+      <div>
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;color:var(--primary)">${l}</div>
+        <div class="field">
+          <label>Fuerza máxima (kg)</label>
+          <input type="number" min="0" max="100" step="0.5" placeholder="0"
+            onchange="S.tests['grip_${l.toLowerCase()}']=+this.value;calcGrip()"
+            value="${S.tests['grip_'+l.toLowerCase()]||''}">
+        </div>
+      </div>`).join('')}
+    </div>
+    <div id="grip_result" style="background:var(--s2);border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"></div>
+    <div class="sg-wrap" style="margin-top:10px">
+      <button class="sg-toggle" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.sg-arrow').style.transform=b.classList.contains('open')?'rotate(180deg)':'rotate(0deg)'">
+        <span class="sg-toggle-lbl">📊 Valores de referencia — Grip Strength (Dodds et al., 2016)</span><span class="sg-arrow">▼</span>
+      </button>
+      <div class="sg-body"><div style="padding:10px 13px;font-size:.72rem">
+        <table style="width:100%;border-collapse:collapse">
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Hombres 20-40 años</td><td style="padding:4px 8px;font-weight:600">Normal: 46–56 kg · Bajo: &lt;35 kg</td></tr>
+          <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">Mujeres 20-40 años</td><td style="padding:4px 8px;font-weight:600">Normal: 26–35 kg · Bajo: &lt;20 kg</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Hombres 40-60 años</td><td style="padding:4px 8px;font-weight:600">Normal: 38–48 kg · Bajo: &lt;27 kg</td></tr>
+          <tr style="background:var(--s1)"><td style="padding:4px 8px;color:var(--muted)">Mujeres 40-60 años</td><td style="padding:4px 8px;font-weight:600">Normal: 22–30 kg · Bajo: &lt;16 kg</td></tr>
+          <tr style="background:var(--s2)"><td style="padding:4px 8px;color:var(--muted)">Asimetría bilateral</td><td style="padding:4px 8px;font-weight:600;color:#d97706">&gt;10% = clínicamente relevante</td></tr>
+        </table>
+        <div style="color:var(--muted);margin-top:8px;line-height:1.5">ℹ️ Grip &lt;16 kg (F) / &lt;27 kg (M) predice mortalidad cardiovascular y limitación funcional (Dodds et al., BJSM 2016).</div>
+      </div></div>
+    </div>`;
+  }else if(t.ipaq){
+    body=`<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;background:var(--s2);border-radius:8px;padding:10px">
+      <strong>IPAQ Corto (Craig et al., 2003):</strong> Cuestionario Internacional de Actividad Física. Recoge los últimos 7 días. Calcula MET-min/semana para clasificar nivel de actividad.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${[
+        {id:'ipaq_vig_dias',label:'Días de actividad vigorosa (CrossFit, trotar, fútbol, natación rápida)',unit:'días (0-7)',max:7},
+        {id:'ipaq_vig_min',label:'Minutos/día de actividad vigorosa',unit:'min/día',max:600},
+        {id:'ipaq_mod_dias',label:'Días de actividad moderada (caminar rápido, yoga, bici suave)',unit:'días (0-7)',max:7},
+        {id:'ipaq_mod_min',label:'Minutos/día de actividad moderada',unit:'min/día',max:600},
+        {id:'ipaq_cam_dias',label:'Días que caminó al menos 10 min continuos',unit:'días (0-7)',max:7},
+        {id:'ipaq_cam_min',label:'Minutos que caminó por día',unit:'min/día',max:600},
+      ].map(q=>`
+      <div style="background:var(--s2);border-radius:8px;padding:10px">
+        <label style="font-size:.78rem;color:var(--text);display:block;margin-bottom:6px">${q.label}</label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="number" min="0" max="${q.max}" placeholder="0"
+            onchange="S.tests['${q.id}']=+this.value;calcIPAQ()"
+            value="${S.tests[q.id]||''}"
+            style="width:90px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;outline:none;font-family:var(--font-b)">
+          <span style="font-size:.75rem;color:var(--muted)">${q.unit}</span>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div id="ipaq_result" style="background:var(--s2);border-radius:8px;padding:12px;margin-top:10px;font-size:.82rem"></div>`;
   }else{
     body=`<div class="score-row"><span class="score-lbl">Puntuación</span>
       <div class="score-btns">${[0,1,2,3].map(n=>`<button class="sb ${S.tests[t.id]===n?'s'+n:''}" onclick="setScore('${t.id}',${n},this)">${n}</button>`).join('')}</div>
@@ -3870,6 +4379,152 @@ function calcShinBox(){
 }
 
 // ══════════════════════════════════════
+// CALCULADORES — NUEVOS TESTS
+// ══════════════════════════════════════
+function calcWBLT(){
+  const d=S.tests.wblt_derecho||0,i=S.tests.wblt_izquierdo||0;
+  const getRes=(v,id)=>{
+    const el=document.getElementById('wblt_res_'+id);
+    if(!el||!v)return;
+    el.innerHTML=v>=10?'<span style="color:#16a34a">✓ Normal (≥10 cm)</span>':v>=7?`<span style="color:#d97706">⚠ Leve (${v} cm)</span>`:`<span style="color:#dc2626">✗ Déficit (${v} cm)</span>`;
+  };
+  getRes(d,'derecho');getRes(i,'izquierdo');
+  if(d&&i){
+    const asim=Math.abs(d-i);
+    const el=document.getElementById('wblt_asimetria');
+    if(el)el.innerHTML=`Asimetría: <strong>${asim.toFixed(1)} cm</strong> ${asim>1.5?'<span style="color:#d97706;font-weight:600"> ⚠ Asimetría significativa (&gt;1.5 cm)</span>':'<span style="color:#16a34a"> ✓ Simétrico</span>'}`;
+  }
+}
+
+function calcHip9090(){
+  const riD=S.tests.h9090_ri_derecho||0,riI=S.tests.h9090_ri_izquierdo||0;
+  const reD=S.tests.h9090_re_derecho||0,reI=S.tests.h9090_re_izquierdo||0;
+  const el=document.getElementById('h9090_result');
+  if(!el||(!riD&&!riI&&!reD&&!reI))return;
+  const asimRI=Math.abs(riD-riI),asimRE=Math.abs(reD-reI);
+  const ok=(v,min)=>v>=min?'<span style="color:#16a34a">✓</span>':v>0?'<span style="color:#d97706">⚠</span>':'—';
+  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.8rem">
+    <div>Der: RI ${riD}° ${ok(riD,30)} · RE ${reD}° ${ok(reD,40)}</div>
+    <div>Izq: RI ${riI}° ${ok(riI,30)} · RE ${reI}° ${ok(reI,40)}</div>
+  </div>
+  ${asimRI>10||asimRE>10?`<div style="color:#dc2626;margin-top:6px;font-weight:600">⚠ Asimetría significativa: RI ${asimRI}° · RE ${asimRE}°</div>`:'<div style="color:#16a34a;margin-top:6px">✓ Asimetría dentro de rango normal</div>'}`;
+}
+
+function calcPSFS(){
+  const scores=S.tests.psfs_scores||[];
+  const valids=scores.filter(v=>v!==undefined&&v!=='');
+  if(!valids.length)return;
+  const avg=(valids.reduce((a,b)=>a+(+b),0)/valids.length).toFixed(1);
+  const el=document.getElementById('psfs_result');
+  if(el)el.innerHTML=`Promedio PSFS: <strong>${avg}/10</strong> (${valids.length} actividad${valids.length>1?'es':''}) · <span style="color:var(--muted);font-size:.78rem">MCID: mejora ≥2 puntos por actividad (Westaway et al., 1998)</span>`;
+}
+
+function calcFMSShoulderMob(){
+  const dCm=S.tests.fmssm_cm_der,iCm=S.tests.fmssm_cm_izq;
+  const el=document.getElementById('fmssm_result');
+  if(!el||dCm===undefined||iCm===undefined)return;
+  const getSug=(cm)=>cm<=0?'3':cm<=5?'2':cm<=10?'1':'0';
+  el.innerHTML=`Puntuación sugerida — Der: <strong>${getSug(dCm)}</strong> · Izq: <strong>${getSug(iCm)}</strong> <span style="font-size:.75rem;color:var(--muted)">(confirma con los botones arriba)</span>`;
+}
+
+function calcSideBridge(){
+  const d=S.tests.sbr_derecho||0,i=S.tests.sbr_izquierdo||0;
+  const el=document.getElementById('sbr_result');
+  if(!el||(!d&&!i))return;
+  const asim=d&&i?Math.abs(d-i)/Math.max(d,i)*100:0;
+  el.innerHTML=`Der: <strong>${d}s</strong> · Izq: <strong>${i}s</strong>${asim>20?`<span style="color:#dc2626;font-weight:600"> ⚠ Asimetría ${asim.toFixed(0)}% — predictor dolor lumbar</span>`:`<span style="color:#16a34a"> ✓ Asimetría ${asim.toFixed(0)}%</span>`}`;
+}
+
+function calcHipAbductor(){
+  const d=S.tests.habd_derecho,i=S.tests.habd_izquierdo;
+  const el=document.getElementById('habd_result');
+  if(!el||d===undefined||i===undefined)return;
+  const lbl=['sin contracción','contracción visible','sin gravedad','vence gravedad','res. parcial','normal'];
+  el.innerHTML=`Der: <strong>${d}/5</strong> (${lbl[d]||'—'}) · Izq: <strong>${i}/5</strong> (${lbl[i]||'—'})${Math.abs(d-i)>=2?'<span style="color:#dc2626;font-weight:600"> ⚠ Asimetría ≥2 grados</span>':''}`;
+}
+
+function calcHopBattery(){
+  const tipos=['single','triple','timed6m','crossover'];
+  let totalPass=0,tested=0;
+  tipos.forEach(tipo=>{
+    const d=S.tests['hop4_'+tipo+'_derecho']||0,i=S.tests['hop4_'+tipo+'_izquierdo']||0;
+    const el=document.getElementById('hop4_lsi_'+tipo);
+    if(!d||!i){if(el)el.innerHTML='—';return;}
+    tested++;
+    const lsi=Math.min(d,i)/Math.max(d,i)*100;
+    const ok=lsi>=90;if(ok)totalPass++;
+    if(el)el.innerHTML=`LSI: <strong style="color:${ok?'#16a34a':'#dc2626'}">${lsi.toFixed(1)}%</strong>`;
+  });
+  const el=document.getElementById('hop4_summary');
+  if(el&&tested>0)el.innerHTML=`Tests LSI ≥90%: <strong>${totalPass}/${tested}</strong> ${totalPass===4?'<span style="color:#16a34a">✓ Criterio retorno cumplido</span>':'<span style="color:#d97706">⚠ Continuar rehabilitación</span>'}`;
+}
+
+function calcQHRatio(){
+  ['derecho','izquierdo'].forEach(l=>{
+    const q=S.tests['qhr_quad_'+l],h=S.tests['qhr_ham_'+l];
+    const el=document.getElementById('qhr_res_'+l);
+    if(!el||q===undefined||h===undefined)return;
+    const ratio=q>0?(h/q).toFixed(2):0;
+    const ok=+ratio>=0.6;
+    el.innerHTML=`Ratio H:Q = <strong style="color:${ok?'#16a34a':'#dc2626'}">${ratio}</strong> ${ok?'✓ Apto':'⚠ Meta ≥0.60'}`;
+  });
+  const qd=S.tests.qhr_quad_derecho,qi=S.tests.qhr_quad_izquierdo;
+  const el=document.getElementById('qhr_summary');
+  if(el&&qd!==undefined&&qi!==undefined&&qd!==''&&qi!=='')
+    el.innerHTML=`Asimetría cuádriceps: <strong>${Math.abs(qd-qi)} grado(s) MRC</strong>${Math.abs(qd-qi)>=2?' <span style="color:#dc2626">⚠ Déficit unilateral</span>':''}`;
+}
+
+function calcTSK11(){
+  const vals=[...Array(11)].map((_,i)=>S.tests['tsk_'+i]).filter(v=>v!==undefined&&v!=='');
+  if(!vals.length)return;
+  const total=vals.reduce((a,b)=>a+(+b),0);
+  S.tests.tsk11_total=total;
+  const cat=total<=17?'Listo para retorno':total<=28?'Kinesiofobia moderada — trabajar psicológicamente':'Kinesiofobia severa — prioridad antes del retorno';
+  const col=total<=17?'#16a34a':total<=28?'#d97706':'#dc2626';
+  const el=document.getElementById('tsk11_result');
+  if(el)el.innerHTML=`<strong>TSK-11: ${total}/44</strong> — <span style="color:${col};font-weight:700">${cat}</span><br><span style="font-size:.75rem;color:var(--muted)">${vals.length}/11 ítems${vals.length<11?' (parcial)':''}</span>`;
+}
+
+function calcQuickDASH(){
+  const vals=[...Array(11)].map((_,i)=>S.tests['qd_'+i]).filter(v=>v!==undefined&&v!=='');
+  if(vals.length<11)return;
+  const total=vals.reduce((a,b)=>a+(+b),0);
+  const score=((total/11-1)/4*100).toFixed(1);
+  S.tests.qdash_score=+score;
+  const cat=+score<=25?'Discapacidad mínima':+score<=50?'Discapacidad moderada':'Discapacidad severa';
+  const col=+score<=25?'#16a34a':+score<=50?'#d97706':'#dc2626';
+  const el=document.getElementById('qdash_result');
+  if(el)el.innerHTML=`<strong>QuickDASH: ${score}/100</strong> — <span style="color:${col};font-weight:700">${cat}</span><br><span style="font-size:.75rem;color:var(--muted)">MCID: 15 puntos (Beaton et al., 2005)</span>`;
+}
+
+function calcTUG(){
+  const t=S.tests.tug_tiempo||0;
+  const el=document.getElementById('tug_result');
+  if(!el||!t)return;
+  const cat=t<10?{c:'#16a34a',l:'Independiente ✓'}:t<20?{c:'#d97706',l:'Riesgo leve'}:t<30?{c:'#d97706',l:'Riesgo moderado'}:{c:'#dc2626',l:'Alto riesgo caída'};
+  el.innerHTML=`<strong style="color:${cat.c}">${t}s — ${cat.l}</strong>`;
+}
+
+function calcGrip(){
+  const d=S.tests.grip_derecho||0,i=S.tests.grip_izquierdo||0;
+  const el=document.getElementById('grip_result');
+  if(!el||(!d&&!i))return;
+  const asim=d&&i?Math.abs(d-i)/Math.max(d,i)*100:0;
+  el.innerHTML=`Der: <strong>${d} kg</strong> · Izq: <strong>${i} kg</strong>${asim>10?`<span style="color:#d97706"> ⚠ Asimetría ${asim.toFixed(0)}%</span>`:'<span style="color:#16a34a"> ✓</span>'}`;
+}
+
+function calcIPAQ(){
+  const vigD=S.tests.ipaq_vig_dias||0,vigM=S.tests.ipaq_vig_min||0;
+  const modD=S.tests.ipaq_mod_dias||0,modM=S.tests.ipaq_mod_min||0;
+  const camD=S.tests.ipaq_cam_dias||0,camM=S.tests.ipaq_cam_min||0;
+  const totalMET=vigD*vigM*8+modD*modM*4+camD*camM*3.3;
+  const el=document.getElementById('ipaq_result');
+  if(!el||!totalMET)return;
+  const cat=totalMET>=3000||vigD>=3&&vigM*vigD>=1500?{l:'Alta actividad física',c:'#16a34a'}:totalMET>=600?{l:'Actividad moderada',c:'#d97706'}:{l:'Inactivo / sedentario',c:'#dc2626'};
+  el.innerHTML=`MET-min/semana: <strong>${Math.round(totalMET)}</strong> — <span style="color:${cat.c};font-weight:700">${cat.l}</span><br><span style="font-size:.75rem;color:var(--muted)">OMS recomienda ≥600 MET-min/sem (150 min actividad moderada)</span>`;
+}
+
+// ══════════════════════════════════════
 // ÍNDICE DE RIESGO DE LESIÓN
 // ══════════════════════════════════════
 function calcularRiesgoLesion(){
@@ -4556,6 +5211,267 @@ window.addEventListener('DOMContentLoaded',async()=>{
     if(S.evalId){e.preventDefault();e.returnValue='';}
   });
 });
+
+// ══════════════════════════════════════
+// EVALUACIÓN EXPRESS CROSSFIT
+// ══════════════════════════════════════
+const EX_FLAGS=[
+  {id:'rf1',q:'¿Tiene una lesión aguda activa (menos de 7 días) con inflamación visible?'},
+  {id:'rf2',q:'¿Presenta síntomas neurológicos: hormigueo, entumecimiento o debilidad en extremidades?'},
+  {id:'rf3',q:'¿Tuvo fractura o cirugía en los últimos 6 meses?'},
+  {id:'rf4',q:'¿Tiene condición médica no controlada (hipertensión, diabetes, cardiopatía)?'},
+  {id:'rf5',q:'¿Dolor en reposo ≥7/10 o que empeora significativamente con el movimiento?'}
+];
+
+const EX_SCREENS=[
+  {id:'squat',emoji:'🏋',nombre:'Deep Squat',instruccion:'Pies al ancho de hombros, brazos sobre la cabeza. Squat profundo. Evalúa: talones en piso, rodillas sobre pies, tronco erguido.',categorias:['Thrusters','Wall Balls','Box Jumps','Pistols'],comps:['Talones elevados','Rodillas en valgo','Tronco cae hacia adelante','Flexión lumbar excesiva','No llega a paralelo','Sin compensaciones ✓']},
+  {id:'overhead',emoji:'🏹',nombre:'Overhead Reach (Wall Test)',instruccion:'De pie con espalda contra la pared, brazos arriba. Squat parcial (60°) sin separar columna de la pared ni que los brazos caigan. Evalúa movilidad torácica y de hombros para movimientos overhead.',categorias:['Snatch','OHS','Push Press','HSPU'],comps:['Brazos se despegan de la pared','Columna se separa de la pared','Hombros elevan al subir','Restricción torácica visible','Sin restricción ✓']},
+  {id:'slsquat',emoji:'🦵',nombre:'Single Leg Squat',instruccion:'De pie en un pie. 3 descensos controlados ~45°. Evalúa control de rodilla, cadera y tronco. Bilateral.',categorias:['Lunges','Step-ups','Pistols','Single-leg RDL'],comps:['Valgo de rodilla bilateral','Valgo de rodilla unilateral','Trendelenburg (caída pélvica)','Inclinación excesiva del tronco','Pérdida de equilibrio','Control adecuado bilateral ✓']},
+  {id:'shoulder',emoji:'💪',nombre:'Shoulder Clearing + Mobility',instruccion:'1) Mano derecha en hombro izquierdo, codo arriba — ¿dolor? Repite izquierdo. 2) Un brazo sube (ER) y el otro baja (RI): medir distancia entre nudillos. >5 cm = déficit.',categorias:['Ring Dips','HSPU','Muscle-ups','Pull-ups'],comps:['Dolor en clearing derecho','Dolor en clearing izquierdo','Distancia nudillos >5 cm','Asimetría bilateral evidente','Sin restricción ni dolor ✓']},
+  {id:'balance',emoji:'⚖',nombre:'Balance Monopodal (ojos cerrados, 10s)',instruccion:'Un pie, ojos cerrados, brazos cruzados. Intentar 10 segundos. 2 intentos por lado. Evalúa control neuromotor.',categorias:['Movimientos unilaterales','Indicador neuromotor general'],comps:['No llega a 5s','5-9s con mucha inestabilidad','Asimetría clara entre lados','Mantiene >10s bilateral ✓']}
+];
+
+const EX={
+  step:0,
+  data:{nombre:'',edad:0,sexo:'',dolorActivo:'no',cirugia:'no',movimientos:'',zonas:[]},
+  flags:{},semaforos:{},comps:{},
+
+  renderFlags(){
+    const wrap=document.getElementById('expFlagsWrap');
+    if(!wrap)return;
+    wrap.innerHTML=EX_FLAGS.map(rf=>`
+    <div style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="font-size:.85rem;color:var(--text);flex:1">${rf.q}</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="EX.setFlag('${rf.id}',false,this)" class="expFlagBtn" data-id="${rf.id}" data-val="no"
+          style="padding:6px 16px;border-radius:8px;border:1px solid #16a34a;background:${this.flags[rf.id]===false?'#16a34a':'transparent'};color:${this.flags[rf.id]===false?'#fff':'#16a34a'};cursor:pointer;font-weight:600;transition:all .15s">No</button>
+        <button onclick="EX.setFlag('${rf.id}',true,this)" class="expFlagBtn" data-id="${rf.id}" data-val="si"
+          style="padding:6px 16px;border-radius:8px;border:1px solid #dc2626;background:${this.flags[rf.id]===true?'#dc2626':'transparent'};color:${this.flags[rf.id]===true?'#fff':'#dc2626'};cursor:pointer;font-weight:600;transition:all .15s">Sí</button>
+      </div>
+    </div>`).join('');
+  },
+
+  renderScreens(){
+    const wrap=document.getElementById('expScreensWrap');
+    if(!wrap)return;
+    wrap.innerHTML=EX_SCREENS.map(scr=>`
+    <div class="card" style="margin-bottom:8px">
+      <div class="test-hd" onclick="toggleTest(this)">
+        <div class="test-name"><span>${scr.emoji} ${scr.nombre}</span><span class="test-tag" id="exptag_${scr.id}">—</span></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="test-bd">
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;background:var(--s2);padding:10px;border-radius:8px">${scr.instruccion}</div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px">Resultado — semáforo</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${[{v:'verde',l:'🟢 Sin restricción',c:'#16a34a'},{v:'amarillo',l:'🟡 Con compensaciones',c:'#d97706'},{v:'rojo',l:'🔴 Restricción / dolor',c:'#dc2626'}].map(opt=>`
+            <button id="expsem_${scr.id}_${opt.v}" onclick="EX.setScreen('${scr.id}','${opt.v}')"
+              style="padding:7px 14px;border-radius:8px;border:2px solid ${opt.c};background:${(EX.semaforos[scr.id]||'')==='${opt.v}'?opt.c:'transparent'};color:${(EX.semaforos[scr.id]||'')==='${opt.v}'?'#fff':opt.c};cursor:pointer;font-weight:600;font-size:.8rem;transition:all .2s">
+              ${opt.l}
+            </button>`).join('')}
+          </div>
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px">Compensaciones observadas</label>
+          <div class="checks-wrap">${scr.comps.map(c=>`
+            <label class="chk-pill ${(EX.comps[scr.id]||[]).includes(c)?'on':''}" onclick="this.classList.toggle('on');EX.addComp('${scr.id}','${c}',this.classList.contains('on'))">
+              <input type="checkbox"> ${c}
+            </label>`).join('')}</div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${scr.categorias.map(c=>`
+          <span style="background:rgba(27,191,176,.1);color:var(--primary);border:1px solid rgba(27,191,176,.3);border-radius:12px;padding:2px 10px;font-size:.7rem">${c}</span>`).join('')}</div>
+        <div class="field">
+          <label>Observaciones</label>
+          <textarea rows="2" placeholder="Notas del screen..." onchange="EX.data['${scr.id}_obs']=this.value"></textarea>
+        </div>
+      </div>
+    </div>`).join('');
+  },
+
+  setFlag(id,val,btn){
+    this.flags[id]=val;
+    const wrap=btn.closest('div[style]');
+    wrap.querySelectorAll('button').forEach(b=>{
+      const isNo=b.textContent.trim()==='No';
+      const col=isNo?'#16a34a':'#dc2626';
+      const active=isNo?val===false:val===true;
+      b.style.background=active?col:'transparent';
+      b.style.color=active?'#fff':col;
+    });
+  },
+
+  setScreen(id,valor){
+    this.semaforos[id]=valor;
+    const cols={verde:'#16a34a',amarillo:'#d97706',rojo:'#dc2626'};
+    ['verde','amarillo','rojo'].forEach(v=>{
+      const btn=document.getElementById('expsem_'+id+'_'+v);
+      if(!btn)return;
+      btn.style.background=v===valor?cols[v]:'transparent';
+      btn.style.color=v===valor?'#fff':cols[v];
+    });
+    const tag=document.getElementById('exptag_'+id);
+    if(tag){
+      const labels={verde:'🟢 OK',amarillo:'🟡 Modificar',rojo:'🔴 Limitado'};
+      tag.textContent=labels[valor]||'—';
+      tag.style.background=valor==='verde'?'rgba(22,163,74,.15)':valor==='amarillo'?'rgba(217,119,6,.15)':'rgba(220,38,38,.15)';
+      tag.style.color=cols[valor];
+    }
+  },
+
+  addComp(screenId,comp,activo){
+    if(!this.comps[screenId])this.comps[screenId]=[];
+    if(activo){if(!this.comps[screenId].includes(comp))this.comps[screenId].push(comp);}
+    else{this.comps[screenId]=this.comps[screenId].filter(c=>c!==comp);}
+  },
+
+  nextStep(){
+    if(this.step===0&&!this.data.nombre.trim()){toast('El nombre es obligatorio','err');return;}
+    if(this.step===1){
+      const positivos=Object.values(this.flags).filter(v=>v===true).length;
+      const el=document.getElementById('expRedFlagAlert');
+      if(el&&positivos>0){
+        el.style.display='block';
+        el.innerHTML=`⚠️ <strong>${positivos} bandera(s) roja(s).</strong> El atleta puede participar con actividades de bajo riesgo. Aparecerá en el resultado final.`;
+      }else if(el){el.style.display='none';}
+    }
+    if(this.step===2){this.calcularResultado();}
+    this.go(this.step+1);
+  },
+  prevStep(){this.go(this.step-1);},
+
+  go(n){
+    if(n<0||n>3)return;
+    for(let i=0;i<=3;i++){const el=document.getElementById('expStep'+i);if(el)el.style.display=i===n?'block':'none';}
+    this.step=n;
+    window.scrollTo({top:0,behavior:'smooth'});
+  },
+
+  calcularResultado(){
+    const infoMap={
+      squat:{label:'Sentadilla / Squat',emoji:'🏋',movs:['Thrusters','Wall Balls','Box Jumps','Pistols'],
+        recs:{amarillo:'Escalar thrusters ≤50% del peso habitual. Wall balls con squat parcial. Evitar pistols hasta mejorar movilidad de tobillo y cadera.',rojo:'Sin carga en sentadilla hasta evaluación completa. Sustitutos: Seated press, remos, pull-ups.'}},
+      overhead:{label:'Overhead / Torácico',emoji:'🏹',movs:['Snatch','OHS','Push Press','HSPU'],
+        recs:{amarillo:'Limitar carga overhead a 50-60%. Evitar Snatch hasta mejorar movilidad torácica. Push press con cuidado.',rojo:'Sin movimientos overhead con carga. DB press a 90° (no completo). Derivar a sesión de movilidad torácica.'}},
+      slsquat:{label:'Unipodal / Cadera',emoji:'🦵',movs:['Lunges','Step-ups','Pistols','Single-leg RDL'],
+        recs:{amarillo:'Sin pistols ni lunges pesados. Escalar a sentadilla bilateral. Reducir impacto unilateral.',rojo:'Sin carga unilateral en pierna afectada. Bicicleta, natación como sustitutos.'}},
+      shoulder:{label:'Hombro / Pulling',emoji:'💪',movs:['Ring Dips','HSPU','Muscle-ups','Pull-ups'],
+        recs:{amarillo:'Escalar pull-ups a ring rows. HSPU → pike push-up. Ring dips con asistencia.',rojo:'Sin tirón ni empuje con carga hasta evaluación de hombro. Sustituir con core y MMII.'}},
+      balance:{label:'Control neuromotor',emoji:'⚖',movs:['Movimientos unilaterales','Indicador neuromotor'],
+        recs:{amarillo:'Cuidado en movimientos explosivos y aterrizajes. Reforzar calidad de aterrizaje.',rojo:'Evitar aterrizajes monopodales (box jumps). Derivar si persiste.'}}
+    };
+
+    const nomEl=document.getElementById('expNombreResult');
+    if(nomEl)nomEl.textContent=this.data.nombre+(this.data.edad?`, ${this.data.edad} años`:'')+(this.data.sexo?` · ${this.data.sexo}`:'');
+    const fecEl=document.getElementById('expFechaResult');
+    if(fecEl)fecEl.textContent=new Date().toLocaleDateString('es-CO',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+
+    const positivos=Object.values(this.flags).filter(v=>v===true).length;
+    let rfHtml='';
+    if(positivos>0){
+      rfHtml=`<div style="background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);border-radius:10px;padding:14px;margin-bottom:16px">
+        <div style="font-weight:700;color:#dc2626;margin-bottom:4px">🚨 ${positivos} bandera(s) roja(s) detectada(s)</div>
+        <div style="font-size:.82rem;color:var(--text)">Se recomienda evaluación completa antes de aumentar cargas. El atleta puede participar en actividades de bajo riesgo con supervisión.</div>
+      </div>`;
+    }
+
+    const semEl=document.getElementById('expResultadoSemaforo');
+    if(semEl)semEl.innerHTML=rfHtml+Object.entries(infoMap).map(([id,info])=>{
+      const sem=this.semaforos[id];
+      const cols={verde:'#16a34a',amarillo:'#d97706',rojo:'#dc2626'};
+      const etiq={verde:'Participación completa',amarillo:'Escalar / modificar',rojo:'Limitado — reevaluar'};
+      const col=cols[sem]||'#6B7280';
+      const comps=this.comps[id]||[];
+      return `<div style="background:var(--s2);border-radius:10px;padding:14px;margin-bottom:10px;border-left:4px solid ${col}">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+          <div style="font-weight:700;font-size:.95rem">${info.emoji} ${info.label}</div>
+          <span style="background:${col};color:#fff;padding:4px 14px;border-radius:20px;font-size:.78rem;font-weight:700">${etiq[sem]||'No evaluado'}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${info.movs.map(m=>`<span style="background:${col}18;color:${col};border:1px solid ${col}33;border-radius:12px;padding:2px 8px;font-size:.7rem">${m}</span>`).join('')}</div>
+        ${comps.length?`<div style="font-size:.75rem;color:var(--muted)">Compensaciones: ${comps.filter(c=>!c.includes('✓')).join(', ')}</div>`:''}
+      </div>`;
+    }).join('');
+
+    const recEl=document.getElementById('expRecomendaciones');
+    const conMods=Object.entries(this.semaforos).filter(([,v])=>v!=='verde');
+    if(recEl){
+      if(!conMods.length&&!positivos){
+        recEl.innerHTML=`<div style="background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.3);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-size:1.5rem;margin-bottom:6px">🏆</div>
+          <div style="font-weight:700;color:#16a34a;font-size:1rem">¡Excelente screening!</div>
+          <div style="font-size:.85rem;color:var(--text);margin-top:4px">El atleta puede participar en el WOD sin restricciones. Recomendar trabajo preventivo de movilidad.</div>
+        </div>`;
+      }else if(conMods.length){
+        recEl.innerHTML=`<div style="font-weight:700;font-size:.95rem;margin-bottom:10px">📋 Recomendaciones específicas</div>`+
+          conMods.map(([id,sem])=>{
+            const info=infoMap[id];const rec=(info.recs||{})[sem]||'Consultar con fisioterapeuta para plan específico.';
+            return `<div style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:8px;border-left:3px solid ${sem==='amarillo'?'#d97706':'#dc2626'}">
+              <div style="font-weight:600;font-size:.85rem;margin-bottom:4px">${info.emoji} ${info.label}</div>
+              <div style="font-size:.82rem;color:var(--muted)">${rec}</div>
+            </div>`;
+          }).join('');
+      }
+    }
+  }
+};
+
+let _expZonaCount=0;
+function expAddZona(ev,vista){
+  const svg=ev.currentTarget,rect=svg.getBoundingClientRect();
+  const x=(ev.clientX-rect.left)/rect.width*100,y=(ev.clientY-rect.top)/rect.height*100;
+  _expZonaCount++;
+  EX.data.zonas.push({id:_expZonaCount,x,y,vista});
+  const dotsG=document.getElementById(vista==='ant'?'expDotsAnt':'expDotsPos');
+  const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  c.setAttribute('cx',x/100*120);c.setAttribute('cy',y/100*240);c.setAttribute('r','6');
+  c.setAttribute('fill','#dc2626');c.setAttribute('opacity','0.8');
+  dotsG.appendChild(c);
+}
+
+function abrirExpress(){
+  EX.step=0;
+  EX.data={nombre:'',edad:0,sexo:'',dolorActivo:'no',cirugia:'no',movimientos:'',zonas:[]};
+  EX.flags={};EX.semaforos={};EX.comps={};_expZonaCount=0;
+  ['expDotsAnt','expDotsPos'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+  ['expNombre','expEdad','expMovimientos'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('viewLista').style.display='none';
+  document.getElementById('wizProgress').style.display='none';
+  document.getElementById('viewExpress').style.display='block';
+  for(let i=0;i<=3;i++){const el=document.getElementById('expStep'+i);if(el)el.style.display=i===0?'block':'none';}
+  // Renderizar contenidos dinámicos
+  setTimeout(()=>{EX.renderFlags();EX.renderScreens();},50);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function cerrarExpress(){
+  document.getElementById('viewExpress').style.display='none';
+  abrirListaEvals();
+}
+
+function expGuardar(){
+  const id='express_'+Date.now();
+  const data={evalId:id,id,perfil:'express_crossfit',
+    hc:{nombre:EX.data.nombre,edad:EX.data.edad,sexo:EX.data.sexo,motivo:EX.data.movimientos,zonas:EX.data.zonas},
+    tests:{express_semaforos:EX.semaforos,express_comps:EX.comps,express_flags:EX.flags},
+    sesiones:[],alta:null,fotos:[],_tipo:'express'};
+  abrirDB().then(()=>dbGuardar('evaluaciones',data).then(()=>{toast('Evaluación Express guardada ✓','ok');}));
+}
+
+function expEnviarWpp(){
+  const nombre=EX.data.nombre||'Atleta';
+  const fecha=new Date().toLocaleDateString('es-CO');
+  const lbls={squat:'Sentadilla',overhead:'Overhead',slsquat:'Unipodal',shoulder:'Hombro',balance:'Balance'};
+  const emos={verde:'✅',amarillo:'⚠️',rojo:'🚫'};
+  let msg=`⚡ *EVALUACIÓN EXPRESS CROSSFIT*\n*${nombre}* · ${fecha}\n_Jessica Ocampo Fisioterapeuta_\n\n`;
+  EX_SCREENS.forEach(scr=>{
+    const sem=EX.semaforos[scr.id];if(!sem)return;
+    msg+=`${emos[sem]||'—'} *${lbls[scr.id]}*: ${sem==='verde'?'Participación completa':sem==='amarillo'?'Escalar / modificar':'No cargar aún'}\n`;
+  });
+  const positivos=Object.values(EX.flags).filter(v=>v===true).length;
+  if(positivos)msg+=`\n🚨 ${positivos} bandera(s) roja(s) — requiere evaluación completa`;
+  msg+=`\n\n📱 Evaluación completa: jessicaocampoft.com`;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
 </script>
 </body>
 </html>
