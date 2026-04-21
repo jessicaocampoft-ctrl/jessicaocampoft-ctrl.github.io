@@ -416,29 +416,62 @@ function doEditBooking(d) {
   return {ok: false, error: 'Cita no encontrada'};
 }
 
-// Elimina todos los registros de un paciente (por nombre)
+// Elimina todos los registros de un paciente en Citas y en Pacientes
 function deletePatient(nombre) {
-  var sheet = getOrCreateSheet().getSheetByName('Citas');
-  var rows  = sheet.getDataRange().getValues();
-  for (var i = rows.length - 1; i >= 1; i--) {
-    if (rows[i][2] === nombre) sheet.deleteRow(i + 1);
+  var ss   = getOrCreateSheet();
+  var norm = (nombre || '').toLowerCase().trim();
+
+  var cSheet = ss.getSheetByName('Citas');
+  var cRows  = cSheet.getDataRange().getValues();
+  for (var i = cRows.length - 1; i >= 1; i--) {
+    if (cRows[i][2] === nombre) cSheet.deleteRow(i + 1);
   }
+
+  var pSheet = ss.getSheetByName('Pacientes');
+  var pRows  = pSheet.getDataRange().getValues();
+  for (var j = pRows.length - 1; j >= 1; j--) {
+    if (('' + (pRows[j][0] || '')).toLowerCase().trim() === norm) pSheet.deleteRow(j + 1);
+  }
+
   return {ok: true};
 }
 
-// Edita nombre, teléfono y email de todos los registros de un paciente
+// Edita nombre, teléfono y email en Citas y en Pacientes
 function editPatient(d) {
   // d = {oldNombre, newNombre, telefono, email}
-  var sheet = getOrCreateSheet().getSheetByName('Citas');
-  var rows  = sheet.getDataRange().getValues();
-  var count = 0;
-  for (var i = 1; i < rows.length; i++) {
-    if (rows[i][2] !== d.oldNombre) continue;
-    if (d.newNombre) sheet.getRange(i+1, 3).setValue(d.newNombre);
-    if (d.telefono !== undefined) sheet.getRange(i+1, 4).setNumberFormat('@').setValue((d.telefono||'').replace(/\D/g,''));
-    if (d.email    !== undefined) sheet.getRange(i+1, 5).setValue(d.email);
+  var ss      = getOrCreateSheet();
+  var phone   = (d.telefono || '').replace(/\D/g, '');
+  var oldNorm = (d.oldNombre || '').toLowerCase().trim();
+  var count   = 0;
+
+  var cSheet = ss.getSheetByName('Citas');
+  var cRows  = cSheet.getDataRange().getValues();
+  for (var i = 1; i < cRows.length; i++) {
+    if (cRows[i][2] !== d.oldNombre) continue;
+    if (d.newNombre) cSheet.getRange(i+1, 3).setValue(d.newNombre);
+    if (d.telefono !== undefined) cSheet.getRange(i+1, 4).setNumberFormat('@').setValue(phone);
+    if (d.email    !== undefined) cSheet.getRange(i+1, 5).setValue(d.email);
     count++;
   }
+
+  var pSheet = ss.getSheetByName('Pacientes');
+  var pRows  = pSheet.getDataRange().getValues();
+  var updatedPac = false;
+  for (var j = 1; j < pRows.length; j++) {
+    if (('' + (pRows[j][0] || '')).toLowerCase().trim() !== oldNorm) continue;
+    if (d.newNombre) pSheet.getRange(j+1, 1).setValue(d.newNombre);
+    if (d.telefono !== undefined) pSheet.getRange(j+1, 2).setNumberFormat('@').setValue(phone);
+    if (d.email    !== undefined) pSheet.getRange(j+1, 3).setValue(d.email);
+    updatedPac = true;
+    break;
+  }
+  // Si no existía en Pacientes (solo en Citas), crearlo
+  if (!updatedPac && d.newNombre) {
+    var today = new Date().toLocaleDateString('es-CO');
+    pSheet.appendRow([d.newNombre, phone, d.email || '', today, today]);
+    pSheet.getRange(pSheet.getLastRow(), 2).setNumberFormat('@').setValue(phone);
+  }
+
   return {ok: true, updated: count};
 }
 
@@ -628,8 +661,8 @@ function upsertPaciente(nombre, telefono, email) {
     sheet.appendRow([nombre, phone, email || '', today, today]);
     sheet.getRange(sheet.getLastRow(), 2).setNumberFormat('@').setValue(phone);
   } catch(e) {
-    // No interrumpir el booking si falla el upsert
     Logger.log('upsertPaciente error: ' + e.message);
+    throw e;
   }
 }
 

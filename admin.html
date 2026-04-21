@@ -2626,6 +2626,15 @@ function renderPacientes() {
   const search = (document.getElementById('pSearch').value||'').toLowerCase();
   const map = {};
 
+  // Primero cargar pacientes de la hoja Pacientes (incluye los registrados sin cita)
+  (allData.pacientes || []).forEach(p => {
+    const phone  = (p.telefono || '').replace(/\D/g, '').slice(-10);
+    const email  = (p.email || '').toLowerCase().trim();
+    const nombre = (p.nombre || '').trim();
+    const key    = phone.length >= 10 ? 'p:'+phone : (email ? 'e:'+email : 'n:'+nombre.toLowerCase());
+    if (!map[key]) map[key] = {nombre, telefono: phone, email, sesiones: 0, ultima: p.ultimaVisita || '', ultimoServicio: 'Registro', servicios: {}, nombres: [nombre]};
+  });
+
   allData.citas.filter(c => c.estado !== 'Registro').forEach(c => {
     const phone  = (c.telefono||'').replace(/\D/g,'').slice(-10);
     const email  = (c.email||'').toLowerCase().trim();
@@ -2825,6 +2834,15 @@ function dbOnPlanChange() {
 function renderBasedatos() {
   const search = (document.getElementById('dbSearch') ? document.getElementById('dbSearch').value : '').toLowerCase();
   const map = {};
+  // Primero cargar pacientes de la hoja Pacientes (incluye los registrados sin cita)
+  (allData.pacientes || []).forEach(function(p) {
+    const phone  = (p.telefono || '').replace(/\D/g, '').slice(-10);
+    const email  = (p.email || '').toLowerCase().trim();
+    const nombre = (p.nombre || '').trim();
+    const key    = phone.length >= 10 ? 'p:' + phone : (email ? 'e:' + email : 'n:' + nombre.toLowerCase());
+    if (!map[key]) map[key] = {nombre, telefono: phone, email, sesiones: 0, ultima: p.ultimaVisita || '', ultimoServicio: 'Registro', servicios: {}, nombres: [nombre]};
+  });
+  // Luego cruzar con citas (actualizan datos si el paciente ya existe)
   (allData.citas || []).forEach(function(c) {
     const phone  = (c.telefono || '').replace(/\D/g, '').slice(-10);
     const email  = (c.email || '').toLowerCase().trim();
@@ -2921,9 +2939,12 @@ async function dbBorrarPac(idx) {
   if (!confirm(`¿Eliminar a ${p.nombre} y sus ${p.sesiones} cita(s)?\n\nEsta acción no se puede deshacer.`)) return;
   try {
     for (const nombre of p.nombres) {
-      await fetch(`${APPS_SCRIPT_URL}?action=deletePatient&token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(nombre)}`);
+      const r = await fetch(`${APPS_SCRIPT_URL}?action=deletePatient&token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(nombre)}`);
+      const d = await r.json();
+      if (!d.ok) { toast('Error al eliminar: ' + (d.error || 'intenta de nuevo'), 'err'); return; }
     }
-    allData.citas = allData.citas.filter(c => !p.nombres.includes(c.nombre));
+    allData.citas    = allData.citas.filter(c => !p.nombres.includes(c.nombre));
+    allData.pacientes = (allData.pacientes || []).filter(p2 => !p.nombres.map(n => n.toLowerCase()).includes((p2.nombre||'').toLowerCase()));
     toast(`${p.nombre} eliminado/a correctamente`);
     renderBasedatos();
     initDashboard();
