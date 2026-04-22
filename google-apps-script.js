@@ -8,7 +8,7 @@ var ADMIN_TOKEN  = 'JESSICA2026';          // Cambia esta contrasena
 var JESSICA_EMAIL = 'jessica.ocampo.ft@gmail.com';
 var JESSICA_WA    = '573136467945';
 var SS_NAME       = 'Citas Jessica Ocampo Fisio';
-var GEMINI_API_KEY = 'PEGA_AQUI_TU_CLAVE_GEMINI'; // → obtén gratis en aistudio.google.com
+var GEMINI_API_KEY = 'AIzaSyBZ0o7H6eIrDewQ_SSYSNMKlqMzY75xvjM';
 
 // -------------------------------------------------------------
 //  GET  — Disponibilidad / Datos admin / Acciones admin
