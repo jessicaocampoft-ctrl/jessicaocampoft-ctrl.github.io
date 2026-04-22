@@ -8,6 +8,7 @@ var ADMIN_TOKEN  = 'JESSICA2026';          // Cambia esta contrasena
 var JESSICA_EMAIL = 'jessica.ocampo.ft@gmail.com';
 var JESSICA_WA    = '573136467945';
 var SS_NAME       = 'Citas Jessica Ocampo Fisio';
+var GEMINI_API_KEY = 'PEGA_AQUI_TU_CLAVE_GEMINI'; // → obtén gratis en aistudio.google.com
 
 // -------------------------------------------------------------
 //  GET  — Disponibilidad / Datos admin / Acciones admin
@@ -49,6 +50,7 @@ function doGet(e) {
   if (p.action === 'editPatient')    return js(editPatient(JSON.parse(p.data)));
   if (p.action === 'getReminders')   return js(getRemindersData());
   if (p.action === 'sendReminders')  return js(sendEmailReminders());
+  if (p.action === 'generateEval')   return js(generateEvalReport(JSON.parse(decodeURIComponent(p.data))));
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -990,5 +992,67 @@ function getGoogleReviews() {
   } catch(e) {
     return { ok: false, error: e.message };
   }
+}
+
+// =============================================================
+//  EVALUACIÓN EXPRESS CROSSFIT — Generación de reporte con IA
+// =============================================================
+
+function generateEvalReport(d) {
+  try {
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'PEGA_AQUI_TU_CLAVE_GEMINI') {
+      return { ok: false, error: 'Configura GEMINI_API_KEY en el script. Obtenla gratis en aistudio.google.com' };
+    }
+
+    var prompt = buildEvalPrompt(d);
+    var url    = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_API_KEY;
+
+    var response = UrlFetchApp.fetch(url, {
+      method:      'post',
+      contentType: 'application/json',
+      muteHttpExceptions: true,
+      payload: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 1200 }
+      })
+    });
+
+    var result = JSON.parse(response.getContentText());
+    if (result.error) return { ok: false, error: result.error.message };
+
+    var text = result.candidates[0].content.parts[0].text;
+    return { ok: true, report: text };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+function buildEvalPrompt(d) {
+  var hallazgos = (d.hallazgos && d.hallazgos.length)
+    ? d.hallazgos.join(', ')
+    : 'Sin hallazgos registrados';
+
+  return 'Eres una fisioterapeuta deportiva especializada en CrossFit llamada Jessica Ocampo, con sede en Pereira, Colombia.\n' +
+    'Genera un reporte de evaluación postural express profesional, empático y motivador para:\n\n' +
+    'ATLETA: ' + d.nombre + (d.edad && d.edad !== 'N/A' ? ', ' + d.edad + ' años' : '') + '\n' +
+    'NIVEL CROSSFIT: ' + (d.nivel || 'No especificado') + '\n' +
+    'TIEMPO EN CROSSFIT: ' + (d.anios || 'No especificado') + '\n' +
+    'OBJETIVO: ' + (d.objetivo || 'No especificado') + '\n' +
+    'MOLESTIAS ACTUALES: ' + (d.molestias || 'Ninguna') + '\n' +
+    'SEVERIDAD ESTIMADA: ' + (d.severidad || 'No especificada') + '\n' +
+    'HALLAZGOS IDENTIFICADOS: ' + hallazgos + '\n' +
+    (d.observaciones ? 'OBSERVACIONES ADICIONALES: ' + d.observaciones + '\n' : '') +
+    '\nGenera el reporte en español con EXACTAMENTE estas secciones (usa los títulos en mayúsculas y negrilla):\n\n' +
+    '**RESUMEN EJECUTIVO**\n' +
+    '[2-3 oraciones sobre el estado postural general. Tono profesional y empático. Menciona el impacto directo en el rendimiento CrossFit.]\n\n' +
+    '**ANÁLISIS POR ZONAS**\n' +
+    '[Para cada zona con hallazgos, explica en 1-2 oraciones qué significa biomecánicamente y cómo afecta los movimientos específicos de CrossFit (snatch, clean, squat, deadlift, etc.). Si no hay hallazgos en una zona, omítela.]\n\n' +
+    '**RIESGOS IDENTIFICADOS**\n' +
+    '[Lista máximo 4 riesgos concretos de lesión si no se atienden. Específicos para CrossFit. Usa viñetas con •]\n\n' +
+    '**PLAN DE ACCIÓN RECOMENDADO**\n' +
+    '[3-5 recomendaciones concretas ordenadas por prioridad. Incluye qué tipo de trabajo se haría en fisioterapia. Usa viñetas con •]\n\n' +
+    '**CONCLUSIÓN**\n' +
+    '[1 párrafo motivador. Menciona que con un plan de fisioterapia deportiva personalizado se pueden corregir estos disbalances y mejorar el rendimiento. Invita a dar el siguiente paso. No menciones precios.]\n\n' +
+    'REGLAS: Máximo 450 palabras en total. Sé directa y específica. Usa lenguaje claro, no excesivamente técnico. Tono: profesional pero cercano.';
 }
 
