@@ -1032,6 +1032,40 @@ function buildEvalPrompt(d) {
     ? d.hallazgos.join(', ')
     : 'Sin hallazgos registrados';
 
+  var screensText = '';
+  if (d.screens) {
+    var sc = d.screens;
+    screensText += '\nRESULTADOS PRUEBAS FUNCIONALES (escala 0-3, donde 3=normal, 0=dolor/no puede):\n';
+    if (sc.deepSquat) {
+      screensText += '• Deep Squat: ' + (sc.deepSquat.score !== null ? sc.deepSquat.score + '/3' : 'No evaluado');
+      if (sc.deepSquat.obs) screensText += ' — ' + sc.deepSquat.obs;
+      screensText += '\n';
+    }
+    if (sc.overheadReach) {
+      screensText += '• Overhead Reach: ' + (sc.overheadReach.score !== null ? sc.overheadReach.score + '/3' : 'No evaluado');
+      if (sc.overheadReach.obs) screensText += ' — ' + sc.overheadReach.obs;
+      screensText += '\n';
+    }
+    if (sc.singleLegSquat) {
+      screensText += '• Single Leg Squat: D=' + (sc.singleLegSquat.scoreD !== null ? sc.singleLegSquat.scoreD + '/3' : 'No eval') +
+        ', I=' + (sc.singleLegSquat.scoreI !== null ? sc.singleLegSquat.scoreI + '/3' : 'No eval');
+      if (sc.singleLegSquat.obs) screensText += ' — ' + sc.singleLegSquat.obs;
+      screensText += '\n';
+    }
+    if (sc.shoulderMob) {
+      screensText += '• Shoulder Clearing: D=' + (sc.shoulderMob.scoreD !== null ? sc.shoulderMob.scoreD + '/3' : 'No eval') +
+        ', I=' + (sc.shoulderMob.scoreI !== null ? sc.shoulderMob.scoreI + '/3' : 'No eval');
+      if (sc.shoulderMob.obs) screensText += ' — ' + sc.shoulderMob.obs;
+      screensText += '\n';
+    }
+    if (sc.balanceMono) {
+      screensText += '• Balance Monopodal: D=' + (sc.balanceMono.timeD || 'No eval') + 's' +
+        ', I=' + (sc.balanceMono.timeI || 'No eval') + 's';
+      if (sc.balanceMono.obs) screensText += ' — ' + sc.balanceMono.obs;
+      screensText += '\n';
+    }
+  }
+
   return 'Eres una fisioterapeuta deportiva especializada en CrossFit llamada Jessica Ocampo, con sede en Pereira, Colombia.\n' +
     'Genera un reporte de evaluación postural express profesional, empático y motivador para:\n\n' +
     'ATLETA: ' + d.nombre + (d.edad && d.edad !== 'N/A' ? ', ' + d.edad + ' años' : '') + '\n' +
@@ -1040,19 +1074,22 @@ function buildEvalPrompt(d) {
     'OBJETIVO: ' + (d.objetivo || 'No especificado') + '\n' +
     'MOLESTIAS ACTUALES: ' + (d.molestias || 'Ninguna') + '\n' +
     'SEVERIDAD ESTIMADA: ' + (d.severidad || 'No especificada') + '\n' +
-    'HALLAZGOS IDENTIFICADOS: ' + hallazgos + '\n' +
+    'HALLAZGOS POSTURALES: ' + hallazgos + '\n' +
+    screensText +
     (d.observaciones ? 'OBSERVACIONES ADICIONALES: ' + d.observaciones + '\n' : '') +
     '\nGenera el reporte en español con EXACTAMENTE estas secciones (usa los títulos en mayúsculas y negrilla):\n\n' +
     '**RESUMEN EJECUTIVO**\n' +
-    '[2-3 oraciones sobre el estado postural general. Tono profesional y empático. Menciona el impacto directo en el rendimiento CrossFit.]\n\n' +
+    '[2-3 oraciones sobre el estado postural y funcional general. Tono profesional y empático. Menciona el impacto directo en el rendimiento CrossFit.]\n\n' +
     '**ANÁLISIS POR ZONAS**\n' +
     '[Para cada zona con hallazgos, explica en 1-2 oraciones qué significa biomecánicamente y cómo afecta los movimientos específicos de CrossFit (snatch, clean, squat, deadlift, etc.). Si no hay hallazgos en una zona, omítela.]\n\n' +
+    '**ANÁLISIS FUNCIONAL**\n' +
+    '[Interpreta los resultados de las pruebas funcionales: qué patrones de movimiento están comprometidos, qué músculos o cadenas están débiles o rígidas, y cómo se correlacionan con los hallazgos posturales. Sé específica con los scores bajos.]\n\n' +
     '**RIESGOS IDENTIFICADOS**\n' +
     '[Lista máximo 4 riesgos concretos de lesión si no se atienden. Específicos para CrossFit. Usa viñetas con •]\n\n' +
     '**PLAN DE ACCIÓN RECOMENDADO**\n' +
     '[3-5 recomendaciones concretas ordenadas por prioridad. Incluye qué tipo de trabajo se haría en fisioterapia. Usa viñetas con •]\n\n' +
     '**CONCLUSIÓN**\n' +
     '[1 párrafo motivador. Menciona que con un plan de fisioterapia deportiva personalizado se pueden corregir estos disbalances y mejorar el rendimiento. Invita a dar el siguiente paso. No menciones precios.]\n\n' +
-    'REGLAS: Máximo 450 palabras en total. Sé directa y específica. Usa lenguaje claro, no excesivamente técnico. Tono: profesional pero cercano.';
+    'REGLAS: Máximo 500 palabras en total. Sé directa y específica. Usa lenguaje claro, no excesivamente técnico. Tono: profesional pero cercano.';
 }
 

@@ -18,7 +18,7 @@
 }
 html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-/* ── LOGIN ── */
+/* LOGIN */
 #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#0d9488 0%,#1BBFB0 100%)}
 .login-box{background:#fff;border-radius:20px;padding:40px 36px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15)}
 .login-logo{text-align:center;margin-bottom:24px}
@@ -32,45 +32,45 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
 .login-btn:disabled{opacity:.6;cursor:not-allowed}
 .login-err{color:var(--err);font-size:.82rem;text-align:center;margin-top:10px;display:none}
 
-/* ── APP WRAPPER ── */
-#app{display:none;max-width:680px;margin:0 auto;padding:16px 16px 80px}
+/* APP */
+#app{display:none;max-width:700px;margin:0 auto;padding:16px 16px 80px}
 
-/* ── HEADER ── */
+/* HEADER */
 .app-header{background:var(--primary);color:#fff;border-radius:16px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
 .app-header img{height:38px;filter:brightness(0) invert(1)}
 .app-header-text h1{font-family:var(--font-h);font-size:1.4rem;font-weight:600;line-height:1.2}
 .app-header-text p{font-size:.8rem;opacity:.85;margin-top:2px}
 .header-badge{margin-left:auto;background:rgba(255,255,255,.2);border-radius:99px;padding:5px 12px;font-size:.75rem;font-family:var(--font-m);white-space:nowrap}
 
-/* ── PROGRESS ── */
-.progress-wrap{display:flex;align-items:center;gap:0;margin-bottom:24px;background:#fff;border-radius:12px;border:1px solid var(--border);padding:16px 20px;overflow-x:auto}
-.prog-step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;position:relative;min-width:60px}
+/* PROGRESS */
+.progress-wrap{display:flex;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;border:1px solid var(--border);padding:16px 20px;overflow-x:auto}
+.prog-step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;position:relative;min-width:56px}
 .prog-step:not(:last-child)::after{content:'';position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--s3);z-index:0}
 .prog-step.done:not(:last-child)::after{background:var(--primary)}
 .prog-dot{width:26px;height:26px;border-radius:50%;background:var(--s3);border:2px solid var(--s3);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:var(--muted);position:relative;z-index:1;transition:var(--tr)}
 .prog-step.done .prog-dot{background:var(--primary);border-color:var(--primary);color:#fff}
 .prog-step.active .prog-dot{background:#fff;border-color:var(--primary);color:var(--primary);box-shadow:0 0 0 3px rgba(27,191,176,.2)}
-.prog-label{font-size:.62rem;color:var(--muted);text-align:center;line-height:1.3}
+.prog-label{font-size:.6rem;color:var(--muted);text-align:center;line-height:1.3}
 .prog-step.active .prog-label,.prog-step.done .prog-label{color:var(--text);font-weight:500}
 
-/* ── CARDS ── */
+/* CARDS */
 .card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:16px}
 .card-title{font-family:var(--font-h);font-size:1.25rem;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.zone-title{font-size:.78rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.zone-title{font-size:.76rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 
-/* ── FIELDS ── */
+/* FIELDS */
 .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
 .field label{font-size:.76rem;color:var(--muted);font-family:var(--font-m)}
 .field input,.field select,.field textarea{background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;transition:var(--tr);width:100%}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(27,191,176,.08)}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-/* ── LEVEL SELECTOR ── */
+/* LEVEL */
 .level-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:6px}
 .level-btn{padding:10px 6px;border-radius:8px;border:1.5px solid var(--border);background:var(--s2);cursor:pointer;text-align:center;transition:var(--tr);font-size:.76rem;font-weight:500;color:var(--muted)}
 .level-btn:hover,.level-btn.sel{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
 
-/* ── PHOTOS ── */
+/* POSTURAL PHOTOS (step 2) */
 .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .photo-box{position:relative;border:2px dashed var(--border);border-radius:12px;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;overflow:hidden;transition:var(--tr);background:var(--s2)}
 .photo-box:hover{border-color:var(--primary);background:var(--primary-light)}
@@ -83,24 +83,54 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
 .photo-input{display:none}
 .photo-note{font-size:.76rem;color:var(--muted);text-align:center;margin-top:8px;line-height:1.5}
 
-/* ── FINDINGS CHIPS ── */
+/* ── TEST CARDS (screens funcionales) ── */
+.test-ex-card{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.test-ex-hd{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;cursor:pointer;user-select:none;transition:var(--tr);gap:10px}
+.test-ex-hd:hover{background:var(--s2)}
+.test-ex-name{font-weight:600;font-size:.88rem;display:flex;align-items:center;gap:8px;flex:1}
+.test-tag{background:var(--s2);border-radius:6px;padding:2px 9px;font-size:.72rem;font-family:var(--font-m);color:var(--muted)}
+.test-tag.s0{background:#fee2e2;color:#dc2626}
+.test-tag.s1{background:#fed7aa;color:#c2410c}
+.test-tag.s2{background:#fef9c3;color:#92400e}
+.test-tag.s3{background:#dcfce7;color:#166534}
+.test-ex-bd{padding:0 16px;max-height:0;overflow:hidden;transition:max-height .35s ease}
+.test-ex-bd.open{max-height:700px;padding:0 16px 16px}
+.test-score-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;align-items:flex-start}
+.score-btns{display:flex;gap:7px;margin:6px 0 4px}
+.score-btn{width:44px;height:44px;border-radius:8px;border:1.5px solid var(--border);background:var(--s2);cursor:pointer;font-size:1rem;font-weight:700;color:var(--muted);transition:var(--tr);display:flex;align-items:center;justify-content:center}
+.score-btn.s0.sel{background:#fee2e2;border-color:#dc2626;color:#dc2626}
+.score-btn.s1.sel{background:#fed7aa;border-color:#ea580c;color:#ea580c}
+.score-btn.s2.sel{background:#fef9c3;border-color:#ca8a04;color:#92400e}
+.score-btn.s3.sel{background:#dcfce7;border-color:#16a34a;color:#16a34a}
+.score-legend{font-size:.68rem;color:var(--muted);font-family:var(--font-m);line-height:1.6}
+.test-mini-photo{border:2px dashed var(--border);border-radius:10px;aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;background:var(--s2);width:110px;flex-shrink:0;transition:var(--tr)}
+.test-mini-photo:hover{border-color:var(--primary);background:var(--primary-light)}
+.test-mini-photo.has-photo{border-style:solid;border-color:var(--primary)}
+.test-mini-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.test-mini-photo .trm{position:absolute;top:4px;right:4px;background:rgba(220,38,38,.85);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.65rem;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:2}
+.test-mini-photo.has-photo .trm{display:flex}
+.bilateral-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bilateral-label{font-size:.72rem;font-family:var(--font-m);color:var(--muted);margin-bottom:4px}
+.time-input{width:90px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font-m);font-size:1rem;text-align:center;background:var(--s2);outline:none}
+.time-input:focus{border-color:var(--primary)}
+
+/* CHIPS */
 .chip-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
 .chip{padding:8px 14px;border-radius:99px;border:1.5px solid var(--border);background:var(--s2);cursor:pointer;font-size:.8rem;font-weight:500;color:var(--muted);transition:var(--tr);user-select:none;display:flex;align-items:center;gap:5px}
 .chip:active{transform:scale(.97)}
 .chip.sel{background:var(--primary);border-color:var(--primary);color:#fff}
 .chip.sel::before{content:'✓ '}
-.chip-none{font-size:.8rem;color:var(--muted);font-style:italic}
 
-/* ── SEVERITY SELECTOR ── */
-.sev-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.sev-label{font-size:.8rem;color:var(--muted);min-width:100px}
+/* SEVERITY */
+.sev-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sev-label{font-size:.8rem;color:var(--muted);min-width:120px}
 .sev-btns{display:flex;gap:6px}
-.sev-btn{padding:5px 14px;border-radius:99px;border:1.5px solid var(--border);background:var(--s2);cursor:pointer;font-size:.75rem;font-weight:500;color:var(--muted);transition:var(--tr)}
+.sev-btn{padding:6px 16px;border-radius:99px;border:1.5px solid var(--border);background:var(--s2);cursor:pointer;font-size:.78rem;font-weight:500;color:var(--muted);transition:var(--tr)}
 .sev-btn.sel-leve{background:#fef9c3;border-color:#ca8a04;color:#92400e}
 .sev-btn.sel-mod{background:#fed7aa;border-color:#ea580c;color:#c2410c}
 .sev-btn.sel-sev{background:#fee2e2;border-color:#dc2626;color:#991b1b}
 
-/* ── BUTTONS ── */
+/* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:8px;border:none;font-family:var(--font-b);font-size:.9rem;font-weight:600;cursor:pointer;transition:var(--tr)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn-primary{background:var(--primary);color:#fff}
@@ -113,38 +143,55 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
 .btn-email:hover{background:#4338ca}
 .btn-print{background:#374151;color:#fff}
 .btn-print:hover{background:#1f2937}
-.btn-block{display:flex;width:100%;justify-content:center;margin-top:10px}
 .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.step-controls{display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:10px}
+.count-badge{background:var(--primary);color:#fff;border-radius:99px;font-size:.68rem;padding:1px 7px;font-family:var(--font-m);font-weight:600}
 
-/* ── LOADING ── */
-#step4{text-align:center;padding:40px 20px}
+/* ALERTS */
+.alert{border-radius:8px;padding:12px 16px;font-size:.84rem;margin-bottom:14px}
+.alert-warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.alert-info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+
+/* LOADING */
+#step5{text-align:center;padding:40px 20px}
 .loader-ring{width:64px;height:64px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loader-msg{font-family:var(--font-h);font-size:1.3rem;margin-bottom:8px}
 .loader-sub{color:var(--muted);font-size:.85rem}
 
-/* ── REPORT ── */
+/* REPORT */
 #reportContent{font-family:var(--font-b)}
 .report-header{background:linear-gradient(135deg,#0d9488,#1BBFB0);color:#fff;border-radius:16px;padding:24px;margin-bottom:20px}
 .report-header h2{font-family:var(--font-h);font-size:1.6rem;font-weight:600;margin-bottom:4px}
 .report-header p{font-size:.85rem;opacity:.85}
 .report-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .report-meta-item{background:rgba(255,255,255,.2);border-radius:8px;padding:6px 12px;font-size:.78rem;font-family:var(--font-m)}
-.report-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
-.report-photo{border-radius:10px;overflow:hidden;aspect-ratio:3/4;background:var(--s2)}
-.report-photo img{width:100%;height:100%;object-fit:cover}
-.report-photo-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:.75rem;text-align:center;padding:8px}
 .report-section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
 .report-section h3{font-family:var(--font-h);font-size:1.1rem;font-weight:600;color:var(--primary);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.report-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.report-photo{border-radius:10px;overflow:hidden;aspect-ratio:3/4;background:var(--s2)}
+.report-photo img{width:100%;height:100%;object-fit:cover}
+.report-photo-label{font-size:.7rem;color:var(--muted);text-align:center;margin-top:4px}
+.report-photo-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:.72rem;text-align:center;padding:8px}
+/* Test scores table in report */
+.test-report-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.test-report-item{border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;gap:10px;align-items:flex-start}
+.test-report-img{width:60px;height:60px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--s2)}
+.test-report-score{font-size:1.4rem;font-weight:700;font-family:var(--font-m);line-height:1}
+.test-report-name{font-size:.8rem;font-weight:600;margin-bottom:3px}
+.test-report-obs{font-size:.72rem;color:var(--muted);line-height:1.4}
+.score-pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:.72rem;font-weight:600;font-family:var(--font-m);margin-bottom:4px}
+.sp0{background:#fee2e2;color:#dc2626}.sp1{background:#fed7aa;color:#c2410c}.sp2{background:#fef9c3;color:#92400e}.sp3{background:#dcfce7;color:#16a34a}.sp-{background:var(--s2);color:var(--muted)}
+/* Postural findings */
 .report-findings{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .finding-tag{padding:5px 12px;border-radius:99px;font-size:.78rem;font-weight:500}
 .finding-tag.leve{background:#fef9c3;color:#92400e;border:1px solid #fde68a}
 .finding-tag.moderado{background:#fed7aa;color:#c2410c;border:1px solid #fdba74}
 .finding-tag.severo{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
-.finding-tag.normal{background:#dcfce7;color:#166534;border:1px solid #86efac}
-.ai-text{font-size:.88rem;line-height:1.75;color:#374151;white-space:pre-wrap}
-.ai-text strong,.ai-text b{color:var(--text);font-weight:600}
+/* AI text */
+.ai-text{font-size:.88rem;line-height:1.75;color:#374151}
 .ai-section-title{font-family:var(--font-h);font-size:1rem;color:var(--primary);font-weight:600;margin:14px 0 6px}
+/* CTA */
 .cta-box{background:linear-gradient(135deg,rgba(27,191,176,.08),rgba(27,191,176,.15));border:1.5px solid var(--primary);border-radius:14px;padding:22px;margin:16px 0;text-align:center}
 .cta-box h3{font-family:var(--font-h);font-size:1.3rem;font-weight:600;margin-bottom:8px}
 .cta-box p{color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6}
@@ -155,114 +202,73 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
 .paquete h4{font-size:.9rem;font-weight:600;margin-bottom:4px}
 .paquete p{font-size:.76rem;color:var(--muted);line-height:1.4}
 
-/* ── STEP CONTROLS ── */
-.step-controls{display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:10px}
-
-/* ── BADGE COUNT ── */
-.count-badge{background:var(--primary);color:#fff;border-radius:99px;font-size:.68rem;padding:1px 7px;font-family:var(--font-m);font-weight:600}
-
-/* ── ALERTS ── */
-.alert{border-radius:8px;padding:12px 16px;font-size:.84rem;margin-bottom:14px}
-.alert-warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-.alert-ok{background:#f0fdf4;border:1px solid #86efac;color:#166534}
-
-@media(max-width:480px){
+@media(max-width:500px){
   #app{padding:12px 12px 80px}
   .level-grid{grid-template-columns:repeat(2,1fr)}
-  .photo-grid{grid-template-columns:repeat(3,1fr)}
-  .grid-2{grid-template-columns:1fr}
-  .paquetes-grid{grid-template-columns:1fr}
+  .grid-2,.bilateral-wrap,.test-report-grid,.paquetes-grid{grid-template-columns:1fr}
   .btn-row{flex-direction:column}
   .btn-row .btn{width:100%;justify-content:center}
   .app-header h1{font-size:1.1rem}
 }
-
 @media print{
-  #loginScreen,#app > .app-header,#app > .progress-wrap,.step-controls,.btn-row,.cta-box .btn,#step5 > *:not(#reportContent){display:none!important}
+  #loginScreen,#app>.app-header,#app>.progress-wrap,.step-controls,.btn-row,.cta-box .btn{display:none!important}
   #app{display:block!important;max-width:100%;padding:0}
-  #step5{display:block!important}
+  #step6{display:block!important}
   .card,.report-section{break-inside:avoid}
 }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════ LOGIN ═══════════════════════════════════ -->
+<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo"><img src="Logo/4.png" alt="Jessica Ocampo" onerror="this.style.display='none'"></div>
     <h1 class="login-title">Evaluación Express</h1>
-    <p class="login-sub">CrossFit · Análisis postural con IA · 5 min</p>
-    <input id="pwInput" class="login-input" type="password" placeholder="Contraseña de acceso"
-      onkeydown="if(event.key==='Enter')doLogin()">
+    <p class="login-sub">CrossFit · Análisis postural + Screens funcionales · IA</p>
+    <input id="pwInput" class="login-input" type="password" placeholder="Contraseña de acceso" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" id="loginBtn" onclick="doLogin()">Ingresar</button>
-    <p class="login-err" id="loginErr">Contraseña incorrecta. Intenta de nuevo.</p>
+    <p class="login-err" id="loginErr">Contraseña incorrecta.</p>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════ APP ═══════════════════════════════════ -->
+<!-- APP -->
 <div id="app">
 
   <div class="app-header">
     <img src="Logo/4.png" alt="Logo" onerror="this.style.display='none'">
     <div class="app-header-text">
-      <h1>Evaluación Express</h1>
+      <h1>Evaluación Express CrossFit</h1>
       <p>Jessica Ocampo · Fisioterapia Deportiva</p>
     </div>
     <div class="header-badge">⚡ 5 min</div>
   </div>
 
-  <!-- PROGRESS BAR -->
+  <!-- PROGRESS -->
   <div class="progress-wrap">
-    <div class="prog-step active" id="ps1" onclick="tryGoStep(1)">
-      <div class="prog-dot">1</div>
-      <div class="prog-label">Atleta</div>
-    </div>
-    <div class="prog-step" id="ps2" onclick="tryGoStep(2)">
-      <div class="prog-dot">2</div>
-      <div class="prog-label">Fotos</div>
-    </div>
-    <div class="prog-step" id="ps3" onclick="tryGoStep(3)">
-      <div class="prog-dot">3</div>
-      <div class="prog-label">Hallazgos</div>
-    </div>
-    <div class="prog-step" id="ps4" onclick="tryGoStep(4)">
-      <div class="prog-dot">4</div>
-      <div class="prog-label">IA</div>
-    </div>
-    <div class="prog-step" id="ps5" onclick="tryGoStep(5)">
-      <div class="prog-dot">5</div>
-      <div class="prog-label">Reporte</div>
-    </div>
+    <div class="prog-step active" id="ps1" onclick="tryGoStep(1)"><div class="prog-dot">1</div><div class="prog-label">Atleta</div></div>
+    <div class="prog-step" id="ps2" onclick="tryGoStep(2)"><div class="prog-dot">2</div><div class="prog-label">Postura</div></div>
+    <div class="prog-step" id="ps3" onclick="tryGoStep(3)"><div class="prog-dot">3</div><div class="prog-label">Screens</div></div>
+    <div class="prog-step" id="ps4" onclick="tryGoStep(4)"><div class="prog-dot">4</div><div class="prog-label">Hallazgos</div></div>
+    <div class="prog-step" id="ps5" onclick="tryGoStep(5)"><div class="prog-dot">5</div><div class="prog-label">IA</div></div>
+    <div class="prog-step" id="ps6" onclick="tryGoStep(6)"><div class="prog-dot">6</div><div class="prog-label">Reporte</div></div>
   </div>
 
-  <!-- ─────────────── STEP 1: DATOS ATLETA ─────────────── -->
+  <!-- ═══ STEP 1: DATOS ATLETA ═══ -->
   <div id="step1">
     <div class="card">
       <div class="card-title">👤 Datos del atleta</div>
       <div class="grid-2">
-        <div class="field">
-          <label>Nombre completo *</label>
-          <input id="pNombre" type="text" placeholder="Nombre Apellido" autocomplete="name">
-        </div>
-        <div class="field">
-          <label>Edad</label>
-          <input id="pEdad" type="number" placeholder="28" min="10" max="80">
-        </div>
+        <div class="field"><label>Nombre completo *</label><input id="pNombre" type="text" placeholder="Nombre Apellido" autocomplete="name"></div>
+        <div class="field"><label>Edad</label><input id="pEdad" type="number" placeholder="28" min="10" max="80"></div>
       </div>
       <div class="grid-2">
-        <div class="field">
-          <label>Teléfono (WhatsApp)</label>
-          <input id="pTelefono" type="tel" placeholder="3001234567">
-        </div>
-        <div class="field">
-          <label>Email (opcional)</label>
-          <input id="pEmail" type="email" placeholder="atleta@email.com">
-        </div>
+        <div class="field"><label>Teléfono (WhatsApp)</label><input id="pTelefono" type="tel" placeholder="3001234567"></div>
+        <div class="field"><label>Email (opcional)</label><input id="pEmail" type="email" placeholder="atleta@email.com"></div>
       </div>
       <div class="field" style="margin-bottom:6px">
         <label>Nivel en CrossFit</label>
-        <div class="level-grid" id="nivelGrid">
+        <div class="level-grid">
           <div class="level-btn sel" data-val="Principiante" onclick="selNivel(this)">🌱 Principiante</div>
           <div class="level-btn" data-val="Intermedio" onclick="selNivel(this)">💪 Intermedio</div>
           <div class="level-btn" data-val="Avanzado" onclick="selNivel(this)">🔥 Avanzado</div>
@@ -270,8 +276,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
         </div>
       </div>
       <div class="grid-2">
-        <div class="field">
-          <label>Años en CrossFit</label>
+        <div class="field"><label>Años en CrossFit</label>
           <select id="pAnios">
             <option value="Menos de 1 año">Menos de 1 año</option>
             <option value="1-2 años" selected>1-2 años</option>
@@ -279,8 +284,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
             <option value="Más de 5 años">Más de 5 años</option>
           </select>
         </div>
-        <div class="field">
-          <label>Objetivo principal</label>
+        <div class="field"><label>Objetivo principal</label>
           <select id="pObjetivo">
             <option value="Mejorar rendimiento">Mejorar rendimiento</option>
             <option value="Prevenir lesiones">Prevenir lesiones</option>
@@ -289,130 +293,319 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
           </select>
         </div>
       </div>
-      <div class="field">
-        <label>Molestias o lesiones actuales</label>
+      <div class="field"><label>Molestias o lesiones actuales</label>
         <textarea id="pMolestias" rows="2" placeholder="Ej: dolor lumbar al hacer deadlift, rodilla derecha molesta..."></textarea>
       </div>
     </div>
-    <div class="step-controls">
-      <span></span>
-      <button class="btn btn-primary" onclick="goStep1()">Siguiente — Fotos →</button>
-    </div>
+    <div class="step-controls"><span></span><button class="btn btn-primary" onclick="goStep1()">Siguiente — Fotos posturales →</button></div>
   </div>
 
-  <!-- ─────────────── STEP 2: FOTOGRAFÍAS ─────────────── -->
+  <!-- ═══ STEP 2: FOTOS POSTURALES ═══ -->
   <div id="step2" style="display:none">
     <div class="card">
-      <div class="card-title">📷 Fotografías de postura</div>
-      <div class="alert alert-warn">📱 Toma las fotos ahora o sube desde galería. No se almacenan en ningún servidor.</div>
+      <div class="card-title">📐 Fotos posturales</div>
+      <div class="alert alert-warn">📱 Las fotos NO se almacenan en ningún servidor. Solo aparecen en el reporte.</div>
       <div class="photo-grid">
-        <!-- Frontal -->
-        <div class="photo-box" id="box-frontal" onclick="document.getElementById('inp-frontal').click()">
-          <span class="photo-box-icon">📸</span>
-          <span class="photo-box-label">Vista frontal</span>
-          <img id="prev-frontal" src="" alt="" style="display:none">
-          <button class="photo-remove" onclick="removePhoto(event,'frontal')">✕</button>
+        <div>
+          <div class="photo-box" id="box-frontal" onclick="document.getElementById('inp-frontal').click()">
+            <span class="photo-box-icon">📸</span><span class="photo-box-label">Vista frontal</span>
+            <img id="prev-frontal" src="" alt="" style="display:none">
+            <button class="photo-remove" onclick="removePhoto(event,'frontal')">✕</button>
+          </div>
+          <input class="photo-input" type="file" id="inp-frontal" accept="image/*" capture="environment" onchange="handlePhoto('frontal',this)">
         </div>
-        <input class="photo-input" type="file" id="inp-frontal" accept="image/*" capture="environment" onchange="handlePhoto('frontal',this)">
-        <!-- Lateral -->
-        <div class="photo-box" id="box-lateral" onclick="document.getElementById('inp-lateral').click()">
-          <span class="photo-box-icon">📸</span>
-          <span class="photo-box-label">Vista lateral</span>
-          <img id="prev-lateral" src="" alt="" style="display:none">
-          <button class="photo-remove" onclick="removePhoto(event,'lateral')">✕</button>
+        <div>
+          <div class="photo-box" id="box-lateral" onclick="document.getElementById('inp-lateral').click()">
+            <span class="photo-box-icon">📸</span><span class="photo-box-label">Vista lateral</span>
+            <img id="prev-lateral" src="" alt="" style="display:none">
+            <button class="photo-remove" onclick="removePhoto(event,'lateral')">✕</button>
+          </div>
+          <input class="photo-input" type="file" id="inp-lateral" accept="image/*" capture="environment" onchange="handlePhoto('lateral',this)">
         </div>
-        <input class="photo-input" type="file" id="inp-lateral" accept="image/*" capture="environment" onchange="handlePhoto('lateral',this)">
-        <!-- Posterior -->
-        <div class="photo-box" id="box-posterior" onclick="document.getElementById('inp-posterior').click()">
-          <span class="photo-box-icon">📸</span>
-          <span class="photo-box-label">Vista posterior</span>
-          <img id="prev-posterior" src="" alt="" style="display:none">
-          <button class="photo-remove" onclick="removePhoto(event,'posterior')">✕</button>
+        <div>
+          <div class="photo-box" id="box-posterior" onclick="document.getElementById('inp-posterior').click()">
+            <span class="photo-box-icon">📸</span><span class="photo-box-label">Vista posterior</span>
+            <img id="prev-posterior" src="" alt="" style="display:none">
+            <button class="photo-remove" onclick="removePhoto(event,'posterior')">✕</button>
+          </div>
+          <input class="photo-input" type="file" id="inp-posterior" accept="image/*" capture="environment" onchange="handlePhoto('posterior',this)">
         </div>
-        <input class="photo-input" type="file" id="inp-posterior" accept="image/*" capture="environment" onchange="handlePhoto('posterior',this)">
       </div>
-      <p class="photo-note">💡 Atleta en ropa ajustada, de pie, vista de frente / lado derecho / espalda</p>
+      <p class="photo-note">💡 Atleta en ropa ajustada, de pie relajado — frente · lado derecho · espalda</p>
     </div>
     <div class="step-controls">
       <button class="btn btn-ghost" onclick="goStep(1)">← Atrás</button>
-      <button class="btn btn-primary" onclick="goStep(3)">Siguiente — Hallazgos →</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Siguiente — Screens →</button>
     </div>
   </div>
 
-  <!-- ─────────────── STEP 3: HALLAZGOS ─────────────── -->
+  <!-- ═══ STEP 3: SCREENS FUNCIONALES ═══ -->
   <div id="step3" style="display:none">
     <div class="card">
-      <div class="card-title">🔍 Hallazgos — <span id="findingsCount" class="count-badge">0</span> seleccionados</div>
-      <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px">Toca los hallazgos que observas. Puedes seleccionar varios.</p>
+      <div class="card-title">🏋️ 5 Screens Funcionales</div>
+      <div class="alert alert-info">📸 Sube una foto por prueba y asigna el score. <strong>0</strong> = dolor · <strong>1</strong> = no puede · <strong>2</strong> = compensación · <strong>3</strong> = correcto</div>
 
-      <!-- ZONA SUPERIOR -->
-      <div class="zone-title">🦴 Zona Superior — Hombros, Escápulas & Cuello</div>
-      <div class="chip-grid" id="zone-superior">
-        <div class="chip" data-id="prot-bil" onclick="toggleChip(this)">Protracción escapular bilateral</div>
-        <div class="chip" data-id="prot-der" onclick="toggleChip(this)">Protracción escapular D</div>
-        <div class="chip" data-id="prot-izq" onclick="toggleChip(this)">Protracción escapular I</div>
-        <div class="chip" data-id="asim-esc" onclick="toggleChip(this)">Asimetría escapular</div>
-        <div class="chip" data-id="lim-rot-ext-d" onclick="toggleChip(this)">Límit. rot. externa hombro D</div>
-        <div class="chip" data-id="lim-rot-ext-i" onclick="toggleChip(this)">Límit. rot. externa hombro I</div>
-        <div class="chip" data-id="cifosis" onclick="toggleChip(this)">Cifosis dorsal aumentada</div>
-        <div class="chip" data-id="head-forward" onclick="toggleChip(this)">Cabeza adelantada</div>
-        <div class="chip" data-id="hiperext-cerv" onclick="toggleChip(this)">Hiperextensión cervical</div>
-        <div class="chip" data-id="elev-esc-d" onclick="toggleChip(this)">Elevación escapular D</div>
-        <div class="chip" data-id="elev-esc-i" onclick="toggleChip(this)">Elevación escapular I</div>
+      <!-- 1. DEEP SQUAT -->
+      <div class="test-ex-card" id="tc-ds">
+        <div class="test-ex-hd" onclick="toggleTest('ds')">
+          <div class="test-ex-name">🏋️ Deep Squat <span class="test-tag" id="tag-ds">sin score</span></div>
+          <span id="arr-ds" style="color:var(--muted);font-size:.8rem">▼</span>
+        </div>
+        <div class="test-ex-bd" id="bd-ds">
+          <div class="test-score-row">
+            <div>
+              <div class="bilateral-label">Score</div>
+              <div class="score-btns" id="sc-ds">
+                <div class="score-btn s0" onclick="setScore('ds',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('ds',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('ds',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('ds',3,this)">3</div>
+              </div>
+              <div class="score-legend">1: rodillas adentro / talones<br>2: compensación visible<br>3: patrón correcto</div>
+            </div>
+            <div>
+              <div class="bilateral-label">Foto de referencia</div>
+              <div class="test-mini-photo" id="mph-ds" onclick="document.getElementById('minp-ds').click()">
+                <span style="font-size:1.3rem">📸</span><span style="font-size:.68rem;color:var(--muted)">Subir foto</span>
+                <img id="mimg-ds" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'ds')">✕</button>
+              </div>
+              <input type="file" id="minp-ds" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('ds',this)">
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Observaciones</label>
+            <textarea id="obs-ds" rows="2" placeholder="Valgo bilateral, talones se levantan, inclinación tronco..."></textarea>
+          </div>
+        </div>
       </div>
 
-      <!-- CORE & PELVIS -->
+      <!-- 2. OVERHEAD REACH -->
+      <div class="test-ex-card" id="tc-oh">
+        <div class="test-ex-hd" onclick="toggleTest('oh')">
+          <div class="test-ex-name">🙌 Overhead Reach (Wall Test) <span class="test-tag" id="tag-oh">sin score</span></div>
+          <span id="arr-oh" style="color:var(--muted);font-size:.8rem">▼</span>
+        </div>
+        <div class="test-ex-bd" id="bd-oh">
+          <div class="test-score-row">
+            <div>
+              <div class="bilateral-label">Score</div>
+              <div class="score-btns" id="sc-oh">
+                <div class="score-btn s0" onclick="setScore('oh',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('oh',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('oh',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('oh',3,this)">3</div>
+              </div>
+              <div class="score-legend">1: no puede llegar a pared<br>2: lumbar compensa / escápulas<br>3: contacto sin compensación</div>
+            </div>
+            <div>
+              <div class="bilateral-label">Foto</div>
+              <div class="test-mini-photo" id="mph-oh" onclick="document.getElementById('minp-oh').click()">
+                <span style="font-size:1.3rem">📸</span><span style="font-size:.68rem;color:var(--muted)">Subir foto</span>
+                <img id="mimg-oh" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'oh')">✕</button>
+              </div>
+              <input type="file" id="minp-oh" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('oh',this)">
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Observaciones</label>
+            <textarea id="obs-oh" rows="2" placeholder="Compensación lumbar, codos no llegan, escápulas aladas..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. SINGLE LEG SQUAT (BILATERAL) -->
+      <div class="test-ex-card" id="tc-sls">
+        <div class="test-ex-hd" onclick="toggleTest('sls')">
+          <div class="test-ex-name">🦵 Single Leg Squat <span class="test-tag" id="tag-sls">sin score</span></div>
+          <span id="arr-sls" style="color:var(--muted);font-size:.8rem">▼</span>
+        </div>
+        <div class="test-ex-bd" id="bd-sls">
+          <div class="score-legend" style="margin-bottom:10px">0=dolor · 1=no puede · 2=valgo/tronco cae · 3=estable y alineado</div>
+          <div class="bilateral-wrap">
+            <div>
+              <div class="bilateral-label">Derecho (D)</div>
+              <div class="score-btns" id="sc-slsd">
+                <div class="score-btn s0" onclick="setScore('slsd',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('slsd',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('slsd',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('slsd',3,this)">3</div>
+              </div>
+              <div class="test-mini-photo" id="mph-slsd" onclick="document.getElementById('minp-slsd').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto D</span>
+                <img id="mimg-slsd" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'slsd')">✕</button>
+              </div>
+              <input type="file" id="minp-slsd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('slsd',this)">
+            </div>
+            <div>
+              <div class="bilateral-label">Izquierdo (I)</div>
+              <div class="score-btns" id="sc-slsi">
+                <div class="score-btn s0" onclick="setScore('slsi',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('slsi',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('slsi',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('slsi',3,this)">3</div>
+              </div>
+              <div class="test-mini-photo" id="mph-slsi" onclick="document.getElementById('minp-slsi').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto I</span>
+                <img id="mimg-slsi" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'slsi')">✕</button>
+              </div>
+              <input type="file" id="minp-slsi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('slsi',this)">
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Observaciones</label>
+            <textarea id="obs-sls" rows="2" placeholder="Valgo D mayor que I, tronco cae hacia izq, inestabilidad tobillo..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. SHOULDER CLEARING + MOBILITY (BILATERAL) -->
+      <div class="test-ex-card" id="tc-sh">
+        <div class="test-ex-hd" onclick="toggleTest('sh')">
+          <div class="test-ex-name">💪 Shoulder Clearing + Mobility <span class="test-tag" id="tag-sh">sin score</span></div>
+          <span id="arr-sh" style="color:var(--muted);font-size:.8rem">▼</span>
+        </div>
+        <div class="test-ex-bd" id="bd-sh">
+          <div class="score-legend" style="margin-bottom:10px">0=dolor · 1=puños >1 mano apart · 2=1 mano · 3=puños juntos</div>
+          <div class="bilateral-wrap">
+            <div>
+              <div class="bilateral-label">Mano D arriba</div>
+              <div class="score-btns" id="sc-shd">
+                <div class="score-btn s0" onclick="setScore('shd',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('shd',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('shd',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('shd',3,this)">3</div>
+              </div>
+              <div class="test-mini-photo" id="mph-shd" onclick="document.getElementById('minp-shd').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto D</span>
+                <img id="mimg-shd" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'shd')">✕</button>
+              </div>
+              <input type="file" id="minp-shd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('shd',this)">
+            </div>
+            <div>
+              <div class="bilateral-label">Mano I arriba</div>
+              <div class="score-btns" id="sc-shi">
+                <div class="score-btn s0" onclick="setScore('shi',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('shi',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('shi',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('shi',3,this)">3</div>
+              </div>
+              <div class="test-mini-photo" id="mph-shi" onclick="document.getElementById('minp-shi').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto I</span>
+                <img id="mimg-shi" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'shi')">✕</button>
+              </div>
+              <input type="file" id="minp-shi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('shi',this)">
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Observaciones</label>
+            <textarea id="obs-sh" rows="2" placeholder="Asimetría D vs I, dolor en impingement, limitación rotación interna..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. BALANCE MONOPODAL (BILATERAL) -->
+      <div class="test-ex-card" id="tc-bm">
+        <div class="test-ex-hd" onclick="toggleTest('bm')">
+          <div class="test-ex-name">⚖️ Balance Monopodal (ojos cerrados, 10s) <span class="test-tag" id="tag-bm">sin tiempo</span></div>
+          <span id="arr-bm" style="color:var(--muted);font-size:.8rem">▼</span>
+        </div>
+        <div class="test-ex-bd" id="bd-bm">
+          <div class="score-legend" style="margin-bottom:10px">Registra los segundos que mantiene el equilibrio (máx 10s). Normal ≥ 8s.</div>
+          <div class="bilateral-wrap">
+            <div>
+              <div class="bilateral-label">Pierna D (seg)</div>
+              <input type="number" class="time-input" id="time-bmd" placeholder="10" min="0" max="10" oninput="updateBmTag()">
+              <div class="test-mini-photo" id="mph-bmd" onclick="document.getElementById('minp-bmd').click()" style="width:90px;margin-top:8px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto D</span>
+                <img id="mimg-bmd" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'bmd')">✕</button>
+              </div>
+              <input type="file" id="minp-bmd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('bmd',this)">
+            </div>
+            <div>
+              <div class="bilateral-label">Pierna I (seg)</div>
+              <input type="number" class="time-input" id="time-bmi" placeholder="10" min="0" max="10" oninput="updateBmTag()">
+              <div class="test-mini-photo" id="mph-bmi" onclick="document.getElementById('minp-bmi').click()" style="width:90px;margin-top:8px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto I</span>
+                <img id="mimg-bmi" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'bmi')">✕</button>
+              </div>
+              <input type="file" id="minp-bmi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('bmi',this)">
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Observaciones</label>
+            <textarea id="obs-bm" rows="2" placeholder="Oscilaciones, estrategia de tobillo vs cadera, asimetría D vs I..."></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card -->
+    <div class="step-controls">
+      <button class="btn btn-ghost" onclick="goStep(2)">← Atrás</button>
+      <button class="btn btn-primary" onclick="goStep(4)">Siguiente — Hallazgos posturales →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 4: HALLAZGOS POSTURALES ═══ -->
+  <div id="step4" style="display:none">
+    <div class="card">
+      <div class="card-title">📐 Hallazgos posturales — <span id="findingsCount" class="count-badge">0</span></div>
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px">Toca los hallazgos que observas en las fotos y en la evaluación estática.</p>
+
+      <div class="zone-title" style="margin-top:0">🦴 Zona Superior</div>
+      <div class="chip-grid">
+        <div class="chip" onclick="toggleChip(this)">Protracción escapular bilateral</div>
+        <div class="chip" onclick="toggleChip(this)">Protracción escapular D</div>
+        <div class="chip" onclick="toggleChip(this)">Protracción escapular I</div>
+        <div class="chip" onclick="toggleChip(this)">Asimetría escapular</div>
+        <div class="chip" onclick="toggleChip(this)">Límit. rot. externa hombro D</div>
+        <div class="chip" onclick="toggleChip(this)">Límit. rot. externa hombro I</div>
+        <div class="chip" onclick="toggleChip(this)">Cifosis dorsal aumentada</div>
+        <div class="chip" onclick="toggleChip(this)">Cabeza adelantada</div>
+        <div class="chip" onclick="toggleChip(this)">Hiperextensión cervical</div>
+        <div class="chip" onclick="toggleChip(this)">Elevación escapular D</div>
+        <div class="chip" onclick="toggleChip(this)">Elevación escapular I</div>
+      </div>
+
       <div class="zone-title">🔵 Core, Columna & Pelvis</div>
-      <div class="chip-grid" id="zone-core">
-        <div class="chip" data-id="antev-pelv" onclick="toggleChip(this)">Anteversión pélvica</div>
-        <div class="chip" data-id="retrov-pelv" onclick="toggleChip(this)">Retroversión pélvica</div>
-        <div class="chip" data-id="incl-pelv-d" onclick="toggleChip(this)">Inclinación pélvica lateral D</div>
-        <div class="chip" data-id="incl-pelv-i" onclick="toggleChip(this)">Inclinación pélvica lateral I</div>
-        <div class="chip" data-id="hiperlord" onclick="toggleChip(this)">Hiperlordosis lumbar</div>
-        <div class="chip" data-id="rectif-lumb" onclick="toggleChip(this)">Rectificación lumbar</div>
-        <div class="chip" data-id="escol-func" onclick="toggleChip(this)">Escoliosis funcional</div>
-        <div class="chip" data-id="asim-tronco" onclick="toggleChip(this)">Asimetría lateral de tronco</div>
-        <div class="chip" data-id="debil-core" onclick="toggleChip(this)">Debilidad de core visible</div>
+      <div class="chip-grid">
+        <div class="chip" onclick="toggleChip(this)">Anteversión pélvica</div>
+        <div class="chip" onclick="toggleChip(this)">Retroversión pélvica</div>
+        <div class="chip" onclick="toggleChip(this)">Inclinación pélvica lateral D</div>
+        <div class="chip" onclick="toggleChip(this)">Inclinación pélvica lateral I</div>
+        <div class="chip" onclick="toggleChip(this)">Hiperlordosis lumbar</div>
+        <div class="chip" onclick="toggleChip(this)">Rectificación lumbar</div>
+        <div class="chip" onclick="toggleChip(this)">Escoliosis funcional</div>
+        <div class="chip" onclick="toggleChip(this)">Asimetría lateral de tronco</div>
+        <div class="chip" onclick="toggleChip(this)">Debilidad de core visible</div>
       </div>
 
-      <!-- ZONA INFERIOR -->
-      <div class="zone-title">🦵 Zona Inferior — Rodillas, Pies & Tobillos</div>
-      <div class="chip-grid" id="zone-inferior">
-        <div class="chip" data-id="valgo-d" onclick="toggleChip(this)">Valgo rodilla D</div>
-        <div class="chip" data-id="valgo-i" onclick="toggleChip(this)">Valgo rodilla I</div>
-        <div class="chip" data-id="valgo-bil" onclick="toggleChip(this)">Valgo bilateral</div>
-        <div class="chip" data-id="varo" onclick="toggleChip(this)">Varo de rodilla</div>
-        <div class="chip" data-id="hiperext-rod" onclick="toggleChip(this)">Hiperextensión rodilla</div>
-        <div class="chip" data-id="pron-d" onclick="toggleChip(this)">Pronación pie D</div>
-        <div class="chip" data-id="pron-i" onclick="toggleChip(this)">Pronación pie I</div>
-        <div class="chip" data-id="supin" onclick="toggleChip(this)">Supinación pie</div>
-        <div class="chip" data-id="lim-dors-d" onclick="toggleChip(this)">Límit. flex. dorsal tobillo D</div>
-        <div class="chip" data-id="lim-dors-i" onclick="toggleChip(this)">Límit. flex. dorsal tobillo I</div>
-        <div class="chip" data-id="rot-ext-cadera" onclick="toggleChip(this)">Rotación externa excesiva cadera</div>
+      <div class="zone-title">🦵 Zona Inferior</div>
+      <div class="chip-grid">
+        <div class="chip" onclick="toggleChip(this)">Valgo rodilla D</div>
+        <div class="chip" onclick="toggleChip(this)">Valgo rodilla I</div>
+        <div class="chip" onclick="toggleChip(this)">Valgo bilateral</div>
+        <div class="chip" onclick="toggleChip(this)">Varo de rodilla</div>
+        <div class="chip" onclick="toggleChip(this)">Hiperextensión rodilla</div>
+        <div class="chip" onclick="toggleChip(this)">Pronación pie D</div>
+        <div class="chip" onclick="toggleChip(this)">Pronación pie I</div>
+        <div class="chip" onclick="toggleChip(this)">Supinación pie</div>
+        <div class="chip" onclick="toggleChip(this)">Límit. flex. dorsal tobillo D</div>
+        <div class="chip" onclick="toggleChip(this)">Límit. flex. dorsal tobillo I</div>
+        <div class="chip" onclick="toggleChip(this)">Rot. externa excesiva cadera</div>
       </div>
 
-      <!-- PATRONES FUNCIONALES -->
-      <div class="zone-title">⚡ Patrones Funcionales CrossFit</div>
-      <div class="chip-grid" id="zone-func">
-        <div class="chip" data-id="valgo-squat" onclick="toggleChip(this)">Rodillas en valgo — squat</div>
-        <div class="chip" data-id="talones-squat" onclick="toggleChip(this)">Talones se levantan — squat</div>
-        <div class="chip" data-id="comp-lumb-oh" onclick="toggleChip(this)">Compensación lumbar overhead</div>
-        <div class="chip" data-id="asim-press" onclick="toggleChip(this)">Asimetría escapular en press</div>
-        <div class="chip" data-id="redond-lumb" onclick="toggleChip(this)">Redondeo lumbar — peso muerto</div>
-        <div class="chip" data-id="hiperlord-dl" onclick="toggleChip(this)">Hiperlordosis — peso muerto</div>
-        <div class="chip" data-id="valgo-lunge" onclick="toggleChip(this)">Valgo en lunges / estocadas</div>
-        <div class="chip" data-id="inest-unipodal" onclick="toggleChip(this)">Inestabilidad unipodal</div>
-        <div class="chip" data-id="asim-hs" onclick="toggleChip(this)">Asimetría en handstand / push</div>
-      </div>
+      <div class="zone-title">📝 Observaciones posturales</div>
+      <div class="field"><textarea id="pObservaciones" rows="3" placeholder="Hallazgos adicionales en la evaluación estática..."></textarea></div>
 
-      <!-- OBSERVACIONES ADICIONALES -->
-      <div class="zone-title">📝 Observaciones adicionales</div>
-      <div class="field">
-        <textarea id="pObservaciones" rows="3" placeholder="Anota cualquier hallazgo extra, comentario del atleta o contexto relevante..."></textarea>
-      </div>
-
-      <!-- SEVERIDAD GLOBAL -->
-      <div class="zone-title">📊 Severidad global estimada</div>
+      <div class="zone-title">📊 Severidad global</div>
       <div class="sev-row">
         <span class="sev-label">Nivel de compromiso:</span>
         <div class="sev-btns">
@@ -423,29 +616,25 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
       </div>
     </div>
     <div class="step-controls">
-      <button class="btn btn-ghost" onclick="goStep(2)">← Atrás</button>
+      <button class="btn btn-ghost" onclick="goStep(3)">← Atrás</button>
       <button class="btn btn-primary" onclick="startGenerate()">✨ Generar reporte con IA →</button>
     </div>
   </div>
 
-  <!-- ─────────────── STEP 4: GENERANDO ─────────────── -->
-  <div id="step4" style="display:none">
-    <div class="card" style="padding:50px 20px">
-      <div class="loader-ring"></div>
-      <div class="loader-msg">Analizando con IA...</div>
-      <div class="loader-sub" id="loaderMsg">Procesando hallazgos biomecánicos</div>
-      <div style="margin-top:24px;background:var(--s2);border-radius:10px;padding:14px;font-size:.8rem;color:var(--muted);text-align:center;line-height:1.6">
-        La IA está generando un reporte personalizado<br>basado en los hallazgos que identificaste.<br><strong style="color:var(--text)">Esto toma ~10 segundos.</strong>
-      </div>
+  <!-- ═══ STEP 5: GENERANDO ═══ -->
+  <div id="step5" style="display:none;text-align:center;padding:40px 20px">
+    <div class="loader-ring"></div>
+    <div class="loader-msg">Analizando con IA...</div>
+    <div class="loader-sub" id="loaderMsg">Procesando hallazgos biomecánicos</div>
+    <div style="margin-top:24px;background:var(--s2);border-radius:10px;padding:14px;font-size:.8rem;color:var(--muted);text-align:center;line-height:1.6">
+      La IA genera un reporte completo con los screens funcionales<br>y el análisis postural. <strong style="color:var(--text)">~15 segundos.</strong>
     </div>
   </div>
 
-  <!-- ─────────────── STEP 5: REPORTE ─────────────── -->
-  <div id="step5" style="display:none">
-    <div id="reportContent">
-      <!-- Llenado dinámicamente por JS -->
-    </div>
-    <div class="btn-row" id="shareButtons">
+  <!-- ═══ STEP 6: REPORTE ═══ -->
+  <div id="step6" style="display:none">
+    <div id="reportContent"></div>
+    <div class="btn-row">
       <button class="btn btn-wa" onclick="shareWhatsApp()">💬 Enviar por WhatsApp</button>
       <button class="btn btn-email" onclick="shareEmail()">📧 Enviar por Email</button>
       <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
@@ -462,17 +651,27 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_r7Kr-9Uvu0qI
 let TOKEN = sessionStorage.getItem('adminToken') || '';
 let currentStep = 1;
 let nivelSel = 'Principiante';
-let sevSel   = '';
-let photos   = { frontal: null, lateral: null, posterior: null };
+let sevSel = '';
+let photos = { frontal: null, lateral: null, posterior: null };
+let testPhotos = {};   // keyed by test id (ds, oh, slsd, slsi, shd, shi, bmd, bmi)
+let testScores = {};   // keyed by test id
 let findings = [];
 let aiReport = '';
 let patientData = {};
 
-// ── AUTO-LOGIN si ya hay token ──────────────────────────────────────
-if (TOKEN) { showApp(); }
+// Definición de los 5 tests
+const TESTS = [
+  { id:'ds',   name:'Deep Squat',                   bilateral:false },
+  { id:'oh',   name:'Overhead Reach (Wall Test)',    bilateral:false },
+  { id:'sls',  name:'Single Leg Squat',              bilateral:true, ids:['slsd','slsi'], labels:['D','I'] },
+  { id:'sh',   name:'Shoulder Clearing + Mobility',  bilateral:true, ids:['shd','shi'],   labels:['D arr.','I arr.'] },
+  { id:'bm',   name:'Balance Monopodal 10s',         bilateral:true, ids:['bmd','bmi'],   labels:['D','I'], time:true }
+];
+
+if (TOKEN) showApp();
 
 async function doLogin() {
-  const pw  = document.getElementById('pwInput').value.trim();
+  const pw = document.getElementById('pwInput').value.trim();
   const btn = document.getElementById('loginBtn');
   const err = document.getElementById('loginErr');
   if (!pw) return;
@@ -492,7 +691,7 @@ function showApp() {
   document.getElementById('app').style.display = 'block';
 }
 
-// ── STEP NAVIGATION ─────────────────────────────────────────────────
+// ── NAVEGACIÓN ──────────────────────────────────────────────────────
 function goStep(n) {
   document.getElementById('step' + currentStep).style.display = 'none';
   document.getElementById('ps' + currentStep).classList.remove('active');
@@ -503,12 +702,8 @@ function goStep(n) {
   document.getElementById('ps' + n).classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
 }
+function tryGoStep(n) { if (n < currentStep) goStep(n); }
 
-function tryGoStep(n) {
-  if (n < currentStep) goStep(n);
-}
-
-// ── STEP 1 VALIDATION ───────────────────────────────────────────────
 function goStep1() {
   const nombre = document.getElementById('pNombre').value.trim();
   if (!nombre) { alert('Por favor ingresa el nombre del atleta'); document.getElementById('pNombre').focus(); return; }
@@ -525,152 +720,229 @@ function goStep1() {
   goStep(2);
 }
 
-// ── LEVEL SELECTOR ──────────────────────────────────────────────────
 function selNivel(el) {
   document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('sel'));
-  el.classList.add('sel');
-  nivelSel = el.dataset.val;
+  el.classList.add('sel'); nivelSel = el.dataset.val;
 }
 
-// ── PHOTOS ──────────────────────────────────────────────────────────
+// ── FOTOS POSTURALES ────────────────────────────────────────────────
 function handlePhoto(type, input) {
   const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
     photos[type] = e.target.result;
-    document.getElementById('prev-' + type).src = e.target.result;
-    document.getElementById('prev-' + type).style.display = 'block';
-    document.getElementById('box-' + type).classList.add('has-photo');
-    // hide icon and label text when photo loaded
+    const prev = document.getElementById('prev-' + type);
+    prev.src = e.target.result; prev.style.display = 'block';
     const box = document.getElementById('box-' + type);
+    box.classList.add('has-photo');
     box.querySelectorAll('.photo-box-icon,.photo-box-label').forEach(el => el.style.display = 'none');
   };
   reader.readAsDataURL(file);
 }
-
 function removePhoto(e, type) {
   e.stopPropagation();
   photos[type] = null;
-  document.getElementById('prev-' + type).src = '';
-  document.getElementById('prev-' + type).style.display = 'none';
-  document.getElementById('box-' + type).classList.remove('has-photo');
-  document.getElementById('inp-' + type).value = '';
+  const prev = document.getElementById('prev-' + type);
+  prev.src = ''; prev.style.display = 'none';
   const box = document.getElementById('box-' + type);
+  box.classList.remove('has-photo');
+  document.getElementById('inp-' + type).value = '';
   box.querySelectorAll('.photo-box-icon,.photo-box-label').forEach(el => el.style.display = '');
 }
 
-// ── FINDINGS CHIPS ───────────────────────────────────────────────────
-function toggleChip(el) {
-  el.classList.toggle('sel');
-  updateFindingsCount();
+// ── FOTOS DE TESTS ──────────────────────────────────────────────────
+function handleTestPhoto(id, input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    testPhotos[id] = e.target.result;
+    const img = document.getElementById('mimg-' + id);
+    img.src = e.target.result; img.style.display = 'block';
+    const box = document.getElementById('mph-' + id);
+    box.classList.add('has-photo');
+    box.querySelectorAll('span').forEach(el => el.style.display = 'none');
+  };
+  reader.readAsDataURL(file);
+}
+function removeTestPhoto(e, id) {
+  e.stopPropagation();
+  testPhotos[id] = null;
+  const img = document.getElementById('mimg-' + id);
+  img.src = ''; img.style.display = 'none';
+  const box = document.getElementById('mph-' + id);
+  box.classList.remove('has-photo');
+  document.getElementById('minp-' + id).value = '';
+  box.querySelectorAll('span').forEach(el => el.style.display = '');
 }
 
-function updateFindingsCount() {
+// ── TEST ACCORDION ──────────────────────────────────────────────────
+function toggleTest(id) {
+  const bd = document.getElementById('bd-' + id);
+  const arr = document.getElementById('arr-' + id);
+  const isOpen = bd.classList.contains('open');
+  bd.classList.toggle('open');
+  arr.textContent = isOpen ? '▼' : '▲';
+}
+
+// ── SCORE BUTTONS ────────────────────────────────────────────────────
+function setScore(id, val, el) {
+  const container = document.getElementById('sc-' + id);
+  container.querySelectorAll('.score-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  testScores[id] = val;
+  // Actualizar tag del test padre
+  const tagEl = document.getElementById('tag-' + id.replace(/[di]$/, '').replace('sl','sls'));
+  if (tagEl) updateTestTag(tagEl, id);
+  // Para tests no bilaterales, actualizar directamente
+  const directTag = document.getElementById('tag-' + id);
+  if (directTag) { directTag.textContent = 'Score ' + val; directTag.className = 'test-tag s' + val; }
+}
+
+function updateTestTag(tagEl, id) {
+  // Para tests bilaterales (sls, sh)
+}
+
+function updateBmTag() {
+  const d = document.getElementById('time-bmd').value;
+  const i = document.getElementById('time-bmi').value;
+  const tag = document.getElementById('tag-bm');
+  if (d || i) { tag.textContent = (d||'—') + 's D / ' + (i||'—') + 's I'; tag.className = 'test-tag'; }
+}
+
+// ── CHIPS (HALLAZGOS) ────────────────────────────────────────────────
+function toggleChip(el) {
+  el.classList.toggle('sel');
   const count = document.querySelectorAll('.chip.sel').length;
   document.getElementById('findingsCount').textContent = count;
 }
 
-function getSelectedFindings() {
-  return Array.from(document.querySelectorAll('.chip.sel')).map(el => el.textContent.replace('✓ ','').trim());
-}
-
-// ── SEVERITY ────────────────────────────────────────────────────────
+// ── SEVERIDAD ────────────────────────────────────────────────────────
 function selSev(val) {
-  ['leve','mod','sev'].forEach(k => {
-    const btn = document.getElementById('sev-' + k);
-    btn.className = 'sev-btn';
-    if(k === val || (val === 'moderado' && k === 'mod') || (val === 'severo' && k === 'sev')) {
-      btn.classList.add('sel-' + (val === 'moderado' ? 'mod' : val === 'severo' ? 'sev' : 'leve'));
-    }
-  });
+  document.getElementById('sev-leve').className = 'sev-btn' + (val==='leve'?' sel-leve':'');
+  document.getElementById('sev-mod').className  = 'sev-btn' + (val==='moderado'?' sel-mod':'');
+  document.getElementById('sev-sev').className  = 'sev-btn' + (val==='severo'?' sel-sev':'');
   sevSel = val;
 }
 
-// ── GENERATE REPORT ──────────────────────────────────────────────────
+// ── GENERAR REPORTE ──────────────────────────────────────────────────
 async function startGenerate() {
-  findings = getSelectedFindings();
+  findings = Array.from(document.querySelectorAll('.chip.sel')).map(el => el.textContent.replace('✓ ','').trim());
   patientData.observaciones = document.getElementById('pObservaciones').value.trim();
   patientData.severidad     = sevSel || 'No especificada';
 
-  goStep(4);
-  // Animate loader messages
-  const msgs = ['Analizando biomecánica…','Evaluando patrones funcionales…','Identificando riesgos…','Generando plan de acción…','Redactando reporte profesional…'];
+  // Recoger datos de los 5 tests
+  const screens = {
+    deepSquat:      { score: testScores['ds']   ?? null, obs: document.getElementById('obs-ds').value.trim() },
+    overheadReach:  { score: testScores['oh']   ?? null, obs: document.getElementById('obs-oh').value.trim() },
+    singleLegSquat: { scoreD: testScores['slsd'] ?? null, scoreI: testScores['slsi'] ?? null, obs: document.getElementById('obs-sls').value.trim() },
+    shoulderMob:    { scoreD: testScores['shd']  ?? null, scoreI: testScores['shi']  ?? null, obs: document.getElementById('obs-sh').value.trim() },
+    balanceMono:    { timeD: document.getElementById('time-bmd').value || null, timeI: document.getElementById('time-bmi').value || null, obs: document.getElementById('obs-bm').value.trim() }
+  };
+
+  goStep(5);
+  const msgs = ['Analizando screens funcionales…','Evaluando biomecánica postural…','Identificando riesgos CrossFit…','Generando plan de acción…','Redactando reporte profesional…'];
   let mi = 0;
   const msgEl = document.getElementById('loaderMsg');
-  const interval = setInterval(() => { msgEl.textContent = msgs[mi++ % msgs.length]; }, 2000);
+  const interval = setInterval(() => { msgEl.textContent = msgs[mi++ % msgs.length]; }, 2500);
 
   try {
-    const evalData = { ...patientData, hallazgos: findings };
+    const evalData = { ...patientData, hallazgos: findings, screens };
     const r = await fetch(`${APPS_SCRIPT_URL}?action=generateEval&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(evalData))}`);
     const d = await r.json();
     clearInterval(interval);
-    if (d.ok) { aiReport = d.report; buildReport(); goStep(5); }
-    else { alert('Error al generar el reporte: ' + (d.error || 'intenta de nuevo')); goStep(3); }
+    if (d.ok) { aiReport = d.report; buildReport(screens); goStep(6); }
+    else { alert('Error al generar el reporte: ' + (d.error || 'intenta de nuevo')); goStep(4); }
   } catch(e) {
     clearInterval(interval);
     alert('Error de conexión. Verifica tu internet e intenta de nuevo.');
-    goStep(3);
+    goStep(4);
   }
 }
 
-// ── BUILD REPORT HTML ────────────────────────────────────────────────
-function buildReport() {
+// ── CONSTRUIR REPORTE ────────────────────────────────────────────────
+function buildReport(screens) {
   const p = patientData;
-  const photosSrc = [photos.frontal, photos.lateral, photos.posterior];
-  const photoLabels = ['Vista frontal','Vista lateral','Vista posterior'];
 
-  const photosHtml = photoLabels.map((label, i) => `
-    <div class="report-photo">
-      ${photosSrc[i]
-        ? `<img src="${photosSrc[i]}" alt="${label}">`
-        : `<div class="report-photo-empty">Sin foto<br>${label}</div>`}
+  // FOTOS POSTURALES
+  const postPhotoHtml = ['frontal','lateral','posterior'].map((t,i) => `
+    <div>
+      <div class="report-photo">
+        ${photos[t] ? `<img src="${photos[t]}" alt="${t}">` : `<div class="report-photo-empty">Sin foto<br>${['Frontal','Lateral','Posterior'][i]}</div>`}
+      </div>
+      <div class="report-photo-label">${['Frontal','Lateral','Posterior'][i]}</div>
     </div>`).join('');
 
-  const findingsHtml = findings.length
-    ? findings.map(f => `<span class="finding-tag ${p.severidad || 'moderado'}">${f}</span>`).join('')
-    : '<span style="color:var(--muted);font-size:.85rem">Sin hallazgos registrados</span>';
+  // SCREENS TABLE
+  const scoreColor = s => s===null?'sp-':`sp${s}`;
+  const scoreLabel = s => s===null?'—':`${s}/3`;
+  const timeSuffix = t => t ? t + 's' : '—';
 
-  // Parse AI report sections
-  const reportHtml = formatAiReport(aiReport);
+  const screensHtml = `
+    <div class="test-report-grid">
+      ${buildTestCard('Deep Squat', screens.deepSquat.score, null, screens.deepSquat.obs, testPhotos['ds'], false)}
+      ${buildTestCard('Overhead Reach', screens.overheadReach.score, null, screens.overheadReach.obs, testPhotos['oh'], false)}
+      ${buildTestCard('SL Squat D', screens.singleLegSquat.scoreD, null, '', testPhotos['slsd'], false)}
+      ${buildTestCard('SL Squat I', screens.singleLegSquat.scoreI, screens.singleLegSquat.obs, '', testPhotos['slsi'], false)}
+      ${buildTestCard('Shoulder D↑', screens.shoulderMob.scoreD, null, '', testPhotos['shd'], false)}
+      ${buildTestCard('Shoulder I↑', screens.shoulderMob.scoreI, screens.shoulderMob.obs, '', testPhotos['shi'], false)}
+    </div>
+    <div class="test-report-grid">
+      ${buildBmCard('Balance D', screens.balanceMono.timeD, testPhotos['bmd'])}
+      ${buildBmCard('Balance I', screens.balanceMono.timeI, testPhotos['bmi'])}
+    </div>
+    ${screens.balanceMono.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:6px;font-style:italic">📝 ${screens.balanceMono.obs}</p>` : ''}
+    ${screens.singleLegSquat.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 SL Squat: ${screens.singleLegSquat.obs}</p>` : ''}
+    ${screens.shoulderMob.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 Shoulder: ${screens.shoulderMob.obs}</p>` : ''}`;
+
+  // HALLAZGOS POSTURALES
+  const sev = p.severidad || 'moderado';
+  const findingsHtml = findings.length
+    ? findings.map(f => `<span class="finding-tag ${sev}">${f}</span>`).join('')
+    : '<span style="color:var(--muted);font-size:.85rem">Sin hallazgos adicionales</span>';
 
   document.getElementById('reportContent').innerHTML = `
     <div class="report-header">
-      <h2>Evaluación Postural Express</h2>
-      <p>CrossFit · Jessica Ocampo Fisioterapeuta</p>
+      <h2>Evaluación Express CrossFit</h2>
+      <p>Jessica Ocampo Fisioterapeuta · Pereira, Colombia</p>
       <div class="report-meta">
-        <div class="report-meta-item">👤 ${p.nombre}${p.edad !== 'N/A' ? ', ' + p.edad + ' años' : ''}</div>
+        <div class="report-meta-item">👤 ${p.nombre}${p.edad!=='N/A'?', '+p.edad+' años':''}</div>
         <div class="report-meta-item">🏋️ ${p.nivel} · ${p.anios}</div>
         <div class="report-meta-item">🎯 ${p.objetivo}</div>
         <div class="report-meta-item">📅 ${new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'})}</div>
       </div>
     </div>
 
-    ${photos.frontal || photos.lateral || photos.posterior ? `
+    ${(photos.frontal||photos.lateral||photos.posterior) ? `
     <div class="report-section">
-      <h3>📸 Fotografías de postura</h3>
-      <div class="report-photos">${photosHtml}</div>
+      <h3>📐 Registro fotográfico postural</h3>
+      <div class="report-photos">${postPhotoHtml}</div>
     </div>` : ''}
 
     <div class="report-section">
-      <h3>🔍 Hallazgos identificados ${findings.length ? `<span class="count-badge">${findings.length}</span>` : ''}</h3>
+      <h3>🏋️ 5 Screens funcionales</h3>
+      ${screensHtml}
+    </div>
+
+    <div class="report-section">
+      <h3>📐 Hallazgos posturales ${findings.length?`<span class="count-badge">${findings.length}</span>`:''}</h3>
       <div class="report-findings">${findingsHtml}</div>
-      ${p.observaciones ? `<p style="font-size:.82rem;color:var(--muted);margin-top:10px;font-style:italic">📝 ${p.observaciones}</p>` : ''}
+      ${p.observaciones?`<p style="font-size:.82rem;color:var(--muted);margin-top:8px;font-style:italic">📝 ${p.observaciones}</p>`:''}
+      ${p.molestias&&p.molestias!=='Ninguna reportada'?`<div class="alert alert-warn" style="margin-top:10px">⚠️ Molestia reportada: ${p.molestias}</div>`:''}
     </div>
 
     <div class="report-section">
       <h3>🤖 Análisis biomecánico — IA</h3>
-      ${p.molestias && p.molestias !== 'Ninguna reportada' ? `<div class="alert alert-warn" style="margin-bottom:14px">⚠️ Molestia reportada: ${p.molestias}</div>` : ''}
-      <div class="ai-text">${reportHtml}</div>
+      <div class="ai-text">${formatAiReport(aiReport)}</div>
     </div>
 
     <div class="cta-box">
       <h3>¿Listo para corregir estos disbalances?</h3>
-      <p>Con un plan de fisioterapia deportiva personalizado puedes mejorar tu postura, prevenir lesiones y llevar tu rendimiento en CrossFit al siguiente nivel.</p>
+      <p>Con un plan de fisioterapia deportiva personalizado puedes mejorar tus scores, corregir tu postura y llevar tu rendimiento CrossFit al siguiente nivel.</p>
       <div class="paquetes-grid">
         <div class="paquete">
           <div class="pac-badge">POPULAR</div>
           <h4>Plan CrossFit 4 sesiones</h4>
-          <p>Evaluación completa + 3 sesiones de fisioterapia deportiva dirigidas a tus disbalances</p>
+          <p>Evaluación completa + 3 sesiones dirigidas a los hallazgos identificados</p>
         </div>
         <div class="paquete destacado">
           <div class="pac-badge">RECOMENDADO</div>
@@ -678,93 +950,93 @@ function buildReport() {
           <p>Tratamiento completo + seguimiento postural + guía de movilidad personalizada</p>
         </div>
       </div>
-      <button class="btn btn-wa" style="margin:0 auto;display:flex" onclick="ctaWhatsApp()">
-        💬 Quiero empezar mi plan — WhatsApp
-      </button>
+      <button class="btn btn-wa" style="margin:0 auto;display:flex" onclick="ctaWhatsApp()">💬 Quiero empezar mi plan</button>
+    </div>`;
+}
+
+function buildTestCard(name, score, obs, obsAlt, photo, isTime) {
+  const sc = score ?? null;
+  const pillClass = sc===null?'sp-':`sp${sc}`;
+  const pillText  = sc===null?'sin score':`${sc}/3`;
+  return `<div class="test-report-item">
+    ${photo ? `<img src="${photo}" class="test-report-img" alt="${name}">` : `<div class="test-report-img" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem">📷</div>`}
+    <div style="flex:1;min-width:0">
+      <div class="test-report-name">${name}</div>
+      <span class="score-pill ${pillClass}">${pillText}</span>
+      ${obs||obsAlt ? `<div class="test-report-obs">${obs||obsAlt}</div>` : ''}
     </div>
-  `;
+  </div>`;
+}
+
+function buildBmCard(name, time, photo) {
+  const label = time ? time + 's' : 'sin dato';
+  const pillClass = !time ? 'sp-' : +time >= 8 ? 'sp3' : +time >= 5 ? 'sp2' : 'sp1';
+  return `<div class="test-report-item">
+    ${photo ? `<img src="${photo}" class="test-report-img" alt="${name}">` : `<div class="test-report-img" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem">⚖️</div>`}
+    <div style="flex:1">
+      <div class="test-report-name">${name}</div>
+      <span class="score-pill ${pillClass}">${label}</span>
+      <div class="test-report-obs">Normal ≥ 8s</div>
+    </div>
+  </div>`;
 }
 
 function formatAiReport(text) {
-  // Convert **TÍTULO** to styled section titles, ** to bold, preserve line breaks
   return text
     .replace(/\*\*([^*]+)\*\*/g, (_, t) => {
-      if (t === t.toUpperCase() || t.endsWith(':')) {
-        return `<div class="ai-section-title">${t}</div>`;
-      }
+      if (t === t.toUpperCase() || t.endsWith(':')) return `<div class="ai-section-title">${t}</div>`;
       return `<strong>${t}</strong>`;
     })
     .replace(/\n/g, '<br>');
 }
 
-// ── SHARE FUNCTIONS ──────────────────────────────────────────────────
+// ── COMPARTIR ────────────────────────────────────────────────────────
 function shareWhatsApp() {
   const p = patientData;
   let phone = (p.telefono || '').replace(/\D/g, '');
   if (phone && phone.length <= 10) phone = '57' + phone;
 
-  const text = `*Evaluación Postural Express CrossFit*
-*Jessica Ocampo Fisioterapeuta*
+  const text = `*Evaluación Postural Express CrossFit*\n*Jessica Ocampo Fisioterapeuta*\n\nHola ${p.nombre}! Aquí tienes los resultados de tu evaluación:\n\n*Nivel:* ${p.nivel} · ${p.anios}\n*Objetivo:* ${p.objetivo}\n\n*Hallazgos posturales (${findings.length}):*\n${findings.map(f=>'• '+f).join('\n')}\n\n${aiReport.replace(/\*\*/g,'*').substring(0,900)}...\n\n*Para iniciar tu plan de corrección escríbeme* 💪\n_Jessica Ocampo Fisioterapeuta · Pereira_`;
 
-Hola ${p.nombre}! Aquí tienes los resultados de tu evaluación de hoy:
-
-*Perfil:* ${p.nivel} · ${p.anios}
-*Objetivo:* ${p.objetivo}
-
-*Hallazgos identificados (${findings.length}):*
-${findings.map(f => '• ' + f).join('\n')}
-
-${p.molestias !== 'Ninguna reportada' ? '*Molestias:* ' + p.molestias + '\n\n' : ''}
-${aiReport.replace(/\*\*/g, '*').substring(0, 800)}...
-
-*Para iniciar tu plan de corrección:*
-Escríbeme y definimos el paquete ideal para ti 💪
-
-_Jessica Ocampo Fisioterapeuta_
-_Pereira, Colombia_`;
-
-  const url = phone
-    ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
-    : `https://wa.me/?text=${encodeURIComponent(text)}`;
+  const url = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
 }
 
 function shareEmail() {
   const p = patientData;
-  if (!p.email) { alert('No hay email registrado para este atleta. Puedes usar WhatsApp.'); return; }
-  const subject = encodeURIComponent('Tu Evaluación Postural CrossFit — Jessica Ocampo Fisioterapeuta');
-  const body = encodeURIComponent(
-    `Hola ${p.nombre},\n\nAquí tienes los resultados de tu evaluación postural express.\n\nHallazgos (${findings.length}):\n${findings.map(f=>'• '+f).join('\n')}\n\n${aiReport.replace(/\*\*/g,'')}\n\nCualquier duda, escríbeme.\nJessica Ocampo Fisioterapeuta\n+57 313 646 7945`
-  );
+  if (!p.email) { alert('No hay email registrado para este atleta.'); return; }
+  const subject = encodeURIComponent('Tu Evaluación CrossFit — Jessica Ocampo Fisioterapeuta');
+  const body = encodeURIComponent(`Hola ${p.nombre},\n\nAquí tienes los resultados de tu evaluación postural express.\n\nHallazgos (${findings.length}):\n${findings.map(f=>'• '+f).join('\n')}\n\n${aiReport.replace(/\*\*/g,'')}\n\nJessica Ocampo Fisioterapeuta\n+57 313 646 7945`);
   window.open(`mailto:${p.email}?subject=${subject}&body=${body}`);
 }
 
 function ctaWhatsApp() {
-  const msg = `Hola Jessica! Acabo de recibir mi evaluación postural CrossFit y me gustaría conocer los paquetes disponibles para corregir mis disbalances.`;
-  window.open(`https://wa.me/573136467945?text=${encodeURIComponent(msg)}`, '_blank');
+  window.open(`https://wa.me/573136467945?text=${encodeURIComponent('Hola Jessica! Recibí mi evaluación postural CrossFit y me gustaría conocer los paquetes disponibles.')}`, '_blank');
 }
 
+// ── NUEVA EVALUACIÓN ─────────────────────────────────────────────────
 function nuevaEval() {
-  if (!confirm('¿Iniciar una nueva evaluación? Se perderán los datos actuales.')) return;
-  // Reset all state
-  currentStep = 1;
-  nivelSel = 'Principiante'; sevSel = ''; aiReport = ''; findings = [];
-  photos = { frontal: null, lateral: null, posterior: null };
-  patientData = {};
-  document.querySelectorAll('.chip.sel').forEach(c => c.classList.remove('sel'));
-  document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('sel'));
+  if (!confirm('¿Iniciar nueva evaluación? Se perderán los datos actuales.')) return;
+  currentStep = 1; nivelSel='Principiante'; sevSel=''; aiReport=''; findings=[]; patientData={};
+  photos={frontal:null,lateral:null,posterior:null}; testPhotos={}; testScores={};
+  document.querySelectorAll('.chip.sel').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('[data-val="Principiante"]').classList.add('sel');
-  ['pNombre','pEdad','pTelefono','pEmail','pMolestias','pObservaciones'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.value = '';
+  ['pNombre','pEdad','pTelefono','pEmail','pMolestias','pObservaciones','obs-ds','obs-oh','obs-sls','obs-sh','obs-bm','time-bmd','time-bmi']
+    .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['frontal','lateral','posterior'].forEach(t=>removePhoto({stopPropagation:()=>{}},t));
+  ['ds','oh','slsd','slsi','shd','shi','bmd','bmi'].forEach(id=>{
+    testPhotos[id]=null;
+    const img=document.getElementById('mimg-'+id); if(img){img.src='';img.style.display='none';}
+    const box=document.getElementById('mph-'+id); if(box){box.classList.remove('has-photo');box.querySelectorAll('span').forEach(el=>el.style.display='');}
+    const minp=document.getElementById('minp-'+id); if(minp)minp.value='';
+    const sc=document.getElementById('sc-'+id); if(sc)sc.querySelectorAll('.score-btn').forEach(b=>b.classList.remove('sel'));
   });
-  ['frontal','lateral','posterior'].forEach(t => removePhoto({stopPropagation:()=>{}}, t));
-  ['step2','step3','step4','step5'].forEach(id => document.getElementById(id).style.display = 'none');
-  ['ps2','ps3','ps4','ps5'].forEach(id => { document.getElementById(id).classList.remove('done','active'); });
-  document.getElementById('step1').style.display = 'block';
+  [2,3,4,5,6].forEach(n=>{document.getElementById('step'+n).style.display='none';document.getElementById('ps'+n).classList.remove('done','active');});
+  document.getElementById('step1').style.display='block';
   document.getElementById('ps1').classList.add('active');
   document.getElementById('ps1').classList.remove('done');
-  document.getElementById('findingsCount').textContent = '0';
-  updateFindingsCount();
+  document.getElementById('findingsCount').textContent='0';
   window.scrollTo({top:0});
 }
 </script>
