@@ -648,6 +648,11 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
 
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_r7Kr-9Uvu0qIVAJpyu8nzhmcJ9fzpqo2pspvFFHV_14cLzb9qUN9k3Lj8cdXFdIW/exec';
+// Auto-login desde URL param (cuando se abre desde admin.html)
+(function() {
+  const p = new URLSearchParams(window.location.search).get('token');
+  if (p) { sessionStorage.setItem('adminToken', p); }
+})();
 let TOKEN = sessionStorage.getItem('adminToken') || '';
 let currentStep = 1;
 let nivelSel = 'Principiante';

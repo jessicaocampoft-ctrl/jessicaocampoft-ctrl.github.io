@@ -599,10 +599,15 @@ tr:hover td{background:rgba(126,221,208,.03)}
 
     <div class="sb-sep"></div>
 
-    <a class="sb-link" href="evaluacion.html" style="color:#7c3aed">
+    <a class="sb-link" href="evaluacion.html" target="_blank" style="color:#7c3aed">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Evaluación
     </a>
+
+    <button class="sb-link" id="sb-evalexpress" onclick="openEvalExpress()" style="color:#1BBFB0;font-weight:600">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Eval. Express ⚡
+    </button>
 
     <div style="font-size:.68rem;color:var(--muted);text-align:center;padding:2px 8px;margin-bottom:2px" id="lastUpdated"></div>
     <button class="sb-link" id="darkModeBtn" onclick="toggleDarkMode()">
@@ -1513,6 +1518,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     sessionStorage.removeItem('adminToken');
   }
 });
+
+// ── EVAL EXPRESS ──
+function openEvalExpress() {
+  window.open('evaluacion-express.html?token=' + encodeURIComponent(TOKEN), '_blank');
+}
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
