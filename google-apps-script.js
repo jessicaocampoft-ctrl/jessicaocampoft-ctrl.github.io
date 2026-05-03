@@ -51,6 +51,7 @@ function doGet(e) {
   if (p.action === 'getReminders')   return js(getRemindersData());
   if (p.action === 'sendReminders')  return js(sendEmailReminders());
   if (p.action === 'generateEval')   return js(generateEvalReport(JSON.parse(decodeURIComponent(p.data))));
+  if (p.action === 'updatePago')     return js(doUpdatePago(p));
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -61,11 +62,15 @@ function doGet(e) {
 }
 
 // -------------------------------------------------------------
-//  POST — Reservas de pacientes
+//  POST — Reservas de pacientes + Evaluación Express con fotos
 // -------------------------------------------------------------
 function doPost(e) {
   try {
     var d = JSON.parse(e.postData.contents);
+    if (d.action === 'generateEval') {
+      if (d.token !== ADMIN_TOKEN) return js({ok: false, error: 'Sin permiso'});
+      return js(generateEvalReport(d.data, d.photos || {}));
+    }
     return js(createBooking(d, false));
   } catch(err) {
     try { GmailApp.sendEmail(JESSICA_EMAIL, 'ERROR formulario citas', 'Error: ' + err.message + '\n\nDatos: ' + e.postData.contents); } catch(x) {}
@@ -95,32 +100,43 @@ function createBooking(d, isAdmin) {
   }
 
   var soloRegistro = esRegistro(d.service);
-  var price = d.modality === 'Presencial' ? d.priceP : d.priceD;
 
-  // Solo crear evento en Google Calendar si es una cita real (no un registro)
-  if (!soloRegistro) {
-    var cal   = CalendarApp.getDefaultCalendar();
-    var start = parseDT(d.date, d.time);
-    var mins  = getServiceDuration(d.service) + (d.modality === 'Domicilio' ? 30 : 0);
-    var end   = new Date(start.getTime() + mins * 60000);
-    var event = cal.createEvent('[CITA] ' + d.service + ' - ' + d.name, start, end, {
-      description: buildDesc(d, price),
-      location: d.modality === 'Domicilio' ? (d.address || 'Domicilio - Pereira / Dosquebradas') : 'Pereira, Colombia'
-    });
-    event.addEmailReminder(60);
-    event.addPopupReminder(30);
-  }
-
-  // Para registros de paciente: solo guardar en hoja Pacientes, sin cita ni email
+  // Para registros de paciente: solo guardar en hoja Pacientes (upsertPaciente ya deduplica)
   if (soloRegistro) {
     upsertPaciente(d.name, d.phone, d.email);
     return {ok: true, id: 'REG-' + new Date().getTime()};
   }
 
+  var price = d.modality === 'Presencial' ? d.priceP : d.priceD;
+
+  // Dedup: si ya existe una cita con mismo nombre+fecha+hora, devolver la existente
+  var ss     = getOrCreateSheet();
+  var cSheet = ss.getSheetByName('Citas');
+  var cRows  = cSheet.getDataRange().getValues();
+  var nameNorm = (d.name || '').toLowerCase().trim();
+  for (var i = 1; i < cRows.length; i++) {
+    var rowName = ('' + (cRows[i][2] || '')).toLowerCase().trim();
+    var rowDate = sd(cRows[i][7]);
+    var rowTime = st(cRows[i][8]);
+    if (rowName === nameNorm && rowDate === d.date && rowTime === d.time) {
+      return {ok: true, id: cRows[i][0]};
+    }
+  }
+
+  // Crear evento en Google Calendar
+  var cal   = CalendarApp.getDefaultCalendar();
+  var start = parseDT(d.date, d.time);
+  var mins  = getServiceDuration(d.service) + (d.modality === 'Domicilio' ? 30 : 0);
+  var end   = new Date(start.getTime() + mins * 60000);
+  var event = cal.createEvent('[CITA] ' + d.service + ' - ' + d.name, start, end, {
+    description: buildDesc(d, price),
+    location: d.modality === 'Domicilio' ? (d.address || 'Domicilio - Pereira / Dosquebradas') : 'Pereira, Colombia'
+  });
+  event.addEmailReminder(60);
+  event.addPopupReminder(30);
+
   // Guardar en Google Sheets (solo citas reales)
   var id    = 'C' + new Date().getTime();
-  var ss    = getOrCreateSheet();
-  var cSheet = ss.getSheetByName('Citas');
   var phoneClean = ('' + (d.phone||'')).replace(/\D/g,'');
   cSheet.appendRow([
     id,
@@ -322,6 +338,18 @@ function doUnblock(p) {
   return {ok: false, error: 'No encontrado'};
 }
 
+function doUpdatePago(p) {
+  var sheet = getOrCreateSheet().getSheetByName('Citas');
+  var rows  = sheet.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (rows[i][0] === p.id) {
+      sheet.getRange(i+1, 15).setValue(p.metodo || '');
+      return {ok: true};
+    }
+  }
+  return {ok: false, error: 'Cita no encontrada'};
+}
+
 function doUpdateStatus(p) {
   var sheet = getOrCreateSheet().getSheetByName('Citas');
   var rows  = sheet.getDataRange().getValues();
@@ -406,8 +434,11 @@ function doEditBooking(d) {
       for (var k = 0; k < calEvs.length; k++) {
         var t = calEvs[k].getTitle() || '';
         if (t.indexOf('[CITA]') === 0 && t.indexOf(rows[i][2]) > -1) {
-          var ns = parseDT(d.fecha || oldFecha, d.hora || oldHora);
-          calEvs[k].setTime(ns, new Date(ns.getTime() + 60*60000));
+          var ns      = parseDT(d.fecha || oldFecha, d.hora || oldHora);
+          var newServ = d.servicio || rows[i][5];
+          var newMod  = d.modalidad || rows[i][6];
+          var newMins = getServiceDuration(newServ) + (newMod === 'Domicilio' ? 30 : 0);
+          calEvs[k].setTime(ns, new Date(ns.getTime() + newMins * 60000));
           if (d.servicio) calEvs[k].setTitle('[CITA] ' + d.servicio + ' - ' + rows[i][2]);
           break;
         }
@@ -426,7 +457,7 @@ function deletePatient(nombre) {
   var cSheet = ss.getSheetByName('Citas');
   var cRows  = cSheet.getDataRange().getValues();
   for (var i = cRows.length - 1; i >= 1; i--) {
-    if (cRows[i][2] === nombre) cSheet.deleteRow(i + 1);
+    if (('' + (cRows[i][2] || '')).toLowerCase().trim() === norm) cSheet.deleteRow(i + 1);
   }
 
   var pSheet = ss.getSheetByName('Pacientes');
@@ -449,7 +480,7 @@ function editPatient(d) {
   var cSheet = ss.getSheetByName('Citas');
   var cRows  = cSheet.getDataRange().getValues();
   for (var i = 1; i < cRows.length; i++) {
-    if (cRows[i][2] !== d.oldNombre) continue;
+    if (('' + (cRows[i][2] || '')).toLowerCase().trim() !== oldNorm) continue;
     if (d.newNombre) cSheet.getRange(i+1, 3).setValue(d.newNombre);
     if (d.telefono !== undefined) cSheet.getRange(i+1, 4).setNumberFormat('@').setValue(phone);
     if (d.email    !== undefined) cSheet.getRange(i+1, 5).setValue(d.email);
@@ -491,9 +522,10 @@ function getAdminData() {
       email: r[4],
       servicio: r[5], modalidad: r[6],
       fecha: (r[7] instanceof Date) ? fmtDate(r[7]) : (r[7] ? ('' + r[7]).split('T')[0] : ''),
-      hora: (r[8] instanceof Date) ? (pad(r[8].getHours()) + ':' + pad(r[8].getMinutes())) : ('' + (r[8] || '')),
+      hora: st(r[8]),
       precio: r[9],
-      estado: r[10], direccion: r[11], notas: r[12], notaAdmin: r[13]
+      estado: r[10], direccion: r[11], notas: r[12], notaAdmin: r[13],
+      pago: ('' + (r[14] || '')).trim()
     });
   }
 
@@ -549,9 +581,7 @@ function sendReminders() {
     var fecha = (r[7] instanceof Date) ? fmtDate(r[7]) : ('' + (r[7]||'')).split('T')[0];
     var nombre = r[2], email = r[4];
     var serv  = r[5], mod = r[6], precio = r[9];
-    var hora  = (r[8] instanceof Date) ? (pad(r[8].getHours()) + ':' + pad(r[8].getMinutes())) :
-                (typeof r[8] === 'number') ? (pad(Math.floor(r[8]*24)) + ':' + pad(Math.round((r[8]*24%1)*60))) :
-                ('' + (r[8]||''));
+    var hora  = st(r[8]);
     var rawTel = (r[3] instanceof Error) ? '' : ('' + (r[3]||''));
     var phone  = rawTel.replace(/\D/g,'');
     if (phone.length <= 10) phone = '57' + phone;
@@ -625,13 +655,13 @@ function getOrCreateSheet() {
 
   var ss = SpreadsheetApp.create(SS_NAME);
   var cs = ss.getActiveSheet(); cs.setName('Citas');
-  cs.getRange(1,1,1,14).setValues([[
+  cs.getRange(1,1,1,15).setValues([[
     'ID','FechaRegistro','Nombre','Telefono','Email',
     'Servicio','Modalidad','FechaCita','Hora','Precio',
-    'Estado','Direccion','Notas','NotaAdmin'
+    'Estado','Direccion','Notas','NotaAdmin','Pago'
   ]]);
-  ss.insertSheet('Bloqueos').getRange(1,1,1,5).setValues([[
-    'Fecha','HoraInicio','HoraFin','Motivo','CreadoPor'
+  ss.insertSheet('Bloqueos').getRange(1,1,1,6).setValues([[
+    'Fecha','HoraInicio','HoraFin','Motivo','CreadoPor','ID'
   ]]);
   ss.insertSheet('Pacientes').getRange(1,1,1,5).setValues([[
     'Nombre','Telefono','Email','PrimeraVisita','UltimaVisita'
@@ -998,22 +1028,61 @@ function getGoogleReviews() {
 //  EVALUACIÓN EXPRESS CROSSFIT — Generación de reporte con IA
 // =============================================================
 
-function generateEvalReport(d) {
+function generateEvalReport(d, photos) {
+  photos = photos || {};
   try {
     if (!GEMINI_API_KEY || GEMINI_API_KEY === 'PEGA_AQUI_TU_CLAVE_GEMINI') {
       return { ok: false, error: 'Configura GEMINI_API_KEY en el script. Obtenla gratis en aistudio.google.com' };
     }
 
-    var prompt = buildEvalPrompt(d);
-    var url    = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_API_KEY;
+    var parts = [{ text: buildEvalPrompt(d) }];
 
+    // Añadir fotos posturales y de tests a la solicitud multimodal
+    var photoLabels = {
+      frontal:  'FOTO POSTURAL FRONTAL — analiza alineación de cabeza, hombros, crestas ilíacas, rodillas y pies',
+      lateral:  'FOTO POSTURAL LATERAL — analiza adelantamiento cefálico, cifosis, lordosis, posición rodilla',
+      posterior:'FOTO POSTURAL POSTERIOR — analiza escoliosis, asimetría escapular, pies y talones',
+      ds:       'FOTO DEEP SQUAT — analiza profundidad, posición de rodillas, talones y tronco',
+      oh:       'FOTO OVERHEAD REACH — analiza contacto de manos con pared y compensaciones',
+      slsd:     'FOTO SINGLE LEG SQUAT DERECHO — analiza control de rodilla y cadera',
+      slsi:     'FOTO SINGLE LEG SQUAT IZQUIERDO — analiza control de rodilla y cadera',
+      shd:      'FOTO SHOULDER CLEARING MANO D ARRIBA — analiza distancia entre puños',
+      shi:      'FOTO SHOULDER CLEARING MANO I ARRIBA — analiza distancia entre puños',
+      bmd:      'FOTO BALANCE MONOPODAL DERECHO — analiza postura y estrategia de equilibrio',
+      bmi:      'FOTO BALANCE MONOPODAL IZQUIERDO — analiza postura y estrategia de equilibrio',
+      trdd:     'FOTO TRENDELENBURG APOYO DERECHO — analiza nivel pélvico y caída contralateral',
+      trdi:     'FOTO TRENDELENBURG APOYO IZQUIERDO — analiza nivel pélvico y caída contralateral',
+      sbd:      'FOTO SHIN BOX PIERNA DERECHA — analiza posición de shin y rango de movimiento',
+      sbi:      'FOTO SHIN BOX PIERNA IZQUIERDA — analiza posición de shin y rango de movimiento',
+      bdd:      'FOTO BIRD DOG LADO DERECHO — analiza neutralidad lumbar y control rotacional',
+      bdi:      'FOTO BIRD DOG LADO IZQUIERDO — analiza neutralidad lumbar y control rotacional',
+      dbd:      'FOTO DEAD BUG LADO DERECHO — analiza neutro lumbar al extender extremidades',
+      dbi:      'FOTO DEAD BUG LADO IZQUIERDO — analiza neutro lumbar al extender extremidades',
+      pk:       'FOTO PLANK — analiza alineación de cadera, espalda y posición general'
+    };
+
+    var photoCount = 0;
+    for (var key in photoLabels) {
+      if (photos[key]) {
+        var base64 = photos[key].replace(/^data:image\/[^;]+;base64,/, '');
+        parts.push({ text: '\n[' + photoLabels[key] + ']' });
+        parts.push({ inlineData: { mimeType: 'image/jpeg', data: base64 } });
+        photoCount++;
+      }
+    }
+
+    if (photoCount > 0) {
+      parts.push({ text: '\nCon base en las ' + photoCount + ' fotografías anteriores y los datos ingresados, incluye en tu análisis observaciones específicas de lo que ves en las imágenes de cada test. Valida o corrige los scores asignados por la fisioterapeuta si lo consideras necesario, explicando el motivo.' });
+    }
+
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_API_KEY;
     var response = UrlFetchApp.fetch(url, {
       method:      'post',
       contentType: 'application/json',
       muteHttpExceptions: true,
       payload: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1200 }
+        contents: [{ parts: parts }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
       })
     });
 
@@ -1060,8 +1129,39 @@ function buildEvalPrompt(d) {
     }
     if (sc.balanceMono) {
       screensText += '• Balance Monopodal: D=' + (sc.balanceMono.timeD || 'No eval') + 's' +
-        ', I=' + (sc.balanceMono.timeI || 'No eval') + 's';
+        ', I=' + (sc.balanceMono.timeI || 'No eval') + 's (Normal ≥8s)';
       if (sc.balanceMono.obs) screensText += ' — ' + sc.balanceMono.obs;
+      screensText += '\n';
+    }
+    if (sc.trendelenburg) {
+      screensText += '• Trendelenburg: D=' + (sc.trendelenburg.resultD || 'No eval') +
+        ', I=' + (sc.trendelenburg.resultI || 'No eval');
+      if (sc.trendelenburg.obs) screensText += ' — ' + sc.trendelenburg.obs;
+      screensText += '\n';
+    }
+    if (sc.shinBox) {
+      screensText += '• Shin Box: D RI=' + (sc.shinBox.riD || '?') + '° RE=' + (sc.shinBox.reD || '?') +
+        '° Trans=' + (sc.shinBox.transD !== null && sc.shinBox.transD !== undefined ? sc.shinBox.transD + '/3' : 'No eval') +
+        ' | I RI=' + (sc.shinBox.riI || '?') + '° RE=' + (sc.shinBox.reI || '?') +
+        '° Trans=' + (sc.shinBox.transI !== null && sc.shinBox.transI !== undefined ? sc.shinBox.transI + '/3' : 'No eval');
+      if (sc.shinBox.obs) screensText += ' — ' + sc.shinBox.obs;
+      screensText += ' (Normal RI 35-45°, RE 40-60°)\n';
+    }
+    if (sc.birdDog) {
+      screensText += '• Bird Dog (control core): D=' + (sc.birdDog.scoreD !== null && sc.birdDog.scoreD !== undefined ? sc.birdDog.scoreD + '/3' : 'No eval') +
+        ', I=' + (sc.birdDog.scoreI !== null && sc.birdDog.scoreI !== undefined ? sc.birdDog.scoreI + '/3' : 'No eval');
+      if (sc.birdDog.obs) screensText += ' — ' + sc.birdDog.obs;
+      screensText += '\n';
+    }
+    if (sc.deadBug) {
+      screensText += '• Dead Bug (estabilidad core): D=' + (sc.deadBug.scoreD !== null && sc.deadBug.scoreD !== undefined ? sc.deadBug.scoreD + '/3' : 'No eval') +
+        ', I=' + (sc.deadBug.scoreI !== null && sc.deadBug.scoreI !== undefined ? sc.deadBug.scoreI + '/3' : 'No eval');
+      if (sc.deadBug.obs) screensText += ' — ' + sc.deadBug.obs;
+      screensText += '\n';
+    }
+    if (sc.plank) {
+      screensText += '• Plank: ' + (sc.plank.time ? sc.plank.time + 's (Normal ≥60s, CrossFit ≥120s)' : 'No evaluado');
+      if (sc.plank.obs) screensText += ' — ' + sc.plank.obs;
       screensText += '\n';
     }
   }
@@ -1079,17 +1179,19 @@ function buildEvalPrompt(d) {
     (d.observaciones ? 'OBSERVACIONES ADICIONALES: ' + d.observaciones + '\n' : '') +
     '\nGenera el reporte en español con EXACTAMENTE estas secciones (usa los títulos en mayúsculas y negrilla):\n\n' +
     '**RESUMEN EJECUTIVO**\n' +
-    '[2-3 oraciones sobre el estado postural y funcional general. Tono profesional y empático. Menciona el impacto directo en el rendimiento CrossFit.]\n\n' +
+    '[2-3 oraciones sobre el estado postural y funcional general. Tono profesional y empático. Menciona el impacto directo en el rendimiento CrossFit. Si hay fotos, describe brevemente lo más relevante que observas visualmente.]\n\n' +
+    '**ANÁLISIS VISUAL DE FOTOS**\n' +
+    '[SOLO si se enviaron fotos: describe los hallazgos más importantes que ves en cada foto (postural y de tests). Si la foto muestra algo diferente al score ingresado, indícalo con claridad. Si no hay fotos, omite esta sección completamente.]\n\n' +
     '**ANÁLISIS POR ZONAS**\n' +
     '[Para cada zona con hallazgos, explica en 1-2 oraciones qué significa biomecánicamente y cómo afecta los movimientos específicos de CrossFit (snatch, clean, squat, deadlift, etc.). Si no hay hallazgos en una zona, omítela.]\n\n' +
-    '**ANÁLISIS FUNCIONAL**\n' +
-    '[Interpreta los resultados de las pruebas funcionales: qué patrones de movimiento están comprometidos, qué músculos o cadenas están débiles o rígidas, y cómo se correlacionan con los hallazgos posturales. Sé específica con los scores bajos.]\n\n' +
+    '**ANÁLISIS FUNCIONAL Y DE CORE**\n' +
+    '[Interpreta los resultados de TODAS las pruebas funcionales: qué patrones de movimiento están comprometidos, qué músculos o cadenas están débiles. Incluye análisis de Trendelenburg (glúteo medio), Shin Box (movilidad de cadera), Bird Dog y Dead Bug (control de core), y Plank (resistencia). Correlaciona con hallazgos posturales.]\n\n' +
     '**RIESGOS IDENTIFICADOS**\n' +
     '[Lista máximo 4 riesgos concretos de lesión si no se atienden. Específicos para CrossFit. Usa viñetas con •]\n\n' +
     '**PLAN DE ACCIÓN RECOMENDADO**\n' +
-    '[3-5 recomendaciones concretas ordenadas por prioridad. Incluye qué tipo de trabajo se haría en fisioterapia. Usa viñetas con •]\n\n' +
+    '[3-5 recomendaciones concretas ordenadas por prioridad. Incluye qué tipo de trabajo se haría en fisioterapia: movilidad de cadera, estabilización de core, corrección postural, etc. Usa viñetas con •]\n\n' +
     '**CONCLUSIÓN**\n' +
     '[1 párrafo motivador. Menciona que con un plan de fisioterapia deportiva personalizado se pueden corregir estos disbalances y mejorar el rendimiento. Invita a dar el siguiente paso. No menciones precios.]\n\n' +
-    'REGLAS: Máximo 500 palabras en total. Sé directa y específica. Usa lenguaje claro, no excesivamente técnico. Tono: profesional pero cercano.';
+    'REGLAS: Máximo 600 palabras en total. Sé directa y específica. Usa lenguaje claro, no excesivamente técnico. Tono: profesional pero cercano.';
 }
 

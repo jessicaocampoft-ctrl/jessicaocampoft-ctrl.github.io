@@ -11,7 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- supabase eliminado: backup via Google Sheets -->
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -282,8 +282,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
     <span>Guardar</span>
   </button>
-  <!-- ESTADO SUPABASE — siempre visible -->
-  <div id="sbUserInfo" style="padding:6px 8px 8px"></div>
+  <!-- Estado Google Sheets -->
+  <div id="sheetsStatus" style="padding:6px 8px 8px">
+    <div style="background:rgba(27,191,176,.08);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:.7rem;color:var(--muted);line-height:1.5">
+      ☁ Respaldo en Google Sheets<br>
+      <button onclick="guardarEnSheets()" style="margin-top:6px;width:100%;background:var(--primary);color:#fff;border:none;border-radius:6px;padding:5px 0;font-size:.72rem;font-weight:600;cursor:pointer">↑ Guardar en nube</button>
+    </div>
+  </div>
 </nav>
 
 <!-- MAIN -->
@@ -1780,6 +1785,7 @@ const TESTS_COMUNES=[
   {id:'deadBug',nombre:'Dead Bug',tag:'0-3',bilateral:true,
    comps:['Pérdida lumbar en extensión','Compensación cervical','Falta de coordinación','Apnea respiratoria']},
   {id:'trendelenburg',nombre:'Trendelenburg estático',tag:'Positivo/Negativo',bilateral:true,posNeg:true,refValues:true,refId:'trendelenburg'},
+  {id:'shinbox',nombre:'Shin Box Assessment',tag:'RI/RE + Carga',shinbox:true},
 ];
 
 const TESTS_PERFIL={
@@ -1789,7 +1795,6 @@ const TESTS_PERFIL={
     {id:'aslr',nombre:'Active Straight Leg Raise (FMS)',tag:'0-3',bilateral:true,comps:['Rotación pélvica','Pérdida de neutro lumbar','Compensación de rodilla contraria']},
     {id:'ybalance',nombre:'Y-Balance Test',tag:'Distancias cm',ybalance:true},
     {id:'apley',nombre:'Apley Scratch Test (hombros)',tag:'cm bilateral',apley:true},
-    {id:'shinbox',nombre:'Shin Box Assessment',tag:'RI/RE + Carga',shinbox:true},
     {id:'wblt',nombre:'Ankle Dorsiflexion (WBLT)',tag:'cm bilateral',wblt:true},
     {id:'tuckJump',nombre:'Tuck Jump Landing Screen',tag:'Checklist',secciones:[
       {titulo:'Compensaciones de aterrizaje (Meylan et al., 2017)',checks:['Valgus de rodilla bilateral al aterrizar','Valgus de rodilla unilateral al aterrizar','Aterrizaje rígido sin triple flexión','Asimetría bilateral evidente','Desplazamiento anterior excesivo del tronco','Pronación de pie al aterrizar','Caída pélvica (Trendelenburg de aterrizaje)','Desequilibrio lateral del tronco','Sin compensaciones (aterrizaje óptimo) ✓']}

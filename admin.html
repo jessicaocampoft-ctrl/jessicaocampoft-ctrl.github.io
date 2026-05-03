@@ -316,6 +316,23 @@ tr:hover td{background:rgba(126,221,208,.03)}
 }
 .pago-btn.pagada   {color:var(--ok);border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.08)}
 .pago-btn.pendiente{color:var(--warn);border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)}
+/* ── MODAL PAGO ── */
+#modalPago{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;display:none;align-items:center;justify-content:center}
+#modalPago.open{display:flex}
+.pago-modal-box{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:24px;width:320px;max-width:92vw}
+.pago-modal-title{font-family:var(--font-h);font-size:1rem;font-weight:700;margin-bottom:4px}
+.pago-modal-sub{font-size:.8rem;color:var(--muted);margin-bottom:18px}
+.pago-metodos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.pago-metodo-btn{padding:10px 8px;border-radius:10px;border:1.5px solid var(--border);background:var(--s2);color:var(--text);font-family:var(--font-b);font-size:.82rem;cursor:pointer;transition:var(--tr);text-align:center}
+.pago-metodo-btn:hover{border-color:var(--primary);color:var(--primary);background:rgba(27,191,176,.07)}
+.pago-metodo-btn.activo{border-color:var(--primary);background:rgba(27,191,176,.12);color:var(--primary);font-weight:700}
+/* ── MÉTRICAS ── */
+.metric-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(27,191,176,.07)}
+.metric-row:last-child{border-bottom:none}
+.metric-bar-bg{flex:1;height:7px;background:var(--s2);border-radius:99px;overflow:hidden}
+.metric-bar-fill{height:100%;border-radius:99px;transition:width .5s ease}
+.metric-label{font-size:.8rem;width:60px;flex-shrink:0;color:var(--muted)}
+.metric-val{font-family:var(--font-m);font-size:.78rem;min-width:36px;text-align:right}
 
 /* ── PACIENTES ── */
 .pac-badge{
@@ -704,7 +721,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
-            <input type="text" id="metaInput" placeholder="Ej: 6000000" style="width:130px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:7px 10px;outline:none" oninput="previewMeta(this.value)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+            <input type="text" id="metaInput" placeholder="Ej: 10.000.000" style="width:130px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:7px 10px;outline:none" oninput="previewMeta(this.value)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
             <button class="btn btn-teal btn-sm" onclick="guardarMeta()">Guardar meta</button>
           </div>
         </div>
@@ -914,44 +931,47 @@ tr:hover td{background:rgba(126,221,208,.03)}
           </div>
           <div class="field">
             <label>Fecha *</label>
-            <input type="date" id="ncDate">
+            <input type="date" id="ncDate" onchange="checkTimeConflict()">
           </div>
           <div class="field">
             <label>Hora *</label>
-            <input type="time" id="ncTime" class="nc-input" style="width:100%">
+            <input type="time" id="ncTime" class="nc-input" style="width:100%" onchange="checkTimeConflict()">
+            <div id="ncConflictWarn" style="display:none;margin-top:6px;padding:8px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:8px;font-size:.82rem;color:#991b1b"></div>
           </div>
           <div class="field">
             <label>Precio (para registro)</label>
             <div style="display:flex;gap:8px;align-items:center">
-              <select id="ncPrice" onchange="calcDescuento()" style="flex:1">
-                <option value="">— Elige servicio y modalidad —</option>
-                <option value="$70.000">$70.000</option>
-                <option value="$75.000">$75.000</option>
-                <option value="$80.000">$80.000</option>
-                <option value="$85.000">$85.000</option>
-                <option value="$90.000">$90.000</option>
-                <option value="$95.000">$95.000</option>
-                <option value="$110.000">$110.000</option>
-                <option value="$125.000">$125.000</option>
-                <option value="$135.000">$135.000</option>
-                <option value="$162.000">$162.000</option>
-                <option value="$210.000">$210.000</option>
-                <option value="$245.000">$245.000</option>
-                <option value="$294.000">$294.000</option>
-                <option value="$295.000">$295.000</option>
-                <option value="$350.000">$350.000</option>
-                <option value="$378.000">$378.000</option>
-                <option value="$410.000">$410.000</option>
-                <option value="$459.000">$459.000</option>
-                <option value="$476.000">$476.000</option>
-                <option value="$495.000">$495.000</option>
-                <option value="$560.000">$560.000</option>
-                <option value="$578.000">$578.000</option>
-                <option value="$580.000">$580.000</option>
-                <option value="$680.000">$680.000</option>
-                <option value="$690.000">$690.000</option>
-                <option value="A convenir">A convenir</option>
-              </select>
+              <input type="text" id="ncPrice" list="ncPriceList" placeholder="$70.000 o escribe un precio" oninput="calcDescuento()" autocomplete="off"
+                style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;transition:var(--tr)"
+                onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+              <datalist id="ncPriceList">
+                <option value="$70.000">
+                <option value="$75.000">
+                <option value="$80.000">
+                <option value="$85.000">
+                <option value="$90.000">
+                <option value="$95.000">
+                <option value="$110.000">
+                <option value="$125.000">
+                <option value="$135.000">
+                <option value="$162.000">
+                <option value="$210.000">
+                <option value="$245.000">
+                <option value="$294.000">
+                <option value="$295.000">
+                <option value="$350.000">
+                <option value="$378.000">
+                <option value="$410.000">
+                <option value="$459.000">
+                <option value="$476.000">
+                <option value="$495.000">
+                <option value="$560.000">
+                <option value="$578.000">
+                <option value="$580.000">
+                <option value="$680.000">
+                <option value="$690.000">
+                <option value="A convenir">
+              </datalist>
               <button type="button" onclick="toggleDescuento()" style="white-space:nowrap;padding:8px 12px;background:var(--s2);border:1px solid var(--teal);border-radius:8px;color:var(--teal);font-family:var(--font-b);font-size:.82rem;cursor:pointer">🏷️ Descuento</button>
             </div>
             <div id="descuentoPanel" style="display:none;margin-top:10px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px">
@@ -1222,6 +1242,10 @@ tr:hover td{background:rgba(126,221,208,.03)}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Exportar todo CSV
           </button>
+          <button class="fin-export-btn" onclick="limpiarDuplicadosGAS()" id="btnLimpiarDup" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#ef4444">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Limpiar duplicados
+          </button>
         </div>
       </div>
 
@@ -1230,7 +1254,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <div class="card-title">🎯 Meta mensual de ingresos</div>
         <div class="meta-input-row">
           <label style="font-size:.85rem;color:var(--muted)">Meta:</label>
-          <input type="text" id="metaInputFin" placeholder="Ej: 6000000" oninput="previewMetaFin(this.value)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+          <input type="text" id="metaInputFin" placeholder="Ej: 10.000.000" oninput="previewMetaFin(this.value)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
           <button class="btn btn-teal btn-sm" onclick="guardarMetaFin()">Guardar</button>
           <span style="font-size:.82rem;color:var(--muted)" id="metaActualTexto"></span>
         </div>
@@ -1266,7 +1290,46 @@ tr:hover td{background:rgba(126,221,208,.03)}
           <div id="finResumenMes"></div>
         </div>
       </div>
+
+      <!-- Métricas inteligentes -->
+      <div style="margin-top:20px">
+        <div class="fin-section-title">📈 Métricas inteligentes</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">🕐 Horarios más demandados</div>
+            <div id="metricHorarios"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">💳 Métodos de pago registrados</div>
+            <div id="metricPagos"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">👥 Nuevos vs Recurrentes</div>
+            <div id="metricPacientes"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">❌ Cancelaciones últimos 4 meses</div>
+            <div id="metricCancelacion"></div>
+          </div>
+        </div>
+      </div>
     </section>
+
+    <!-- ── MODAL PAGO ── -->
+    <div id="modalPago" onclick="if(event.target===this)cerrarModalPago()">
+      <div class="pago-modal-box">
+        <div class="pago-modal-title">Registrar pago</div>
+        <div class="pago-modal-sub" id="pagoModalNombre"></div>
+        <div class="pago-metodos">
+          <button class="pago-metodo-btn" onclick="confirmarPago('Efectivo')">💵 Efectivo</button>
+          <button class="pago-metodo-btn" onclick="confirmarPago('Nequi')">📱 Nequi</button>
+          <button class="pago-metodo-btn" onclick="confirmarPago('Bancolombia')">🏦 Bancolombia</button>
+          <button class="pago-metodo-btn" onclick="confirmarPago('Transferencia')">↗ Transferencia</button>
+        </div>
+        <button class="pago-metodo-btn" style="width:100%;color:var(--muted);font-size:.78rem" onclick="confirmarPago('')">Marcar como pendiente</button>
+        <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="cerrarModalPago()">Cancelar</button>
+      </div>
+    </div>
 
     <!-- ── BASE DE DATOS ── -->
     <section id="vBasedatos" style="display:none">
@@ -1281,7 +1344,10 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">
           <div class="field">
             <label>Nombre completo *</label>
-            <input type="text" id="dbNombre" placeholder="Ana García López" autocomplete="off">
+            <input type="text" id="dbNombre" placeholder="Ana García López" autocomplete="off" oninput="checkDupDB()">
+            <div id="dbDupWarn" style="display:none;margin-top:6px;padding:8px 12px;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.5);border-radius:8px;font-size:.82rem;color:#92400e">
+              ⚠️ Ya existe un paciente con ese nombre: <strong id="dbDupName"></strong>. ¿Seguro que deseas crear otro registro?
+            </div>
           </div>
           <div class="field">
             <label>Teléfono / WhatsApp</label>
@@ -1336,6 +1402,24 @@ tr:hover td{background:rgba(126,221,208,.03)}
               <tr><td colspan="7"><div class="loading-wrap"><div class="spinner"></div> Cargando...</div></td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Historial de cambios -->
+      <div class="card" style="margin-top:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none" onclick="toggleChangeLog()">
+          <div class="card-title" style="margin-bottom:0;display:flex;align-items:center;gap:8px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+            Historial de cambios
+            <span id="changeLogCount" style="font-size:.75rem;font-weight:500;background:var(--primary);color:#fff;padding:1px 7px;border-radius:20px">0</span>
+          </div>
+          <span id="changeLogChevron" style="font-size:.85rem;color:var(--muted);transition:.2s">▼ Ver</span>
+        </div>
+        <div id="changeLogPanel" style="display:none;margin-top:16px">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+            <button onclick="clearChangeLog()" style="padding:5px 12px;background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-size:.78rem;cursor:pointer;font-family:var(--font-b)">Limpiar historial</button>
+          </div>
+          <div id="changeLogBody" style="max-height:320px;overflow-y:auto"></div>
         </div>
       </div>
     </section>
@@ -1467,6 +1551,8 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_r7Kr-9Uvu0qI
 
 let TOKEN  = sessionStorage.getItem('adminToken') || '';
 let allData = {citas: [], bloqueos: []};
+let _submittingBooking = false;
+let _submittingPatient = false;
 
 // ── LOGIN ──
 async function doLogin() {
@@ -1555,7 +1641,7 @@ function showView(v) {
   if (v === 'pacientes')      renderPacientes();
   if (v === 'calendario')     renderCalendar();
   if (v === 'recordatorios')  cargarRecordatorios();
-  if (v === 'basedatos')      { renderBasedatos(); initFormDB(); }
+  if (v === 'basedatos')      { renderBasedatos(); initFormDB(); renderChangeLog(); }
   if (v === 'finanzas')       renderFinanzas();
   if (v === 'seguimiento')    renderSeguimiento();
 }
@@ -1634,17 +1720,58 @@ function markWaSent(id, type) { localStorage.setItem('wa_'+id+'_'+type, '1'); }
 function wasWaSent(id, type)  { return !!localStorage.getItem('wa_'+id+'_'+type); }
 function agendarHoy() { showView('nueva'); document.getElementById('ncDate').value = today(); }
 
-// ── PAGO POR CITA (localStorage) ──
-function isPagada(id)  { return localStorage.getItem('pago_'+id) === '1'; }
-function togglePago(id) {
-  if (isPagada(id)) localStorage.removeItem('pago_'+id);
-  else localStorage.setItem('pago_'+id, '1');
-  renderAgenda();
-  initDashboard();
+// ── PAGO POR CITA ──
+let _pagoIdActivo = null;
+
+function isPagada(id) {
+  const c = allData.citas.find(x => x.id === id);
+  return !!(c && c.pago) || localStorage.getItem('pago_'+id) === '1';
 }
+
+function getMetodoPago(id) {
+  const c = allData.citas.find(x => x.id === id);
+  return (c && c.pago) || '';
+}
+
 function pagoBadge(id) {
-  const paid = isPagada(id);
-  return `<button type="button" class="pago-btn ${paid?'pagada':'pendiente'}" onclick="event.stopPropagation();togglePago('${id}')" title="Clic para cambiar estado de pago">${paid?'✓ Pagada':'⏳ Pago pend.'}</button>`;
+  const metodo = getMetodoPago(id);
+  const paid   = !!(metodo) || localStorage.getItem('pago_'+id) === '1';
+  const label  = metodo ? '✓ ' + metodo : (paid ? '✓ Pagada' : '⏳ Pago pend.');
+  return `<button type="button" class="pago-btn ${paid?'pagada':'pendiente'}" onclick="event.stopPropagation();abrirModalPago('${id}')" title="Clic para registrar método de pago">${label}</button>`;
+}
+
+function abrirModalPago(id) {
+  _pagoIdActivo = id;
+  const c = allData.citas.find(x => x.id === id);
+  const sub = document.getElementById('pagoModalNombre');
+  if (sub && c) sub.textContent = c.nombre + ' · ' + c.fecha + ' · ' + c.precio;
+  const metodoActual = c ? c.pago : '';
+  document.querySelectorAll('.pago-metodo-btn').forEach(b => {
+    b.classList.toggle('activo', b.textContent.includes(metodoActual) && !!metodoActual);
+  });
+  document.getElementById('modalPago').classList.add('open');
+}
+
+function cerrarModalPago() {
+  document.getElementById('modalPago').classList.remove('open');
+  _pagoIdActivo = null;
+}
+
+async function confirmarPago(metodo) {
+  if (!_pagoIdActivo) return;
+  const id = _pagoIdActivo;
+  cerrarModalPago();
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=updatePago&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(id)}&metodo=${encodeURIComponent(metodo)}`).then(x => x.json());
+    if (r.ok) {
+      const c = allData.citas.find(x => x.id === id);
+      if (c) c.pago = metodo;
+      if (metodo) localStorage.setItem('pago_'+id, '1');
+      else localStorage.removeItem('pago_'+id);
+      toast(metodo ? 'Pago registrado: ' + metodo : 'Marcado como pendiente', 'ok');
+      renderAgenda(); initDashboard(); renderFinanzas();
+    } else toast('Error al guardar: ' + (r.error || ''), 'err');
+  } catch(e) { toast('Error de conexión', 'err'); }
 }
 
 // ── ALERTA CITA PRÓXIMA ──
@@ -1921,18 +2048,21 @@ async function reload() {
 // ── HELPERS FINANCIEROS ──
 const esRegistroServ = s => (s || '').toLowerCase().trim().startsWith('registro');
 
-// Una cita se considera "cobrada" si está Atendida O fue marcada manualmente como pagada
+// Una cita se considera "cobrada" si tiene método de pago registrado, está Atendida, o fue marcada en localStorage
 function esCobrada(c) {
-  return c.estado === 'Atendida' || isPagada(c.id);
+  return !!(c.pago) || c.estado === 'Atendida' || localStorage.getItem('pago_'+c.id) === '1';
 }
 
-// Citas reales (sin registros, sin canceladas)
+// Citas reales (sin registros, sin canceladas, sin duplicados)
 function citasReales() {
-  return allData.citas.filter(c =>
-    c.estado !== 'Cancelada' &&
-    c.estado !== 'Registro' &&
-    !esRegistroServ(c.servicio)
-  );
+  const seen = new Set();
+  return allData.citas.filter(c => {
+    if (c.estado === 'Cancelada' || c.estado === 'Registro' || esRegistroServ(c.servicio)) return false;
+    const key = (c.nombre || '').toLowerCase().trim() + '|' + normDate(c.fecha) + '|' + (c.hora || '00:00');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 // ── DASHBOARD ──
@@ -2213,6 +2343,7 @@ async function changeStatus(id, status) {
     if (d.ok) {
       const cita = allData.citas.find(c => c.id === id);
       if (cita) cita.estado = status;
+      if (cita) logChange('Estado cambiado', `${cita.nombre} · ${cita.servicio} ${cita.fecha} → ${status}`);
       toast('Estado actualizado: ' + status);
       if (status === 'No asistió' && cita) {
         const t = String(cita.telefono||'').replace(/\D/g,'');
@@ -2489,6 +2620,7 @@ function autoFillPrice() {
 }
 
 async function submitAdminBooking() {
+  if (_submittingBooking) return;
   const name  = document.getElementById('ncName').value.trim();
   const phone = document.getElementById('ncPhone').value.trim();
   const serv  = document.getElementById('ncService').value;
@@ -2497,6 +2629,7 @@ async function submitAdminBooking() {
   const time  = document.getElementById('ncTime').value;
   if (!name||!serv||!date||!time) { toast('Completa los campos obligatorios (*)','err'); return; }
 
+  _submittingBooking = true;
   const btn = document.getElementById('ncSubmitBtn');
   btn.textContent = 'Creando...'; btn.disabled = true;
 
@@ -2510,39 +2643,45 @@ async function submitAdminBooking() {
     notes:   document.getElementById('ncNotes').value.trim()
   };
 
-  const isRecurring  = document.getElementById('ncRecurring').checked;
+  const isRecurring   = document.getElementById('ncRecurring').checked;
   const totalSessions = isRecurring ? (parseInt(document.getElementById('ncSessions').value) || 1) : 1;
 
   try {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=adminBook&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(data))}`);
     const d = await r.json();
-    if (!d.ok) { toast('Error: ' + (d.error||''), 'err'); btn.textContent = 'Crear cita'; btn.disabled = false; return; }
+    if (!d.ok) { toast('Error: ' + (d.error||''), 'err'); return; }
 
     // Crear sesiones adicionales si es recurrente
     if (isRecurring && totalSessions > 1) {
       btn.textContent = 'Creando sesiones...';
       const baseDate = new Date(date + 'T12:00:00');
       let created = 1;
+      let errors  = 0;
       for (let s = 1; s < totalSessions; s++) {
         baseDate.setDate(baseDate.getDate() + 7);
         const nextData = { ...data, date: toDateStr(baseDate) };
         try {
           const rr = await fetch(`${APPS_SCRIPT_URL}?action=adminBook&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(nextData))}`);
           const dd = await rr.json();
-          if (dd.ok) created++;
-        } catch(ex) {}
+          if (dd.ok) created++; else errors++;
+        } catch(ex) { errors++; }
       }
-      toast(`${created} de ${totalSessions} sesiones recurrentes creadas`);
+      if (errors > 0) toast(`${created} de ${totalSessions} sesiones creadas (${errors} fallaron)`, 'warn');
+      else toast(`${created} de ${totalSessions} sesiones recurrentes creadas`);
+      logChange('Nueva cita', `${name} · ${serv} · ${totalSessions} sesiones recurrentes desde ${date} ${time}`);
     } else {
       toast('Cita creada y agregada a Google Calendar');
+      logChange('Nueva cita', `${name} · ${serv} · ${date} ${time}`);
     }
 
     clearNuevaCita();
     await reload();
     initDashboard();
   } catch(e) { toast('Error de conexión','err'); }
-
-  btn.textContent = 'Crear cita'; btn.disabled = false;
+  finally {
+    _submittingBooking = false;
+    btn.textContent = 'Crear cita'; btn.disabled = false;
+  }
 }
 
 // ── BUSCADOR PACIENTE ──
@@ -2627,6 +2766,105 @@ function clearNuevaCita() {
   document.getElementById('descuentoPanel').style.display = 'none';
   const rc = document.getElementById('ncRecurring');
   if (rc) { rc.checked = false; document.getElementById('recurringPanel').style.display = 'none'; }
+}
+
+// ── INDICADOR DUPLICADO BASE DE DATOS ──
+function checkDupDB() {
+  const val  = document.getElementById('dbNombre').value.trim().toLowerCase();
+  const warn = document.getElementById('dbDupWarn');
+  if (val.length < 3) { warn.style.display = 'none'; return; }
+
+  const fuentes = [
+    ...(allData.pacientes || []),
+    ...allData.citas.filter(c => !esRegistroServ(c.servicio)).map(c => ({nombre: c.nombre}))
+  ];
+  const seen = new Set();
+  const match = fuentes.find(p => {
+    const n = (p.nombre || '').toLowerCase().trim();
+    if (seen.has(n)) return false;
+    seen.add(n);
+    return n.includes(val) || val.includes(n);
+  });
+
+  if (match) {
+    document.getElementById('dbDupName').textContent = match.nombre;
+    warn.style.display = 'block';
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+// ── CONFLICTO DE HORARIO ──
+function checkTimeConflict() {
+  const date = document.getElementById('ncDate').value;
+  const time = document.getElementById('ncTime').value;
+  const warn = document.getElementById('ncConflictWarn');
+  if (!date || !time) { warn.style.display = 'none'; return; }
+
+  const conflicts = allData.citas.filter(c =>
+    c.estado !== 'Cancelada' && !esRegistroServ(c.servicio) &&
+    normDate(c.fecha) === date && c.hora === time
+  );
+
+  if (conflicts.length) {
+    const lista = conflicts.map(c => `<strong>${c.nombre}</strong> (${c.servicio})`).join(', ');
+    warn.innerHTML = `⚠️ Conflicto de horario: ya hay cita a las ${time} — ${lista}`;
+    warn.style.display = 'block';
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+// ── HISTORIAL DE CAMBIOS ──
+function logChange(accion, detalle) {
+  const log = JSON.parse(localStorage.getItem('adminChangeLog') || '[]');
+  log.unshift({ ts: new Date().toLocaleString('es-CO'), accion, detalle });
+  if (log.length > 150) log.length = 150;
+  localStorage.setItem('adminChangeLog', JSON.stringify(log));
+  const countEl = document.getElementById('changeLogCount');
+  if (countEl) countEl.textContent = log.length;
+}
+
+function renderChangeLog() {
+  const log   = JSON.parse(localStorage.getItem('adminChangeLog') || '[]');
+  const body  = document.getElementById('changeLogBody');
+  const count = document.getElementById('changeLogCount');
+  if (count) count.textContent = log.length;
+  if (!body) return;
+  if (!log.length) {
+    body.innerHTML = '<p style="color:var(--muted);font-size:.85rem;text-align:center;padding:16px 0">No hay cambios registrados todavía.</p>';
+    return;
+  }
+  const iconos = {
+    'Nueva cita':        { bg:'rgba(16,185,129,.12)', color:'#065f46', icon:'📅' },
+    'Paciente agregado': { bg:'rgba(59,130,246,.12)', color:'#1e3a8a', icon:'👤' },
+    'Paciente editado':  { bg:'rgba(251,191,36,.12)', color:'#92400e', icon:'✏️' },
+    'Paciente eliminado':{ bg:'rgba(239,68,68,.12)',  color:'#991b1b', icon:'🗑️' },
+    'Estado cambiado':   { bg:'rgba(139,92,246,.12)', color:'#4c1d95', icon:'🔄' },
+  };
+  body.innerHTML = log.map(e => {
+    const s = iconos[e.accion] || { bg:'var(--s2)', color:'var(--muted)', icon:'•' };
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:.8rem;padding:2px 8px;border-radius:20px;background:${s.bg};color:${s.color};white-space:nowrap;margin-top:1px">${s.icon} ${e.accion}</span>
+      <span style="font-size:.84rem;color:var(--text);flex:1">${e.detalle}</span>
+      <span style="font-size:.75rem;color:var(--muted);white-space:nowrap">${e.ts}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleChangeLog() {
+  const panel   = document.getElementById('changeLogPanel');
+  const chevron = document.getElementById('changeLogChevron');
+  const open    = panel.style.display === 'block';
+  panel.style.display   = open ? 'none' : 'block';
+  chevron.textContent   = open ? '▼ Ver' : '▲ Ocultar';
+  if (!open) renderChangeLog();
+}
+
+function clearChangeLog() {
+  if (!confirm('¿Eliminar todo el historial de cambios?')) return;
+  localStorage.removeItem('adminChangeLog');
+  renderChangeLog();
 }
 
 // ── PACIENTES ──
@@ -2936,6 +3174,8 @@ async function guardarPacienteDB() {
     allData.citas.forEach(c => {
       if (oldNombres.includes(c.nombre)) { c.nombre = newNombre; c.telefono = telefono.replace(/\D/g, ''); c.email = email; }
     });
+    const oldLabel = oldNombres.join(' / ');
+    logChange('Paciente editado', oldLabel !== newNombre ? `${oldLabel} → ${newNombre}` : `${newNombre} (datos actualizados)`);
     toast(`Paciente actualizado en ${totalActualizado} cita(s)`);
     closeModal('modalEditarPaciente');
     renderBasedatos();
@@ -2955,6 +3195,7 @@ async function dbBorrarPac(idx) {
     }
     allData.citas    = allData.citas.filter(c => !p.nombres.includes(c.nombre));
     allData.pacientes = (allData.pacientes || []).filter(p2 => !p.nombres.map(n => n.toLowerCase()).includes((p2.nombre||'').toLowerCase()));
+    logChange('Paciente eliminado', `${p.nombre} · ${p.sesiones} cita(s)`);
     toast(`${p.nombre} eliminado/a correctamente`);
     renderBasedatos();
     initDashboard();
@@ -2962,6 +3203,7 @@ async function dbBorrarPac(idx) {
 }
 
 async function agregarPacienteDB() {
+  if (_submittingPatient) return;
   const nombre   = document.getElementById('dbNombre').value.trim();
   const telefono = document.getElementById('dbTelefono').value.trim();
   const email    = document.getElementById('dbEmail').value.trim();
@@ -2971,6 +3213,7 @@ async function agregarPacienteDB() {
 
   if (!nombre) { toast('El nombre es obligatorio', 'err'); return; }
 
+  _submittingPatient = true;
   const btn = document.getElementById('dbSubmitBtn');
   btn.textContent = 'Guardando...'; btn.disabled = true;
 
@@ -2994,6 +3237,7 @@ async function agregarPacienteDB() {
     const d = await r.json();
     if (d.ok) {
       toast(`${nombre} agregado/a correctamente`);
+      logChange('Paciente agregado', nombre + (telefono ? ` · ${telefono}` : ''));
       limpiarFormDB();
       await reload();
       renderBasedatos();
@@ -3002,8 +3246,10 @@ async function agregarPacienteDB() {
       toast('Error: ' + (d.error || ''), 'err');
     }
   } catch(e) { toast('Error de conexión', 'err'); }
-
-  btn.textContent = 'Agregar paciente'; btn.disabled = false;
+  finally {
+    _submittingPatient = false;
+    btn.textContent = 'Agregar paciente'; btn.disabled = false;
+  }
 }
 
 function limpiarFormDB() {
@@ -4073,6 +4319,53 @@ function autoGuardarNota() {
 }
 
 // ══════════════════════════════════════════════════════════════
+async function limpiarDuplicadosGAS() {
+  const btn = document.getElementById('btnLimpiarDup');
+  const dups = detectarDuplicados();
+  if (!dups.length) { toast('No se detectaron duplicados en los datos cargados', 'ok'); return; }
+
+  const msg = `Se detectaron ${dups.length} cita(s) duplicada(s):\n\n` +
+    dups.map(d => `• ${d.nombre} — ${d.fecha} ${d.hora || '00:00'}`).join('\n') +
+    '\n\n¿Cancelarlas en el spreadsheet? Quedarán como Canceladas (no se borran definitivamente).';
+  if (!confirm(msg)) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Limpiando...';
+  let eliminadas = 0, errores = 0;
+  for (const dup of dups) {
+    try {
+      const r = await fetch(`${APPS_SCRIPT_URL}?action=cancelBooking&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(dup.id)}`).then(x => x.json());
+      if (r.ok) {
+        const cita = allData.citas.find(c => c.id === dup.id);
+        if (cita) cita.estado = 'Cancelada';
+        eliminadas++;
+      } else errores++;
+    } catch(e) { errores++; }
+  }
+  btn.disabled = false;
+  btn.textContent = 'Limpiar duplicados';
+  toast(`Duplicados corregidos: ${eliminadas}${errores ? ' · Errores: ' + errores : ''}`, eliminadas > 0 ? 'ok' : 'err');
+  if (eliminadas > 0) { initDashboard(); renderFinanzas(); }
+}
+
+function detectarDuplicados() {
+  const grupos = {};
+  for (const c of allData.citas) {
+    if (c.estado === 'Cancelada' || esRegistroServ(c.servicio)) continue;
+    const key = (c.nombre || '').toLowerCase().trim() + '|' + normDate(c.fecha) + '|' + (c.hora || '00:00');
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push(c);
+  }
+  const dups = [];
+  for (const key in grupos) {
+    const arr = grupos[key];
+    if (arr.length > 1) {
+      arr.slice(1).forEach(c => dups.push(c));
+    }
+  }
+  return dups;
+}
+
 // ── MÓDULO FINANZAS ──
 // ══════════════════════════════════════════════════════════════
 function renderFinanzas() {
@@ -4180,6 +4473,114 @@ function renderFinanzas() {
         ${resRow('Ticket promedio', ticketProm > 0 ? '$' + ticketProm.toLocaleString('es-CO') : '—', '')}
         ${meta ? resRow('Meta cumplida', Math.min(Math.round(cobradoMes/meta*100),100) + '%', cobradoMes >= meta ? 'color:var(--ok);font-weight:700' : 'color:var(--warn)') : ''}
       </div>`;
+  }
+
+  renderMetricas();
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── MÉTRICAS INTELIGENTES ──
+// ══════════════════════════════════════════════════════════════
+function renderMetricas() {
+  const citas = citasReales();
+  const COLORES = ['var(--primary)','#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6'];
+
+  // 1. Horarios más demandados
+  const horMap = {};
+  citas.forEach(c => {
+    const h = (c.hora || '').split(':')[0];
+    if (h) horMap[h] = (horMap[h] || 0) + 1;
+  });
+  const horArr = Object.entries(horMap).sort((a,b) => +a[0] - +b[0]);
+  const maxHor = Math.max(...horArr.map(x => x[1]), 1);
+  const horEl = document.getElementById('metricHorarios');
+  if (horEl) {
+    horEl.innerHTML = horArr.length
+      ? horArr.map(([h, n]) => `
+        <div class="metric-row">
+          <div class="metric-label">${h}:00</div>
+          <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:${Math.round(n/maxHor*100)}%;background:var(--primary)"></div></div>
+          <div class="metric-val" style="color:var(--primary)">${n}</div>
+        </div>`).join('')
+      : '<div class="empty" style="padding:20px 0"><p>Sin datos</p></div>';
+  }
+
+  // 2. Métodos de pago
+  const pagoMap = { 'Efectivo':0, 'Nequi':0, 'Bancolombia':0, 'Transferencia':0, 'Pendiente':0 };
+  citas.forEach(c => {
+    const m = c.pago || (localStorage.getItem('pago_'+c.id)==='1' ? 'Efectivo' : '');
+    if (m && pagoMap[m] !== undefined) pagoMap[m]++;
+    else if (!m) pagoMap['Pendiente']++;
+  });
+  const pagoArr = Object.entries(pagoMap).filter(([,v]) => v > 0);
+  const totalPagos = citas.length || 1;
+  const pagoEl = document.getElementById('metricPagos');
+  if (pagoEl) {
+    const iconos = { Efectivo:'💵', Nequi:'📱', Bancolombia:'🏦', Transferencia:'↗', Pendiente:'⏳' };
+    pagoEl.innerHTML = pagoArr.length
+      ? pagoArr.map(([m, n], i) => `
+        <div class="metric-row">
+          <div class="metric-label" style="width:110px">${iconos[m]||''} ${m}</div>
+          <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:${Math.round(n/totalPagos*100)}%;background:${COLORES[i%COLORES.length]}"></div></div>
+          <div class="metric-val" style="color:${COLORES[i%COLORES.length]}">${n}</div>
+        </div>`).join('')
+      : '<div class="empty" style="padding:20px 0"><p>Sin datos de pago</p></div>';
+  }
+
+  // 3. Nuevos vs Recurrentes (pacientes con 1 sola cita = nuevo, 2+ = recurrente)
+  const contPac = {};
+  citas.forEach(c => { const k = (c.nombre||'').toLowerCase().trim(); contPac[k] = (contPac[k]||0)+1; });
+  const nuevos = Object.values(contPac).filter(v => v === 1).length;
+  const recurrentes = Object.values(contPac).filter(v => v > 1).length;
+  const totalPac = nuevos + recurrentes || 1;
+  const pctNuevos = Math.round(nuevos / totalPac * 100);
+  const pctRec    = Math.round(recurrentes / totalPac * 100);
+  const pacEl = document.getElementById('metricPacientes');
+  if (pacEl) {
+    pacEl.innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <div style="flex:${pctNuevos||1};background:var(--primary);height:10px;border-radius:99px 0 0 99px"></div>
+        <div style="flex:${pctRec||1};background:#6366f1;height:10px;border-radius:0 99px 99px 0"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="metric-row">
+          <div style="font-size:.82rem;flex:1">🟢 Nuevos pacientes</div>
+          <div class="metric-val" style="color:var(--primary)">${nuevos} <span style="font-size:.7rem;color:var(--muted)">(${pctNuevos}%)</span></div>
+        </div>
+        <div class="metric-row">
+          <div style="font-size:.82rem;flex:1">🔵 Recurrentes</div>
+          <div class="metric-val" style="color:#6366f1">${recurrentes} <span style="font-size:.7rem;color:var(--muted)">(${pctRec}%)</span></div>
+        </div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Total pacientes únicos: ${totalPac}</div>
+      </div>`;
+  }
+
+  // 4. Tasa de cancelación últimos 4 meses
+  const now2 = new Date();
+  const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const meses4 = [];
+  for (let i = 3; i >= 0; i--) {
+    const d = new Date(now2.getFullYear(), now2.getMonth()-i, 1);
+    meses4.push({ m: d.getMonth()+1, y: d.getFullYear(), label: MESES[d.getMonth()] });
+  }
+  const cancelEl = document.getElementById('metricCancelacion');
+  if (cancelEl) {
+    const rows = meses4.map(mes => {
+      const todasMes = allData.citas.filter(c => {
+        const [cy,cm] = normDate(c.fecha).split('-');
+        return +cm===mes.m && +cy===mes.y && !esRegistroServ(c.servicio);
+      });
+      const canceladas = todasMes.filter(c => c.estado === 'Cancelada').length;
+      const total = todasMes.length || 1;
+      const pct = Math.round(canceladas / total * 100);
+      const color = pct >= 30 ? '#ef4444' : pct >= 15 ? '#f59e0b' : 'var(--ok)';
+      return `<div class="metric-row">
+        <div class="metric-label">${mes.label}</div>
+        <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <div class="metric-val" style="color:${color}">${pct}%</div>
+      </div>`;
+    });
+    cancelEl.innerHTML = rows.join('');
   }
 }
 

@@ -216,6 +216,9 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
   #step6{display:block!important}
   .card,.report-section{break-inside:avoid}
 }
+.trd-btn{flex:1;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--s2);cursor:pointer;font-size:.78rem;font-weight:500;color:var(--muted);transition:var(--tr)}
+.trd-btn.pos{background:#fee2e2;border-color:#dc2626;color:#dc2626}
+.trd-btn.neg{background:#dcfce7;border-color:#16a34a;color:#16a34a}
 </style>
 </head>
 <body>
@@ -256,6 +259,11 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
 
   <!-- ═══ STEP 1: DATOS ATLETA ═══ -->
   <div id="step1">
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <span style="font-size:.75rem;color:var(--muted);align-self:center;font-family:var(--font-m)">Cargar ejemplo:</span>
+      <button class="btn btn-ghost" style="font-size:.78rem;padding:7px 14px" onclick="cargarEjemplo(1)">👤 Atleta masculino</button>
+      <button class="btn btn-ghost" style="font-size:.78rem;padding:7px 14px" onclick="cargarEjemplo(2)">👤 Atleta femenino</button>
+    </div>
     <div class="card">
       <div class="card-title">👤 Datos del atleta</div>
       <div class="grid-2">
@@ -342,8 +350,65 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
   <!-- ═══ STEP 3: SCREENS FUNCIONALES ═══ -->
   <div id="step3" style="display:none">
     <div class="card">
-      <div class="card-title">🏋️ 5 Screens Funcionales</div>
-      <div class="alert alert-info">📸 Sube una foto por prueba y asigna el score. <strong>0</strong> = dolor · <strong>1</strong> = no puede · <strong>2</strong> = compensación · <strong>3</strong> = correcto</div>
+      <div class="card-title">🏋️ Screens Funcionales</div>
+      <div class="alert alert-info">📸 Sube una foto por prueba y asigna el score. <strong>0</strong> = dolor · <strong>1</strong> = no puede · <strong>2</strong> = compensación · <strong>3</strong> = correcto · La IA analizará las fotos automáticamente.</div>
+
+      <!-- PROTOCOLO COLAPSABLE -->
+      <div style="margin-bottom:14px">
+        <button onclick="toggleProtocolo()" style="background:none;border:none;color:var(--primary);font-size:.8rem;font-family:var(--font-m);cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:5px">
+          <span id="proto-arr">▶</span> Ver protocolo de evaluación
+        </button>
+        <div id="protocolo-box" style="display:none;margin-top:10px;background:var(--s2);border-radius:10px;padding:14px;font-size:.76rem;line-height:1.6">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><strong style="color:var(--primary)">🏋️ Deep Squat</strong><br>
+              <b>3:</b> Talones en suelo, rodillas alineadas, tronco paralelo a tibias<br>
+              <b>2:</b> Talones leve elevación o valgo leve / inclinación de tronco<br>
+              <b>1:</b> Talones elevados, valgo severo, no puede bajar paralelo<br>
+              <b>0:</b> Dolor en cualquier parte del movimiento</div>
+            <div><strong style="color:var(--primary)">🙌 Overhead Reach</strong><br>
+              <b>3:</b> Manos tocan la pared, columna neutral, sin compensación<br>
+              <b>2:</b> Toca pared con compensación lumbar o escápulas aladas<br>
+              <b>1:</b> No logra llevar manos a la pared<br>
+              <b>0:</b> Dolor en hombro o columna</div>
+            <div><strong style="color:var(--primary)">🦵 Single Leg Squat</strong><br>
+              <b>3:</b> Rodilla sobre 2° dedo, pelvis estable, control total<br>
+              <b>2:</b> Valgo leve / inclinación de tronco / inestabilidad<br>
+              <b>1:</b> Colapso en valgo / caída pélvica severa / no completa<br>
+              <b>0:</b> Dolor</div>
+            <div><strong style="color:var(--primary)">💪 Shoulder Clearing</strong><br>
+              <b>3:</b> Puños se tocan o superponen<br>
+              <b>2:</b> Puños a menos de un puño de distancia<br>
+              <b>1:</b> Puños a más de un puño de distancia<br>
+              <b>0:</b> Dolor</div>
+            <div><strong style="color:var(--primary)">⚖️ Balance Monopodal</strong><br>
+              <b>≥ 8s:</b> Normal · <b>5-7s:</b> Déficit leve<br>
+              <b>&lt; 5s:</b> Déficit significativo de propiocepción<br>
+              <em>Protocolo: ojos cerrados, manos en caderas, máx 10s</em></div>
+            <div><strong style="color:var(--primary)">🦴 Trendelenburg</strong><br>
+              <b>Neg (normal):</b> Pelvis se mantiene o sube al levantar pierna<br>
+              <b>Pos:</b> Caída del hemipelvis contralateral → debilidad glúteo medio<br>
+              <em>Apoyo monopodal 30s, observar cresta ilíaca contraria</em></div>
+            <div><strong style="color:var(--primary)">🦵 Shin Box</strong><br>
+              <b>RI normal:</b> 35-45° · <b>RE normal:</b> 40-60°<br>
+              <b>Trans 3:</b> Fluida y controlada · <b>Trans 2:</b> Con compensación de tronco<br>
+              <b>Trans 1:</b> No puede hacer transición RI→RE · <b>Trans 0:</b> Dolor</div>
+            <div><strong style="color:var(--primary)">🐦 Bird Dog</strong><br>
+              <b>3:</b> Columna neutral, movimiento coordinado, sin rotación pélvica<br>
+              <b>2:</b> Rotación pélvica leve / temblor / pérdida breve del neutro<br>
+              <b>1:</b> Pérdida severa del neutro o no completa<br>
+              <b>0:</b> Dolor</div>
+            <div><strong style="color:var(--primary)">🐛 Dead Bug</strong><br>
+              <b>3:</b> Neutro lumbar mantenido, coordinación correcta, respiración fluida<br>
+              <b>2:</b> Pierde neutro momentáneamente o apnea breve<br>
+              <b>1:</b> Hiperlordosis marcada / imposibilidad de coordinar<br>
+              <b>0:</b> Dolor</div>
+            <div><strong style="color:var(--primary)">⏱️ Plank</strong><br>
+              <b>≥ 120s:</b> Óptimo CrossFit · <b>60-119s:</b> Normal<br>
+              <b>30-59s:</b> Déficit moderado · <b>&lt; 30s:</b> Déficit severo<br>
+              <em>Posición prono sobre antebrazos y puntas de pies</em></div>
+          </div>
+        </div>
+      </div>
 
       <!-- 1. DEEP SQUAT -->
       <div class="test-ex-card" id="tc-ds">
@@ -546,6 +611,235 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
         </div>
       </div>
 
+
+      <div class="zone-title" style="margin-top:18px">🦴 Movilidad de Cadera</div>
+
+      <!-- 6. TRENDELENBURG -->
+      <div class="test-ex-card" id="tc-trd">
+        <div class="test-ex-hd" onclick="toggleTest('trd')">
+          <div class="test-ex-name">🦴 Trendelenburg Estático <span class="test-tag" id="tag-trd">sin eval.</span></div>
+          <span id="arr-trd" style="color:var(--muted);font-size:.8rem">▼</span>
+        </div>
+        <div class="test-ex-bd" id="bd-trd">
+          <div class="score-legend" style="margin-bottom:10px"><strong>Positivo</strong> = caída del hemipelvis contralateral · <strong>Negativo</strong> = pelvis se mantiene o sube (normal)</div>
+          <div class="bilateral-wrap">
+            <div>
+              <div class="bilateral-label">Apoyo D (evalúa glúteo D)</div>
+              <div style="display:flex;gap:7px;margin:6px 0">
+                <button class="trd-btn" id="trd-d-pos" onclick="setTrd('d','positivo')">+ Positivo</button>
+                <button class="trd-btn" id="trd-d-neg" onclick="setTrd('d','negativo')">− Negativo</button>
+              </div>
+              <div class="test-mini-photo" id="mph-trdd" onclick="document.getElementById('minp-trdd').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto D</span>
+                <img id="mimg-trdd" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'trdd')">✕</button>
+              </div>
+              <input type="file" id="minp-trdd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('trdd',this)">
+            </div>
+            <div>
+              <div class="bilateral-label">Apoyo I (evalúa glúteo I)</div>
+              <div style="display:flex;gap:7px;margin:6px 0">
+                <button class="trd-btn" id="trd-i-pos" onclick="setTrd('i','positivo')">+ Positivo</button>
+                <button class="trd-btn" id="trd-i-neg" onclick="setTrd('i','negativo')">− Negativo</button>
+              </div>
+              <div class="test-mini-photo" id="mph-trdi" onclick="document.getElementById('minp-trdi').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto I</span>
+                <img id="mimg-trdi" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'trdi')">✕</button>
+              </div>
+              <input type="file" id="minp-trdi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('trdi',this)">
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Observaciones</label>
+            <textarea id="obs-trd" rows="2" placeholder="Caída pélvica D/I, grado de compensación, dolor a la carga..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. SHIN BOX -->
+      <div class="test-ex-card" id="tc-sb">
+        <div class="test-ex-hd" onclick="toggleTest('sb')">
+          <div class="test-ex-name">🦵 Shin Box Assessment <span class="test-tag" id="tag-sb">sin eval.</span></div>
+          <span id="arr-sb" style="color:var(--muted);font-size:.8rem">▼</span>
+        </div>
+        <div class="test-ex-bd" id="bd-sb">
+          <div class="score-legend" style="margin-bottom:10px">Sentado en suelo, shin horizontal a 90°. Medir grados de RI y RE activos. Transición RI→RE: 0=dolor · 1=no puede · 2=compensa · 3=fluida</div>
+          <div class="bilateral-wrap">
+            <div>
+              <div class="bilateral-label">Pierna D</div>
+              <div style="display:flex;gap:8px;margin:6px 0">
+                <div style="flex:1"><div style="font-size:.68rem;color:var(--muted);margin-bottom:3px">RI (°)</div><input type="number" class="time-input" style="width:100%" id="sb-ri-d" placeholder="35" min="0" max="90" oninput="updateSbTag()"></div>
+                <div style="flex:1"><div style="font-size:.68rem;color:var(--muted);margin-bottom:3px">RE (°)</div><input type="number" class="time-input" style="width:100%" id="sb-re-d" placeholder="45" min="0" max="90" oninput="updateSbTag()"></div>
+              </div>
+              <div class="bilateral-label">Transición D (0-3)</div>
+              <div class="score-btns" id="sc-sbd">
+                <div class="score-btn s0" onclick="setScore('sbd',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('sbd',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('sbd',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('sbd',3,this)">3</div>
+              </div>
+              <div class="test-mini-photo" id="mph-sbd" onclick="document.getElementById('minp-sbd').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto D</span>
+                <img id="mimg-sbd" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'sbd')">✕</button>
+              </div>
+              <input type="file" id="minp-sbd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('sbd',this)">
+            </div>
+            <div>
+              <div class="bilateral-label">Pierna I</div>
+              <div style="display:flex;gap:8px;margin:6px 0">
+                <div style="flex:1"><div style="font-size:.68rem;color:var(--muted);margin-bottom:3px">RI (°)</div><input type="number" class="time-input" style="width:100%" id="sb-ri-i" placeholder="35" min="0" max="90" oninput="updateSbTag()"></div>
+                <div style="flex:1"><div style="font-size:.68rem;color:var(--muted);margin-bottom:3px">RE (°)</div><input type="number" class="time-input" style="width:100%" id="sb-re-i" placeholder="45" min="0" max="90" oninput="updateSbTag()"></div>
+              </div>
+              <div class="bilateral-label">Transición I (0-3)</div>
+              <div class="score-btns" id="sc-sbi">
+                <div class="score-btn s0" onclick="setScore('sbi',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('sbi',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('sbi',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('sbi',3,this)">3</div>
+              </div>
+              <div class="test-mini-photo" id="mph-sbi" onclick="document.getElementById('minp-sbi').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto I</span>
+                <img id="mimg-sbi" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'sbi')">✕</button>
+              </div>
+              <input type="file" id="minp-sbi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('sbi',this)">
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Observaciones</label>
+            <textarea id="obs-sb" rows="2" placeholder="Asimetría RI/RE, dolor en transición, compensación de tronco..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="zone-title" style="margin-top:18px">🔵 Evaluación de Core</div>
+
+      <!-- 8. BIRD DOG -->
+      <div class="test-ex-card" id="tc-bd">
+        <div class="test-ex-hd" onclick="toggleTest('bd')">
+          <div class="test-ex-name">🐦 Bird Dog <span class="test-tag" id="tag-bd">sin score</span></div>
+          <span id="arr-bd" style="color:var(--muted);font-size:.8rem">▼</span>
+        </div>
+        <div class="test-ex-bd" id="bd-bd">
+          <div class="score-legend" style="margin-bottom:10px">0=dolor · 1=pérdida de neutro severa / no completa · 2=rotación pélvica o temblor visible · 3=patrón correcto y simétrico</div>
+          <div class="bilateral-wrap">
+            <div>
+              <div class="bilateral-label">Lado D (brazo D / pierna I)</div>
+              <div class="score-btns" id="sc-bdd">
+                <div class="score-btn s0" onclick="setScore('bdd',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('bdd',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('bdd',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('bdd',3,this)">3</div>
+              </div>
+              <div class="test-mini-photo" id="mph-bdd" onclick="document.getElementById('minp-bdd').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto D</span>
+                <img id="mimg-bdd" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'bdd')">✕</button>
+              </div>
+              <input type="file" id="minp-bdd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('bdd',this)">
+            </div>
+            <div>
+              <div class="bilateral-label">Lado I (brazo I / pierna D)</div>
+              <div class="score-btns" id="sc-bdi">
+                <div class="score-btn s0" onclick="setScore('bdi',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('bdi',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('bdi',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('bdi',3,this)">3</div>
+              </div>
+              <div class="test-mini-photo" id="mph-bdi" onclick="document.getElementById('minp-bdi').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto I</span>
+                <img id="mimg-bdi" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'bdi')">✕</button>
+              </div>
+              <input type="file" id="minp-bdi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('bdi',this)">
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Observaciones</label>
+            <textarea id="obs-bd" rows="2" placeholder="Rotación pélvica, pérdida de neutro lumbar, temblor excesivo, asimetría D vs I..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. DEAD BUG -->
+      <div class="test-ex-card" id="tc-db">
+        <div class="test-ex-hd" onclick="toggleTest('db')">
+          <div class="test-ex-name">🐛 Dead Bug <span class="test-tag" id="tag-db">sin score</span></div>
+          <span id="arr-db" style="color:var(--muted);font-size:.8rem">▼</span>
+        </div>
+        <div class="test-ex-bd" id="bd-db">
+          <div class="score-legend" style="margin-bottom:10px">0=dolor · 1=hiperlordosis marcada / no coordina · 2=pierde neutro o apnea momentánea · 3=neutro mantenido y respiración coordinada</div>
+          <div class="bilateral-wrap">
+            <div>
+              <div class="bilateral-label">Lado D (brazo I / pierna D)</div>
+              <div class="score-btns" id="sc-dbd">
+                <div class="score-btn s0" onclick="setScore('dbd',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('dbd',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('dbd',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('dbd',3,this)">3</div>
+              </div>
+              <div class="test-mini-photo" id="mph-dbd" onclick="document.getElementById('minp-dbd').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto D</span>
+                <img id="mimg-dbd" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'dbd')">✕</button>
+              </div>
+              <input type="file" id="minp-dbd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('dbd',this)">
+            </div>
+            <div>
+              <div class="bilateral-label">Lado I (brazo D / pierna I)</div>
+              <div class="score-btns" id="sc-dbi">
+                <div class="score-btn s0" onclick="setScore('dbi',0,this)">0</div>
+                <div class="score-btn s1" onclick="setScore('dbi',1,this)">1</div>
+                <div class="score-btn s2" onclick="setScore('dbi',2,this)">2</div>
+                <div class="score-btn s3" onclick="setScore('dbi',3,this)">3</div>
+              </div>
+              <div class="test-mini-photo" id="mph-dbi" onclick="document.getElementById('minp-dbi').click()" style="width:90px;margin-top:6px">
+                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto I</span>
+                <img id="mimg-dbi" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'dbi')">✕</button>
+              </div>
+              <input type="file" id="minp-dbi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('dbi',this)">
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Observaciones</label>
+            <textarea id="obs-db" rows="2" placeholder="Hiperlordosis al extender pierna, apnea, descoordinación, asimetría..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. PLANK -->
+      <div class="test-ex-card" id="tc-pk">
+        <div class="test-ex-hd" onclick="toggleTest('pk')">
+          <div class="test-ex-name">⏱️ Plank (resistencia de core) <span class="test-tag" id="tag-pk">sin tiempo</span></div>
+          <span id="arr-pk" style="color:var(--muted);font-size:.8rem">▼</span>
+        </div>
+        <div class="test-ex-bd" id="bd-pk">
+          <div class="score-legend" style="margin-bottom:10px">Tiempo máximo manteniendo posición de plancha. Normal ≥ 60s · CrossFit competidor ≥ 120s.</div>
+          <div class="test-score-row" style="margin-top:10px">
+            <div>
+              <div class="bilateral-label">Tiempo (segundos)</div>
+              <input type="number" class="time-input" id="time-pk" placeholder="60" min="0" max="600" style="width:110px" oninput="updatePkTag()">
+            </div>
+            <div>
+              <div class="bilateral-label">Foto de referencia</div>
+              <div class="test-mini-photo" id="mph-pk" onclick="document.getElementById('minp-pk').click()">
+                <span style="font-size:1.3rem">📸</span><span style="font-size:.68rem;color:var(--muted)">Subir foto</span>
+                <img id="mimg-pk" src="" alt="" style="display:none">
+                <button class="trm" onclick="removeTestPhoto(event,'pk')">✕</button>
+              </div>
+              <input type="file" id="minp-pk" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('pk',this)">
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Observaciones</label>
+            <textarea id="obs-pk" rows="2" placeholder="Caída de cadera, elevación de glúteos, anteriorización cefálica, pérdida de respiración..."></textarea>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /card -->
     <div class="step-controls">
       <button class="btn btn-ghost" onclick="goStep(2)">← Atrás</button>
@@ -658,8 +952,9 @@ let currentStep = 1;
 let nivelSel = 'Principiante';
 let sevSel = '';
 let photos = { frontal: null, lateral: null, posterior: null };
-let testPhotos = {};   // keyed by test id (ds, oh, slsd, slsi, shd, shi, bmd, bmi)
-let testScores = {};   // keyed by test id
+let testPhotos = {};
+let testScores = {};
+let trdScores = {};
 let findings = [];
 let aiReport = '';
 let patientData = {};
@@ -674,6 +969,61 @@ const TESTS = [
 ];
 
 if (TOKEN) showApp();
+
+// ── EJEMPLOS DEMO ────────────────────────────────────────────────────
+const DEMOS = [
+  {
+    nombre:'Juan Esteban Gómez', edad:'27', telefono:'3001234567', email:'juan.gomez@email.com',
+    nivel:'Avanzado', anios:'3-5 años', objetivo:'Mejorar rendimiento',
+    molestias:'Dolor lumbar al hacer deadlift y tensión en hombro derecho post-WOD pesado'
+  },
+  {
+    nombre:'María Alejandra Torres', edad:'34', telefono:'3109876543', email:'maria.torres@email.com',
+    nivel:'Intermedio', anios:'1-2 años', objetivo:'Prevenir lesiones',
+    molestias:'Rodilla derecha molesta en los thrusters y box jumps, especialmente al bajar escaleras'
+  }
+];
+function cargarEjemplo(n) {
+  const d = DEMOS[n-1];
+  document.getElementById('pNombre').value    = d.nombre;
+  document.getElementById('pEdad').value      = d.edad;
+  document.getElementById('pTelefono').value  = d.telefono;
+  document.getElementById('pEmail').value     = d.email;
+  document.getElementById('pAnios').value     = d.anios;
+  document.getElementById('pObjetivo').value  = d.objetivo;
+  document.getElementById('pMolestias').value = d.molestias;
+  document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelector('[data-val="' + d.nivel + '"]').classList.add('sel');
+  nivelSel = d.nivel;
+}
+
+// ── PROTOCOLO TOGGLE ─────────────────────────────────────────────────
+function toggleProtocolo() {
+  const box = document.getElementById('protocolo-box');
+  const arr = document.getElementById('proto-arr');
+  const open = box.style.display !== 'none';
+  box.style.display = open ? 'none' : 'block';
+  arr.textContent = open ? '▶' : '▼';
+}
+
+// ── COMPRIMIR IMAGEN ─────────────────────────────────────────────────
+function compressImage(dataUrl, maxW, quality) {
+  maxW = maxW || 900; quality = quality || 0.72;
+  return new Promise(function(resolve) {
+    if (!dataUrl) { resolve(null); return; }
+    var img = new Image();
+    img.onload = function() {
+      var scale = Math.min(1, maxW / Math.max(img.width, img.height));
+      var canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = function() { resolve(dataUrl); };
+    img.src = dataUrl;
+  });
+}
 
 async function doLogin() {
   const pw = document.getElementById('pwInput').value.trim();
@@ -804,7 +1154,17 @@ function setScore(id, val, el) {
 }
 
 function updateTestTag(tagEl, id) {
-  // Para tests bilaterales (sls, sh)
+  const cleanParent = id.replace(/[di]$/i, '');
+  const bilMap = { sh:['shd','shi'], sls:['slsd','slsi'], bd:['bdd','bdi'], db:['dbd','dbi'], sb:['sbd','sbi'] };
+  const parentTag = document.getElementById('tag-' + cleanParent);
+  if (!parentTag) return;
+  const ids = bilMap[cleanParent];
+  if (!ids) return;
+  const defined = ids.map(i => testScores[i]).filter(s => s !== undefined);
+  if (!defined.length) return;
+  const min = Math.min(...defined);
+  parentTag.textContent = ids.map(i => testScores[i] !== undefined ? testScores[i] : '—').join('/');
+  parentTag.className = 'test-tag s' + min;
 }
 
 function updateBmTag() {
@@ -812,6 +1172,42 @@ function updateBmTag() {
   const i = document.getElementById('time-bmi').value;
   const tag = document.getElementById('tag-bm');
   if (d || i) { tag.textContent = (d||'—') + 's D / ' + (i||'—') + 's I'; tag.className = 'test-tag'; }
+}
+
+function setTrd(side, val) {
+  trdScores[side] = val;
+  const posBtn = document.getElementById('trd-' + side + '-pos');
+  const negBtn = document.getElementById('trd-' + side + '-neg');
+  posBtn.className = 'trd-btn' + (val === 'positivo' ? ' pos' : '');
+  negBtn.className = 'trd-btn' + (val === 'negativo' ? ' neg' : '');
+  updateTrdTag();
+}
+
+function updateTrdTag() {
+  const tag = document.getElementById('tag-trd');
+  if (!trdScores.d && !trdScores.i) return;
+  const fmt = v => !v ? '?' : v === 'positivo' ? '(+)' : '(−)';
+  tag.textContent = 'D ' + fmt(trdScores.d) + ' / I ' + fmt(trdScores.i);
+  tag.className = 'test-tag ' + (trdScores.d === 'positivo' || trdScores.i === 'positivo' ? 's1' : 's3');
+}
+
+function updateSbTag() {
+  const riD = document.getElementById('sb-ri-d').value;
+  const reD = document.getElementById('sb-re-d').value;
+  const riI = document.getElementById('sb-ri-i').value;
+  const reI = document.getElementById('sb-re-i').value;
+  const tag = document.getElementById('tag-sb');
+  if (!riD && !reD && !riI && !reI) return;
+  tag.textContent = 'D:' + (riD||'—') + '°/' + (reD||'—') + '° I:' + (riI||'—') + '°/' + (reI||'—') + '°';
+  tag.className = 'test-tag';
+}
+
+function updatePkTag() {
+  const t = document.getElementById('time-pk').value;
+  const tag = document.getElementById('tag-pk');
+  if (!t) return;
+  tag.textContent = t + 's';
+  tag.className = 'test-tag ' + (+t >= 120 ? 's3' : +t >= 60 ? 's2' : +t >= 30 ? 's1' : 's0');
 }
 
 // ── CHIPS (HALLAZGOS) ────────────────────────────────────────────────
@@ -835,24 +1231,41 @@ async function startGenerate() {
   patientData.observaciones = document.getElementById('pObservaciones').value.trim();
   patientData.severidad     = sevSel || 'No especificada';
 
-  // Recoger datos de los 5 tests
+  // Recoger datos de todos los tests
   const screens = {
     deepSquat:      { score: testScores['ds']   ?? null, obs: document.getElementById('obs-ds').value.trim() },
     overheadReach:  { score: testScores['oh']   ?? null, obs: document.getElementById('obs-oh').value.trim() },
     singleLegSquat: { scoreD: testScores['slsd'] ?? null, scoreI: testScores['slsi'] ?? null, obs: document.getElementById('obs-sls').value.trim() },
     shoulderMob:    { scoreD: testScores['shd']  ?? null, scoreI: testScores['shi']  ?? null, obs: document.getElementById('obs-sh').value.trim() },
-    balanceMono:    { timeD: document.getElementById('time-bmd').value || null, timeI: document.getElementById('time-bmi').value || null, obs: document.getElementById('obs-bm').value.trim() }
+    balanceMono:    { timeD: document.getElementById('time-bmd').value || null, timeI: document.getElementById('time-bmi').value || null, obs: document.getElementById('obs-bm').value.trim() },
+    trendelenburg:  { resultD: trdScores['d'] || null, resultI: trdScores['i'] || null, obs: document.getElementById('obs-trd').value.trim() },
+    shinBox:        { riD: document.getElementById('sb-ri-d').value || null, reD: document.getElementById('sb-re-d').value || null, riI: document.getElementById('sb-ri-i').value || null, reI: document.getElementById('sb-re-i').value || null, transD: testScores['sbd'] ?? null, transI: testScores['sbi'] ?? null, obs: document.getElementById('obs-sb').value.trim() },
+    birdDog:        { scoreD: testScores['bdd'] ?? null, scoreI: testScores['bdi'] ?? null, obs: document.getElementById('obs-bd').value.trim() },
+    deadBug:        { scoreD: testScores['dbd'] ?? null, scoreI: testScores['dbi'] ?? null, obs: document.getElementById('obs-db').value.trim() },
+    plank:          { time: document.getElementById('time-pk').value || null, obs: document.getElementById('obs-pk').value.trim() }
   };
 
   goStep(5);
-  const msgs = ['Analizando screens funcionales…','Evaluando biomecánica postural…','Identificando riesgos CrossFit…','Generando plan de acción…','Redactando reporte profesional…'];
+  const msgs = ['Comprimiendo fotos…','Analizando screens funcionales…','Evaluando biomecánica postural…','Interpretando imágenes con IA…','Identificando riesgos CrossFit…','Redactando reporte profesional…'];
   let mi = 0;
   const msgEl = document.getElementById('loaderMsg');
-  const interval = setInterval(() => { msgEl.textContent = msgs[mi++ % msgs.length]; }, 2500);
+  const interval = setInterval(() => { msgEl.textContent = msgs[mi++ % msgs.length]; }, 2800);
 
   try {
+    // Comprimir todas las fotos antes de enviar
+    const allPhotoIds = ['frontal','lateral','posterior','ds','oh','slsd','slsi','shd','shi','bmd','bmi','trdd','trdi','sbd','sbi','bdd','bdi','dbd','dbi','pk'];
+    const compressedPhotos = {};
+    for (const id of allPhotoIds) {
+      const src = photos[id] || testPhotos[id];
+      if (src) compressedPhotos[id] = await compressImage(src);
+    }
+
     const evalData = { ...patientData, hallazgos: findings, screens };
-    const r = await fetch(`${APPS_SCRIPT_URL}?action=generateEval&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(evalData))}`);
+    const r = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'generateEval', token: TOKEN, data: evalData, photos: compressedPhotos })
+    });
     const d = await r.json();
     clearInterval(interval);
     if (d.ok) { aiReport = d.report; buildReport(screens); goStep(6); }
@@ -894,10 +1307,26 @@ function buildReport(screens) {
     <div class="test-report-grid">
       ${buildBmCard('Balance D', screens.balanceMono.timeD, testPhotos['bmd'])}
       ${buildBmCard('Balance I', screens.balanceMono.timeI, testPhotos['bmi'])}
+      ${buildTrdCard('Trendelenburg D', screens.trendelenburg.resultD, testPhotos['trdd'])}
+      ${buildTrdCard('Trendelenburg I', screens.trendelenburg.resultI, testPhotos['trdi'])}
     </div>
-    ${screens.balanceMono.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:6px;font-style:italic">📝 ${screens.balanceMono.obs}</p>` : ''}
+    <div class="test-report-grid">
+      ${buildSbCard('Shin Box D', screens.shinBox.riD, screens.shinBox.reD, screens.shinBox.transD, testPhotos['sbd'])}
+      ${buildSbCard('Shin Box I', screens.shinBox.riI, screens.shinBox.reI, screens.shinBox.transI, testPhotos['sbi'])}
+      ${buildTestCard('Bird Dog D', screens.birdDog.scoreD, null, '', testPhotos['bdd'], false)}
+      ${buildTestCard('Bird Dog I', screens.birdDog.scoreI, screens.birdDog.obs, '', testPhotos['bdi'], false)}
+    </div>
+    <div class="test-report-grid">
+      ${buildTestCard('Dead Bug D', screens.deadBug.scoreD, null, '', testPhotos['dbd'], false)}
+      ${buildTestCard('Dead Bug I', screens.deadBug.scoreI, screens.deadBug.obs, '', testPhotos['dbi'], false)}
+      ${buildPlankCard(screens.plank.time, testPhotos['pk'])}
+    </div>
+    ${screens.balanceMono.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:6px;font-style:italic">📝 Balance: ${screens.balanceMono.obs}</p>` : ''}
     ${screens.singleLegSquat.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 SL Squat: ${screens.singleLegSquat.obs}</p>` : ''}
-    ${screens.shoulderMob.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 Shoulder: ${screens.shoulderMob.obs}</p>` : ''}`;
+    ${screens.shoulderMob.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 Shoulder: ${screens.shoulderMob.obs}</p>` : ''}
+    ${screens.trendelenburg.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 Trendelenburg: ${screens.trendelenburg.obs}</p>` : ''}
+    ${screens.shinBox.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 Shin Box: ${screens.shinBox.obs}</p>` : ''}
+    ${screens.plank.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 Plank: ${screens.plank.obs}</p>` : ''}`;
 
   // HALLAZGOS POSTURALES
   const sev = p.severidad || 'moderado';
@@ -986,6 +1415,45 @@ function buildBmCard(name, time, photo) {
   </div>`;
 }
 
+function buildTrdCard(name, result, photo) {
+  const pillClass = !result ? 'sp-' : result === 'positivo' ? 'sp1' : 'sp3';
+  const pillText  = !result ? 'sin eval.' : result === 'positivo' ? '(+) Positivo' : '(−) Negativo';
+  return `<div class="test-report-item">
+    ${photo ? `<img src="${photo}" class="test-report-img" alt="${name}">` : `<div class="test-report-img" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem">🦴</div>`}
+    <div style="flex:1;min-width:0">
+      <div class="test-report-name">${name}</div>
+      <span class="score-pill ${pillClass}">${pillText}</span>
+      <div class="test-report-obs">Caída pélvica contralateral</div>
+    </div>
+  </div>`;
+}
+
+function buildSbCard(name, ri, re, trans, photo) {
+  const pillClass = trans === null || trans === undefined ? 'sp-' : `sp${trans}`;
+  const pillText  = trans === null || trans === undefined ? 'sin trans.' : `Trans ${trans}/3`;
+  return `<div class="test-report-item">
+    ${photo ? `<img src="${photo}" class="test-report-img" alt="${name}">` : `<div class="test-report-img" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem">🦵</div>`}
+    <div style="flex:1;min-width:0">
+      <div class="test-report-name">${name}</div>
+      <span class="score-pill ${pillClass}">${pillText}</span>
+      <div class="test-report-obs">RI: ${ri||'—'}° · RE: ${re||'—'}°</div>
+    </div>
+  </div>`;
+}
+
+function buildPlankCard(time, photo) {
+  const label = time ? time + 's' : 'sin dato';
+  const pillClass = !time ? 'sp-' : +time >= 120 ? 'sp3' : +time >= 60 ? 'sp2' : +time >= 30 ? 'sp1' : 'sp0';
+  return `<div class="test-report-item">
+    ${photo ? `<img src="${photo}" class="test-report-img" alt="Plank">` : `<div class="test-report-img" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem">⏱️</div>`}
+    <div style="flex:1">
+      <div class="test-report-name">Plank</div>
+      <span class="score-pill ${pillClass}">${label}</span>
+      <div class="test-report-obs">Normal ≥ 60s · Competidor ≥ 120s</div>
+    </div>
+  </div>`;
+}
+
 function formatAiReport(text) {
   return text
     .replace(/\*\*([^*]+)\*\*/g, (_, t) => {
@@ -1023,20 +1491,29 @@ function ctaWhatsApp() {
 function nuevaEval() {
   if (!confirm('¿Iniciar nueva evaluación? Se perderán los datos actuales.')) return;
   currentStep = 1; nivelSel='Principiante'; sevSel=''; aiReport=''; findings=[]; patientData={};
-  photos={frontal:null,lateral:null,posterior:null}; testPhotos={}; testScores={};
+  photos={frontal:null,lateral:null,posterior:null}; testPhotos={}; testScores={}; trdScores={};
   document.querySelectorAll('.chip.sel').forEach(c=>c.classList.remove('sel'));
   document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('[data-val="Principiante"]').classList.add('sel');
-  ['pNombre','pEdad','pTelefono','pEmail','pMolestias','pObservaciones','obs-ds','obs-oh','obs-sls','obs-sh','obs-bm','time-bmd','time-bmi']
+  ['pNombre','pEdad','pTelefono','pEmail','pMolestias','pObservaciones',
+   'obs-ds','obs-oh','obs-sls','obs-sh','obs-bm','time-bmd','time-bmi',
+   'obs-trd','obs-sb','sb-ri-d','sb-re-d','sb-ri-i','sb-re-i',
+   'obs-bd','obs-db','time-pk','obs-pk']
     .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['frontal','lateral','posterior'].forEach(t=>removePhoto({stopPropagation:()=>{}},t));
-  ['ds','oh','slsd','slsi','shd','shi','bmd','bmi'].forEach(id=>{
+  ['ds','oh','slsd','slsi','shd','shi','bmd','bmi',
+   'trdd','trdi','sbd','sbi','bdd','bdi','dbd','dbi','pk'].forEach(id=>{
     testPhotos[id]=null;
     const img=document.getElementById('mimg-'+id); if(img){img.src='';img.style.display='none';}
     const box=document.getElementById('mph-'+id); if(box){box.classList.remove('has-photo');box.querySelectorAll('span').forEach(el=>el.style.display='');}
     const minp=document.getElementById('minp-'+id); if(minp)minp.value='';
     const sc=document.getElementById('sc-'+id); if(sc)sc.querySelectorAll('.score-btn').forEach(b=>b.classList.remove('sel'));
   });
+  ['d','i'].forEach(s=>{
+    const pos=document.getElementById('trd-'+s+'-pos'); if(pos)pos.className='trd-btn';
+    const neg=document.getElementById('trd-'+s+'-neg'); if(neg)neg.className='trd-btn';
+  });
+  ['tag-trd','tag-sb','tag-bd','tag-db','tag-pk'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=id==='tag-pk'?'sin tiempo':'sin eval.';el.className='test-tag';}});
   [2,3,4,5,6].forEach(n=>{document.getElementById('step'+n).style.display='none';document.getElementById('ps'+n).classList.remove('done','active');});
   document.getElementById('step1').style.display='block';
   document.getElementById('ps1').classList.add('active');
