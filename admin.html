@@ -1311,6 +1311,52 @@ tr:hover td{background:rgba(126,221,208,.03)}
             <div class="card-title" style="margin-bottom:14px">❌ Cancelaciones últimos 4 meses</div>
             <div id="metricCancelacion"></div>
           </div>
+
+          <!-- NUEVAS MÉTRICAS -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">📌 Servicio más utilizado</div>
+            <div id="metricServicioTop"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">💰 Ingreso total por servicio</div>
+            <div id="metricIngresoPorServicio"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">🎯 Proyección mes actual vs meta</div>
+            <div id="metricProyeccion"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">🚗 Modalidad más usada</div>
+            <div id="metricModalidad"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">📅 Día más ocupado (semana)</div>
+            <div id="metricDiaSemana"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">📈 Comparativo mes anterior</div>
+            <div id="metricComparativo"></div>
+          </div>
+          <div class="card" style="grid-column:1/-1">
+            <div class="card-title" style="margin-bottom:14px">🏅 Pacientes frecuentes (Top 5)</div>
+            <div id="metricPacientesFrecuentes"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ingresos por día / semana -->
+      <div style="margin-top:20px">
+        <div class="fin-section-title">🗓️ Ingresos por día o semana</div>
+        <div class="card">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+            <div style="display:flex;gap:6px">
+              <button id="btnModoDia" class="btn btn-teal btn-sm" onclick="setModoIngresos('dia')">Por día</button>
+              <button id="btnModoSemana" class="btn btn-ghost btn-sm" onclick="setModoIngresos('semana')">Por semana</button>
+            </div>
+            <input type="date" id="ingresosFechaInput" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:6px 10px;outline:none" oninput="renderIngresosDetalle()">
+            <span style="font-size:.78rem;color:var(--muted)" id="ingresosRangoLabel"></span>
+          </div>
+          <div id="ingresosDetalleResult"></div>
         </div>
       </div>
     </section>
@@ -4581,6 +4627,271 @@ function renderMetricas() {
       </div>`;
     });
     cancelEl.innerHTML = rows.join('');
+  }
+
+  // 5. Servicio más utilizado (ranking por conteo)
+  const servCountMap = {};
+  citas.forEach(c => {
+    const s = c.servicio || 'Sin servicio';
+    servCountMap[s] = (servCountMap[s] || 0) + 1;
+  });
+  const servCountArr = Object.entries(servCountMap).sort((a,b) => b[1]-a[1]);
+  const maxServCount = servCountArr[0] ? servCountArr[0][1] : 1;
+  const servTopEl = document.getElementById('metricServicioTop');
+  if (servTopEl) {
+    servTopEl.innerHTML = servCountArr.length
+      ? servCountArr.slice(0,8).map(([s, n], i) => `
+        <div class="metric-row">
+          <div class="metric-label" style="width:auto;flex:2;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${s}">${i===0?'🥇 ':''}${s}</div>
+          <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:${Math.round(n/maxServCount*100)}%;background:${i===0?'var(--primary)':COLORES[i%COLORES.length]}"></div></div>
+          <div class="metric-val" style="color:${i===0?'var(--primary)':COLORES[i%COLORES.length]}">${n}</div>
+        </div>`).join('')
+      : '<div class="empty" style="padding:20px 0"><p>Sin datos</p></div>';
+  }
+
+  // 6. Ingreso total por servicio (histórico)
+  const servIngMap = {};
+  citas.forEach(c => {
+    const s = c.servicio || 'Sin servicio';
+    servIngMap[s] = (servIngMap[s] || 0) + parsePrecio(c.precio);
+  });
+  const servIngArr = Object.entries(servIngMap).sort((a,b) => b[1]-a[1]);
+  const maxServIng = servIngArr[0] ? servIngArr[0][1] : 1;
+  const ingServEl = document.getElementById('metricIngresoPorServicio');
+  if (ingServEl) {
+    ingServEl.innerHTML = servIngArr.length
+      ? servIngArr.slice(0,8).map(([s, v], i) => `
+        <div class="metric-row">
+          <div class="metric-label" style="width:auto;flex:2;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${s}">${s}</div>
+          <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:${Math.round(v/maxServIng*100)}%;background:${COLORES[i%COLORES.length]}"></div></div>
+          <div class="metric-val" style="color:${COLORES[i%COLORES.length]};font-size:.72rem">$${Math.round(v/1000)}k</div>
+        </div>`).join('')
+      : '<div class="empty" style="padding:20px 0"><p>Sin datos</p></div>';
+  }
+
+  // 7. Proyección mes actual vs meta
+  const meta = getMeta();
+  const cobradoMes = calcCobradoMes();
+  const proyEl = document.getElementById('metricProyeccion');
+  if (proyEl) {
+    if (!meta) {
+      proyEl.innerHTML = '<div style="font-size:.82rem;color:var(--muted);padding:10px 0">Establece tu meta mensual para ver la proyección.</div>';
+    } else {
+      const pctMeta = Math.min(Math.round(cobradoMes / meta * 100), 100);
+      const nowD = new Date();
+      const diasMes = new Date(nowD.getFullYear(), nowD.getMonth()+1, 0).getDate();
+      const diaActual = nowD.getDate();
+      const ritmo = diaActual > 0 ? Math.round((cobradoMes / diaActual) * diasMes) : 0;
+      const pctRitmo = Math.min(Math.round(ritmo / meta * 100), 120);
+      const colorMeta = pctMeta >= 100 ? 'var(--ok)' : pctMeta >= 60 ? 'var(--warn)' : '#ef4444';
+      proyEl.innerHTML = `
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:5px">
+            <span style="color:var(--muted)">Cobrado este mes</span>
+            <span style="font-family:var(--font-m);color:${colorMeta};font-weight:700">${pctMeta}%</span>
+          </div>
+          <div class="meta-bar-wrap" style="height:10px"><div class="meta-bar-fill" style="width:${pctMeta}%;background:${colorMeta}"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.74rem;margin-top:4px;color:var(--muted)">
+            <span>$${cobradoMes.toLocaleString('es-CO')}</span><span>Meta: $${meta.toLocaleString('es-CO')}</span>
+          </div>
+        </div>
+        <div style="font-size:.78rem;color:var(--muted)">
+          Día ${diaActual}/${diasMes} · A este ritmo proyectas: <strong style="color:${pctRitmo>=100?'var(--ok)':'var(--warn)'}">$${ritmo.toLocaleString('es-CO')}</strong>
+        </div>`;
+    }
+  }
+
+  // 8. Modalidad más usada
+  const modMap = {};
+  citas.forEach(c => { const mod = c.modalidad || 'Sin modalidad'; modMap[mod] = (modMap[mod]||0)+1; });
+  const modArr = Object.entries(modMap).sort((a,b) => b[1]-a[1]);
+  const totalMod = modArr.reduce((s,[,v]) => s+v, 0) || 1;
+  const modEl = document.getElementById('metricModalidad');
+  if (modEl) {
+    const coloresMod = ['var(--primary)','#6366f1','#f59e0b','#10b981'];
+    const segmentos = modArr.map(([,v],i) => `<div style="flex:${v};background:${coloresMod[i%coloresMod.length]};height:12px;border-radius:${i===0?'99px 0 0 99px':i===modArr.length-1?'0 99px 99px 0':'0'}"></div>`).join('');
+    modEl.innerHTML = `
+      <div style="display:flex;height:12px;border-radius:99px;overflow:hidden;margin-bottom:14px">${segmentos}</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${modArr.map(([mod, n], i) => `
+          <div class="metric-row">
+            <div style="font-size:.82rem;flex:1">${mod}</div>
+            <div class="metric-val" style="color:${coloresMod[i%coloresMod.length]}">${n} <span style="font-size:.7rem;color:var(--muted)">(${Math.round(n/totalMod*100)}%)</span></div>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  // 9. Día más ocupado
+  const DIAS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const diaMap = {0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+  citas.forEach(c => {
+    const f = normDate(c.fecha);
+    if (f) { const d = new Date(f+'T12:00:00'); diaMap[d.getDay()] = (diaMap[d.getDay()]||0)+1; }
+  });
+  const diaArr = Object.entries(diaMap).sort((a,b) => b[1]-a[1]);
+  const maxDia = Math.max(...Object.values(diaMap), 1);
+  const diaEl = document.getElementById('metricDiaSemana');
+  if (diaEl) {
+    diaEl.innerHTML = [1,2,3,4,5,6,0].map(d => {
+      const n = diaMap[d] || 0;
+      const isTop = n === maxDia && n > 0;
+      return `<div class="metric-row">
+        <div class="metric-label" style="font-weight:${isTop?'700':'400'};color:${isTop?'var(--primary)':'var(--muted)'}">${DIAS[d]}</div>
+        <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:${Math.round(n/maxDia*100)}%;background:${isTop?'var(--primary)':'#6366f1'}"></div></div>
+        <div class="metric-val" style="color:${isTop?'var(--primary)':'var(--text)'}">${n}${isTop?' 🔥':''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // 10. Comparativo mes anterior
+  const nowC = new Date();
+  const mAct = nowC.getMonth()+1, yAct = nowC.getFullYear();
+  const prevD = new Date(yAct, mAct-2, 1);
+  const mPrev = prevD.getMonth()+1, yPrev = prevD.getFullYear();
+  const totalAct = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===mAct && +cy===yAct; }).reduce((s,c) => s+parsePrecio(c.precio), 0);
+  const totalPrev = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===mPrev && +cy===yPrev; }).reduce((s,c) => s+parsePrecio(c.precio), 0);
+  const compEl = document.getElementById('metricComparativo');
+  if (compEl) {
+    const diff = totalAct - totalPrev;
+    const pctDiff = totalPrev > 0 ? Math.round((diff / totalPrev) * 100) : null;
+    const color = diff > 0 ? 'var(--ok)' : diff < 0 ? '#ef4444' : 'var(--muted)';
+    const flecha = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
+    const MESES_N = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    compEl.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="metric-row">
+          <div style="font-size:.82rem;flex:1;color:var(--muted)">${MESES_N[mPrev-1]} ${yPrev}</div>
+          <div class="metric-val">$${totalPrev.toLocaleString('es-CO')}</div>
+        </div>
+        <div class="metric-row">
+          <div style="font-size:.82rem;flex:1;color:var(--muted)">${MESES_N[mAct-1]} ${yAct} (actual)</div>
+          <div class="metric-val" style="color:var(--primary)">$${totalAct.toLocaleString('es-CO')}</div>
+        </div>
+        <div style="text-align:center;margin-top:6px;font-family:var(--font-h);font-size:1.4rem;color:${color}">
+          ${flecha} ${pctDiff !== null ? Math.abs(pctDiff)+'%' : '—'}
+        </div>
+        <div style="text-align:center;font-size:.78rem;color:${color};font-family:var(--font-m)">
+          ${diff > 0 ? '+$'+diff.toLocaleString('es-CO')+' más que el mes pasado' : diff < 0 ? '-$'+Math.abs(diff).toLocaleString('es-CO')+' menos que el mes pasado' : 'Sin cambio respecto al mes pasado'}
+        </div>
+      </div>`;
+  }
+
+  // 11. Pacientes frecuentes (Top 5)
+  const frecMap = {};
+  citas.forEach(c => {
+    const k = (c.nombre||'').trim();
+    if (!k) return;
+    if (!frecMap[k]) frecMap[k] = { n: k, count: 0 };
+    frecMap[k].count++;
+  });
+  const frecArr = Object.values(frecMap).sort((a,b) => b.count-a.count).slice(0,5);
+  const frecEl = document.getElementById('metricPacientesFrecuentes');
+  if (frecEl) {
+    const maxFrec = frecArr[0] ? frecArr[0].count : 1;
+    frecEl.innerHTML = frecArr.length
+      ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">${
+          frecArr.map((p, i) => {
+            const medallas = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+            return `<div class="metric-row">
+              <div style="font-size:.82rem;flex:2;font-weight:${i===0?'700':'400'};color:${i===0?'var(--primary)':'var(--text)'}">${medallas[i]||''} ${p.n}</div>
+              <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:${Math.round(p.count/maxFrec*100)}%;background:${i===0?'var(--primary)':COLORES[i%COLORES.length]}"></div></div>
+              <div class="metric-val" style="color:${i===0?'var(--primary)':COLORES[i%COLORES.length]}">${p.count} sesiones</div>
+            </div>`;
+          }).join('')
+        }</div>`
+      : '<div class="empty" style="padding:20px 0"><p>Sin datos suficientes</p></div>';
+  }
+
+  // Inicializar selector de fecha para ingresos por día/semana
+  const fechaInp = document.getElementById('ingresosFechaInput');
+  if (fechaInp && !fechaInp.value) {
+    fechaInp.value = today();
+    renderIngresosDetalle();
+  }
+}
+
+let _modoIngresos = 'dia';
+function setModoIngresos(modo) {
+  _modoIngresos = modo;
+  document.getElementById('btnModoDia').className    = modo === 'dia'    ? 'btn btn-teal btn-sm' : 'btn btn-ghost btn-sm';
+  document.getElementById('btnModoSemana').className = modo === 'semana' ? 'btn btn-teal btn-sm' : 'btn btn-ghost btn-sm';
+  renderIngresosDetalle();
+}
+
+function renderIngresosDetalle() {
+  const fechaInp = document.getElementById('ingresosFechaInput');
+  const resultEl = document.getElementById('ingresosDetalleResult');
+  const labelEl  = document.getElementById('ingresosRangoLabel');
+  if (!fechaInp || !resultEl) return;
+  const fechaSel = fechaInp.value;
+  if (!fechaSel) { resultEl.innerHTML = '<div style="color:var(--muted);font-size:.85rem">Selecciona una fecha.</div>'; return; }
+
+  const citas = citasReales();
+  const DIAS_NOM = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  if (_modoIngresos === 'dia') {
+    const citasDia = citas.filter(c => normDate(c.fecha) === fechaSel);
+    const total = citasDia.reduce((s,c) => s + parsePrecio(c.precio), 0);
+    const dObj = new Date(fechaSel+'T12:00:00');
+    if (labelEl) labelEl.textContent = DIAS_NOM[dObj.getDay()] + ' ' + dObj.toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
+    if (!citasDia.length) {
+      resultEl.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:16px 0">Sin citas registradas para este día.</div>';
+      return;
+    }
+    resultEl.innerHTML = `
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:16px">
+        <span style="font-family:var(--font-h);font-size:1.5rem;color:var(--primary)">$${total.toLocaleString('es-CO')}</span>
+        <span style="font-size:.8rem;color:var(--muted)">${citasDia.length} cita${citasDia.length!==1?'s':''}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${citasDia.sort((a,b) => (a.hora||'').localeCompare(b.hora||'')).map(c => `
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.82rem;padding:7px 10px;background:var(--s2);border-radius:8px;gap:10px">
+            <span style="color:var(--muted);min-width:42px">${c.hora||'—'}</span>
+            <span style="flex:1;font-weight:500">${c.nombre||'—'}</span>
+            <span style="color:var(--muted);flex:1">${c.servicio||'—'}</span>
+            <span style="font-family:var(--font-m);color:var(--primary)">$${parsePrecio(c.precio).toLocaleString('es-CO')}</span>
+          </div>`).join('')}
+      </div>`;
+  } else {
+    // Semana: lunes a domingo de la fecha seleccionada
+    const ref = new Date(fechaSel+'T12:00:00');
+    const dow = ref.getDay(); // 0=Dom
+    const lunes = new Date(ref); lunes.setDate(ref.getDate() - (dow === 0 ? 6 : dow - 1));
+    const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6);
+    const fmt = d => d.toISOString().slice(0,10);
+    const fmtLabel = d => d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'});
+    if (labelEl) labelEl.textContent = 'Semana del ' + fmtLabel(lunes) + ' al ' + fmtLabel(domingo);
+
+    const dias = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(lunes); d.setDate(lunes.getDate() + i);
+      const fStr = fmt(d);
+      const cs = citas.filter(c => normDate(c.fecha) === fStr);
+      dias.push({ fecha: fStr, dia: DIAS_NOM[d.getDay()], diaCorto: ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()], citas: cs, total: cs.reduce((s,c) => s+parsePrecio(c.precio),0) });
+    }
+    const totalSemana = dias.reduce((s,d) => s+d.total, 0);
+    const maxDia = Math.max(...dias.map(d => d.total), 1);
+
+    resultEl.innerHTML = `
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:16px">
+        <span style="font-family:var(--font-h);font-size:1.5rem;color:var(--primary)">$${totalSemana.toLocaleString('es-CO')}</span>
+        <span style="font-size:.8rem;color:var(--muted)">${dias.reduce((s,d)=>s+d.citas.length,0)} citas en la semana</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${dias.map(d => {
+          const pct = Math.round(d.total/maxDia*100);
+          const esHoy = d.fecha === today();
+          return `<div style="padding:8px 0">
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px">
+              <span style="font-weight:${d.citas.length?'600':'400'};color:${esHoy?'var(--primary)':d.citas.length?'var(--text)':'var(--muted)'}">${d.dia}${esHoy?' (hoy)':''}</span>
+              <span style="font-family:var(--font-m);color:${d.total>0?'var(--primary)':'var(--muted)'}">
+                ${d.total > 0 ? '$'+d.total.toLocaleString('es-CO') : '—'} <span style="color:var(--muted);font-size:.72rem">${d.citas.length ? d.citas.length+' cita'+(d.citas.length!==1?'s':'') : ''}</span>
+              </span>
+            </div>
+            <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:${pct}%;background:${esHoy?'var(--primary)':'#6366f1'}"></div></div>
+          </div>`;
+        }).join('')}
+      </div>`;
   }
 }
 
