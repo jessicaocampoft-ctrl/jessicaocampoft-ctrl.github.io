@@ -558,6 +558,14 @@ tr:hover td{background:rgba(126,221,208,.03)}
       Dashboard
     </button>
 
+    <button class="sb-link" id="sb-tareas" onclick="showView('tareas')" style="justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Tareas del día
+      </span>
+      <span id="badgeTareas" style="display:none;background:#059669;color:#fff;border-radius:99px;font-size:.68rem;font-weight:700;padding:1px 7px;line-height:1.6">0</span>
+    </button>
+
     <button class="sb-link" id="sb-agenda" onclick="showView('agenda')" style="justify-content:space-between">
       <span style="display:flex;align-items:center;gap:10px">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -593,6 +601,11 @@ tr:hover td{background:rgba(126,221,208,.03)}
       Base de datos
     </button>
 
+    <button class="sb-link" id="sb-paquetes" onclick="showView('paquetes')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      Paquetes
+    </button>
+
     <button class="sb-link" id="sb-finanzas" onclick="showView('finanzas')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       Finanzas
@@ -612,6 +625,11 @@ tr:hover td{background:rgba(126,221,208,.03)}
         Seguimiento
       </span>
       <span id="badgeSeguimiento" style="display:none;background:#7c3aed;color:#fff;border-radius:99px;font-size:.68rem;font-weight:700;padding:1px 7px;line-height:1.6">0</span>
+    </button>
+
+    <button class="sb-link" id="sb-empresas" onclick="showView('empresas')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Empresas
     </button>
 
     <div class="sb-sep"></div>
@@ -659,6 +677,13 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <span class="alert-txt" id="upcomingAlertTxt">Próxima cita</span>
         <span class="alert-mins" id="upcomingAlertMins"></span>
         <button type="button" class="btn btn-ghost btn-sm" onclick="showView('agenda');filtrarHoy()">Ver agenda</button>
+      </div>
+
+      <!-- Banner tareas pendientes -->
+      <div id="bannerTareas" style="display:none;background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.3);border-radius:10px;padding:12px 18px;margin-bottom:16px;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:1.1rem">✅</span>
+        <span style="flex:1;font-size:.88rem;color:#065f46" id="bannerTareasTxt">Tienes tareas de seguimiento pendientes hoy</span>
+        <button class="btn btn-sm" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-b);cursor:pointer" onclick="showView('tareas')">Ir a tareas →</button>
       </div>
 
       <!-- Fila 1: Citas -->
@@ -766,6 +791,69 @@ tr:hover td{background:rgba(126,221,208,.03)}
           <span class="notas-saved" id="notasSaved">Guardado ✓</span>
         </div>
         <textarea id="notasRapidas" placeholder="Anotaciones para hoy: materiales que faltan, pacientes a llamar, recordatorios propios..." oninput="autoGuardarNota()"></textarea>
+      </div>
+    </section>
+
+    <!-- ── TAREAS DEL DÍA ── -->
+    <section id="vTareas" style="display:none">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title"><em>Tareas</em> del día</h1>
+          <p class="page-sub">Seguimientos automáticos según sesiones realizadas</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="renderTareas()">🔄 Actualizar</button>
+          <button class="btn btn-ghost btn-sm" onclick="showView('tareasConfig')">⚙️ Plantillas</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+        <button class="seg-chip sem4 active" id="tareaChipPend" onclick="toggleTareaFiltro('pendiente')">
+          <span id="tareaCountPend">0</span> · Pendientes hoy
+        </button>
+        <button class="seg-chip sem5 active" id="tareaChipVenc" onclick="toggleTareaFiltro('vencida')">
+          <span id="tareaCountVenc">0</span> · Vencidas
+        </button>
+        <button class="seg-chip reagendo active" id="tareaChipComp" onclick="toggleTareaFiltro('completada')">
+          <span id="tareaCountComp">0</span> · Completadas hoy
+        </button>
+        <select id="tareaFiltroTipo" onchange="renderTareas()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:7px 10px;outline:none">
+          <option value="">Todos los tipos</option>
+          <option value="descarga">Descarga muscular</option>
+          <option value="valoracion">Valoración funcional</option>
+          <option value="readaptacion">Readaptación funcional</option>
+        </select>
+      </div>
+      <div id="tareasLista" style="display:flex;flex-direction:column;gap:12px"></div>
+    </section>
+
+    <!-- ── CONFIGURACIÓN PLANTILLAS TAREAS ── -->
+    <section id="vTareasConfig" style="display:none">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h1 class="page-title">⚙️ Plantillas de <em>seguimiento</em></h1>
+          <p class="page-sub">Edita los mensajes que se envían por WhatsApp</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="showView('tareas')">← Volver</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div class="card">
+          <div class="card-title">💪 Descarga muscular <span style="font-size:.78rem;font-weight:400;color:var(--muted)">(2 días después)</span></div>
+          <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Variables: {nombre}, {fecha_sesion}, {tipo_servicio}, {dias_desde_sesion}</div>
+          <textarea id="tplDescarga" rows="4" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:10px 12px;outline:none;resize:vertical" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+          <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="guardarPlantillaTarea('descarga')">Guardar</button>
+        </div>
+        <div class="card">
+          <div class="card-title">🔍 Valoración funcional <span style="font-size:.78rem;font-weight:400;color:var(--muted)">(1 día después)</span></div>
+          <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Variables: {nombre}, {fecha_sesion}, {tipo_servicio}, {dias_desde_sesion}</div>
+          <textarea id="tplValoracion" rows="4" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:10px 12px;outline:none;resize:vertical" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+          <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="guardarPlantillaTarea('valoracion')">Guardar</button>
+        </div>
+        <div class="card">
+          <div class="card-title">🏃 Readaptación funcional <span style="font-size:.78rem;font-weight:400;color:var(--muted)">(1 día después)</span></div>
+          <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Variables: {nombre}, {fecha_sesion}, {tipo_servicio}, {dias_desde_sesion}</div>
+          <textarea id="tplReadaptacion" rows="4" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:10px 12px;outline:none;resize:vertical" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+          <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="guardarPlantillaTarea('readaptacion')">Guardar</button>
+        </div>
       </div>
     </section>
 
@@ -1156,13 +1244,13 @@ tr:hover td{background:rgba(126,221,208,.03)}
       <!-- Chips de filtro + contadores -->
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
         <button class="seg-chip sem3 active" id="segChip3" onclick="toggleSegFiltro('sem3')">
-          <span id="segCount3">0</span> · Semana 3 — aviso previo
+          <span id="segCount3">0</span> · Semana 5 (35-41 días) — aviso previo
         </button>
         <button class="seg-chip sem4 active" id="segChip4" onclick="toggleSegFiltro('sem4')">
-          <span id="segCount4">0</span> · Semana 4 — momento ideal
+          <span id="segCount4">0</span> · Semana 6 (42-48 días) — momento ideal
         </button>
         <button class="seg-chip sem5 active" id="segChip5" onclick="toggleSegFiltro('sem5')">
-          <span id="segCount5">0</span> · Semana 5+ — urgente
+          <span id="segCount5">0</span> · Semana 7+ (49+ días) — urgente
         </button>
         <button class="seg-chip reagendo active" id="segChipR" onclick="toggleSegFiltro('reagendo')">
           <span id="segCountR">0</span> · Reagendaron ✓
@@ -1175,7 +1263,7 @@ tr:hover td{background:rgba(126,221,208,.03)}
       <!-- Info banner -->
       <div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);border-radius:10px;padding:12px 18px;margin-bottom:22px;font-size:.83rem;color:#5b21b6;display:flex;gap:10px;align-items:flex-start">
         <span style="font-size:1.1rem;flex-shrink:0">💡</span>
-        <span>Descarga muscular — Semana 3 (21-27 días): aviso previo. Semana 4 (28-34 días): momento óptimo. Semana 5+ (35+ días): urgente. Readaptación funcional: seguimiento genérico, llena la articulación/zona para personalizar el mensaje. Marca <strong>Reagendó ✓</strong> cuando el paciente agende.</span>
+        <span>Descarga muscular — Semana 5 (35-41 días): aviso previo. Semana 6 (42-48 días): momento óptimo. Semana 7+ (49+ días): urgente. Readaptación funcional: seguimiento genérico, llena la articulación/zona para personalizar el mensaje. Marca <strong>Reagendó ✓</strong> cuando el paciente agende.</span>
       </div>
 
       <!-- Lista de pacientes -->
@@ -1225,6 +1313,69 @@ tr:hover td{background:rgba(126,221,208,.03)}
         </table>
       </div>
     </section>
+
+    <!-- ── PAQUETES ── -->
+    <section id="vPaquetes" style="display:none">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">📦 <em>Paquetes</em> y Membresías</h1>
+          <p class="page-sub">Gestiona paquetes de sesiones para tus pacientes</p>
+        </div>
+        <button class="btn btn-teal" onclick="abrirModalPaquete()">+ Asignar paquete</button>
+      </div>
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-label">Paquetes activos</div><div class="stat-val" id="pkActivos">—</div><div class="stat-desc">vigentes</div></div>
+        <div class="stat-card"><div class="stat-label">Valor comprometido</div><div class="stat-val" id="pkValor" style="font-size:1.3rem">—</div><div class="stat-desc">total en activos</div></div>
+        <div class="stat-card" style="border-color:rgba(251,191,36,.35)"><div class="stat-label" style="color:#d97706">Por vencer (7 días)</div><div class="stat-val" id="pkPorVencer" style="color:#d97706">—</div><div class="stat-desc">vencen pronto</div></div>
+        <div class="stat-card" style="border-color:rgba(239,68,68,.3)"><div class="stat-label" style="color:#dc2626">Agotados</div><div class="stat-val" id="pkAgotados" style="color:#dc2626">—</div><div class="stat-desc">sin sesiones</div></div>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div class="card-title" style="margin-bottom:0">🗂️ Plantillas de paquetes</div>
+          <button class="btn btn-ghost btn-sm" onclick="abrirModalPlantillaPaquete()">+ Crear plantilla</button>
+        </div>
+        <div id="pkPlantillas"></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div class="card-title" style="margin-bottom:0">📋 Paquetes asignados</div>
+          <input type="text" id="pkSearch" placeholder="Buscar paciente..." oninput="renderPaquetes()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.85rem;outline:none;color:var(--text);width:220px" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div id="pkLista"></div>
+      </div>
+    </section>
+
+    <!-- Modal asignar paquete -->
+    <div class="modal-bg" id="modalPaquete" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;align-items:center;justify-content:center">
+      <div class="modal" style="max-width:420px">
+        <div class="modal-title">Asignar paquete a paciente</div>
+        <div class="field"><label>Paciente *</label><input type="text" id="pkPaciente" placeholder="Nombre" list="pkPacienteList"><datalist id="pkPacienteList"></datalist></div>
+        <div class="field"><label>Teléfono</label><input type="text" id="pkTelefono" placeholder="3136..."></div>
+        <div class="field"><label>Plantilla *</label><select id="pkPlantillaSel" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none"><option value="">— Elige —</option></select></div>
+        <div class="field"><label>Fecha de compra</label><input type="date" id="pkFechaCompra"></div>
+        <div class="field"><label>Notas</label><input type="text" id="pkNotas" placeholder="Observaciones..."></div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn btn-teal" onclick="guardarPaqueteAsignado()">Guardar</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('modalPaquete').style.display='none'">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal plantilla paquete -->
+    <div class="modal-bg" id="modalPlantillaPaquete" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;align-items:center;justify-content:center">
+      <div class="modal" style="max-width:400px">
+        <div class="modal-title">Nueva plantilla</div>
+        <div class="field"><label>Nombre *</label><input type="text" id="ptNombre" placeholder="Pack 6 sesiones descarga"></div>
+        <div class="field"><label>Sesiones *</label><input type="number" id="ptSesiones" min="1" placeholder="6"></div>
+        <div class="field"><label>Precio total (COP)</label><input type="text" id="ptPrecio" placeholder="420.000"></div>
+        <div class="field"><label>Vigencia (días)</label><input type="number" id="ptVigencia" placeholder="60"></div>
+        <div class="field"><label>Servicios cubiertos</label><input type="text" id="ptServicios" placeholder="Descarga muscular, Valoración..."></div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn btn-teal" onclick="guardarPlantillaPaquete()">Guardar</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('modalPlantillaPaquete').style.display='none'">Cancelar</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ── FINANZAS ── -->
     <section id="vFinanzas" style="display:none">
@@ -1277,6 +1428,12 @@ tr:hover td{background:rgba(126,221,208,.03)}
           <div id="finChart" style="display:flex;align-items:flex-end;gap:8px;height:140px;padding-bottom:0;min-width:320px"></div>
           <div id="finChartLabels" style="display:flex;gap:8px;margin-top:6px;min-width:320px"></div>
         </div>
+      </div>
+
+      <!-- Proyección extendida a fin de mes -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">🔮 Proyección a fin de mes</div>
+        <div id="finProyeccionExt"></div>
       </div>
 
       <!-- Breakdown por servicio (mes actual) -->
@@ -1377,6 +1534,59 @@ tr:hover td{background:rgba(126,221,208,.03)}
       </div>
     </div>
 
+    <!-- ── EMPRESAS CRM ── -->
+    <section id="vEmpresas" style="display:none">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">🏢 <em>Empresas</em></h1>
+          <p class="page-sub">Pipeline de prospectos y clientes empresariales</p>
+        </div>
+        <button class="btn btn-teal" onclick="abrirModalEmpresa()">+ Nueva empresa</button>
+      </div>
+      <div id="empresasPipeline" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <select id="empresaFiltroEstado" onchange="renderEmpresas()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:7px 10px;outline:none">
+          <option value="">Todos los estados</option>
+          <option>Prospecto</option><option>Propuesta enviada</option><option>En negociación</option><option>Cerrada-ganada</option><option>Cerrada-perdida</option><option>En pausa</option>
+        </select>
+        <select id="empresaOrden" onchange="renderEmpresas()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:7px 10px;outline:none">
+          <option value="accion">Próxima acción vencida</option>
+          <option value="valor">Mayor valor</option>
+          <option value="contacto">Último contacto</option>
+        </select>
+      </div>
+      <div id="empresasLista" style="display:flex;flex-direction:column;gap:12px"></div>
+    </section>
+
+    <!-- Modal empresa -->
+    <div class="modal-bg" id="modalEmpresa" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;align-items:center;justify-content:center">
+      <div class="modal" style="max-width:520px;max-height:90vh;overflow-y:auto">
+        <div class="modal-title" id="modalEmpresaTitle">Nueva empresa</div>
+        <input type="hidden" id="empEditIdx" value="-1">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><label>Nombre *</label><input type="text" id="empNombre" placeholder="GYM Pereira"></div>
+          <div class="field"><label>Sector</label><input type="text" id="empSector" placeholder="Gym, IPS, empresa..."></div>
+          <div class="field"><label>Contacto</label><input type="text" id="empContacto" placeholder="Nombre contacto"></div>
+          <div class="field"><label>Teléfono</label><input type="tel" id="empTelefono" placeholder="3136..."></div>
+          <div class="field"><label>Email</label><input type="email" id="empEmail" placeholder="correo@empresa.com"></div>
+          <div class="field"><label>Estado</label>
+            <select id="empEstado" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none">
+              <option>Prospecto</option><option>Propuesta enviada</option><option>En negociación</option><option>Cerrada-ganada</option><option>Cerrada-perdida</option><option>En pausa</option>
+            </select>
+          </div>
+          <div class="field"><label>Valor potencial (COP)</label><input type="text" id="empValor" placeholder="5.000.000"></div>
+          <div class="field"><label>Último contacto</label><input type="date" id="empUltimoContacto"></div>
+          <div class="field"><label>Próxima acción</label><input type="text" id="empProxAccion" placeholder="Enviar propuesta..."></div>
+          <div class="field"><label>Fecha próxima acción</label><input type="date" id="empFechaAccion"></div>
+        </div>
+        <div class="field" style="margin-top:8px"><label>Notas</label><textarea id="empNotas" rows="3" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;resize:vertical" placeholder="Historial de conversaciones..."></textarea></div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn btn-teal" onclick="guardarEmpresa()">Guardar</button>
+          <button class="btn btn-ghost" onclick="cerrarModalEmpresa()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── BASE DE DATOS ── -->
     <section id="vBasedatos" style="display:none">
       <div class="page-header">
@@ -1411,6 +1621,15 @@ tr:hover td{background:rgba(126,221,208,.03)}
             <label>Deporte o actividad</label>
             <input type="text" id="dbDeporte" placeholder="Fútbol, natación, yoga, ninguno..." autocomplete="off">
           </div>
+          <div class="field">
+            <label>Origen del paciente</label>
+            <select id="dbOrigen" onchange="dbOnOrigenChange()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;width:100%">
+              <option value="">— Selecciona origen —</option>
+              <option>Instagram</option><option>Referido</option><option>Gimnasio</option>
+              <option>Empresa</option><option>Página web</option><option>Recomendación médica</option><option>Otro</option>
+            </select>
+            <input type="text" id="dbOrigenSub" placeholder="Nombre del gimnasio / empresa / detalle..." style="display:none;margin-top:6px;width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;box-sizing:border-box">
+          </div>
           <div class="field" style="grid-column:1/-1">
             <label>Notas / Diagnóstico</label>
             <textarea id="dbNotas" rows="2" style="resize:vertical;width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none" placeholder="Motivo de consulta, diagnóstico, observaciones..."></textarea>
@@ -1441,11 +1660,12 @@ tr:hover td{background:rgba(126,221,208,.03)}
                 <th>Sesiones</th>
                 <th>Última cita</th>
                 <th>Servicio frecuente</th>
+                <th>Origen</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="dbTbody">
-              <tr><td colspan="7"><div class="loading-wrap"><div class="spinner"></div> Cargando...</div></td></tr>
+              <tr><td colspan="8"><div class="loading-wrap"><div class="spinner"></div> Cargando...</div></td></tr>
             </tbody>
           </table>
         </div>
@@ -1658,7 +1878,7 @@ function openEvalExpress() {
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
-  ['dashboard','agenda','nueva','calendario','bloquear','pacientes','basedatos','recordatorios','finanzas','seguimiento'].forEach(id => {
+  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','paquetes','recordatorios','finanzas','seguimiento','empresas'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -1690,6 +1910,10 @@ function showView(v) {
   if (v === 'basedatos')      { renderBasedatos(); initFormDB(); renderChangeLog(); }
   if (v === 'finanzas')       renderFinanzas();
   if (v === 'seguimiento')    renderSeguimiento();
+  if (v === 'tareas')         renderTareas();
+  if (v === 'tareasConfig')   initTareasConfig();
+  if (v === 'paquetes')       renderPaquetes();
+  if (v === 'empresas')       renderEmpresas();
 }
 
 function toggleSidebar() {
@@ -2217,6 +2441,8 @@ function initDashboard() {
       </div>`;
     }).join('');
   }
+  // Banner tareas pendientes en dashboard
+  renderTareas();
 }
 
 // ── AGENDA ──
@@ -3179,6 +3405,7 @@ function renderBasedatos() {
       '<td><span class="chip chip-ok">' + p.sesiones + '</span></td>' +
       '<td style="font-size:.82rem">' + fmtDate(p.ultima) + '</td>' +
       '<td style="font-size:.82rem;color:var(--muted)">' + topServ[0] + '</td>' +
+      '<td style="font-size:.8rem;color:var(--muted)">' + (p.origen || '—') + '</td>' +
       '<td><div style="display:flex;gap:5px;flex-wrap:wrap">' +
         waBtn(p.telefono, p.nombre, '', '', '', 'WA') +
         '<button type="button" class="btn btn-edit btn-sm" onclick="dbEditarPac(' + idx + ')">✏️ Editar</button>' +
@@ -3962,9 +4189,9 @@ function renderSeguimiento() {
     const last = new Date(+y,+m-1,+d);
     const dias = Math.floor((now - last) / 86400000);
     let semana = null;
-    if      (dias >= 21 && dias < 28) semana = 'sem3';
-    else if (dias >= 28 && dias < 35) semana = 'sem4';
-    else if (dias >= 35)              semana = 'sem5';
+    if      (dias >= 35 && dias < 42) semana = 'sem3';
+    else if (dias >= 42 && dias < 49) semana = 'sem4';
+    else if (dias >= 49)              semana = 'sem5';
     return { ...p, dias, semana };
   }).filter(p => p.semana !== null);
 
@@ -4521,6 +4748,42 @@ function renderFinanzas() {
       </div>`;
   }
 
+  // ── Proyección extendida a fin de mes ──
+  const proyExtEl = document.getElementById('finProyeccionExt');
+  if (proyExtEl) {
+    const diasMes   = new Date(y, m, 0).getDate();
+    const diaActual = now.getDate();
+    const diasRest  = diasMes - diaActual;
+    const ritmoD    = diaActual > 0 ? cobradoMes / diaActual : 0;
+    const proyFin   = Math.round(ritmoD * diasMes);
+    const pctProy   = meta ? Math.min(Math.round(proyFin / meta * 100), 120) : null;
+    const color     = !meta ? 'var(--primary)' : (pctProy >= 100 ? 'var(--ok)' : pctProy >= 70 ? 'var(--warn)' : '#ef4444');
+    const indicador = !meta ? '🔵' : (pctProy >= 100 ? '🟢' : pctProy >= 70 ? '🟡' : '🔴');
+    const promNec   = meta && diasRest > 0 ? Math.round((meta - cobradoMes) / diasRest) : 0;
+    const difProyM  = meta ? proyFin - meta : null;
+    proyExtEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px">
+      <div style="padding:14px;background:var(--s2);border-radius:10px;border-left:3px solid ${color}">
+        <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-m);margin-bottom:4px">Proyección al día ${diasMes}</div>
+        <div style="font-family:var(--font-h);font-size:1.25rem;font-weight:700;color:${color}">${indicador} $${proyFin.toLocaleString('es-CO')}</div>
+        ${meta?`<div style="font-size:.73rem;color:var(--muted);margin-top:3px">${pctProy}% de la meta</div>`:''}
+      </div>
+      <div style="padding:14px;background:var(--s2);border-radius:10px">
+        <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-m);margin-bottom:4px">Promedio diario actual</div>
+        <div style="font-family:var(--font-h);font-size:1.1rem;font-weight:700">$${Math.round(ritmoD).toLocaleString('es-CO')}</div>
+        <div style="font-size:.73rem;color:var(--muted);margin-top:3px">Días restantes: ${diasRest}</div>
+      </div>
+      ${meta && diasRest > 0 ? `<div style="padding:14px;background:var(--s2);border-radius:10px;border-left:3px solid ${promNec > ritmoD ? '#ef4444':'var(--ok)'}">
+        <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-m);margin-bottom:4px">Necesario/día para meta</div>
+        <div style="font-family:var(--font-h);font-size:1.1rem;font-weight:700;color:${promNec > ritmoD ? '#ef4444':'var(--ok)'}">$${promNec.toLocaleString('es-CO')}</div>
+        <div style="font-size:.73rem;color:var(--muted);margin-top:3px">${promNec>ritmoD?'Por encima del ritmo actual':'Dentro del ritmo ✓'}</div>
+      </div>` : ''}
+      ${difProyM !== null ? `<div style="padding:14px;background:var(--s2);border-radius:10px">
+        <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-m);margin-bottom:4px">Diferencia vs meta</div>
+        <div style="font-family:var(--font-h);font-size:1.1rem;font-weight:700;color:${difProyM>=0?'var(--ok)':'#ef4444'}">${difProyM>=0?'+':''}$${difProyM.toLocaleString('es-CO')}</div>
+      </div>` : ''}
+    </div>`;
+  }
+
   renderMetricas();
 }
 
@@ -4893,6 +5156,411 @@ function renderIngresosDetalle() {
         }).join('')}
       </div>`;
   }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── TAREAS DEL DÍA ──
+// ══════════════════════════════════════════════════════════════
+const _TPL_DEFAULT = {
+  descarga:     'Hola {nombre}, soy el equipo de Jessica Ocampo Fisio. Han pasado {dias_desde_sesion} días desde tu {tipo_servicio} del {fecha_sesion}. ¿Cómo te has sentido? ¿Notas mejoría en la zona trabajada? Cualquier molestia me cuentas para ajustar tu próximo plan. 💪',
+  valoracion:   'Hola {nombre}, espero que estés muy bien. Te escribo para saber cómo te has sentido después de la {tipo_servicio} de ayer ({fecha_sesion}). Si tienes alguna duda sobre los hallazgos o el plan que conversamos, quedo atenta. 🙏',
+  readaptacion: 'Hola {nombre}, ¿cómo te ha ido con los ejercicios del plan de ayer ({fecha_sesion})? Recuerda hacer las repeticiones que acordamos. Si sientes alguna molestia o duda, me cuentas para ajustarlo. 🏃'
+};
+let _tareaFiltros = new Set(['pendiente','vencida','completada']);
+
+function getTplTarea(tipo) { return localStorage.getItem('tpl_seg_'+tipo) || _TPL_DEFAULT[tipo] || ''; }
+function guardarPlantillaTarea(tipo) {
+  const el = document.getElementById('tpl'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
+  if (!el) return;
+  localStorage.setItem('tpl_seg_'+tipo, el.value);
+  toast('Plantilla guardada');
+}
+function initTareasConfig() {
+  ['descarga','valoracion','readaptacion'].forEach(t => {
+    const el = document.getElementById('tpl'+t.charAt(0).toUpperCase()+t.slice(1));
+    if (el) el.value = getTplTarea(t);
+  });
+}
+function _tareaKey(c) {
+  return 'tarea_' + normDate(c.fecha) + '_' + (c.nombre||'').replace(/\s/g,'_') + '_' + (c.servicio||'').slice(0,10).replace(/\s/g,'_');
+}
+function _tareaEstado(c) { return localStorage.getItem(_tareaKey(c)+'_estado') || 'pendiente'; }
+function _tareaFechaTipo(c) {
+  const s = (c.servicio||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  if (s.includes('descarga'))     return { tipo:'descarga',     diasDelay:2, label:'Descarga muscular' };
+  if (s.includes('valoracion'))   return { tipo:'valoracion',   diasDelay:1, label:'Valoración funcional' };
+  if (s.includes('readaptacion')) return { tipo:'readaptacion', diasDelay:1, label:'Readaptación funcional' };
+  return null;
+}
+function generarTareas() {
+  const hoyStr = today();
+  const hoy = new Date(hoyStr+'T12:00:00');
+  const tareas = [], seen = new Set();
+  allData.citas.forEach(c => {
+    if (c.estado === 'Cancelada' || esRegistroServ(c.servicio)) return;
+    const ft = _tareaFechaTipo(c);
+    if (!ft) return;
+    const fSesion = normDate(c.fecha);
+    if (!fSesion) return;
+    const diasDiff = Math.round((hoy - new Date(fSesion+'T12:00:00')) / 86400000);
+    if (diasDiff < ft.diasDelay) return;
+    const key = fSesion+'_'+(c.nombre||'')+'_'+ft.tipo;
+    if (seen.has(key)) return;
+    seen.add(key);
+    const estado = _tareaEstado(c);
+    const vencida = diasDiff > ft.diasDelay + 3 && estado === 'pendiente';
+    tareas.push({ c, ft, fSesion, diasDesde: diasDiff, estado: vencida ? 'vencida' : estado });
+  });
+  return tareas.sort((a,b) => {
+    const ord = {vencida:0,pendiente:1,completada:2};
+    return (ord[a.estado]??3)-(ord[b.estado]??3) || a.fSesion.localeCompare(b.fSesion);
+  });
+}
+function toggleTareaFiltro(f) {
+  if (_tareaFiltros.has(f)) _tareaFiltros.delete(f); else _tareaFiltros.add(f);
+  const map = {pendiente:'tareaChipPend',vencida:'tareaChipVenc',completada:'tareaChipComp'};
+  Object.entries(map).forEach(([k,id]) => { const el = document.getElementById(id); if (el) el.classList.toggle('active',_tareaFiltros.has(k)); });
+  _renderTareasLista(generarTareas());
+}
+function renderTareas() {
+  const tareas = generarTareas();
+  const pend = tareas.filter(t=>t.estado==='pendiente').length;
+  const venc = tareas.filter(t=>t.estado==='vencida').length;
+  const comp = tareas.filter(t=>t.estado==='completada').length;
+  ['tareaCountPend','tareaCountVenc','tareaCountComp'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = [pend,venc,comp][i];
+  });
+  const badge = document.getElementById('badgeTareas');
+  const total = pend + venc;
+  if (badge) { badge.textContent = total; badge.style.display = total>0?'inline':'none'; }
+  const banner = document.getElementById('bannerTareas');
+  if (banner) {
+    banner.style.display = total > 0 ? 'flex' : 'none';
+    const txt = document.getElementById('bannerTareasTxt');
+    if (txt) txt.textContent = `⚠️ Tienes ${total} tarea${total!==1?'s':''} de seguimiento pendiente${total!==1?'s':''} hoy`;
+  }
+  _renderTareasLista(tareas);
+}
+function _renderTareasLista(tareas) {
+  const lista = document.getElementById('tareasLista');
+  if (!lista) return;
+  const filtroTipo = (document.getElementById('tareaFiltroTipo')||{}).value || '';
+  let filtradas = tareas.filter(t => _tareaFiltros.has(t.estado));
+  if (filtroTipo) filtradas = filtradas.filter(t => t.ft.tipo === filtroTipo);
+  if (!filtradas.length) {
+    lista.innerHTML = '<div class="empty" style="padding:50px 20px"><p>No hay tareas en estas categorías 🎉</p></div>';
+    return;
+  }
+  lista.innerHTML = filtradas.map(t => {
+    const { c, ft, fSesion, diasDesde, estado } = t;
+    const tpl = getTplTarea(ft.tipo)
+      .replace(/\{nombre\}/g, c.nombre||'').replace(/\{fecha_sesion\}/g, fmtDate(fSesion))
+      .replace(/\{tipo_servicio\}/g, ft.label).replace(/\{dias_desde_sesion\}/g, diasDesde);
+    const tel = (c.telefono||'').replace(/\D/g,'');
+    const waLink = tel ? `https://wa.me/57${tel}?text=${encodeURIComponent(tpl)}` : '#';
+    const colorB = estado==='vencida'?'rgba(239,68,68,.35)':estado==='completada'?'rgba(5,150,105,.3)':'rgba(27,191,176,.25)';
+    const colorBg = estado==='vencida'?'rgba(239,68,68,.04)':estado==='completada'?'rgba(5,150,105,.04)':'';
+    const key = _tareaKey(c);
+    const notas = localStorage.getItem(key+'_notas')||'';
+    const ts    = localStorage.getItem(key+'_ts')||'';
+    const colorChip = estado==='vencida'?'#dc2626':estado==='completada'?'#059669':'var(--primary)';
+    const bgChip    = estado==='vencida'?'rgba(239,68,68,.12)':estado==='completada'?'rgba(5,150,105,.12)':'rgba(27,191,176,.1)';
+    return `<div style="border:1.5px solid ${colorB};border-radius:14px;padding:16px 20px;background:${colorBg}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div>
+          <div style="font-family:var(--font-h);font-size:1rem;font-weight:700">${c.nombre||'—'}</div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:2px">${ft.label} · Sesión: ${fmtDate(fSesion)} · <strong>${diasDesde} días</strong> transcurridos</div>
+        </div>
+        <span style="font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:99px;background:${bgChip};color:${colorChip}">${estado==='vencida'?'⚠️ Vencida':estado==='completada'?'✓ Completada':'🟢 Pendiente'}</span>
+      </div>
+      ${estado !== 'completada'
+        ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <a href="${waLink}" target="_blank" class="btn btn-teal btn-sm" style="text-decoration:none" onclick="marcarTareaWA('${key}')">📱 Enviar WA</a>
+            <button class="btn btn-ghost btn-sm" onclick="marcarTareaCompletada('${key}')">✓ Completada</button>
+            <button class="btn btn-ghost btn-sm" onclick="posponerTarea('${key}')">⏭ Posponer 1 día</button>
+            <button class="btn btn-ghost btn-sm" style="color:#dc2626" onclick="omitirTarea('${key}')">🚫 Omitir</button>
+          </div>`
+        : `<div style="font-size:.78rem;color:var(--muted);margin-top:6px">Completada ${ts?new Date(ts).toLocaleString('es-CO'):''} ${notas?'· '+notas:''}</div>`}
+    </div>`;
+  }).join('');
+}
+function marcarTareaWA(key) {
+  localStorage.setItem(key+'_estado','completada');
+  localStorage.setItem(key+'_ts', new Date().toISOString());
+  setTimeout(() => renderTareas(), 500);
+}
+function marcarTareaCompletada(key) {
+  localStorage.setItem(key+'_estado','completada');
+  localStorage.setItem(key+'_ts', new Date().toISOString());
+  renderTareas(); toast('Tarea completada ✓');
+}
+function posponerTarea(key) {
+  toast('Tarea pospuesta para mañana'); renderTareas();
+}
+function omitirTarea(key) {
+  const razon = prompt('Razón para omitir (opcional):');
+  localStorage.setItem(key+'_estado','completada');
+  localStorage.setItem(key+'_notas', razon||'Omitida');
+  localStorage.setItem(key+'_ts', new Date().toISOString());
+  renderTareas(); toast('Tarea omitida');
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── PAQUETES Y MEMBRESÍAS ──
+// ══════════════════════════════════════════════════════════════
+function _getPkPlantillas() { try { return JSON.parse(localStorage.getItem('pk_plantillas')||'[]'); } catch(e){ return []; } }
+function _getPkAsignados()  { try { return JSON.parse(localStorage.getItem('pk_asignados') ||'[]'); } catch(e){ return []; } }
+function _savePkPlantillas(a) { localStorage.setItem('pk_plantillas', JSON.stringify(a)); }
+function _savePkAsignados(a)  { localStorage.setItem('pk_asignados',  JSON.stringify(a)); }
+
+function renderPaquetes() {
+  const search   = ((document.getElementById('pkSearch')||{}).value||'').toLowerCase();
+  const plantillas = _getPkPlantillas();
+  const asignados  = _getPkAsignados();
+  const hoy = today();
+  const activos   = asignados.filter(p => p.vencimiento >= hoy && (p.sesiones - (p.consumidas||0)) > 0);
+  const agotados  = asignados.filter(p => (p.sesiones - (p.consumidas||0)) <= 0);
+  const porVencer = asignados.filter(p => {
+    if ((p.sesiones-(p.consumidas||0)) <= 0) return false;
+    const diff = Math.round((new Date(p.vencimiento+'T12:00:00') - new Date(hoy+'T12:00:00'))/86400000);
+    return diff >= 0 && diff <= 7;
+  });
+  const valorTotal = activos.reduce((s,p) => s+parsePrecio(p.precio||0),0);
+  const sv = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  sv('pkActivos', activos.length); sv('pkValor', '$'+valorTotal.toLocaleString('es-CO'));
+  sv('pkPorVencer', porVencer.length); sv('pkAgotados', agotados.length);
+
+  const plEl = document.getElementById('pkPlantillas');
+  if (plEl) {
+    plEl.innerHTML = plantillas.length
+      ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">${
+          plantillas.map((pl,i) => `<div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-weight:700;font-family:var(--font-h);margin-bottom:4px">${pl.nombre}</div>
+            <div style="font-size:.8rem;color:var(--muted)">${pl.sesiones} sesiones · $${parsePrecio(pl.precio).toLocaleString('es-CO')} · ${pl.vigencia||60} días</div>
+            ${pl.servicios?`<div style="font-size:.75rem;color:var(--muted);margin-top:2px">${pl.servicios}</div>`:''}
+            <div style="display:flex;gap:6px;margin-top:10px">
+              <button class="btn btn-teal btn-sm" onclick="abrirModalPaquete(${i})">Asignar</button>
+              <button class="btn btn-ghost btn-sm" onclick="borrarPlantillaPaquete(${i})">🗑️</button>
+            </div>
+          </div>`).join('')}</div>`
+      : '<div class="empty" style="padding:20px 0"><p>Sin plantillas. Crea una para empezar.</p></div>';
+  }
+
+  const pkListaEl = document.getElementById('pkLista');
+  if (!pkListaEl) return;
+  let lista = asignados;
+  if (search) lista = lista.filter(p => (p.paciente||'').toLowerCase().includes(search));
+  if (!lista.length) {
+    pkListaEl.innerHTML = '<div class="empty" style="padding:30px 0"><p>Sin paquetes asignados</p></div>';
+    return;
+  }
+  pkListaEl.innerHTML = lista.map((p, i) => {
+    const rest = (p.sesiones||0) - (p.consumidas||0);
+    const pct  = p.sesiones > 0 ? Math.round((p.consumidas||0)/p.sesiones*100) : 0;
+    const agotado   = rest <= 0;
+    const penultimo = rest === 1;
+    const vencido   = p.vencimiento && p.vencimiento < hoy;
+    const borderC   = agotado?'rgba(239,68,68,.35)':penultimo?'rgba(251,191,36,.35)':'var(--border)';
+    const barC      = agotado?'#ef4444':penultimo?'#f59e0b':'var(--primary)';
+    let alerta = '';
+    if (agotado)   alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;font-size:.8rem;color:#dc2626">🔴 Paquete agotado — proponer nuevo paquete</div>`;
+    else if (penultimo) alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:8px;font-size:.8rem;color:#92400e">⚠️ Última sesión restante — ofrecer renovación</div>`;
+    else if (vencido)   alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:.8rem;color:#dc2626">⏰ Paquete vencido (${fmtDate(p.vencimiento)})</div>`;
+    return `<div style="padding:14px 18px;border:1.5px solid ${borderC};border-radius:12px;margin-bottom:10px;background:var(--s1)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
+        <div>
+          <div style="font-weight:700;font-family:var(--font-h)">${p.paciente||'—'}</div>
+          <div style="font-size:.8rem;color:var(--muted)">${p.nombre||'—'} · Comprado: ${fmtDate(p.fechaCompra)} · Vence: ${p.vencimiento?fmtDate(p.vencimiento):'—'}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--font-m);font-size:.82rem;color:var(--primary)">${p.consumidas||0}/${p.sesiones||0} sesiones consumidas</div>
+          <div style="font-size:.75rem;color:var(--muted)">Restantes: <strong>${rest}</strong></div>
+        </div>
+      </div>
+      <div style="margin:10px 0 4px;background:var(--s2);border-radius:99px;height:8px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${barC};border-radius:99px;transition:width .5s"></div></div>
+      ${alerta}
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn btn-teal btn-sm" onclick="usarSesion(${i})" ${agotado?'disabled':''}>➕ Usar sesión</button>
+        <button class="btn btn-ghost btn-sm" onclick="borrarPaqueteAsignado(${i})">🗑️ Eliminar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function abrirModalPaquete(plIdxPre) {
+  const plantillas = _getPkPlantillas();
+  const sel = document.getElementById('pkPlantillaSel');
+  if (sel) sel.innerHTML = '<option value="">— Elige plantilla —</option>' + plantillas.map((pl,i) => `<option value="${i}" ${i===plIdxPre?'selected':''}>${pl.nombre}</option>`).join('');
+  const dl = document.getElementById('pkPacienteList');
+  if (dl) dl.innerHTML = [...new Set(allData.citas.map(c=>c.nombre||'').filter(Boolean))].map(n=>`<option value="${n}">`).join('');
+  const fi = document.getElementById('pkFechaCompra'); if (fi) fi.value = today();
+  const pkModal = document.getElementById('modalPaquete'); if (pkModal) pkModal.style.display = 'flex';
+}
+function guardarPaqueteAsignado() {
+  const paciente = (document.getElementById('pkPaciente').value||'').trim();
+  const plIdx    = document.getElementById('pkPlantillaSel').value;
+  const fechaC   = document.getElementById('pkFechaCompra').value || today();
+  const notas    = (document.getElementById('pkNotas').value||'').trim();
+  const tel      = (document.getElementById('pkTelefono').value||'').replace(/\D/g,'');
+  if (!paciente || plIdx === '') { toast('Completa paciente y plantilla','err'); return; }
+  const pl = _getPkPlantillas()[+plIdx];
+  if (!pl) { toast('Plantilla no encontrada','err'); return; }
+  const vigD = new Date(fechaC+'T12:00:00');
+  vigD.setDate(vigD.getDate() + (+pl.vigencia||60));
+  const asignados = _getPkAsignados();
+  asignados.push({ paciente, telefono:tel, nombre:pl.nombre, sesiones:+pl.sesiones, consumidas:0, precio:pl.precio, fechaCompra:fechaC, vencimiento:vigD.toISOString().slice(0,10), notas });
+  _savePkAsignados(asignados);
+  document.getElementById('modalPaquete').style.display='none';
+  renderPaquetes(); toast('Paquete asignado ✓');
+}
+function usarSesion(idx) {
+  const a = _getPkAsignados(); const p = a[idx]; if (!p) return;
+  if ((p.consumidas||0) >= p.sesiones) { toast('Paquete agotado','err'); return; }
+  p.consumidas = (p.consumidas||0)+1; _savePkAsignados(a);
+  renderPaquetes(); toast(`Sesión registrada: ${p.consumidas}/${p.sesiones}`);
+}
+function borrarPaqueteAsignado(idx) {
+  if (!confirm('¿Eliminar este paquete?')) return;
+  const a = _getPkAsignados(); a.splice(idx,1); _savePkAsignados(a); renderPaquetes();
+}
+function abrirModalPlantillaPaquete() { const m = document.getElementById('modalPlantillaPaquete'); if (m) m.style.display='flex'; }
+function guardarPlantillaPaquete() {
+  const nombre   = (document.getElementById('ptNombre').value||'').trim();
+  const sesiones = document.getElementById('ptSesiones').value;
+  if (!nombre||!sesiones) { toast('Nombre y sesiones son obligatorios','err'); return; }
+  const pl = { nombre, sesiones:+sesiones, precio:(document.getElementById('ptPrecio').value||'').trim(), vigencia:+(document.getElementById('ptVigencia').value||60), servicios:(document.getElementById('ptServicios').value||'').trim() };
+  const plantillas = _getPkPlantillas(); plantillas.push(pl); _savePkPlantillas(plantillas);
+  document.getElementById('modalPlantillaPaquete').style.display='none';
+  renderPaquetes(); toast('Plantilla guardada ✓');
+}
+function borrarPlantillaPaquete(idx) {
+  if (!confirm('¿Eliminar esta plantilla?')) return;
+  const a = _getPkPlantillas(); a.splice(idx,1); _savePkPlantillas(a); renderPaquetes();
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── EMPRESAS CRM ──
+// ══════════════════════════════════════════════════════════════
+function _getEmpresas() { try { return JSON.parse(localStorage.getItem('crm_empresas')||'[]'); } catch(e){ return []; } }
+function _saveEmpresas(a) { localStorage.setItem('crm_empresas', JSON.stringify(a)); }
+
+function renderEmpresas() {
+  const empresas = _getEmpresas();
+  const filtroEst = (document.getElementById('empresaFiltroEstado')||{}).value||'';
+  const orden     = (document.getElementById('empresaOrden')||{}).value||'accion';
+  const hoy = today();
+  const pipEstados = ['Prospecto','Propuesta enviada','En negociación','Cerrada-ganada','En pausa'];
+  const pipColors  = ['#6366f1','#f59e0b','var(--primary)','var(--ok)','var(--muted)'];
+  const pipEl = document.getElementById('empresasPipeline');
+  if (pipEl) {
+    pipEl.innerHTML = pipEstados.map((est,i) => {
+      const n   = empresas.filter(e=>e.estado===est).length;
+      const val = empresas.filter(e=>e.estado===est).reduce((s,e)=>s+parsePrecio(e.valor||0),0);
+      return `<div style="flex:1;min-width:130px;padding:12px 16px;background:var(--s1);border:1px solid var(--border);border-radius:10px;border-top:3px solid ${pipColors[i]}">
+        <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-family:var(--font-m)">${est}</div>
+        <div style="font-family:var(--font-h);font-size:1.4rem;font-weight:700;margin:4px 0">${n}</div>
+        ${val>0?`<div style="font-size:.73rem;color:${pipColors[i]};font-family:var(--font-m)">$${Math.round(val/1000)}k</div>`:''}
+      </div>`;
+    }).join('');
+  }
+  let lista = filtroEst ? empresas.filter(e=>e.estado===filtroEst) : empresas;
+  if (orden==='valor')    lista = [...lista].sort((a,b)=>parsePrecio(b.valor||0)-parsePrecio(a.valor||0));
+  else if (orden==='contacto') lista = [...lista].sort((a,b)=>(b.ultimoContacto||'').localeCompare(a.ultimoContacto||''));
+  else lista = [...lista].sort((a,b)=>{
+    const av=a.fechaAccion&&a.fechaAccion<=hoy, bv=b.fechaAccion&&b.fechaAccion<=hoy;
+    if(av&&!bv)return -1; if(!av&&bv)return 1;
+    return (a.fechaAccion||'9999').localeCompare(b.fechaAccion||'9999');
+  });
+  const listaEl = document.getElementById('empresasLista');
+  if (!listaEl) return;
+  if (!lista.length) { listaEl.innerHTML='<div class="empty" style="padding:50px 20px"><p>No hay empresas registradas</p></div>'; return; }
+  const colorEst = {'Prospecto':'#6366f1','Propuesta enviada':'#f59e0b','En negociación':'var(--primary)','Cerrada-ganada':'var(--ok)','Cerrada-perdida':'#ef4444','En pausa':'var(--muted)'};
+  listaEl.innerHTML = lista.map(e => {
+    const realIdx = empresas.indexOf(e);
+    const accionV = e.fechaAccion && e.fechaAccion < hoy;
+    const tel = (e.telefono||'').replace(/\D/g,'');
+    return `<div style="border:1.5px solid ${accionV?'rgba(239,68,68,.4)':'var(--border)'};border-radius:14px;padding:16px 20px;background:var(--s1)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div>
+          <div style="font-family:var(--font-h);font-size:1rem;font-weight:700">${e.nombre||'—'} <span style="font-size:.75rem;color:var(--muted)">${e.sector?'· '+e.sector:''}</span></div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:2px">${e.contacto||''} ${e.telefono?'· '+e.telefono:''} ${e.email?'· '+e.email:''}</div>
+        </div>
+        <span style="font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(0,0,0,.05);color:${colorEst[e.estado]||'var(--muted)'}">${e.estado||'—'}</span>
+      </div>
+      ${e.valor?`<div style="font-size:.82rem;color:var(--primary);font-family:var(--font-m);margin-bottom:6px">💰 $${parsePrecio(e.valor).toLocaleString('es-CO')}</div>`:''}
+      ${e.proxAccion?`<div style="font-size:.82rem;margin-bottom:6px;color:${accionV?'#dc2626':'var(--text)'}">📌 ${e.proxAccion} ${e.fechaAccion?'— '+fmtDate(e.fechaAccion):''} ${accionV?'⚠️':''}</div>`:''}
+      ${e.ultimoContacto?`<div style="font-size:.78rem;color:var(--muted)">Último contacto: ${fmtDate(e.ultimoContacto)}</div>`:''}
+      ${e.notas?`<div style="font-size:.78rem;color:var(--muted);margin-top:4px;white-space:pre-line">${e.notas}</div>`:''}
+      <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
+        ${tel?`<a href="https://wa.me/57${tel}" target="_blank" class="btn btn-teal btn-sm" style="text-decoration:none">📱 WA</a>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="editarEmpresa(${realIdx})">✏️ Editar</button>
+        <button class="btn btn-ghost btn-sm" style="color:#dc2626" onclick="borrarEmpresa(${realIdx})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function abrirModalEmpresa(idx) {
+  document.getElementById('empEditIdx').value = idx !== undefined ? idx : -1;
+  document.getElementById('modalEmpresaTitle').textContent = idx !== undefined ? 'Editar empresa' : 'Nueva empresa';
+  const ids = ['empNombre','empSector','empContacto','empTelefono','empEmail','empEstado','empValor','empUltimoContacto','empProxAccion','empFechaAccion','empNotas'];
+  ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = id==='empEstado'?'Prospecto':''; });
+  if (idx !== undefined) {
+    const e = _getEmpresas()[idx];
+    if (e) {
+      ['empNombre','empSector','empContacto','empTelefono','empEmail','empEstado','empValor','empUltimoContacto','empProxAccion','empFechaAccion','empNotas'].forEach(id => {
+        const key = id.replace('emp','').charAt(0).toLowerCase()+id.replace('emp','').slice(1);
+        const el = document.getElementById(id); if (el && e[key] !== undefined) el.value = e[key];
+      });
+      document.getElementById('empNombre').value = e.nombre||'';
+      document.getElementById('empSector').value = e.sector||'';
+      document.getElementById('empContacto').value = e.contacto||'';
+      document.getElementById('empTelefono').value = e.telefono||'';
+      document.getElementById('empEmail').value = e.email||'';
+      document.getElementById('empEstado').value = e.estado||'Prospecto';
+      document.getElementById('empValor').value = e.valor||'';
+      document.getElementById('empUltimoContacto').value = e.ultimoContacto||'';
+      document.getElementById('empProxAccion').value = e.proxAccion||'';
+      document.getElementById('empFechaAccion').value = e.fechaAccion||'';
+      document.getElementById('empNotas').value = e.notas||'';
+    }
+  } else {
+    document.getElementById('empUltimoContacto').value = today();
+  }
+  document.getElementById('modalEmpresa').style.display = 'flex';
+}
+function cerrarModalEmpresa() { document.getElementById('modalEmpresa').style.display='none'; }
+function editarEmpresa(idx) { abrirModalEmpresa(idx); }
+function guardarEmpresa() {
+  const idx = parseInt(document.getElementById('empEditIdx').value, 10);
+  const emp = {
+    nombre: (document.getElementById('empNombre').value||'').trim(),
+    sector: (document.getElementById('empSector').value||'').trim(),
+    contacto: (document.getElementById('empContacto').value||'').trim(),
+    telefono: (document.getElementById('empTelefono').value||'').trim(),
+    email: (document.getElementById('empEmail').value||'').trim(),
+    estado: document.getElementById('empEstado').value,
+    valor: (document.getElementById('empValor').value||'').trim(),
+    ultimoContacto: document.getElementById('empUltimoContacto').value,
+    proxAccion: (document.getElementById('empProxAccion').value||'').trim(),
+    fechaAccion: document.getElementById('empFechaAccion').value,
+    notas: (document.getElementById('empNotas').value||'').trim()
+  };
+  if (!emp.nombre) { toast('El nombre es obligatorio','err'); return; }
+  const empresas = _getEmpresas();
+  if (idx >= 0) empresas[idx] = emp; else empresas.push(emp);
+  _saveEmpresas(empresas);
+  cerrarModalEmpresa(); renderEmpresas(); toast('Empresa guardada ✓');
+}
+function borrarEmpresa(idx) {
+  if (!confirm('¿Eliminar esta empresa?')) return;
+  const a = _getEmpresas(); a.splice(idx,1); _saveEmpresas(a); renderEmpresas();
+}
+
+// ── Origen del paciente ──
+function dbOnOrigenChange() {
+  const val = (document.getElementById('dbOrigen')||{}).value || '';
+  const sub = document.getElementById('dbOrigenSub');
+  if (sub) sub.style.display = (val==='Gimnasio'||val==='Empresa'||val==='Otro') ? 'block' : 'none';
 }
 
 function resRow(label, val, style='') {
