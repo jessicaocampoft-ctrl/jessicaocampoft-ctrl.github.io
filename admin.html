@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4209,7 +4209,7 @@ function renderSeguimiento() {
       const fecha  = normDate(c.fecha);
       if (!nombre || !fecha) return;
       if (!map[nombre] || fecha > map[nombre].fecha) {
-        map[nombre] = { nombre, telefono: c.telefono||'', email: c.email||'', fecha, servicio: c.servicio };
+        map[nombre] = { nombre, telefono: c.telefono||'', email: c.email||'', fecha, servicio: c.servicio, notaAdmin: c.notaAdmin||'' };
       }
     });
 
@@ -4234,7 +4234,7 @@ function renderSeguimiento() {
       const fecha  = normDate(c.fecha);
       if (!nombre || !fecha) return;
       if (!mapR[nombre] || fecha > mapR[nombre].fecha) {
-        mapR[nombre] = { nombre, telefono: c.telefono||'', email: c.email||'', fecha, servicio: c.servicio };
+        mapR[nombre] = { nombre, telefono: c.telefono||'', email: c.email||'', fecha, servicio: c.servicio, notaAdmin: c.notaAdmin||'' };
       }
     });
 
@@ -4332,15 +4332,23 @@ function _segCard(p) {
   const phone = tel.length<=10 ? '57'+tel : tel;
   const hasWA = tel.length >= 7;
 
-  // Mensajes WA — personalizados según tipo de descarga
+  // Mensajes WA — personalizados según tipo de descarga y nota de relación
   const primero = p.nombre.split(' ')[0];
   const sn = (p.servicio||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const zonaDesc = sn.includes('cuello') || sn.includes('espalda') ? 'de cuello y espalda'
     : sn.includes('pierna') ? 'de piernas'
     : 'completa';
-  const msg3 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Ya van 3 semanas desde tu última sesión de descarga muscular ${zonaDesc}. La próxima semana sería el momento ideal para reagendar antes de que el cuerpo empiece a acumular tensión. ¿Te agendo?`;
-  const msg4 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Ya se cumplieron las 4 semanas desde tu última descarga muscular ${zonaDesc} — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ¿Te agendo esta semana?`;
-  const msg5 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Hace más de un mes desde tu última sesión de descarga muscular ${zonaDesc}. El cuerpo ya empieza a acumular tensión de nuevo. ¿Cuándo te viene bien retomar? Cuéntame y coordinamos 💪`;
+  const _paraM = (p.notaAdmin||'').match(/\[PARA:\s*([^\]]+)\]/i);
+  const paraQuien = _paraM ? _paraM[1].trim() : null;
+  const sujeto3 = paraQuien ? `la última sesión de descarga muscular ${zonaDesc} de ${paraQuien}` : `tu última sesión de descarga muscular ${zonaDesc}`;
+  const sujeto4 = paraQuien ? `la última descarga muscular ${zonaDesc} de ${paraQuien}` : `tu última descarga muscular ${zonaDesc}`;
+  const sujeto5 = paraQuien ? `la última sesión de descarga muscular ${zonaDesc} de ${paraQuien}` : `tu última sesión de descarga muscular ${zonaDesc}`;
+  const cierre3 = paraQuien ? '¿Reagendamos?' : '¿Te agendo?';
+  const cierre4 = paraQuien ? '¿Reagendamos esta semana?' : '¿Te agendo esta semana?';
+  const cierre5 = paraQuien ? '¿Cuándo les viene bien retomar? Cuéntame y coordinamos 💪' : '¿Cuándo te viene bien retomar? Cuéntame y coordinamos 💪';
+  const msg3 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Ya van 3 semanas desde ${sujeto3}. La próxima semana sería el momento ideal para reagendar antes de que el cuerpo empiece a acumular tensión. ${cierre3}`;
+  const msg4 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Ya se cumplieron las 4 semanas desde ${sujeto4} — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ${cierre4}`;
+  const msg5 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Hace más de un mes desde ${sujeto5}. El cuerpo ya empieza a acumular tensión de nuevo. ${cierre5}`;
 
   const wa3 = hasWA ? `https://wa.me/${phone}?text=${encodeURIComponent(msg3)}` : null;
   const wa4 = hasWA ? `https://wa.me/${phone}?text=${encodeURIComponent(msg4)}` : null;
@@ -4386,9 +4394,13 @@ function _segCardReadap(p) {
   const primero    = p.nombre.split(' ')[0];
   const uid        = p.nombre.replace(/[^a-zA-Z0-9]/g,'_');
   const waSent     = segWaSent(p.nombre,'readap');
+  const _paraMR = (p.notaAdmin||'').match(/\[PARA:\s*([^\]]+)\]/i);
+  const paraQuienR = _paraMR ? _paraMR[1].trim() : null;
 
   const msgReadap = zona
-    ? `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 ¿Cómo has estado con tu proceso de readaptación funcional de ${zona}? Quería saber cómo te sientes y si quieres continuar con tu plan. ¿Me cuentas cómo vas? 💪`
+    ? paraQuienR
+      ? `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 ¿Cómo ha estado ${paraQuienR} con el proceso de readaptación funcional de ${zona}? Quería saber cómo se siente y si quieren continuar con el plan. ¿Me cuentas cómo va? 💪`
+      : `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 ¿Cómo has estado con tu proceso de readaptación funcional de ${zona}? Quería saber cómo te sientes y si quieres continuar con tu plan. ¿Me cuentas cómo vas? 💪`
     : null;
   const waReadap = (hasWA && msgReadap) ? `https://wa.me/${phone}?text=${encodeURIComponent(msgReadap)}` : null;
 
