@@ -107,6 +107,11 @@ function createBooking(d, isAdmin) {
     return {ok: true, id: 'REG-' + new Date().getTime()};
   }
 
+  // Lock para evitar duplicados por peticiones simultáneas (race condition)
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(15000); } catch(e) { return {ok: false, error: 'Sistema ocupado, intenta de nuevo'}; }
+
+  try {
   var price = d.modality === 'Presencial' ? d.priceP : d.priceD;
 
   // Dedup: si ya existe una cita con mismo nombre+fecha+hora, devolver la existente
@@ -178,6 +183,9 @@ function createBooking(d, isAdmin) {
   }
 
   return {ok: true, id: id};
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // -------------------------------------------------------------
