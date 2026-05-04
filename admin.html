@@ -2624,7 +2624,9 @@ function agendarDesdePaciente(encNombre, encTel, encEmail) {
 }
 
 async function guardarNotaAdmin(id) {
-  const nota = document.getElementById('notaAdminInput').value.trim();
+  const paraQuien = (document.getElementById('notaParaQuienInput').value||'').trim();
+  const otrasNotas = document.getElementById('notaAdminInput').value.trim();
+  const nota = (paraQuien ? '[PARA: ' + paraQuien + ']' + (otrasNotas ? ' ' + otrasNotas : '') : otrasNotas);
   try {
     const data = encodeURIComponent(JSON.stringify({id, notaAdmin: nota}));
     const r = await fetch(`${APPS_SCRIPT_URL}?action=editBooking&token=${encodeURIComponent(TOKEN)}&data=${data}`);
@@ -2678,9 +2680,14 @@ function verDetalle(id) {
       </div>
       <!-- Nota interna editable -->
       <div style="margin-top:10px;padding:10px 12px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);border-radius:8px">
-        <div style="font-size:.75rem;color:#92400e;font-family:var(--font-m);margin-bottom:5px">📝 Nota interna (solo tú la ves)</div>
-        <textarea id="notaAdminInput" rows="2" style="width:100%;background:transparent;border:none;outline:none;font-family:var(--font-b);font-size:.85rem;color:var(--text);resize:none" placeholder="Ej: Viene con su mamá, debe pagar saldo...">${c.notaAdmin||''}</textarea>
-        <button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="guardarNotaAdmin('${c.id}')">Guardar nota</button>
+        <div style="font-size:.75rem;color:#92400e;font-family:var(--font-m);margin-bottom:8px">📝 Nota interna (solo tú la ves)</div>
+        <div style="margin-bottom:8px">
+          <div style="font-size:.72rem;color:#a16207;margin-bottom:4px">👤 ¿La sesión es para otra persona? (afecta el mensaje de seguimiento)</div>
+          <input type="text" id="notaParaQuienInput" value="${(()=>{ const m=(c.notaAdmin||'').match(/\[PARA:\s*([^\]]+)\]/i); return m?m[1].trim():''; })()}" placeholder="Ej: tu esposo, tu mamá, tu hijo... (dejar en blanco si es para quien llama)" style="width:100%;background:rgba(255,255,255,.15);border:none;border-bottom:1px solid rgba(251,191,36,.4);border-radius:0;padding:4px 0;outline:none;font-family:var(--font-b);font-size:.85rem;color:var(--text)">
+        </div>
+        <div style="font-size:.72rem;color:#a16207;margin-bottom:4px">📋 Otras notas</div>
+        <textarea id="notaAdminInput" rows="2" style="width:100%;background:transparent;border:none;outline:none;font-family:var(--font-b);font-size:.85rem;color:var(--text);resize:none" placeholder="Ej: Debe pagar saldo, viene en transporte...">${(c.notaAdmin||'').replace(/\[PARA:[^\]]*\]\s*/i,'').trim()}</textarea>
+        <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="guardarNotaAdmin('${c.id}')">Guardar nota</button>
       </div>
       <!-- Mini-historial -->
       ${(()=>{
