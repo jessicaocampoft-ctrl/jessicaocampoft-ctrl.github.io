@@ -5399,7 +5399,7 @@ function renderIngresosDetalle() {
       </div>`;
 
     // Análisis semanal
-    if (analEl) analEl.innerHTML = _analisisSemana({ totalSem, nCitas, ticketProm, diffSem, pctDiff, mejorDia, topSrvSem, nuevosSem, recSem, totalAnt, nCitasAnt, dias });
+    if (analEl) analEl.innerHTML = _analisisSemana({ totalSem, nCitas, ticketProm, diffSem, pctDiff, mejorDia, topSrvSem, nuevosSem, recSem, totalAnt, nCitasAnt, dias, lunes });
 
   // ── MODO MES ──
   } else {
@@ -5550,44 +5550,143 @@ function renderIngresosDetalle() {
 }
 
 // ── Análisis financiero semanal ──
-function _analisisSemana({ totalSem, nCitas, ticketProm, diffSem, pctDiff, mejorDia, topSrvSem, nuevosSem, recSem, totalAnt, nCitasAnt, dias }) {
-  const recs = [];
-  const alertas = [];
+function _analisisSemana({ totalSem, nCitas, ticketProm, diffSem, pctDiff, mejorDia, topSrvSem, nuevosSem, recSem, totalAnt, nCitasAnt, dias, lunes }) {
   const positivos = [];
+  const alertas   = [];
+  const recs      = [];
 
-  // Comparativa
-  if (pctDiff !== null) {
-    if (pctDiff >= 20)  positivos.push(`📈 Semana excelente: ingresaste <strong>${pctDiff}% más</strong> que la semana anterior ($${Math.abs(diffSem).toLocaleString('es-CO')} adicionales).`);
-    else if (pctDiff >= 5) positivos.push(`📊 Semana positiva: +${pctDiff}% vs semana anterior.`);
-    else if (pctDiff < 0 && Math.abs(pctDiff) >= 20) alertas.push(`⚠️ Semana con caída del <strong>${Math.abs(pctDiff)}%</strong> vs la semana pasada. Revisa si hubo cancelaciones o días sin citas.`);
-    else if (pctDiff < 0) alertas.push(`📉 Leve baja del ${Math.abs(pctDiff)}% vs semana anterior.`);
+  const DIAS_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const toStr = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+
+  // ── Histórico: últimas 12 semanas (excluye la semana seleccionada) ──
+  const lunD = lunes instanceof Date ? lunes : new Date((lunes||today())+'T12:00:00');
+  const lunesHace12 = new Date(lunD); lunesHace12.setDate(lunD.getDate()-84);
+  const histCitas = (allData.citas||[]).filter(c => {
+    const f = normDate(c.fecha); if (!f) return false;
+    const fD = new Date(f+'T12:00:00');
+    return fD < lunD && fD >= lunesHace12;
+  });
+
+  // Promedio por día de semana (dow 0=Dom … 6=Sáb)
+  const histDow = {};
+  histCitas.forEach(c => {
+    const f = normDate(c.fecha); if (!f) return;
+    const d = new Date(f+'T12:00:00');
+    const dow = d.getDay();
+    const lu2 = new Date(d); lu2.setDate(d.getDate()-(dow===0?6:dow-1));
+    const semKey = toStr(lu2);
+    if (!histDow[dow]) histDow[dow] = { totalAcum:0, nCitas:0, semanas:new Set() };
+    histDow[dow].totalAcum += parsePrecio(c.precio);
+    histDow[dow].nCitas++;
+    histDow[dow].semanas.add(semKey);
+  });
+  const histDowProm = {};
+  Object.entries(histDow).forEach(([dow, h]) => {
+    const nSem = h.semanas.size||1;
+    histDowProm[dow] = { avgTotal: Math.round(h.totalAcum/nSem), avgCitas: +(h.nCitas/nSem).toFixed(1) };
+  });
+
+  // Mejor hora histórica (acumulado)
+  const histHr = {};
+  histCitas.forEach(c => {
+    const h = (c.hora||'').split(':')[0]; if (!h) return;
+    if (!histHr[h]) histHr[h]={total:0,n:0};
+    histHr[h].total+=parsePrecio(c.precio); histHr[h].n++;
+  });
+  const histHrTop = Object.entries(histHr).sort((a,b)=>b[1].total-a[1].total)[0];
+
+  // Servicio más rentable histórico
+  const histSrvMap = {};
+  histCitas.forEach(c => { const k=c.servicio||'—'; if(!histSrvMap[k])histSrvMap[k]={total:0,n:0}; histSrvMap[k].total+=parsePrecio(c.precio);histSrvMap[k].n++; });
+  const histSrvTop = Object.entries(histSrvMap).sort((a,b)=>b[1].total-a[1].total)[0];
+
+  // Ticket histórico promedio
+  const ticketHist = histCitas.length>0 ? Math.round(histCitas.reduce((s,c)=>s+parsePrecio(c.precio),0)/histCitas.length) : 0;
+
+  // Días hábiles de la semana seleccionada
+  const diasHab = dias.filter(d=>!['Sábado','Domingo'].includes(d.dia));
+
+  // Días que superaron / quedaron por debajo de su promedio histórico
+  const winsDay=[], gapsDay=[];
+  diasHab.forEach(d => {
+    const dow = new Date(d.fecha+'T12:00:00').getDay();
+    const hist = histDowProm[dow];
+    if (!hist) return;
+    if (d.total >= hist.avgTotal*1.2 && hist.avgTotal>0 && d.citas.length>0) winsDay.push({...d, avg:hist.avgTotal});
+    else if (d.citas.length < hist.avgCitas*0.5 && hist.avgCitas>=1) gapsDay.push({...d, avgCitas:hist.avgCitas, avgTotal:hist.avgTotal});
+  });
+
+  // ── ✅ LO QUE HICISTE BIEN (para repetir) ──
+  if (pctDiff!==null && pctDiff>=20)
+    positivos.push(`Semana excelente: ingresaste <strong>${pctDiff}% más</strong> que la semana anterior ($${Math.abs(diffSem).toLocaleString('es-CO')} adicionales). Mantén ese ritmo.`);
+  else if (pctDiff!==null && pctDiff>=5)
+    positivos.push(`Semana en crecimiento: <strong>+${pctDiff}%</strong> respecto a la semana anterior.`);
+
+  winsDay.slice(0,2).forEach(w =>
+    positivos.push(`El <strong>${w.dia}</strong> fue excepcionalmente bueno — $${w.total.toLocaleString('es-CO')} con ${w.citas.length} cita${w.citas.length!==1?'s':''}, muy por encima de tu promedio histórico ($${w.avg.toLocaleString('es-CO')}). Repite ese volumen.`)
+  );
+
+  if (recSem>0 && recSem>=nuevosSem)
+    positivos.push(`<strong>${recSem} pacientes recurrentes</strong> esta semana — tu retención es sólida. Estos pacientes confían en ti.`);
+
+  if (ticketHist>0 && ticketProm>ticketHist*1.1)
+    positivos.push(`Ticket promedio de <strong>$${ticketProm.toLocaleString('es-CO')}</strong>, superior a tu promedio histórico ($${ticketHist.toLocaleString('es-CO')}). Buen mix de servicios.`);
+
+  if (nuevosSem>=2)
+    positivos.push(`<strong>${nuevosSem} pacientes nuevos</strong> esta semana — excelente captación. Activa el seguimiento automático para fidelizarlos.`);
+
+  if (topSrvSem[0] && nCitas>0 && topSrvSem[0][1]/nCitas>=0.5)
+    positivos.push(`El <strong>${topSrvSem[0][0]}</strong> fue tu servicio estrella esta semana (${topSrvSem[0][1]} de ${nCitas} sesiones). Si es rentable, sigue priorizándolo.`);
+
+  // ── ⚠️ LO QUE PODRÍAS MEJORAR ──
+  if (pctDiff!==null && pctDiff<=-20)
+    alertas.push(`Caída del <strong>${Math.abs(pctDiff)}%</strong> respecto a la semana anterior ($${Math.abs(diffSem).toLocaleString('es-CO')} menos). Revisa si hubo cancelaciones o días sin agenda.`);
+  else if (pctDiff!==null && pctDiff<0)
+    alertas.push(`Leve baja del ${Math.abs(pctDiff)}% vs semana anterior.`);
+
+  gapsDay.slice(0,2).forEach(g => {
+    if (g.citas.length===0)
+      alertas.push(`El <strong>${g.dia}</strong> quedó sin citas — históricamente promedias ${g.avgCitas.toFixed(1)} cita${g.avgCitas===1?'':'s'} y $${g.avgTotal.toLocaleString('es-CO')} ese día. Es un espacio a recuperar.`);
+    else
+      alertas.push(`El <strong>${g.dia}</strong> tuvo solo ${g.citas.length} cita${g.citas.length===1?'':'s'} cuando históricamente promedias ${g.avgCitas.toFixed(1)}. Aún hay capacidad sin usar.`);
+  });
+
+  const diasSinCitas = diasHab.filter(d=>d.citas.length===0);
+  if (diasSinCitas.length>=2 && !gapsDay.some(g=>g.citas.length===0))
+    alertas.push(`${diasSinCitas.length} días hábiles sin citas (<strong>${diasSinCitas.map(d=>d.dia).join(', ')}</strong>). Publica disponibilidad o envía recordatorios esos días.`);
+
+  if (ticketHist>0 && ticketProm<ticketHist*0.85 && nCitas>0)
+    alertas.push(`Ticket promedio de <strong>$${ticketProm.toLocaleString('es-CO')}</strong>, por debajo de tu promedio histórico ($${ticketHist.toLocaleString('es-CO')}). Puede haber descuentos o más sesiones de bajo precio.`);
+
+  // ── 💡 RECOMENDACIONES BASADAS EN TUS DATOS ──
+  // Mejor día de semana histórico
+  const mejorDowEntry = Object.entries(histDowProm)
+    .filter(([d])=>![0,6].includes(+d))
+    .sort((a,b)=>b[1].avgTotal-a[1].avgTotal)[0];
+  if (mejorDowEntry) {
+    const dNom = DIAS_ES[+mejorDowEntry[0]];
+    const dataDow = dias.find(d=>d.dia===dNom);
+    if (!dataDow||dataDow.total<mejorDowEntry[1].avgTotal*0.7)
+      recs.push(`El <strong>${dNom}</strong> es históricamente tu día más rentable (promedio $${mejorDowEntry[1].avgTotal.toLocaleString('es-CO')}). ${!dataDow||dataDow.citas.length===0?'Esta semana no tuviste citas ese día':'Esta semana estuvo por debajo'} — intenta maximizarlo la próxima semana.`);
   }
 
-  // Días sin citas
-  const diasSinCitas = dias.filter(d => d.citas.length===0 && !['Sábado','Domingo'].includes(d.dia));
-  if (diasSinCitas.length >= 2) alertas.push(`🗓️ Tuviste <strong>${diasSinCitas.length} días hábiles sin citas</strong> (${diasSinCitas.map(d=>d.dia).join(', ')}). Considera publicar disponibilidad en esos horarios.`);
+  // Mejor hora histórica
+  if (histHrTop)
+    recs.push(`Tu horario más productivo históricamente es las <strong>${histHrTop[0]}:00</strong> (${histHrTop[1].n} sesiones en 12 semanas, $${histHrTop[1].total.toLocaleString('es-CO')} acumulados). Prioriza agendar en ese bloque.`);
 
-  // Ticket promedio
-  if (ticketProm > 0) {
-    const ticketAnt = nCitasAnt > 0 ? Math.round(totalAnt/nCitasAnt) : 0;
-    if (ticketProm > ticketAnt * 1.1) positivos.push(`💰 Ticket promedio de <strong>$${ticketProm.toLocaleString('es-CO')}</strong>, superior al de la semana pasada.`);
-    else if (ticketProm < ticketAnt * 0.9 && ticketAnt > 0) recs.push(`💡 Ticket promedio de $${ticketProm.toLocaleString('es-CO')} vs $${ticketAnt.toLocaleString('es-CO')} la semana pasada. Evalúa si hubo descuentos o servicios de menor valor.`);
-  }
+  // Servicio más rentable histórico vs el de esta semana
+  if (histSrvTop && topSrvSem[0] && histSrvTop[0]!==topSrvSem[0][0])
+    recs.push(`Históricamente tu servicio más rentable es <strong>${histSrvTop[0]}</strong> ($${histSrvTop[1].total.toLocaleString('es-CO')} acumulados), pero esta semana predominó <strong>${topSrvSem[0][0]}</strong>. Evalúa si puedes agenda más ${histSrvTop[0]} la próxima semana.`);
 
-  // Servicio más frecuente
-  if (topSrvSem[0]) recs.push(`🏆 Servicio estrella de la semana: <strong>${topSrvSem[0][0]}</strong> (${topSrvSem[0][1]} sesiones). ${topSrvSem.length>1?`También: ${topSrvSem.slice(1).map(([s,n])=>`${s} (${n})`).join(', ')}.`:''}`);
+  // Si la semana fue buena: refuerzo
+  if (positivos.length>=2 && (pctDiff===null||pctDiff>=0))
+    recs.push(`Semana con buen desempeño. Para sostenerlo, replica el patrón del <strong>${mejorDia.dia}</strong> (tu mejor día de la semana con $${mejorDia.total.toLocaleString('es-CO')}) y mantén ese nivel de agenda.`);
 
-  // Nuevos vs recurrentes
-  if (nuevosSem + recSem > 0) {
-    if (nuevosSem > recSem) recs.push(`👥 Esta semana dominan los <strong>pacientes nuevos</strong> (${nuevosSem} nuevos vs ${recSem} recurrentes). Buen indicador de captación.`);
-    else if (recSem > nuevosSem*2) positivos.push(`🔁 Alta fidelización: ${recSem} pacientes recurrentes esta semana. Excelente retención.`);
-  }
+  // Si no hay histórico suficiente, nota informativa
+  if (histCitas.length<5 && !positivos.length && !alertas.length)
+    recs.push(`Aún hay pocos datos históricos para comparar. El análisis se enriquecerá a medida que registres más semanas.`);
 
-  // Día vacío (mayor oportunidad)
-  const mejorDiaAnteriorStr = mejorDia.total>0 ? `El día más rentable fue <strong>${mejorDia.dia}</strong> con $${mejorDia.total.toLocaleString('es-CO')}.` : '';
-  if (mejorDiaAnteriorStr) recs.push(`📅 ${mejorDiaAnteriorStr} Si tienes espacio ese día, prioriza agendarlo.`);
-
-  return _renderAnalisis('📊 Análisis financiero — Esta semana', positivos, alertas, recs);
+  return _renderAnalisis('📊 Análisis de la semana', positivos, alertas, recs);
 }
 
 // ── Análisis financiero mensual ──
