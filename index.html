@@ -2267,6 +2267,10 @@
                 <label class="bk-field-label" for="bkNotes">¿Qué te pasa? / Notas adicionales</label>
                 <input type="text" id="bkNotes" class="bk-input" placeholder="Dolor en la espalda baja, lesión de rodilla... (opcional)">
               </div>
+              <div>
+                <label class="bk-field-label" for="bkParaQuien">¿La sesión es para otra persona? <span style="font-weight:400;color:var(--text-muted)">(opcional)</span></label>
+                <input type="text" id="bkParaQuien" class="bk-input" placeholder="Ej: mi esposo, mi mamá, mi hijo... (dejar en blanco si es para ti)">
+              </div>
             </div>
             <div class="bk-error-msg" id="bkError">Hubo un error al enviar. Escríbeme por <a href="https://wa.me/573136467945" style="color:var(--primary)">WhatsApp</a>.</div>
             <div class="bk-actions">
@@ -2474,7 +2478,7 @@
       service: '', priceP: '', priceD: '',
       modality: 'Presencial',
       date: '', time: '',
-      name: '', phone: '', email: '', address: '', notes: ''
+      name: '', phone: '', email: '', address: '', notes: '', paraQuien: ''
     };
 
     // Mínimo: mañana
@@ -2685,11 +2689,12 @@
     }
 
     function submitBooking() {
-      bk.name    = document.getElementById('bkName').value.trim();
-      bk.phone   = document.getElementById('bkPhone').value.trim();
-      bk.email   = document.getElementById('bkEmail').value.trim();
-      bk.address = document.getElementById('bkAddress').value.trim();
-      bk.notes   = document.getElementById('bkNotes').value.trim();
+      bk.name      = document.getElementById('bkName').value.trim();
+      bk.phone     = document.getElementById('bkPhone').value.trim();
+      bk.email     = document.getElementById('bkEmail').value.trim();
+      bk.address   = document.getElementById('bkAddress').value.trim();
+      bk.notes     = document.getElementById('bkNotes').value.trim();
+      bk.paraQuien = document.getElementById('bkParaQuien').value.trim();
 
       // Hide steps, show spinner
       document.querySelectorAll('.bk-step').forEach(s => s.classList.remove('active'));
@@ -2710,7 +2715,8 @@
           date: bk.date, time: bk.time,
           name: bk.name, phone: bk.phone,
           email: bk.email, address: bk.address,
-          notes: bk.notes, priceP: bk.priceP, priceD: bk.priceD
+          notes: bk.notes, priceP: bk.priceP, priceD: bk.priceD,
+          notaAdmin: bk.paraQuien ? '[PARA: ' + bk.paraQuien + ']' : ''
         })
       }).catch(() => {});
       // Mostrar éxito de inmediato sin esperar al servidor
@@ -2764,7 +2770,7 @@
       document.querySelectorAll('.bk-svc').forEach(s => s.classList.remove('selected'));
       document.getElementById('timeGrid').innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;margin:0">Selecciona primero una fecha para ver los horarios disponibles.</p>';
       document.getElementById('bkDate').value = '';
-      ['bkName','bkPhone','bkEmail','bkAddress','bkNotes'].forEach(id => document.getElementById(id).value = '');
+      ['bkName','bkPhone','bkEmail','bkAddress','bkNotes','bkParaQuien'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('bkSuccess').classList.remove('active');
       document.getElementById('addressWrap').style.display = 'none';
       selectModality('Presencial');

@@ -1093,6 +1093,11 @@ tr:hover td{background:rgba(126,221,208,.03)}
           <label>Notas adicionales</label>
           <textarea id="ncNotes" placeholder="Observaciones, indicaciones..."></textarea>
         </div>
+        <div class="field" style="margin-top:12px;padding:10px 12px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:8px">
+          <label style="color:#92400e;font-size:.8rem">👤 ¿La sesión es para otra persona?</label>
+          <input type="text" id="ncParaQuien" placeholder="Ej: tu esposo, tu mamá, tu hijo... (dejar en blanco si es para quien llama)" style="margin-top:6px;background:transparent;border:none;border-bottom:1px solid rgba(251,191,36,.3);border-radius:0;padding:4px 0;width:100%;outline:none;font-family:var(--font-b);font-size:.88rem;color:var(--text)">
+          <div style="font-size:.72rem;color:#a16207;margin-top:5px">Si pones algo aquí, el mensaje de seguimiento dirá "¿Cómo le fue a tu esposo?" en lugar de "¿Cómo te fue?"</div>
+        </div>
         <!-- ── CITAS RECURRENTES ── -->
         <div style="margin-top:14px;padding:12px 14px;background:rgba(27,191,176,.05);border:1px solid var(--border);border-radius:10px">
           <div style="display:flex;align-items:center;gap:10px">
@@ -2274,7 +2279,7 @@ function waLinkRec(tel, nombre, fecha, hora, serv) {
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
-function waLinkSeg(tel, nombre, serv) {
+function waLinkSeg(tel, nombre, serv, notaAdmin) {
   const t = String(tel||'').replace(/\D/g,'');
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
@@ -2288,7 +2293,12 @@ function waLinkSeg(tel, nombre, serv) {
   else if (s.includes('gimnasio')) det = 'la sesión de gimnasio';
   else if (s.includes('empresa'))  det = 'la sesión empresarial';
   else det = 'la sesión de ' + serv.toLowerCase();
-  const msg = 'Hola ' + waNombre(nombre) + ', espero que te encuentres bien. ¿Cómo te fue con ' + det + '? Quedo atenta a cualquier duda o molestia.\n\n- Jessica Ocampo Fisioterapeuta';
+  // Detectar nota de relación: si notaAdmin contiene [PARA: ...]
+  const paraMatch = notaAdmin && notaAdmin.match(/\[PARA:\s*([^\]]+)\]/i);
+  const paraQuien = paraMatch ? paraMatch[1].trim() : null;
+  const msg = paraQuien
+    ? 'Hola ' + waNombre(nombre) + ', espero que te encuentres bien. ¿Cómo le fue a ' + paraQuien + ' con ' + det + '? Quedo atenta a cualquier duda o molestia.\n\n- Jessica Ocampo Fisioterapeuta'
+    : 'Hola ' + waNombre(nombre) + ', espero que te encuentres bien. ¿Cómo te fue con ' + det + '? Quedo atenta a cualquier duda o molestia.\n\n- Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
@@ -2533,7 +2543,7 @@ function renderAgenda(keepPage = false) {
           <button class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
           ${(()=>{const u=waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,c.precio,c.modalidad);const s=wasWaSent(c.id,'conf');return u?`<a href="${u}" target="_blank" class="btn btn-wa btn-sm" title="${s?'Ya enviado':'Confirmación'}" onclick="markWaSent('${c.id}','conf');this.textContent=this.textContent.includes('✓')?this.textContent:'Conf.✓'" style="${s?'opacity:.5':''}">${s?'Conf.✓':'Conf.'}</a>`:'';})()}
           ${(()=>{const u=waLinkRec(c.telefono,c.nombre,c.fecha,c.hora,c.servicio);const s=wasWaSent(c.id,'rec');return u?`<a href="${u}" target="_blank" class="btn btn-wa-rec btn-sm" title="${s?'Ya enviado':'Recordatorio'}" onclick="markWaSent('${c.id}','rec');this.textContent=this.textContent.includes('✓')?this.textContent:'Rec.✓'" style="${s?'opacity:.5':''}">${s?'Rec.✓':'Rec.'}</a>`:'';})()}
-          ${(()=>{const u=waLinkSeg(c.telefono,c.nombre,c.servicio);const s=wasWaSent(c.id,'seg');return u?`<a href="${u}" target="_blank" class="btn btn-wa-seg btn-sm" title="${s?'Ya enviado':'Seguimiento'}" onclick="markWaSent('${c.id}','seg');this.textContent=this.textContent.includes('✓')?this.textContent:'Seg.✓'" style="${s?'opacity:.5':''}">${s?'Seg.✓':'Seg.'}</a>`:'';})()}
+          ${(()=>{const u=waLinkSeg(c.telefono,c.nombre,c.servicio,c.notaAdmin);const s=wasWaSent(c.id,'seg');return u?`<a href="${u}" target="_blank" class="btn btn-wa-seg btn-sm" title="${s?'Ya enviado':'Seguimiento'}" onclick="markWaSent('${c.id}','seg');this.textContent=this.textContent.includes('✓')?this.textContent:'Seg.✓'" style="${s?'opacity:.5':''}">${s?'Seg.✓':'Seg.'}</a>`:'';})()}
           ${waBtnPasaporte(c.telefono,c.nombre)}
           ${c.estado!=='Cancelada'?`<button class="btn btn-edit btn-sm" onclick="editarCita('${c.id}')" title="Editar">✏️</button>`:''}
           ${c.estado!=='Cancelada'?`<button class="btn btn-danger btn-sm" onclick="cancelarCita('${c.id}','${c.nombre.replace(/'/g,"\\'")}')" title="Cancelar">🚫</button>`:''}
@@ -2687,7 +2697,7 @@ function verDetalle(id) {
       })()}
       <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
         ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp confirmación',c.precio,c.modalidad)}
-        <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${c.telefono||''}','${c.nombre.replace(/'/g,"\\'")}','${c.servicio.replace(/'/g,"\\'")}')">💬 Seguimiento</button>
+        <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${c.telefono||''}','${c.nombre.replace(/'/g,"\\'")}','${c.servicio.replace(/'/g,"\\'")}','${(c.notaAdmin||'').replace(/'/g,"\\'")}')">💬 Seguimiento</button>
         ${waBtnPasaporte(c.telefono,c.nombre)}
         ${c.email ? `<a href="mailto:${c.email}" class="btn btn-ghost btn-sm">📧 Email</a>` : ''}
       </div>
@@ -2802,8 +2812,8 @@ async function guardarEdicion() {
 }
 
 // ── Mensaje de seguimiento WhatsApp personalizado ──
-function seguimientoWA(tel, nombre, servicio) {
-  const url = waLinkSeg(tel, nombre, servicio);
+function seguimientoWA(tel, nombre, servicio, notaAdmin) {
+  const url = waLinkSeg(tel, nombre, servicio, notaAdmin);
   if (!url) { toast('Sin número de teléfono registrado', 'err'); return; }
   window.open(url, '_blank');
 }
@@ -2931,7 +2941,8 @@ async function submitAdminBooking() {
     priceP: getPrecioFinal() || 'A convenir',
     priceD: getPrecioFinal() || 'A convenir',
     address: document.getElementById('ncAddress').value.trim(),
-    notes:   document.getElementById('ncNotes').value.trim()
+    notes:   document.getElementById('ncNotes').value.trim(),
+    notaAdmin: (() => { const p = (document.getElementById('ncParaQuien').value||'').trim(); return p ? '[PARA: ' + p + ']' : ''; })()
   };
 
   const isRecurring   = document.getElementById('ncRecurring').checked;
@@ -3041,7 +3052,7 @@ document.addEventListener('click', e => {
 });
 
 function clearNuevaCita() {
-  ['ncName','ncPhone','ncEmail','ncPrice','ncAddress','ncNotes','pacSearch'].forEach(id => {
+  ['ncName','ncPhone','ncEmail','ncPrice','ncAddress','ncNotes','ncParaQuien','pacSearch'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value='';
   });
   document.getElementById('ncService').value='';
