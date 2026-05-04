@@ -679,6 +679,13 @@ tr:hover td{background:rgba(126,221,208,.03)}
         <button type="button" class="btn btn-ghost btn-sm" onclick="showView('agenda');filtrarHoy()">Ver agenda</button>
       </div>
 
+      <!-- Alerta semana floja -->
+      <div id="alertaSemanFlojaDash" style="display:none;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:12px 18px;margin-bottom:16px;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:1.1rem">📉</span>
+        <span style="flex:1;font-size:.88rem;color:#991b1b" id="alertaSemanFlojaTxt"></span>
+        <button class="btn btn-sm" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-b);cursor:pointer" onclick="showView('finanzas')">Ver finanzas →</button>
+      </div>
+
       <!-- Banner tareas pendientes -->
       <div id="bannerTareas" style="display:none;background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.3);border-radius:10px;padding:12px 18px;margin-bottom:16px;align-items:center;gap:12px;flex-wrap:wrap">
         <span style="font-size:1.1rem">✅</span>
@@ -1498,8 +1505,16 @@ tr:hover td{background:rgba(126,221,208,.03)}
             <div class="card-title" style="margin-bottom:14px">🏅 Pacientes frecuentes (Top 5)</div>
             <div id="metricPacientesFrecuentes"></div>
           </div>
+          <div class="card" style="grid-column:1/-1">
+            <div class="card-title" style="margin-bottom:14px">💸 Horas más rentables</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Ingreso total generado por franja horaria — saber a qué hora cobras más</div>
+            <div id="metricHorasRentables"></div>
+          </div>
         </div>
       </div>
+
+      <!-- Alerta semana floja -->
+      <div id="alertaSemanFlojaFin" style="display:none;margin-top:16px"></div>
 
       <!-- Ingresos por día / semana -->
       <div style="margin-top:20px">
@@ -2445,6 +2460,8 @@ function initDashboard() {
   }
   // Banner tareas pendientes en dashboard
   renderTareas();
+  // Alerta semana floja en dashboard
+  _checkAlertaSemanFloja(citasReales());
 }
 
 // ── AGENDA ──
@@ -4750,6 +4767,9 @@ function renderFinanzas() {
       </div>`;
   }
 
+  // ── Alerta semana floja ──
+  _checkAlertaSemanFloja(citas);
+
   // ── Proyección extendida a fin de mes ──
   const proyExtEl = document.getElementById('finProyeccionExt');
   if (proyExtEl) {
@@ -5067,12 +5087,168 @@ function renderMetricas() {
       : '<div class="empty" style="padding:20px 0"><p>Sin datos suficientes</p></div>';
   }
 
+  // 12. Horas más rentables
+  const horRentEl = document.getElementById('metricHorasRentables');
+  if (horRentEl) {
+    // Agrupar por hora: total ingresado y número de citas
+    const horData = {};
+    citas.forEach(c => {
+      const h = (c.hora || '').split(':')[0];
+      if (!h || isNaN(+h)) return;
+      if (!horData[h]) horData[h] = { count: 0, total: 0 };
+      horData[h].count++;
+      horData[h].total += parsePrecio(c.precio);
+    });
+
+    const horArr = Object.entries(horData)
+      .map(([h, d]) => ({ h: +h, label: h + ':00', count: d.count, total: d.total, avg: Math.round(d.total / d.count) }))
+      .sort((a, b) => b.total - a.total);
+
+    const maxTotal = horArr[0] ? horArr[0].total : 1;
+
+    if (!horArr.length) {
+      horRentEl.innerHTML = '<div class="empty" style="padding:20px 0"><p>Sin datos</p></div>';
+    } else {
+      // Top por ingreso total + tabla completa
+      const top = horArr[0];
+      horRentEl.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:16px">
+          <div style="padding:10px 14px;background:rgba(27,191,176,.08);border:1px solid rgba(27,191,176,.25);border-radius:10px">
+            <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:2px">⭐ Hora más rentable</div>
+            <div style="font-family:var(--font-h);font-size:1.2rem;font-weight:700;color:var(--primary)">${top.label}</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:2px">$${top.total.toLocaleString('es-CO')} total · ${top.count} citas</div>
+          </div>
+          <div style="padding:10px 14px;background:var(--s2);border-radius:10px">
+            <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:2px">💰 Mayor ticket promedio</div>
+            ${(() => { const topAvg = [...horArr].sort((a,b) => b.avg - a.avg)[0]; return `<div style="font-family:var(--font-h);font-size:1.2rem;font-weight:700">${topAvg.label}</div><div style="font-size:.75rem;color:var(--muted);margin-top:2px">$${topAvg.avg.toLocaleString('es-CO')} promedio</div>`; })()}
+          </div>
+          <div style="padding:10px 14px;background:var(--s2);border-radius:10px">
+            <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:2px">📊 Franjas registradas</div>
+            <div style="font-family:var(--font-h);font-size:1.2rem;font-weight:700">${horArr.length} horarios</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:2px">${horArr[horArr.length-1].label} — ${horArr.sort((a,b)=>a.h-b.h)[horArr.length-1].label}</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          ${[...horArr].sort((a,b) => b.total - a.total).map((r, i) => `
+            <div style="display:grid;grid-template-columns:50px 1fr auto auto;align-items:center;gap:10px;padding:6px 0">
+              <span style="font-family:var(--font-m);font-size:.8rem;color:${i===0?'var(--primary)':'var(--muted)'};font-weight:${i===0?'700':'400'}">${r.label}</span>
+              <div class="metric-bar-bg">
+                <div class="metric-bar-fill" style="width:${Math.round(r.total/maxTotal*100)}%;background:${i===0?'var(--primary)':i<3?'#6366f1':'rgba(27,191,176,.4)'}"></div>
+              </div>
+              <span style="font-size:.75rem;color:var(--muted);min-width:55px;text-align:right">${r.count} cita${r.count!==1?'s':''}</span>
+              <span style="font-family:var(--font-m);font-size:.78rem;color:${i===0?'var(--primary)':'var(--text)'};min-width:90px;text-align:right">$${r.total.toLocaleString('es-CO')}</span>
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:14px;padding:10px 14px;background:var(--s2);border-radius:8px;font-size:.78rem;color:var(--muted)">
+          💡 <strong>Interpretación:</strong> Prioriza agendar servicios de mayor precio en ${horArr.sort((a,b)=>b.total-a.total)[0].label} y ${horArr[1]?horArr[1].label:'la siguiente hora más rentable'}. Si esas franjas están siempre llenas, considera subir el precio o agregar horarios similares.
+        </div>`;
+    }
+  }
+
   // Inicializar selector de fecha para ingresos por día/semana
   const fechaInp = document.getElementById('ingresosFechaInput');
   if (fechaInp && !fechaInp.value) {
     fechaInp.value = today();
     setModoIngresos('semana');
   }
+}
+
+// ── Alerta semana floja ──
+function _checkAlertaSemanFloja(citas) {
+  const now = new Date();
+  const dow = now.getDay(); // 0=dom, 3=mié, 5=vie
+  const hoyStr = today();
+
+  // Mostrar solo si es miércoles, jueves o viernes (dow 3,4,5)
+  const dashEl = document.getElementById('alertaSemanFlojaDash');
+  const finEl  = document.getElementById('alertaSemanFlojaFin');
+  const txtEl  = document.getElementById('alertaSemanFlojaTxt');
+
+  const apagar = () => {
+    if (dashEl) dashEl.style.display = 'none';
+    if (finEl)  finEl.innerHTML = '';
+  };
+
+  if (dow < 3 || dow > 5) { apagar(); return; }
+
+  // Calcular ingresos semana actual (lunes a hoy)
+  const lunes = new Date(now);
+  lunes.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
+  lunes.setHours(0,0,0,0);
+
+  let totalSemActual = 0, nSemActual = 0;
+  citas.forEach(c => {
+    const f = normDate(c.fecha);
+    if (!f) return;
+    const fd = new Date(f + 'T12:00:00');
+    if (fd >= lunes && f <= hoyStr) {
+      totalSemActual += parsePrecio(c.precio);
+      nSemActual++;
+    }
+  });
+
+  // Calcular promedio semanal histórico (últimas 8 semanas completas)
+  const semanasHist = [];
+  for (let w = 1; w <= 8; w++) {
+    const lunesW = new Date(lunes);
+    lunesW.setDate(lunes.getDate() - w * 7);
+    const domW = new Date(lunesW); domW.setDate(lunesW.getDate() + 6);
+    const lunesStr = _ingFmt(lunesW);
+    const domStr   = _ingFmt(domW);
+    let totalW = 0;
+    citas.forEach(c => {
+      const f = normDate(c.fecha);
+      if (f && f >= lunesStr && f <= domStr) totalW += parsePrecio(c.precio);
+    });
+    if (totalW > 0) semanasHist.push(totalW);
+  }
+
+  if (!semanasHist.length) { apagar(); return; }
+
+  const promSemanal = Math.round(semanasHist.reduce((a,b)=>a+b,0) / semanasHist.length);
+  if (!promSemanal) { apagar(); return; }
+
+  // Calcular ritmo proyectado al viernes (5 días hábiles)
+  // Días transcurridos: lunes=1, martes=2, mié=3, jue=4, vie=5
+  const diasTranscurridos = dow === 0 ? 5 : dow; // dow 1-5
+  const pctRitmo = Math.round(totalSemActual / promSemanal * 100);
+
+  // Umbral: si llevas menos del 40% del promedio semanal al miércoles,
+  // o menos del 60% al jueves, o menos del 80% al viernes → alerta
+  const umbrales = { 3: 40, 4: 60, 5: 80 };
+  const umbral = umbrales[dow];
+  const estaFloja = pctRitmo < umbral;
+
+  if (!estaFloja) { apagar(); return; }
+
+  const diasNom = { 3:'miércoles', 4:'jueves', 5:'viernes' };
+  const faltanPesos = promSemanal - totalSemActual;
+  const msg = `📉 Semana floja — Es ${diasNom[dow]} y llevas $${totalSemActual.toLocaleString('es-CO')} (${pctRitmo}% de tu promedio semanal de $${promSemanal.toLocaleString('es-CO')}). Faltan ~$${faltanPesos.toLocaleString('es-CO')} para alcanzar el ritmo habitual. ¿Puedes agregar citas hoy o mañana?`;
+
+  if (txtEl) txtEl.textContent = msg;
+  if (dashEl) dashEl.style.display = 'flex';
+  if (finEl) finEl.innerHTML = `
+    <div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+      <span style="font-size:1.2rem">📉</span>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:.9rem;color:#991b1b;margin-bottom:4px">Alerta: semana floja</div>
+        <div style="font-size:.84rem;color:#7f1d1d;line-height:1.5">${msg}</div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px">
+            <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:3px;color:#991b1b">
+              <span>Ritmo actual</span><span>${pctRitmo}% del promedio</span>
+            </div>
+            <div style="background:rgba(239,68,68,.15);border-radius:99px;height:8px;overflow:hidden">
+              <div style="width:${Math.min(pctRitmo,100)}%;height:100%;background:#dc2626;border-radius:99px;transition:width .5s"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:.7rem;margin-top:2px;color:#991b1b">
+              <span>$0</span><span>Meta: $${promSemanal.toLocaleString('es-CO')}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-sm" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-b);cursor:pointer;white-space:nowrap" onclick="showView('nueva');document.getElementById('ncDate').value=today()">+ Agendar hoy</button>
+    </div>`;
 }
 
 let _modoIngresos = 'dia';
