@@ -2704,7 +2704,7 @@ function verDetalle(id) {
       })()}
       <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
         ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp confirmación',c.precio,c.modalidad)}
-        <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${c.telefono||''}','${c.nombre.replace(/'/g,"\\'")}','${c.servicio.replace(/'/g,"\\'")}','${(c.notaAdmin||'').replace(/'/g,"\\'")}')">💬 Seguimiento</button>
+        <button class="btn btn-ghost btn-sm" onclick="(function(){ const p=(document.getElementById('notaParaQuienInput').value||'').trim(); const o=(document.getElementById('notaAdminInput').value||'').trim(); const nota=p?'[PARA: '+p+']'+(o?' '+o:''):o; seguimientoWA('${c.telefono||''}','${c.nombre.replace(/'/g,"\\'")}','${c.servicio.replace(/'/g,"\\'")}',nota); })()">💬 Seguimiento</button>
         ${waBtnPasaporte(c.telefono,c.nombre)}
         ${c.email ? `<a href="mailto:${c.email}" class="btn btn-ghost btn-sm">📧 Email</a>` : ''}
       </div>
