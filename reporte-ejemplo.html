@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ejemplo Reporte — Evaluación Express CrossFit</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F8FA;--s1:#fff;--s2:#F0F2F5;--s3:#E8EAED;
+  --primary:#1BBFB0;--primary-h:#17A89A;--primary-light:rgba(27,191,176,.1);
+  --text:#1A1A2E;--muted:#6B7280;--border:rgba(27,191,176,.2);
+  --font-h:'Cormorant Garamond',serif;--font-b:'DM Sans',sans-serif;--font-m:'DM Mono',monospace;
+}
+html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh}
+#wrap{max-width:700px;margin:0 auto;padding:24px 16px 60px}
+
+/* TABS */
+.tabs{display:flex;gap:8px;margin-bottom:20px}
+.tab-btn{flex:1;padding:11px 16px;border-radius:10px;border:2px solid var(--border);background:#fff;font-family:var(--font-b);font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s;color:var(--muted)}
+.tab-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* DEMO BANNER */
+.demo-banner{background:#1e40af;color:#fff;border-radius:10px;padding:12px 18px;margin-bottom:20px;font-size:.82rem;display:flex;align-items:flex-start;gap:10px}
+.demo-banner strong{display:block;font-size:.88rem;margin-bottom:2px}
+
+/* BANNER TÉCNICO */
+.banner-tecnico{background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:.82rem;color:#166534}
+.banner-tecnico strong{display:block;margin-bottom:2px;font-size:.86rem}
+
+/* BOTONES */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 20px;border-radius:8px;border:none;font-family:var(--font-b);font-size:.87rem;font-weight:600;cursor:pointer;transition:.2s}
+.btn-tecnico{background:#0d9488;color:#fff}
+.btn-wa{background:#25D366;color:#fff}
+.btn-email{background:#4f46e5;color:#fff}
+.btn-print{background:#374151;color:#fff}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+
+/* REPORT */
+.report-header{background:linear-gradient(135deg,#0d9488,#1BBFB0);color:#fff;border-radius:16px;padding:24px;margin-bottom:16px}
+.report-header h2{font-family:var(--font-h);font-size:1.6rem;font-weight:600;margin-bottom:4px}
+.report-header p{font-size:.85rem;opacity:.85}
+.report-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.report-meta-item{background:rgba(255,255,255,.2);border-radius:8px;padding:5px 11px;font-size:.76rem;font-family:var(--font-m)}
+
+.report-section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
+.report-section h3{font-family:var(--font-h);font-size:1.1rem;font-weight:600;color:var(--primary);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+
+/* FOTOS */
+.report-photos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:4px}
+.report-photo{border-radius:10px;overflow:hidden;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center}
+.report-photo-label{font-size:.7rem;color:var(--muted);text-align:center;margin-top:4px;font-family:var(--font-m)}
+
+/* SCREENS */
+.test-report-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.test-report-item{border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;gap:10px;align-items:flex-start}
+.test-thumb{width:54px;height:54px;border-radius:8px;flex-shrink:0;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.test-report-name{font-size:.8rem;font-weight:600;margin-bottom:4px}
+.test-report-obs{font-size:.72rem;color:var(--muted);line-height:1.4;margin-top:3px}
+.score-pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:.72rem;font-weight:600;font-family:var(--font-m)}
+.sp0{background:#fee2e2;color:#dc2626}
+.sp1{background:#fed7aa;color:#c2410c}
+.sp2{background:#fef9c3;color:#92400e}
+.sp3{background:#dcfce7;color:#16a34a}
+.sp-{background:var(--s2);color:var(--muted)}
+
+/* HALLAZGOS */
+.report-findings{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.finding-tag{padding:5px 12px;border-radius:99px;font-size:.78rem;font-weight:500}
+.finding-tag.moderado{background:#fed7aa;color:#c2410c;border:1px solid #fdba74}
+.finding-tag.leve{background:#fef9c3;color:#92400e;border:1px solid #fde68a}
+.count-badge{background:var(--primary);color:#fff;border-radius:99px;font-size:.68rem;padding:1px 7px;font-family:var(--font-m);font-weight:600}
+.alert-warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:8px;padding:10px 14px;font-size:.83rem;margin-top:10px}
+
+/* IA TÉCNICA */
+.ai-text{font-size:.88rem;line-height:1.75;color:#374151}
+.ai-section-title{font-family:var(--font-h);font-size:1rem;color:var(--primary);font-weight:600;margin:14px 0 5px}
+.ai-text ul{padding-left:18px;margin:5px 0}
+.ai-text li{margin-bottom:4px}
+
+/* REPORTE PACIENTE */
+.pac-header{background:linear-gradient(135deg,#0d9488,#1BBFB0);color:#fff;border-radius:16px;padding:24px;margin-bottom:16px;text-align:center}
+.pac-header h2{font-family:var(--font-h);font-size:1.5rem;font-weight:600;margin-bottom:4px}
+.pac-header p{font-size:.85rem;opacity:.85}
+.pac-section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px}
+.pac-section h3{font-family:var(--font-h);font-size:1.15rem;font-weight:600;color:var(--primary);margin-bottom:10px}
+.pac-section p{font-size:.9rem;line-height:1.7;color:#374151;margin-bottom:8px}
+.pac-section ul{padding-left:20px}
+.pac-section li{font-size:.9rem;line-height:1.7;color:#374151;margin-bottom:6px}
+.bien-box{background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px 18px;font-size:.9rem;color:#166534;line-height:1.6}
+
+/* CTA PACIENTE */
+.cta-pac{background:linear-gradient(135deg,rgba(27,191,176,.08),rgba(27,191,176,.16));border:2px solid var(--primary);border-radius:14px;padding:24px;text-align:center;margin-bottom:16px}
+.cta-pac h3{font-family:var(--font-h);font-size:1.4rem;font-weight:600;margin-bottom:10px}
+.cta-pac p{color:var(--muted);font-size:.88rem;line-height:1.6;margin-bottom:18px}
+.btn-wa-big{display:inline-flex;align-items:center;gap:9px;padding:15px 32px;border-radius:12px;border:none;background:#25D366;color:#fff;font-family:var(--font-b);font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none}
+
+/* PAQUETES */
+.paquetes-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.paquete{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.paquete.destacado{border-color:var(--primary);background:rgba(27,191,176,.04)}
+.pac-badge{font-size:.65rem;font-family:var(--font-m);background:var(--primary);color:#fff;padding:2px 8px;border-radius:99px;display:inline-block;margin-bottom:6px}
+.paquete h4{font-size:.9rem;font-weight:600;margin-bottom:4px}
+.paquete p{font-size:.76rem;color:var(--muted);line-height:1.4}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.btn-print-sm{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:8px;border:none;background:#374151;color:#fff;font-family:var(--font-b);font-size:.85rem;font-weight:600;cursor:pointer}
+
+@media(max-width:520px){
+  .report-photos{grid-template-columns:repeat(2,1fr)}
+  .test-report-grid,.paquetes-grid{grid-template-columns:1fr}
+  .btn-row{flex-direction:column}
+  .tabs{flex-direction:column}
+}
+@media print{
+  .demo-banner,.tabs,.actions,.btn-row,.banner-tecnico{display:none!important}
+  #wrap{padding:0;max-width:100%}
+  .tab-panel{display:block!important}
+}
+</style>
+</head>
+<body>
+<div id="wrap">
+
+  <div class="demo-banner">
+    <span style="font-size:1.4rem;flex-shrink:0">📄</span>
+    <div>
+      <strong>Ejemplo de reporte — Evaluación Express CrossFit</strong>
+      Usa las pestañas para ver cómo queda el reporte técnico (el tuyo) vs el reporte que recibe el paciente.
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('tecnico',this)">🔬 Reporte técnico (mi vista)</button>
+    <button class="tab-btn" onclick="showTab('paciente',this)">👤 Reporte del paciente</button>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB 1 — REPORTE TÉCNICO
+  ══════════════════════════════════════ -->
+  <div id="tab-tecnico" class="tab-panel active">
+
+    <div class="banner-tecnico">
+      <strong>📋 Estás viendo el reporte técnico completo</strong>
+      Solo visible para ti. Los botones de abajo envían versiones distintas al paciente o a ti.
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-tecnico">📱 Enviarme a mí (técnico)</button>
+      <button class="btn btn-wa">💬 Enviar al paciente</button>
+      <button class="btn btn-email">📧 Email al paciente</button>
+      <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
+    </div>
+
+    <!-- ENCABEZADO -->
+    <div class="report-header">
+      <h2>Evaluación Express CrossFit</h2>
+      <p>Jessica Ocampo Fisioterapeuta · Pereira, Colombia</p>
+      <div class="report-meta">
+        <div class="report-meta-item">👤 Andrés Mejía, 29 años</div>
+        <div class="report-meta-item">🏋️ Intermedio · 2 años</div>
+        <div class="report-meta-item">🎯 Mejorar rendimiento en competencia</div>
+        <div class="report-meta-item">📅 6 de mayo de 2026</div>
+      </div>
+    </div>
+
+    <!-- FOTOS -->
+    <div class="report-section">
+      <h3>📐 Registro fotográfico postural</h3>
+      <div class="report-photos">
+        <div>
+          <div class="report-photo" style="background:linear-gradient(160deg,#e0f2fe,#bae6fd)">
+            <div style="text-align:center;color:#0369a1;font-size:.68rem;padding:10px"><div style="font-size:2rem;margin-bottom:4px">🧍</div>Frontal</div>
+          </div>
+          <div class="report-photo-label">Frontal</div>
+        </div>
+        <div>
+          <div class="report-photo" style="background:linear-gradient(160deg,#f0fdf4,#bbf7d0)">
+            <div style="text-align:center;color:#15803d;font-size:.68rem;padding:10px"><div style="font-size:2rem;margin-bottom:4px">🧍</div>Lateral D</div>
+          </div>
+          <div class="report-photo-label">Lateral D</div>
+        </div>
+        <div>
+          <div class="report-photo" style="background:linear-gradient(160deg,#fdf4ff,#e9d5ff)">
+            <div style="text-align:center;color:#7e22ce;font-size:.68rem;padding:10px"><div style="font-size:2rem;margin-bottom:4px">🧍</div>Lateral I</div>
+          </div>
+          <div class="report-photo-label">Lateral I</div>
+        </div>
+        <div>
+          <div class="report-photo" style="background:linear-gradient(160deg,#fff7ed,#fed7aa)">
+            <div style="text-align:center;color:#c2410c;font-size:.68rem;padding:10px"><div style="font-size:2rem;margin-bottom:4px">🧍</div>Posterior</div>
+          </div>
+          <div class="report-photo-label">Posterior</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREENS -->
+    <div class="report-section">
+      <h3>🏋️ Screens funcionales</h3>
+      <div class="test-report-grid">
+        <div class="test-report-item">
+          <div class="test-thumb">🏋️</div>
+          <div><div class="test-report-name">Deep Squat</div><span class="score-pill sp2">2/3</span><div class="test-report-obs">Talones se elevan al descender. Inclinación anterior del tronco.</div></div>
+        </div>
+        <div class="test-report-item">
+          <div class="test-thumb">🙌</div>
+          <div><div class="test-report-name">Overhead Reach</div><span class="score-pill sp2">2/3</span><div class="test-report-obs">Extensión lumbar compensatoria al elevar brazos.</div></div>
+        </div>
+        <div class="test-report-item">
+          <div class="test-thumb">🦵</div>
+          <div><div class="test-report-name">SL Squat Derecho</div><span class="score-pill sp2">2/3</span><div class="test-report-obs">Valgo leve en descenso. Tronco estable.</div></div>
+        </div>
+        <div class="test-report-item">
+          <div class="test-thumb">🦵</div>
+          <div><div class="test-report-name">SL Squat Izquierdo</div><span class="score-pill sp1">1/3</span><div class="test-report-obs">Valgo marcado + caída de cadera. Patrón asimétrico evidente.</div></div>
+        </div>
+        <div class="test-report-item">
+          <div class="test-thumb">💪</div>
+          <div><div class="test-report-name">Shoulder D arriba</div><span class="score-pill sp3">3/3</span><div class="test-report-obs">Movilidad completa, sin compensaciones.</div></div>
+        </div>
+        <div class="test-report-item">
+          <div class="test-thumb">💪</div>
+          <div><div class="test-report-name">Shoulder I arriba</div><span class="score-pill sp2">2/3</span><div class="test-report-obs">Separación de 1 mano. Limitación RI hombro I.</div></div>
+        </div>
+      </div>
+
+      <div class="test-report-grid">
+        <div class="test-report-item">
+          <div class="test-thumb">🦴</div>
+          <div><div class="test-report-name">Trendelenburg D</div><span class="score-pill sp3">Negativo</span><div class="test-report-obs">Pelvis estable. Glúteo medio D competente.</div></div>
+        </div>
+        <div class="test-report-item">
+          <div class="test-thumb">🦴</div>
+          <div><div class="test-report-name">Trendelenburg I</div><span class="score-pill sp1">Positivo</span><div class="test-report-obs">Caída hemipelvis D. Debilidad glúteo medio I.</div></div>
+        </div>
+        <div class="test-report-item">
+          <div class="test-thumb">🔄</div>
+          <div><div class="test-report-name">Shin Box D</div><span class="score-pill sp2">Trans 2/3</span><div class="test-report-obs">RI 30° · RE 40°. Compensación de tronco en transición.</div></div>
+        </div>
+        <div class="test-report-item">
+          <div class="test-thumb">🔄</div>
+          <div><div class="test-report-name">Shin Box I</div><span class="score-pill sp1">Trans 1/3</span><div class="test-report-obs">RI 18° · RE 25°. Rango muy limitado. Cadera I rígida.</div></div>
+        </div>
+      </div>
+
+      <div class="test-report-grid">
+        <div class="test-report-item">
+          <div class="test-thumb">🐦</div>
+          <div><div class="test-report-name">Bird Dog D</div><span class="score-pill sp3">3/3</span><div class="test-report-obs">Patrón correcto y simétrico.</div></div>
+        </div>
+        <div class="test-report-item">
+          <div class="test-thumb">🐦</div>
+          <div><div class="test-report-name">Bird Dog I</div><span class="score-pill sp2">2/3</span><div class="test-report-obs">Leve rotación pélvica al extender pierna I.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALLAZGOS -->
+    <div class="report-section">
+      <h3>📐 Hallazgos posturales <span class="count-badge">6</span></h3>
+      <div class="report-findings">
+        <span class="finding-tag moderado">Anteversión pélvica</span>
+        <span class="finding-tag moderado">Inclinación pélvica lateral I</span>
+        <span class="finding-tag moderado">Valgo rodilla I</span>
+        <span class="finding-tag moderado">Protracción escapular I</span>
+        <span class="finding-tag leve">Hiperlordosis lumbar</span>
+        <span class="finding-tag leve">Cabeza adelantada</span>
+      </div>
+      <div class="alert-warn">⚠️ Molestia reportada: dolor rodilla izquierda al hacer box jumps y wall balls</div>
+    </div>
+
+    <!-- IA TÉCNICA -->
+    <div class="report-section">
+      <h3>🤖 Análisis biomecánico — Reporte técnico</h3>
+      <div class="ai-text">
+
+        <div class="ai-section-title">Resumen ejecutivo</div>
+        <p>Andrés presenta un patrón de movimiento con <strong>asimetría izquierda–derecha marcada</strong>, especialmente evidente en control monopodal y movilidad de cadera. La combinación de Trendelenburg positivo izquierdo, Shin Box restringido en hemicuerpo I y valgo de rodilla configura una cadena de disfunción que explica la molestia referida en carga explosiva asimétrica.</p>
+
+        <div class="ai-section-title">Análisis por zonas</div>
+        <ul>
+          <li><strong>Zona superior:</strong> Protracción escapular I y limitación de RI de hombro I comprometen la eficiencia en overhead. La extensión lumbar compensatoria en Overhead Reach indica restricción de movilidad torácica y de hombro para el snatch y thruster.</li>
+          <li><strong>Core y pelvis:</strong> Anteversión pélvica con hiperlordosis sugiere inhibición de glúteos y core anterior. El patrón de Bird Dog I (rotación pélvica) confirma déficit de control motor lumbopélvico en hemicuerpo izquierdo.</li>
+          <li><strong>Zona inferior:</strong> Inclinación pélvica lateral I con valgo de rodilla I constituye el hallazgo de mayor prioridad clínica dado el dolor referido. La rigidez de cadera I (RI 18°, RE 25° — valores muy por debajo del rango funcional) es probablemente el factor primario generador del patrón compensatorio distal.</li>
+        </ul>
+
+        <div class="ai-section-title">Análisis funcional</div>
+        <ul>
+          <li><strong>Trendelenburg (+) I:</strong> Debilidad de glúteo medio izquierdo confirmada. Incapacidad de estabilizar hemipelvis en apoyo monopodal → colapso en valgus durante box jumps y pistols.</li>
+          <li><strong>Shin Box I (RI 18°/RE 25°):</strong> Restricción severa de movilidad rotatoria de cadera izquierda. Limita absorción de impacto en aterrizajes y fuerza compensaciones lumbares y de rodilla en squat.</li>
+          <li><strong>Bird Dog I (2/3):</strong> Rotación pélvica al cargar el hemicuerpo I indica disociación lumbo-pélvica insuficiente. Riesgo en movimientos de extensión de cadera con carga.</li>
+        </ul>
+
+        <div class="ai-section-title">Riesgos identificados</div>
+        <ul>
+          <li>• Síndrome patelofemoral izquierdo por valgo de rodilla en cargas asimétricas (box jumps, lunges, pistols)</li>
+          <li>• Sobrecarga lumbar izquierda por compensación de la rigidez de cadera en squat y deadlift</li>
+          <li>• Impingement de hombro izquierdo en volúmenes altos de overhead (snatch, thruster, HSPU)</li>
+          <li>• Progresión lenta de cargas por ineficiencia en transferencia de fuerza miembro inferior I</li>
+        </ul>
+
+        <div class="ai-section-title">Plan de acción recomendado</div>
+        <ul>
+          <li>• <strong>Prioridad 1:</strong> Fortalecimiento glúteo medio I en cadena cerrada (step up lateral, clamshell con banda, hip abduction isométrica en apoyo monopodal)</li>
+          <li>• <strong>Prioridad 2:</strong> Movilización de cadera I — 90-90 stretch, hip CARs, PAILS/RAILS en RI/RE</li>
+          <li>• <strong>Prioridad 3:</strong> Estabilización lumbopélvica — Bird Dog progresivo, control de neutro en hemicuerpo I</li>
+          <li>• <strong>Prioridad 4:</strong> Movilidad torácica y RI de hombro I para resolver el patrón overhead</li>
+        </ul>
+
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="background:linear-gradient(135deg,rgba(27,191,176,.08),rgba(27,191,176,.15));border:1.5px solid var(--primary);border-radius:14px;padding:22px;text-align:center;margin-bottom:16px">
+      <h3 style="font-family:var(--font-h);font-size:1.3rem;font-weight:600;margin-bottom:8px">¿Listo para corregir estos disbalances?</h3>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6">Con un plan de fisioterapia deportiva personalizado puedes mejorar tus scores, corregir tu postura y llevar tu rendimiento CrossFit al siguiente nivel.</p>
+      <div class="paquetes-grid">
+        <div class="paquete">
+          <div class="pac-badge">POPULAR</div>
+          <h4>Plan CrossFit 4 sesiones</h4>
+          <p>Evaluación completa + 3 sesiones dirigidas a los hallazgos identificados</p>
+        </div>
+        <div class="paquete destacado">
+          <div class="pac-badge">RECOMENDADO</div>
+          <h4>Plan CrossFit 8 sesiones</h4>
+          <p>Tratamiento completo + seguimiento postural + guía de movilidad personalizada</p>
+        </div>
+      </div>
+      <a class="btn-wa-big" href="#">💬 Quiero empezar mi plan</a>
+    </div>
+
+  </div><!-- /tab técnico -->
+
+
+  <!-- ══════════════════════════════════════
+       TAB 2 — REPORTE PACIENTE
+  ══════════════════════════════════════ -->
+  <div id="tab-paciente" class="tab-panel">
+
+    <div class="demo-banner" style="background:#15803d">
+      <span style="font-size:1.4rem;flex-shrink:0">💬</span>
+      <div>
+        <strong>Así llega al paciente</strong>
+        Este es el contenido que recibe Andrés por WhatsApp o email. Sin términos clínicos, con lenguaje simple y motivador.
+      </div>
+    </div>
+
+    <!-- ENCABEZADO PACIENTE -->
+    <div class="pac-header">
+      <h2>Tu Evaluación Express CrossFit</h2>
+      <p>Jessica Ocampo Fisioterapeuta · Pereira, Colombia</p>
+      <div class="report-meta" style="justify-content:center;margin-top:12px">
+        <div class="report-meta-item">👤 Andrés Mejía, 29 años</div>
+        <div class="report-meta-item">📅 6 de mayo de 2026</div>
+      </div>
+    </div>
+
+    <!-- QUÉ ENCONTRAMOS -->
+    <div class="pac-section">
+      <h3>¿Qué encontramos hoy? 🔍</h3>
+      <p>Andrés, tu cuerpo tiene un <strong>lado izquierdo que está trabajando diferente al derecho</strong>. Esto se nota principalmente en cómo apoyas y estabilizas cuando usas solo una pierna — la cadera izquierda se mueve menos de lo que debería y los músculos del glúteo izquierdo no están activando tan fuerte como el derecho. Eso le genera más trabajo a tu rodilla izquierda, que es justo donde sientes molestia.</p>
+      <p>Además, tu pelvis tiene una inclinación hacia adelante que afecta la posición de tu columna en los levantamientos, y tu hombro izquierdo tiene algo menos de movilidad que el derecho cuando subes los brazos.</p>
+    </div>
+
+    <!-- LO QUE ESTÁ BIEN -->
+    <div class="pac-section">
+      <h3>Lo que está bien 💪</h3>
+      <div class="bien-box">
+        Tu hombro derecho tiene movilidad excelente y tu control de core cuando usas el lado derecho es muy bueno. En el Bird Dog derecho sacaste puntaje perfecto, lo que significa que tu columna sabe cómo mantenerse estable cuando el cuerpo se lo exige. ¡Eso es una base muy sólida para mejorar el lado izquierdo!
+      </div>
+    </div>
+
+    <!-- RECOMENDACIONES -->
+    <div class="pac-section">
+      <h3>Recomendaciones para tu entrenamiento 🏋️</h3>
+      <p>Por ahora, enfócate en <strong>priorizar la técnica sobre el peso y la velocidad</strong> en todos los movimientos que impliquen apoyo en una sola pierna. Tu cuerpo necesita tiempo para aprender a estabilizarse bien antes de seguir cargando más. Esto no es un freno — es la base que va a hacer que tus levantamientos mejoren de verdad.</p>
+    </div>
+
+    <!-- TU SIGUIENTE PASO -->
+    <div class="pac-section">
+      <h3>Tu siguiente paso 🚀</h3>
+      <p>Andrés, ya sé exactamente qué está pasando en tu cuerpo y qué hay que trabajar. Con un plan personalizado de fisioterapia deportiva vamos a atacar directo esos puntos débiles que encontramos hoy — la cadera izquierda, el glúteo y la estabilidad de rodilla — y vas a notar la diferencia en tus WODs mucho más rápido de lo que crees.</p>
+      <p>Muchos atletas en tu misma situación ven mejoras claras en 3-4 sesiones. <strong>Escríbeme y te cuento cómo empezamos.</strong> 💚</p>
+    </div>
+
+    <!-- CTA PACIENTE -->
+    <div class="cta-pac">
+      <h3>¿Empezamos?</h3>
+      <p>Tengo el plan exacto para ti según lo que encontramos hoy.<br>Escríbeme por WhatsApp y en 5 minutos coordinamos todo.</p>
+      <a class="btn-wa-big" href="#">💬 Escribir a Jessica</a>
+    </div>
+
+  </div><!-- /tab paciente -->
+
+</div>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1195,7 +1195,7 @@ function buildEvalPrompt(d) {
     '**LO QUE ESTÁ BIEN 💪**\n' +
     '[1-2 oraciones destacando los puntos fuertes del atleta. Siempre hay algo positivo.]\n\n' +
     '**RECOMENDACIONES PARA TU ENTRENAMIENTO**\n' +
-    '[3-4 consejos prácticos y concretos que el atleta puede aplicar en sus WODs. Viñetas con •. Lenguaje de entrenamiento, no médico.]\n\n' +
+    '[1 sola recomendación general, en 2-3 oraciones. Sin mencionar ejercicios específicos ni movimientos de CrossFit por nombre. Enfocada en un principio general (ej: técnica sobre velocidad, escuchar el cuerpo, etc.). Lenguaje simple.]\n\n' +
     '**TU SIGUIENTE PASO**\n' +
     '[1 párrafo corto y motivador invitándolo a agendar su plan de fisioterapia. Menciona que ya identificaste exactamente qué trabajar y que los resultados se ven rápido con un plan personalizado. Cálido y sin presión.]\n\n' +
 
