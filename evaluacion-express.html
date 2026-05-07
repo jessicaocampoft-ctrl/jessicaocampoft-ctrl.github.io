@@ -71,7 +71,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
 .level-btn:hover,.level-btn.sel{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
 
 /* POSTURAL PHOTOS (step 2) */
-.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .photo-box{position:relative;border:2px dashed var(--border);border-radius:12px;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;overflow:hidden;transition:var(--tr);background:var(--s2)}
 .photo-box:hover{border-color:var(--primary);background:var(--primary-light)}
 .photo-box.has-photo{border-style:solid;border-color:var(--primary)}
@@ -205,6 +205,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
 @media(max-width:500px){
   #app{padding:12px 12px 80px}
   .level-grid{grid-template-columns:repeat(2,1fr)}
+  .photo-grid{grid-template-columns:repeat(2,1fr)}
   .grid-2,.bilateral-wrap,.test-report-grid,.paquetes-grid{grid-template-columns:1fr}
   .btn-row{flex-direction:column}
   .btn-row .btn{width:100%;justify-content:center}
@@ -323,12 +324,20 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
           <input class="photo-input" type="file" id="inp-frontal" accept="image/*" capture="environment" onchange="handlePhoto('frontal',this)">
         </div>
         <div>
-          <div class="photo-box" id="box-lateral" onclick="document.getElementById('inp-lateral').click()">
-            <span class="photo-box-icon">📸</span><span class="photo-box-label">Vista lateral</span>
-            <img id="prev-lateral" src="" alt="" style="display:none">
-            <button class="photo-remove" onclick="removePhoto(event,'lateral')">✕</button>
+          <div class="photo-box" id="box-lateralD" onclick="document.getElementById('inp-lateralD').click()">
+            <span class="photo-box-icon">📸</span><span class="photo-box-label">Lateral derecha</span>
+            <img id="prev-lateralD" src="" alt="" style="display:none">
+            <button class="photo-remove" onclick="removePhoto(event,'lateralD')">✕</button>
           </div>
-          <input class="photo-input" type="file" id="inp-lateral" accept="image/*" capture="environment" onchange="handlePhoto('lateral',this)">
+          <input class="photo-input" type="file" id="inp-lateralD" accept="image/*" capture="environment" onchange="handlePhoto('lateralD',this)">
+        </div>
+        <div>
+          <div class="photo-box" id="box-lateralI" onclick="document.getElementById('inp-lateralI').click()">
+            <span class="photo-box-icon">📸</span><span class="photo-box-label">Lateral izquierda</span>
+            <img id="prev-lateralI" src="" alt="" style="display:none">
+            <button class="photo-remove" onclick="removePhoto(event,'lateralI')">✕</button>
+          </div>
+          <input class="photo-input" type="file" id="inp-lateralI" accept="image/*" capture="environment" onchange="handlePhoto('lateralI',this)">
         </div>
         <div>
           <div class="photo-box" id="box-posterior" onclick="document.getElementById('inp-posterior').click()">
@@ -339,7 +348,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
           <input class="photo-input" type="file" id="inp-posterior" accept="image/*" capture="environment" onchange="handlePhoto('posterior',this)">
         </div>
       </div>
-      <p class="photo-note">💡 Atleta en ropa ajustada, de pie relajado — frente · lado derecho · espalda</p>
+      <p class="photo-note">💡 Atleta en ropa ajustada, de pie relajado — frente · lateral derecha · lateral izquierda · espalda</p>
     </div>
     <div class="step-controls">
       <button class="btn btn-ghost" onclick="goStep(1)">← Atrás</button>
@@ -951,7 +960,7 @@ let TOKEN = sessionStorage.getItem('adminToken') || '';
 let currentStep = 1;
 let nivelSel = 'Principiante';
 let sevSel = '';
-let photos = { frontal: null, lateral: null, posterior: null };
+let photos = { frontal: null, lateralD: null, lateralI: null, posterior: null };
 let testPhotos = {};
 let testScores = {};
 let trdScores = {};
@@ -1253,7 +1262,7 @@ async function startGenerate() {
 
   try {
     // Comprimir todas las fotos antes de enviar
-    const allPhotoIds = ['frontal','lateral','posterior','ds','oh','slsd','slsi','shd','shi','bmd','bmi','trdd','trdi','sbd','sbi','bdd','bdi','dbd','dbi','pk'];
+    const allPhotoIds = ['frontal','lateralD','lateralI','posterior','ds','oh','slsd','slsi','shd','shi','bmd','bmi','trdd','trdi','sbd','sbi','bdd','bdi','dbd','dbi','pk'];
     const compressedPhotos = {};
     for (const id of allPhotoIds) {
       const src = photos[id] || testPhotos[id];
@@ -1282,12 +1291,17 @@ function buildReport(screens) {
   const p = patientData;
 
   // FOTOS POSTURALES
-  const postPhotoHtml = ['frontal','lateral','posterior'].map((t,i) => `
+  const postPhotoHtml = [
+    ['frontal',  'Frontal'],
+    ['lateralD', 'Lateral D'],
+    ['lateralI', 'Lateral I'],
+    ['posterior','Posterior']
+  ].map(([t, label]) => `
     <div>
       <div class="report-photo">
-        ${photos[t] ? `<img src="${photos[t]}" alt="${t}">` : `<div class="report-photo-empty">Sin foto<br>${['Frontal','Lateral','Posterior'][i]}</div>`}
+        ${photos[t] ? `<img src="${photos[t]}" alt="${label}">` : `<div class="report-photo-empty">Sin foto<br>${label}</div>`}
       </div>
-      <div class="report-photo-label">${['Frontal','Lateral','Posterior'][i]}</div>
+      <div class="report-photo-label">${label}</div>
     </div>`).join('');
 
   // SCREENS TABLE
@@ -1500,7 +1514,7 @@ function nuevaEval() {
    'obs-trd','obs-sb','sb-ri-d','sb-re-d','sb-ri-i','sb-re-i',
    'obs-bd','obs-db','time-pk','obs-pk']
     .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['frontal','lateral','posterior'].forEach(t=>removePhoto({stopPropagation:()=>{}},t));
+  ['frontal','lateralD','lateralI','posterior'].forEach(t=>removePhoto({stopPropagation:()=>{}},t));
   ['ds','oh','slsd','slsi','shd','shi','bmd','bmi',
    'trdd','trdi','sbd','sbi','bdd','bdi','dbd','dbi','pk'].forEach(id=>{
     testPhotos[id]=null;
