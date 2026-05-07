@@ -1136,12 +1136,6 @@ function buildEvalPrompt(d) {
       if (sc.shoulderMob.obs) screensText += ' — ' + sc.shoulderMob.obs;
       screensText += '\n';
     }
-    if (sc.balanceMono) {
-      screensText += '• Balance Monopodal: D=' + (sc.balanceMono.timeD || 'No eval') + 's' +
-        ', I=' + (sc.balanceMono.timeI || 'No eval') + 's (Normal ≥8s)';
-      if (sc.balanceMono.obs) screensText += ' — ' + sc.balanceMono.obs;
-      screensText += '\n';
-    }
     if (sc.trendelenburg) {
       screensText += '• Trendelenburg: D=' + (sc.trendelenburg.resultD || 'No eval') +
         ', I=' + (sc.trendelenburg.resultI || 'No eval');
@@ -1162,17 +1156,6 @@ function buildEvalPrompt(d) {
       if (sc.birdDog.obs) screensText += ' — ' + sc.birdDog.obs;
       screensText += '\n';
     }
-    if (sc.deadBug) {
-      screensText += '• Dead Bug (estabilidad core): D=' + (sc.deadBug.scoreD !== null && sc.deadBug.scoreD !== undefined ? sc.deadBug.scoreD + '/3' : 'No eval') +
-        ', I=' + (sc.deadBug.scoreI !== null && sc.deadBug.scoreI !== undefined ? sc.deadBug.scoreI + '/3' : 'No eval');
-      if (sc.deadBug.obs) screensText += ' — ' + sc.deadBug.obs;
-      screensText += '\n';
-    }
-    if (sc.plank) {
-      screensText += '• Plank: ' + (sc.plank.time ? sc.plank.time + 's (Normal ≥60s, CrossFit ≥120s)' : 'No evaluado');
-      if (sc.plank.obs) screensText += ' — ' + sc.plank.obs;
-      screensText += '\n';
-    }
   }
 
   return 'Eres una fisioterapeuta deportiva especializada en CrossFit llamada Jessica Ocampo, con sede en Pereira, Colombia.\n' +
@@ -1186,21 +1169,36 @@ function buildEvalPrompt(d) {
     'HALLAZGOS POSTURALES: ' + hallazgos + '\n' +
     screensText +
     (d.observaciones ? 'OBSERVACIONES ADICIONALES: ' + d.observaciones + '\n' : '') +
-    '\nGenera el reporte en español con EXACTAMENTE estas secciones (usa los títulos en mayúsculas y negrilla):\n\n' +
+    '\nGenera DOS reportes separados. El primero es técnico (para la fisioterapeuta), el segundo es para el paciente (lenguaje simple). Sepáralos exactamente con la línea: ===PACIENTE===\n\n' +
+
+    '━━━ REPORTE TÉCNICO (para la fisioterapeuta) ━━━\n' +
+    'Usa terminología clínica. Secciones con títulos en negrilla:\n\n' +
     '**RESUMEN EJECUTIVO**\n' +
-    '[2-3 oraciones sobre el estado postural y funcional general. Tono profesional y empático. Menciona el impacto directo en el rendimiento CrossFit. Si hay fotos, describe brevemente lo más relevante que observas visualmente.]\n\n' +
+    '[2-3 oraciones: estado postural y funcional general, impacto en rendimiento CrossFit. Si hay fotos, describe hallazgos visuales relevantes.]\n\n' +
     '**ANÁLISIS VISUAL DE FOTOS**\n' +
-    '[SOLO si se enviaron fotos: describe los hallazgos más importantes que ves en cada foto (postural y de tests). Si la foto muestra algo diferente al score ingresado, indícalo con claridad. Si no hay fotos, omite esta sección completamente.]\n\n' +
+    '[SOLO si se enviaron fotos: hallazgos por foto. Si no hay fotos, omite esta sección.]\n\n' +
     '**ANÁLISIS POR ZONAS**\n' +
-    '[Para cada zona con hallazgos, explica en 1-2 oraciones qué significa biomecánicamente y cómo afecta los movimientos específicos de CrossFit (snatch, clean, squat, deadlift, etc.). Si no hay hallazgos en una zona, omítela.]\n\n' +
-    '**ANÁLISIS FUNCIONAL Y DE CORE**\n' +
-    '[Interpreta los resultados de TODAS las pruebas funcionales: qué patrones de movimiento están comprometidos, qué músculos o cadenas están débiles. Incluye análisis de Trendelenburg (glúteo medio), Shin Box (movilidad de cadera), Bird Dog y Dead Bug (control de core), y Plank (resistencia). Correlaciona con hallazgos posturales.]\n\n' +
+    '[Por cada zona con hallazgos: significado biomecánico y afectación en movimientos CrossFit (snatch, clean, squat, deadlift). Omite zonas sin hallazgos.]\n\n' +
+    '**ANÁLISIS FUNCIONAL**\n' +
+    '[Interpreta Trendelenburg (glúteo medio), Shin Box (movilidad cadera), Bird Dog (control core). Correlaciona con hallazgos posturales.]\n\n' +
     '**RIESGOS IDENTIFICADOS**\n' +
-    '[Lista máximo 4 riesgos concretos de lesión si no se atienden. Específicos para CrossFit. Usa viñetas con •]\n\n' +
+    '[Máximo 4 riesgos concretos de lesión. Específicos para CrossFit. Viñetas con •]\n\n' +
     '**PLAN DE ACCIÓN RECOMENDADO**\n' +
-    '[3-5 recomendaciones concretas ordenadas por prioridad. Incluye qué tipo de trabajo se haría en fisioterapia: movilidad de cadera, estabilización de core, corrección postural, etc. Usa viñetas con •]\n\n' +
-    '**CONCLUSIÓN**\n' +
-    '[1 párrafo motivador. Menciona que con un plan de fisioterapia deportiva personalizado se pueden corregir estos disbalances y mejorar el rendimiento. Invita a dar el siguiente paso. No menciones precios.]\n\n' +
-    'REGLAS: Máximo 600 palabras en total. Sé directa y específica. Usa lenguaje claro, no excesivamente técnico. Tono: profesional pero cercano.';
+    '[3-5 recomendaciones clínicas por prioridad: tipo de intervención en fisioterapia (movilidad, estabilización, corrección postural). Viñetas con •]\n\n' +
+
+    '===PACIENTE===\n\n' +
+
+    '━━━ REPORTE PARA EL PACIENTE ━━━\n' +
+    'Lenguaje simple, cálido y motivador. Sin términos clínicos. Secciones:\n\n' +
+    '**¿QUÉ ENCONTRAMOS HOY?**\n' +
+    '[2-3 oraciones explicando en palabras simples lo que se encontró y cómo afecta su entrenamiento. Sin jerga médica.]\n\n' +
+    '**LO QUE ESTÁ BIEN 💪**\n' +
+    '[1-2 oraciones destacando los puntos fuertes del atleta. Siempre hay algo positivo.]\n\n' +
+    '**RECOMENDACIONES PARA TU ENTRENAMIENTO**\n' +
+    '[3-4 consejos prácticos y concretos que el atleta puede aplicar en sus WODs. Viñetas con •. Lenguaje de entrenamiento, no médico.]\n\n' +
+    '**TU SIGUIENTE PASO**\n' +
+    '[1 párrafo corto y motivador invitándolo a agendar su plan de fisioterapia. Menciona que ya identificaste exactamente qué trabajar y que los resultados se ven rápido con un plan personalizado. Cálido y sin presión.]\n\n' +
+
+    'REGLAS GLOBALES: Reporte técnico máx 500 palabras. Reporte paciente máx 300 palabras. Tono técnico: preciso y profesional. Tono paciente: cercano, claro, motivador.';
 }
 

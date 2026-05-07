@@ -191,6 +191,10 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
 /* AI text */
 .ai-text{font-size:.88rem;line-height:1.75;color:#374151}
 .ai-section-title{font-family:var(--font-h);font-size:1rem;color:var(--primary);font-weight:600;margin:14px 0 6px}
+/* BANNER REPORTE TÉCNICO */
+.banner-tecnico{background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:.82rem;color:#166534}
+.banner-tecnico strong{display:block;margin-bottom:2px}
+
 /* CTA */
 .cta-box{background:linear-gradient(135deg,rgba(27,191,176,.08),rgba(27,191,176,.15));border:1.5px solid var(--primary);border-radius:14px;padding:22px;margin:16px 0;text-align:center}
 .cta-box h3{font-family:var(--font-h);font-size:1.3rem;font-weight:600;margin-bottom:8px}
@@ -389,10 +393,6 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
               <b>2:</b> Puños a menos de un puño de distancia<br>
               <b>1:</b> Puños a más de un puño de distancia<br>
               <b>0:</b> Dolor</div>
-            <div><strong style="color:var(--primary)">⚖️ Balance Monopodal</strong><br>
-              <b>≥ 8s:</b> Normal · <b>5-7s:</b> Déficit leve<br>
-              <b>&lt; 5s:</b> Déficit significativo de propiocepción<br>
-              <em>Protocolo: ojos cerrados, manos en caderas, máx 10s</em></div>
             <div><strong style="color:var(--primary)">🦴 Trendelenburg</strong><br>
               <b>Neg (normal):</b> Pelvis se mantiene o sube al levantar pierna<br>
               <b>Pos:</b> Caída del hemipelvis contralateral → debilidad glúteo medio<br>
@@ -406,15 +406,6 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
               <b>2:</b> Rotación pélvica leve / temblor / pérdida breve del neutro<br>
               <b>1:</b> Pérdida severa del neutro o no completa<br>
               <b>0:</b> Dolor</div>
-            <div><strong style="color:var(--primary)">🐛 Dead Bug</strong><br>
-              <b>3:</b> Neutro lumbar mantenido, coordinación correcta, respiración fluida<br>
-              <b>2:</b> Pierde neutro momentáneamente o apnea breve<br>
-              <b>1:</b> Hiperlordosis marcada / imposibilidad de coordinar<br>
-              <b>0:</b> Dolor</div>
-            <div><strong style="color:var(--primary)">⏱️ Plank</strong><br>
-              <b>≥ 120s:</b> Óptimo CrossFit · <b>60-119s:</b> Normal<br>
-              <b>30-59s:</b> Déficit moderado · <b>&lt; 30s:</b> Déficit severo<br>
-              <em>Posición prono sobre antebrazos y puntas de pies</em></div>
           </div>
         </div>
       </div>
@@ -583,43 +574,6 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
         </div>
       </div>
 
-      <!-- 5. BALANCE MONOPODAL (BILATERAL) -->
-      <div class="test-ex-card" id="tc-bm">
-        <div class="test-ex-hd" onclick="toggleTest('bm')">
-          <div class="test-ex-name">⚖️ Balance Monopodal (ojos cerrados, 10s) <span class="test-tag" id="tag-bm">sin tiempo</span></div>
-          <span id="arr-bm" style="color:var(--muted);font-size:.8rem">▼</span>
-        </div>
-        <div class="test-ex-bd" id="bd-bm">
-          <div class="score-legend" style="margin-bottom:10px">Registra los segundos que mantiene el equilibrio (máx 10s). Normal ≥ 8s.</div>
-          <div class="bilateral-wrap">
-            <div>
-              <div class="bilateral-label">Pierna D (seg)</div>
-              <input type="number" class="time-input" id="time-bmd" placeholder="10" min="0" max="10" oninput="updateBmTag()">
-              <div class="test-mini-photo" id="mph-bmd" onclick="document.getElementById('minp-bmd').click()" style="width:90px;margin-top:8px">
-                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto D</span>
-                <img id="mimg-bmd" src="" alt="" style="display:none">
-                <button class="trm" onclick="removeTestPhoto(event,'bmd')">✕</button>
-              </div>
-              <input type="file" id="minp-bmd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('bmd',this)">
-            </div>
-            <div>
-              <div class="bilateral-label">Pierna I (seg)</div>
-              <input type="number" class="time-input" id="time-bmi" placeholder="10" min="0" max="10" oninput="updateBmTag()">
-              <div class="test-mini-photo" id="mph-bmi" onclick="document.getElementById('minp-bmi').click()" style="width:90px;margin-top:8px">
-                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto I</span>
-                <img id="mimg-bmi" src="" alt="" style="display:none">
-                <button class="trm" onclick="removeTestPhoto(event,'bmi')">✕</button>
-              </div>
-              <input type="file" id="minp-bmi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('bmi',this)">
-            </div>
-          </div>
-          <div class="field" style="margin-top:10px">
-            <label>Observaciones</label>
-            <textarea id="obs-bm" rows="2" placeholder="Oscilaciones, estrategia de tobillo vs cadera, asimetría D vs I..."></textarea>
-          </div>
-        </div>
-      </div>
-
 
       <div class="zone-title" style="margin-top:18px">🦴 Movilidad de Cadera</div>
 
@@ -772,82 +726,6 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
         </div>
       </div>
 
-      <!-- 9. DEAD BUG -->
-      <div class="test-ex-card" id="tc-db">
-        <div class="test-ex-hd" onclick="toggleTest('db')">
-          <div class="test-ex-name">🐛 Dead Bug <span class="test-tag" id="tag-db">sin score</span></div>
-          <span id="arr-db" style="color:var(--muted);font-size:.8rem">▼</span>
-        </div>
-        <div class="test-ex-bd" id="bd-db">
-          <div class="score-legend" style="margin-bottom:10px">0=dolor · 1=hiperlordosis marcada / no coordina · 2=pierde neutro o apnea momentánea · 3=neutro mantenido y respiración coordinada</div>
-          <div class="bilateral-wrap">
-            <div>
-              <div class="bilateral-label">Lado D (brazo I / pierna D)</div>
-              <div class="score-btns" id="sc-dbd">
-                <div class="score-btn s0" onclick="setScore('dbd',0,this)">0</div>
-                <div class="score-btn s1" onclick="setScore('dbd',1,this)">1</div>
-                <div class="score-btn s2" onclick="setScore('dbd',2,this)">2</div>
-                <div class="score-btn s3" onclick="setScore('dbd',3,this)">3</div>
-              </div>
-              <div class="test-mini-photo" id="mph-dbd" onclick="document.getElementById('minp-dbd').click()" style="width:90px;margin-top:6px">
-                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto D</span>
-                <img id="mimg-dbd" src="" alt="" style="display:none">
-                <button class="trm" onclick="removeTestPhoto(event,'dbd')">✕</button>
-              </div>
-              <input type="file" id="minp-dbd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('dbd',this)">
-            </div>
-            <div>
-              <div class="bilateral-label">Lado I (brazo D / pierna I)</div>
-              <div class="score-btns" id="sc-dbi">
-                <div class="score-btn s0" onclick="setScore('dbi',0,this)">0</div>
-                <div class="score-btn s1" onclick="setScore('dbi',1,this)">1</div>
-                <div class="score-btn s2" onclick="setScore('dbi',2,this)">2</div>
-                <div class="score-btn s3" onclick="setScore('dbi',3,this)">3</div>
-              </div>
-              <div class="test-mini-photo" id="mph-dbi" onclick="document.getElementById('minp-dbi').click()" style="width:90px;margin-top:6px">
-                <span style="font-size:1rem">📸</span><span style="font-size:.65rem;color:var(--muted)">Foto I</span>
-                <img id="mimg-dbi" src="" alt="" style="display:none">
-                <button class="trm" onclick="removeTestPhoto(event,'dbi')">✕</button>
-              </div>
-              <input type="file" id="minp-dbi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('dbi',this)">
-            </div>
-          </div>
-          <div class="field" style="margin-top:10px">
-            <label>Observaciones</label>
-            <textarea id="obs-db" rows="2" placeholder="Hiperlordosis al extender pierna, apnea, descoordinación, asimetría..."></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- 10. PLANK -->
-      <div class="test-ex-card" id="tc-pk">
-        <div class="test-ex-hd" onclick="toggleTest('pk')">
-          <div class="test-ex-name">⏱️ Plank (resistencia de core) <span class="test-tag" id="tag-pk">sin tiempo</span></div>
-          <span id="arr-pk" style="color:var(--muted);font-size:.8rem">▼</span>
-        </div>
-        <div class="test-ex-bd" id="bd-pk">
-          <div class="score-legend" style="margin-bottom:10px">Tiempo máximo manteniendo posición de plancha. Normal ≥ 60s · CrossFit competidor ≥ 120s.</div>
-          <div class="test-score-row" style="margin-top:10px">
-            <div>
-              <div class="bilateral-label">Tiempo (segundos)</div>
-              <input type="number" class="time-input" id="time-pk" placeholder="60" min="0" max="600" style="width:110px" oninput="updatePkTag()">
-            </div>
-            <div>
-              <div class="bilateral-label">Foto de referencia</div>
-              <div class="test-mini-photo" id="mph-pk" onclick="document.getElementById('minp-pk').click()">
-                <span style="font-size:1.3rem">📸</span><span style="font-size:.68rem;color:var(--muted)">Subir foto</span>
-                <img id="mimg-pk" src="" alt="" style="display:none">
-                <button class="trm" onclick="removeTestPhoto(event,'pk')">✕</button>
-              </div>
-              <input type="file" id="minp-pk" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('pk',this)">
-            </div>
-          </div>
-          <div class="field" style="margin-top:10px">
-            <label>Observaciones</label>
-            <textarea id="obs-pk" rows="2" placeholder="Caída de cadera, elevación de glúteos, anteriorización cefálica, pérdida de respiración..."></textarea>
-          </div>
-        </div>
-      </div>
 
     </div><!-- /card -->
     <div class="step-controls">
@@ -937,9 +815,14 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
   <!-- ═══ STEP 6: REPORTE ═══ -->
   <div id="step6" style="display:none">
     <div id="reportContent"></div>
+    <div class="banner-tecnico">
+      <strong>📋 Estás viendo el reporte técnico completo</strong>
+      Solo visible para ti. Los botones de abajo envían versiones distintas al paciente o a ti.
+    </div>
     <div class="btn-row">
-      <button class="btn btn-wa" onclick="shareWhatsApp()">💬 Enviar por WhatsApp</button>
-      <button class="btn btn-email" onclick="shareEmail()">📧 Enviar por Email</button>
+      <button class="btn" style="background:#0d9488;color:#fff" onclick="enviarmeATecnico()">📱 Enviarme a mí (técnico)</button>
+      <button class="btn btn-wa" onclick="enviarPacienteWA()">💬 Enviar al paciente</button>
+      <button class="btn btn-email" onclick="enviarPacienteEmail()">📧 Email al paciente</button>
       <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
     </div>
     <div style="margin-top:12px;text-align:center">
@@ -966,6 +849,7 @@ let testScores = {};
 let trdScores = {};
 let findings = [];
 let aiReport = '';
+let aiReportPaciente = '';
 let patientData = {};
 
 // Definición de los 5 tests
@@ -1246,12 +1130,9 @@ async function startGenerate() {
     overheadReach:  { score: testScores['oh']   ?? null, obs: document.getElementById('obs-oh').value.trim() },
     singleLegSquat: { scoreD: testScores['slsd'] ?? null, scoreI: testScores['slsi'] ?? null, obs: document.getElementById('obs-sls').value.trim() },
     shoulderMob:    { scoreD: testScores['shd']  ?? null, scoreI: testScores['shi']  ?? null, obs: document.getElementById('obs-sh').value.trim() },
-    balanceMono:    { timeD: document.getElementById('time-bmd').value || null, timeI: document.getElementById('time-bmi').value || null, obs: document.getElementById('obs-bm').value.trim() },
     trendelenburg:  { resultD: trdScores['d'] || null, resultI: trdScores['i'] || null, obs: document.getElementById('obs-trd').value.trim() },
     shinBox:        { riD: document.getElementById('sb-ri-d').value || null, reD: document.getElementById('sb-re-d').value || null, riI: document.getElementById('sb-ri-i').value || null, reI: document.getElementById('sb-re-i').value || null, transD: testScores['sbd'] ?? null, transI: testScores['sbi'] ?? null, obs: document.getElementById('obs-sb').value.trim() },
-    birdDog:        { scoreD: testScores['bdd'] ?? null, scoreI: testScores['bdi'] ?? null, obs: document.getElementById('obs-bd').value.trim() },
-    deadBug:        { scoreD: testScores['dbd'] ?? null, scoreI: testScores['dbi'] ?? null, obs: document.getElementById('obs-db').value.trim() },
-    plank:          { time: document.getElementById('time-pk').value || null, obs: document.getElementById('obs-pk').value.trim() }
+    birdDog:        { scoreD: testScores['bdd'] ?? null, scoreI: testScores['bdi'] ?? null, obs: document.getElementById('obs-bd').value.trim() }
   };
 
   goStep(5);
@@ -1262,7 +1143,7 @@ async function startGenerate() {
 
   try {
     // Comprimir todas las fotos antes de enviar
-    const allPhotoIds = ['frontal','lateralD','lateralI','posterior','ds','oh','slsd','slsi','shd','shi','bmd','bmi','trdd','trdi','sbd','sbi','bdd','bdi','dbd','dbi','pk'];
+    const allPhotoIds = ['frontal','lateralD','lateralI','posterior','ds','oh','slsd','slsi','shd','shi','trdd','trdi','sbd','sbi','bdd','bdi'];
     const compressedPhotos = {};
     for (const id of allPhotoIds) {
       const src = photos[id] || testPhotos[id];
@@ -1277,7 +1158,13 @@ async function startGenerate() {
     });
     const d = await r.json();
     clearInterval(interval);
-    if (d.ok) { aiReport = d.report; buildReport(screens); goStep(6); }
+    if (d.ok) {
+      const parts = d.report.split('===PACIENTE===');
+      aiReport         = parts[0].trim();
+      aiReportPaciente = parts[1] ? parts[1].trim() : '';
+      buildReport(screens);
+      goStep(6);
+    }
     else { alert('Error al generar el reporte: ' + (d.error || 'intenta de nuevo')); goStep(4); }
   } catch(e) {
     clearInterval(interval);
@@ -1319,28 +1206,20 @@ function buildReport(screens) {
       ${buildTestCard('Shoulder I↑', screens.shoulderMob.scoreI, screens.shoulderMob.obs, '', testPhotos['shi'], false)}
     </div>
     <div class="test-report-grid">
-      ${buildBmCard('Balance D', screens.balanceMono.timeD, testPhotos['bmd'])}
-      ${buildBmCard('Balance I', screens.balanceMono.timeI, testPhotos['bmi'])}
       ${buildTrdCard('Trendelenburg D', screens.trendelenburg.resultD, testPhotos['trdd'])}
       ${buildTrdCard('Trendelenburg I', screens.trendelenburg.resultI, testPhotos['trdi'])}
-    </div>
-    <div class="test-report-grid">
       ${buildSbCard('Shin Box D', screens.shinBox.riD, screens.shinBox.reD, screens.shinBox.transD, testPhotos['sbd'])}
       ${buildSbCard('Shin Box I', screens.shinBox.riI, screens.shinBox.reI, screens.shinBox.transI, testPhotos['sbi'])}
+    </div>
+    <div class="test-report-grid">
       ${buildTestCard('Bird Dog D', screens.birdDog.scoreD, null, '', testPhotos['bdd'], false)}
       ${buildTestCard('Bird Dog I', screens.birdDog.scoreI, screens.birdDog.obs, '', testPhotos['bdi'], false)}
     </div>
-    <div class="test-report-grid">
-      ${buildTestCard('Dead Bug D', screens.deadBug.scoreD, null, '', testPhotos['dbd'], false)}
-      ${buildTestCard('Dead Bug I', screens.deadBug.scoreI, screens.deadBug.obs, '', testPhotos['dbi'], false)}
-      ${buildPlankCard(screens.plank.time, testPhotos['pk'])}
-    </div>
-    ${screens.balanceMono.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:6px;font-style:italic">📝 Balance: ${screens.balanceMono.obs}</p>` : ''}
-    ${screens.singleLegSquat.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 SL Squat: ${screens.singleLegSquat.obs}</p>` : ''}
+    ${screens.singleLegSquat.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:6px;font-style:italic">📝 SL Squat: ${screens.singleLegSquat.obs}</p>` : ''}
     ${screens.shoulderMob.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 Shoulder: ${screens.shoulderMob.obs}</p>` : ''}
     ${screens.trendelenburg.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 Trendelenburg: ${screens.trendelenburg.obs}</p>` : ''}
     ${screens.shinBox.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 Shin Box: ${screens.shinBox.obs}</p>` : ''}
-    ${screens.plank.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 Plank: ${screens.plank.obs}</p>` : ''}`;
+    ${screens.birdDog.obs ? `<p style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">📝 Bird Dog: ${screens.birdDog.obs}</p>` : ''}`;
 
   // HALLAZGOS POSTURALES
   const sev = p.severidad || 'moderado';
@@ -1360,7 +1239,7 @@ function buildReport(screens) {
       </div>
     </div>
 
-    ${(photos.frontal||photos.lateral||photos.posterior) ? `
+    ${(photos.frontal||photos.lateralD||photos.lateralI||photos.posterior) ? `
     <div class="report-section">
       <h3>📐 Registro fotográfico postural</h3>
       <div class="report-photos">${postPhotoHtml}</div>
@@ -1379,7 +1258,7 @@ function buildReport(screens) {
     </div>
 
     <div class="report-section">
-      <h3>🤖 Análisis biomecánico — IA</h3>
+      <h3>🤖 Análisis biomecánico — Reporte técnico</h3>
       <div class="ai-text">${formatAiReport(aiReport)}</div>
     </div>
 
@@ -1478,22 +1357,44 @@ function formatAiReport(text) {
 }
 
 // ── COMPARTIR ────────────────────────────────────────────────────────
-function shareWhatsApp() {
+
+// Envía el reporte técnico completo a Jessica por WhatsApp
+function enviarmeATecnico() {
+  const p = patientData;
+  const text = `*REPORTE TÉCNICO — Evaluación Express CrossFit*\n` +
+    `*Paciente:* ${p.nombre}${p.edad&&p.edad!=='N/A'?', '+p.edad+' años':''}\n` +
+    `*Nivel:* ${p.nivel} · ${p.anios}\n` +
+    `*Objetivo:* ${p.objetivo}\n` +
+    `*Severidad:* ${p.severidad||'—'}\n\n` +
+    `*Hallazgos (${findings.length}):*\n${findings.map(f=>'• '+f).join('\n')}\n\n` +
+    aiReport.replace(/\*\*/g,'*').substring(0, 1400);
+  window.open(`https://wa.me/573136467945?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+// Envía la versión para el paciente (lenguaje simple) por WhatsApp
+function enviarPacienteWA() {
   const p = patientData;
   let phone = (p.telefono || '').replace(/\D/g, '');
   if (phone && phone.length <= 10) phone = '57' + phone;
-
-  const text = `*Evaluación Postural Express CrossFit*\n*Jessica Ocampo Fisioterapeuta*\n\nHola ${p.nombre}! Aquí tienes los resultados de tu evaluación:\n\n*Nivel:* ${p.nivel} · ${p.anios}\n*Objetivo:* ${p.objetivo}\n\n*Hallazgos posturales (${findings.length}):*\n${findings.map(f=>'• '+f).join('\n')}\n\n${aiReport.replace(/\*\*/g,'*').substring(0,900)}...\n\n*Para iniciar tu plan de corrección escríbeme* 💪\n_Jessica Ocampo Fisioterapeuta · Pereira_`;
-
+  const texto = aiReportPaciente || aiReport;
+  const text = `*Tu Evaluación Express CrossFit*\n*Jessica Ocampo Fisioterapeuta*\n\nHola ${p.nombre}! 👋 Aquí tienes los resultados de tu evaluación de hoy.\n\n` +
+    texto.replace(/\*\*/g,'*').substring(0, 1200) +
+    `\n\n💬 ¿Listo para dar el siguiente paso? Escríbeme y te cuento los planes disponibles 💪\n_Jessica Ocampo Fisioterapeuta · Pereira_`;
   const url = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
 }
 
-function shareEmail() {
+// Envía la versión para el paciente por email
+function enviarPacienteEmail() {
   const p = patientData;
   if (!p.email) { alert('No hay email registrado para este atleta.'); return; }
-  const subject = encodeURIComponent('Tu Evaluación CrossFit — Jessica Ocampo Fisioterapeuta');
-  const body = encodeURIComponent(`Hola ${p.nombre},\n\nAquí tienes los resultados de tu evaluación postural express.\n\nHallazgos (${findings.length}):\n${findings.map(f=>'• '+f).join('\n')}\n\n${aiReport.replace(/\*\*/g,'')}\n\nJessica Ocampo Fisioterapeuta\n+57 313 646 7945`);
+  const texto = aiReportPaciente || aiReport;
+  const subject = encodeURIComponent(`Tu Evaluación CrossFit — Jessica Ocampo Fisioterapeuta`);
+  const body = encodeURIComponent(
+    `Hola ${p.nombre},\n\nAquí tienes los resultados de tu evaluación postural express CrossFit.\n\n` +
+    texto.replace(/\*\*/g,'') +
+    `\n\n¿Listo para trabajar en esto? Escríbeme al WhatsApp o agenda tu cita directamente:\nhttps://jessica-ocampo-fisio.com\n\nJessica Ocampo Fisioterapeuta · Pereira\n+57 313 646 7945`
+  );
   window.open(`mailto:${p.email}?subject=${subject}&body=${body}`);
 }
 
@@ -1504,19 +1405,17 @@ function ctaWhatsApp() {
 // ── NUEVA EVALUACIÓN ─────────────────────────────────────────────────
 function nuevaEval() {
   if (!confirm('¿Iniciar nueva evaluación? Se perderán los datos actuales.')) return;
-  currentStep = 1; nivelSel='Principiante'; sevSel=''; aiReport=''; findings=[]; patientData={};
-  photos={frontal:null,lateral:null,posterior:null}; testPhotos={}; testScores={}; trdScores={};
+  currentStep = 1; nivelSel='Principiante'; sevSel=''; aiReport=''; aiReportPaciente=''; findings=[]; patientData={};
+  photos={frontal:null,lateralD:null,lateralI:null,posterior:null}; testPhotos={}; testScores={}; trdScores={};
   document.querySelectorAll('.chip.sel').forEach(c=>c.classList.remove('sel'));
   document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('[data-val="Principiante"]').classList.add('sel');
   ['pNombre','pEdad','pTelefono','pEmail','pMolestias','pObservaciones',
-   'obs-ds','obs-oh','obs-sls','obs-sh','obs-bm','time-bmd','time-bmi',
-   'obs-trd','obs-sb','sb-ri-d','sb-re-d','sb-ri-i','sb-re-i',
-   'obs-bd','obs-db','time-pk','obs-pk']
+   'obs-ds','obs-oh','obs-sls','obs-sh',
+   'obs-trd','obs-sb','sb-ri-d','sb-re-d','sb-ri-i','sb-re-i','obs-bd']
     .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['frontal','lateralD','lateralI','posterior'].forEach(t=>removePhoto({stopPropagation:()=>{}},t));
-  ['ds','oh','slsd','slsi','shd','shi','bmd','bmi',
-   'trdd','trdi','sbd','sbi','bdd','bdi','dbd','dbi','pk'].forEach(id=>{
+  ['ds','oh','slsd','slsi','shd','shi','trdd','trdi','sbd','sbi','bdd','bdi'].forEach(id=>{
     testPhotos[id]=null;
     const img=document.getElementById('mimg-'+id); if(img){img.src='';img.style.display='none';}
     const box=document.getElementById('mph-'+id); if(box){box.classList.remove('has-photo');box.querySelectorAll('span').forEach(el=>el.style.display='');}
@@ -1527,7 +1426,7 @@ function nuevaEval() {
     const pos=document.getElementById('trd-'+s+'-pos'); if(pos)pos.className='trd-btn';
     const neg=document.getElementById('trd-'+s+'-neg'); if(neg)neg.className='trd-btn';
   });
-  ['tag-trd','tag-sb','tag-bd','tag-db','tag-pk'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=id==='tag-pk'?'sin tiempo':'sin eval.';el.className='test-tag';}});
+  ['tag-trd','tag-sb','tag-bd'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent='sin eval.';el.className='test-tag';}});
   [2,3,4,5,6].forEach(n=>{document.getElementById('step'+n).style.display='none';document.getElementById('ps'+n).classList.remove('done','active');});
   document.getElementById('step1').style.display='block';
   document.getElementById('ps1').classList.add('active');
