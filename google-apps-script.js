@@ -433,7 +433,8 @@ function doEditBooking(d) {
     if (d.fecha)              sheet.getRange(i+1, 8).setValue(d.fecha);
     if (d.hora)               sheet.getRange(i+1, 9).setValue(d.hora);
     if (d.precio)             sheet.getRange(i+1, 10).setValue(d.precio);
-    if (d.notas !== undefined) sheet.getRange(i+1, 13).setValue(d.notas);
+    if (d.notas !== undefined)     sheet.getRange(i+1, 13).setValue(d.notas);
+    if (d.notaAdmin !== undefined) sheet.getRange(i+1, 14).setValue(d.notaAdmin);
     try {
       var dp = oldFecha.split('-');
       var dayS = new Date(+dp[0], +dp[1]-1, +dp[2], 0, 0, 0);

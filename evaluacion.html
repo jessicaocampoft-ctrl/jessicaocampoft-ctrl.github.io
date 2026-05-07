@@ -1430,7 +1430,7 @@ function comprimirImagen(dataUrl,maxDim=1300,calidad=0.75){
 async function guardarEnNube(){
   if(!_sb||!_sbUser||!S.evalId)return;
   setSyncDot('up');
-  const datos={...S,fotos:S.fotos||[]};
+  const datos={...S,fotos:[]}; // fotos se quedan en IndexedDB local, no en Supabase
   const {error}=await _sb.from('evaluaciones').upsert({
     id:S.evalId,
     user_id:_sbUser.id,

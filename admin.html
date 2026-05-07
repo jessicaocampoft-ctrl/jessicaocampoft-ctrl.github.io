@@ -2384,9 +2384,9 @@ function initDashboard() {
   document.getElementById('stMes').textContent      = mes;
   document.getElementById('stPacientes').textContent = pacs;
 
-  // Cobrado = todas las citas del mes no canceladas (pasadas y futuras)
+  // Cobrado = solo citas del mes ya ocurridas (fecha <= hoy), no canceladas
   const citasMesAll = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
-  const cobrado = citasMesAll.reduce((s,c) => s + parsePrecio(c.precio), 0);
+  const cobrado = citasMesAll.filter(c => normDate(c.fecha) <= todayStr).reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stCobrado').textContent = cobrado > 0 ? '$'+cobrado.toLocaleString('es-CO') : '—';
 
   const cobradoSemana = citas
@@ -4614,8 +4614,9 @@ function guardarMetaFin() {
 function calcCobradoMes() {
   const now = new Date();
   const m = now.getMonth()+1, y = now.getFullYear();
+  const todayStr = today();
   return citasReales()
-    .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
+    .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y && normDate(c.fecha) <= todayStr; })
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
 }
 
@@ -4779,7 +4780,7 @@ function renderFinanzas() {
   const pasadasN     = citasMes.filter(c => normDate(c.fecha) <= todayStr2).length;
   const futurasN     = citasMes.filter(c => normDate(c.fecha) > todayStr2).length;
   const futurasVal   = citasMes.filter(c => normDate(c.fecha) > todayStr2).reduce((s,c) => s + parsePrecio(c.precio), 0);
-  const ticketProm   = citasMes.length > 0 ? Math.round(cobradoMes / citasMes.length) : 0;
+  const ticketProm   = pasadasN > 0 ? Math.round(cobradoMes / pasadasN) : 0;
 
   const resEl = document.getElementById('finResumenMes');
   if (resEl) {
