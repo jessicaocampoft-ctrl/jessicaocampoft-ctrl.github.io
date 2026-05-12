@@ -52,6 +52,8 @@ function doGet(e) {
   if (p.action === 'sendReminders')  return js(sendEmailReminders());
   if (p.action === 'generateEval')   return js(generateEvalReport(JSON.parse(decodeURIComponent(p.data))));
   if (p.action === 'updatePago')     return js(doUpdatePago(p));
+  if (p.action === 'getAdminKV')     return js(getAdminKV());
+  if (p.action === 'setAdminKV')     return js(doSetAdminKV(p.data));
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -829,6 +831,73 @@ function buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, esHoy
     '<div style="background:#f9fafb;padding:16px 32px;text-align:center;font-size:12px;color:#9ca3af">' +
     'Jessica Ocampo Fisioterapeuta · Pereira, Colombia' +
     '</div></div>';
+}
+
+// =============================================================
+//  ADMIN KV — almacenamiento clave-valor sincronizado entre dispositivos
+// =============================================================
+
+function getAdminKVSheet() {
+  var ss = getOrCreateSheet();
+  var sh = ss.getSheetByName('AdminKV');
+  if (!sh) {
+    sh = ss.insertSheet('AdminKV');
+    sh.appendRow(['key', 'value', 'updated']);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function getAdminKV() {
+  try {
+    var sh   = getAdminKVSheet();
+    var data = sh.getDataRange().getValues();
+    var kv   = {};
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0]) kv['' + data[i][0]] = '' + data[i][1];
+    }
+    return { ok: true, kv: kv };
+  } catch(e) {
+    return { ok: false, error: e.message, kv: {} };
+  }
+}
+
+function doSetAdminKV(dataJson) {
+  try {
+    var updates = JSON.parse(decodeURIComponent(dataJson));
+    var sh   = getAdminKVSheet();
+    var data = sh.getDataRange().getValues();
+    var now  = new Date().toISOString();
+
+    // Construir índice key → número de fila (1-based)
+    var keyToRow = {};
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0]) keyToRow['' + data[i][0]] = i + 1;
+    }
+
+    for (var key in updates) {
+      var val = updates[key];
+      if (val === '__DELETE__') {
+        if (keyToRow[key]) {
+          sh.deleteRow(keyToRow[key]);
+          // Reconstruir índice tras borrar
+          data = sh.getDataRange().getValues();
+          keyToRow = {};
+          for (var j = 1; j < data.length; j++) {
+            if (data[j][0]) keyToRow['' + data[j][0]] = j + 1;
+          }
+        }
+      } else if (keyToRow[key]) {
+        sh.getRange(keyToRow[key], 2, 1, 2).setValues([[val, now]]);
+      } else {
+        sh.appendRow([key, val, now]);
+        keyToRow[key] = sh.getLastRow();
+      }
+    }
+    return { ok: true };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
 }
 
 // =============================================================

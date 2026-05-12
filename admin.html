@@ -1835,7 +1835,57 @@ tr:hover td{background:rgba(126,221,208,.03)}
 
 <script>
 // ══════════════════════════════════════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_r7Kr-9Uvu0qIVAJpyu8nzhmcJ9fzpqo2pspvFFHV_14cLzb9qUN9k3Lj8cdXFdIW/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytekYcT7wiRyaV-41l5aKi7xRPV52PuRggSo59UJwDNEg7lFWNlIrrvmHv5-1zbzxx/exec';
+
+// ── KV SYNC — datos persistentes sincronizados en todos los dispositivos via GAS ──
+let _gasKV = {};
+let _kvDirty = {};
+let _kvFlushTimer = null;
+
+async function loadAdminKV() {
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=getAdminKV&token=${encodeURIComponent(TOKEN)}`).then(x => x.json());
+    if (r.ok && r.kv) {
+      _gasKV = r.kv;
+      Object.entries(r.kv).forEach(([k, v]) => localStorage.setItem(k, v));
+    }
+  } catch(e) {}
+}
+
+function kvGet(key) {
+  const v = _gasKV[key];
+  return (v !== undefined && v !== null) ? v : localStorage.getItem(key);
+}
+
+function kvSet(key, value) {
+  const s = String(value);
+  _gasKV[key] = s;
+  localStorage.setItem(key, s);
+  _kvDirty[key] = s;
+  clearTimeout(_kvFlushTimer);
+  _kvFlushTimer = setTimeout(_flushKV, 2000);
+}
+
+function kvRemove(key) {
+  delete _gasKV[key];
+  localStorage.removeItem(key);
+  _kvDirty[key] = '__DELETE__';
+  clearTimeout(_kvFlushTimer);
+  _kvFlushTimer = setTimeout(_flushKV, 2000);
+}
+
+async function _flushKV() {
+  _kvFlushTimer = null;
+  if (!Object.keys(_kvDirty).length) return;
+  const batch = { ..._kvDirty };
+  _kvDirty = {};
+  try {
+    await fetch(`${APPS_SCRIPT_URL}?action=setAdminKV&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(batch))}`);
+  } catch(e) {
+    Object.assign(_kvDirty, batch);
+    _kvFlushTimer = setTimeout(_flushKV, 5000);
+  }
+}
 
 let TOKEN  = sessionStorage.getItem('adminToken') || '';
 let allData = {citas: [], bloqueos: []};
@@ -1857,6 +1907,7 @@ async function doLogin() {
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('adminApp').style.display   = 'block';
       allData = d;
+      await loadAdminKV();
       initDashboard();
     } else {
       document.getElementById('loginErr').style.display = 'block';
@@ -1885,6 +1936,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminApp').style.display   = 'block';
         allData = d;
+        await loadAdminKV();
         initDashboard();
         return;
       }
@@ -3126,16 +3178,16 @@ function checkTimeConflict() {
 
 // ── HISTORIAL DE CAMBIOS ──
 function logChange(accion, detalle) {
-  const log = JSON.parse(localStorage.getItem('adminChangeLog') || '[]');
+  const log = JSON.parse(kvGet('adminChangeLog') || '[]');
   log.unshift({ ts: new Date().toLocaleString('es-CO'), accion, detalle });
   if (log.length > 150) log.length = 150;
-  localStorage.setItem('adminChangeLog', JSON.stringify(log));
+  kvSet('adminChangeLog', JSON.stringify(log));
   const countEl = document.getElementById('changeLogCount');
   if (countEl) countEl.textContent = log.length;
 }
 
 function renderChangeLog() {
-  const log   = JSON.parse(localStorage.getItem('adminChangeLog') || '[]');
+  const log   = JSON.parse(kvGet('adminChangeLog') || '[]');
   const body  = document.getElementById('changeLogBody');
   const count = document.getElementById('changeLogCount');
   if (count) count.textContent = log.length;
@@ -3172,7 +3224,7 @@ function toggleChangeLog() {
 
 function clearChangeLog() {
   if (!confirm('¿Eliminar todo el historial de cambios?')) return;
-  localStorage.removeItem('adminChangeLog');
+  kvRemove('adminChangeLog');
   renderChangeLog();
 }
 
@@ -4153,16 +4205,16 @@ function toggleSegFiltro(f) {
   _renderSegLista(window._segData || [], window._segReadapData || []);
 }
 
-// Helpers localStorage
-function segReagendo(nombre)    { return !!localStorage.getItem('seg_reagendo_'+nombre); }
+// Helpers KV sync seguimiento
+function segReagendo(nombre)    { return !!kvGet('seg_reagendo_'+nombre); }
 function segToggleR(nombre)     {
-  if (segReagendo(nombre)) localStorage.removeItem('seg_reagendo_'+nombre);
-  else { localStorage.setItem('seg_reagendo_'+nombre,'1'); segLogAction(nombre,'reagendo','Marcado como Reagendó ✓'); }
+  if (segReagendo(nombre)) kvRemove('seg_reagendo_'+nombre);
+  else { kvSet('seg_reagendo_'+nombre,'1'); segLogAction(nombre,'reagendo','Marcado como Reagendó ✓'); }
   renderSeguimiento();
 }
-function segWaSent(nombre, tipo){ return !!localStorage.getItem('seg_wa_'+tipo+'_'+nombre); }
+function segWaSent(nombre, tipo){ return !!kvGet('seg_wa_'+tipo+'_'+nombre); }
 function segMarkWa(nombre, tipo, dias) {
-  localStorage.setItem('seg_wa_'+tipo+'_'+nombre, Date.now());
+  kvSet('seg_wa_'+tipo+'_'+nombre, Date.now());
   const label = tipo==='sem3' ? 'WA aviso 3 semanas' : tipo==='sem4' ? 'WA semana 4' : 'WA semana 5+';
   segLogAction(nombre, tipo, label + ' enviado (' + dias + ' días sin descarga)');
   renderSeguimiento();
@@ -4170,14 +4222,14 @@ function segMarkWa(nombre, tipo, dias) {
 
 // Log de acciones
 function segLogAction(nombre, tipo, accion) {
-  const log = JSON.parse(localStorage.getItem('seg_log') || '[]');
+  const log = JSON.parse(kvGet('seg_log') || '[]');
   log.unshift({ nombre, tipo, accion, fecha: new Date().toLocaleString('es-CO',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) });
   if (log.length > 80) log.length = 80;
-  localStorage.setItem('seg_log', JSON.stringify(log));
+  kvSet('seg_log', JSON.stringify(log));
 }
 function limpiarLogSeguimiento() {
   if (!confirm('¿Limpiar todo el historial de seguimientos?')) return;
-  localStorage.removeItem('seg_log');
+  kvRemove('seg_log');
   _renderSegLog();
   toast('Historial limpiado');
 }
@@ -4193,11 +4245,11 @@ function esReadaptacion(serv) {
 }
 
 function readapZona(nombre) {
-  return localStorage.getItem('seg_readap_zona_'+nombre) || '';
+  return kvGet('seg_readap_zona_'+nombre) || '';
 }
 function setReadapZona(nombre, zona) {
-  if (zona) localStorage.setItem('seg_readap_zona_'+nombre, zona);
-  else localStorage.removeItem('seg_readap_zona_'+nombre);
+  if (zona) kvSet('seg_readap_zona_'+nombre, zona);
+  else kvRemove('seg_readap_zona_'+nombre);
 }
 
 function renderSeguimiento() {
@@ -4455,7 +4507,7 @@ function _segCardReadap(p) {
 function _renderSegLog() {
   const el = document.getElementById('segLog');
   if (!el) return;
-  const log = JSON.parse(localStorage.getItem('seg_log') || '[]');
+  const log = JSON.parse(kvGet('seg_log') || '[]');
   if (!log.length) {
     el.innerHTML = '<div class="empty" style="padding:24px 0"><p>Aún no hay acciones registradas</p></div>';
     return;
@@ -4559,7 +4611,7 @@ async function enviarEmailUno(encNombre, semanas) {
 // ══════════════════════════════════════════════════════════════
 // ── META MENSUAL ──
 // ══════════════════════════════════════════════════════════════
-function getMeta() { return parseInt(localStorage.getItem('metaMensual')||'0', 10); }
+function getMeta() { return parseInt(kvGet('metaMensual')||'0', 10); }
 
 function actualizarMetaBarra(cobrado) {
   const meta = getMeta();
@@ -4595,7 +4647,7 @@ function previewMeta(v) {
 function guardarMeta() {
   const val = parseInt((document.getElementById('metaInput').value||'').replace(/\D/g,''), 10);
   if (!val || val < 100000) { toast('Ingresa una meta válida (mínimo $100.000)', 'err'); return; }
-  localStorage.setItem('metaMensual', val);
+  kvSet('metaMensual', val);
   actualizarMetaBarra(calcCobradoMes());
   toast('Meta guardada: $' + val.toLocaleString('es-CO'));
 }
@@ -4605,7 +4657,7 @@ function previewMetaFin(v) { previewMeta(v); }
 function guardarMetaFin() {
   const val = parseInt((document.getElementById('metaInputFin').value||'').replace(/\D/g,''), 10);
   if (!val || val < 100000) { toast('Ingresa una meta válida (mínimo $100.000)', 'err'); return; }
-  localStorage.setItem('metaMensual', val);
+  kvSet('metaMensual', val);
   renderFinanzas();
   actualizarMetaBarra(calcCobradoMes());
   toast('Meta guardada: $' + val.toLocaleString('es-CO'));
@@ -4628,14 +4680,14 @@ function initQuickNotes() {
   const el = document.getElementById('notasRapidas');
   if (!el) return;
   const key = 'notasRapidas_' + today();
-  el.value = localStorage.getItem(key) || '';
+  el.value = kvGet(key) || '';
 }
 function autoGuardarNota() {
   clearTimeout(_notasTimer);
   _notasTimer = setTimeout(() => {
     const el = document.getElementById('notasRapidas');
     if (!el) return;
-    localStorage.setItem('notasRapidas_' + today(), el.value);
+    kvSet('notasRapidas_' + today(), el.value);
     const saved = document.getElementById('notasSaved');
     if (saved) { saved.classList.add('show'); setTimeout(() => saved.classList.remove('show'), 1800); }
   }, 600);
@@ -5802,11 +5854,11 @@ const _TPL_DEFAULT = {
 };
 let _tareaFiltros = new Set(['pendiente','vencida','completada']);
 
-function getTplTarea(tipo) { return localStorage.getItem('tpl_seg_'+tipo) || _TPL_DEFAULT[tipo] || ''; }
+function getTplTarea(tipo) { return kvGet('tpl_seg_'+tipo) || _TPL_DEFAULT[tipo] || ''; }
 function guardarPlantillaTarea(tipo) {
   const el = document.getElementById('tpl'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
   if (!el) return;
-  localStorage.setItem('tpl_seg_'+tipo, el.value);
+  kvSet('tpl_seg_'+tipo, el.value);
   toast('Plantilla guardada');
 }
 function initTareasConfig() {
@@ -5818,7 +5870,7 @@ function initTareasConfig() {
 function _tareaKey(c) {
   return 'tarea_' + normDate(c.fecha) + '_' + (c.nombre||'').replace(/\s/g,'_') + '_' + (c.servicio||'').slice(0,10).replace(/\s/g,'_');
 }
-function _tareaEstado(c) { return localStorage.getItem(_tareaKey(c)+'_estado') || 'pendiente'; }
+function _tareaEstado(c) { return kvGet(_tareaKey(c)+'_estado') || 'pendiente'; }
 function _tareaFechaTipo(c) {
   const s = (c.servicio||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
   if (s.includes('descarga'))     return { tipo:'descarga',     diasDelay:2, label:'Descarga muscular' };
@@ -5896,8 +5948,8 @@ function _renderTareasLista(tareas) {
     const colorB = estado==='vencida'?'rgba(239,68,68,.35)':estado==='completada'?'rgba(5,150,105,.3)':'rgba(27,191,176,.25)';
     const colorBg = estado==='vencida'?'rgba(239,68,68,.04)':estado==='completada'?'rgba(5,150,105,.04)':'';
     const key = _tareaKey(c);
-    const notas = localStorage.getItem(key+'_notas')||'';
-    const ts    = localStorage.getItem(key+'_ts')||'';
+    const notas = kvGet(key+'_notas')||'';
+    const ts    = kvGet(key+'_ts')||'';
     const colorChip = estado==='vencida'?'#dc2626':estado==='completada'?'#059669':'var(--primary)';
     const bgChip    = estado==='vencida'?'rgba(239,68,68,.12)':estado==='completada'?'rgba(5,150,105,.12)':'rgba(27,191,176,.1)';
     return `<div style="border:1.5px solid ${colorB};border-radius:14px;padding:16px 20px;background:${colorBg}">
@@ -5920,13 +5972,13 @@ function _renderTareasLista(tareas) {
   }).join('');
 }
 function marcarTareaWA(key) {
-  localStorage.setItem(key+'_estado','completada');
-  localStorage.setItem(key+'_ts', new Date().toISOString());
+  kvSet(key+'_estado','completada');
+  kvSet(key+'_ts', new Date().toISOString());
   setTimeout(() => renderTareas(), 500);
 }
 function marcarTareaCompletada(key) {
-  localStorage.setItem(key+'_estado','completada');
-  localStorage.setItem(key+'_ts', new Date().toISOString());
+  kvSet(key+'_estado','completada');
+  kvSet(key+'_ts', new Date().toISOString());
   renderTareas(); toast('Tarea completada ✓');
 }
 function posponerTarea(key) {
@@ -5934,19 +5986,19 @@ function posponerTarea(key) {
 }
 function omitirTarea(key) {
   const razon = prompt('Razón para omitir (opcional):');
-  localStorage.setItem(key+'_estado','completada');
-  localStorage.setItem(key+'_notas', razon||'Omitida');
-  localStorage.setItem(key+'_ts', new Date().toISOString());
+  kvSet(key+'_estado','completada');
+  kvSet(key+'_notas', razon||'Omitida');
+  kvSet(key+'_ts', new Date().toISOString());
   renderTareas(); toast('Tarea omitida');
 }
 
 // ══════════════════════════════════════════════════════════════
 // ── PAQUETES Y MEMBRESÍAS ──
 // ══════════════════════════════════════════════════════════════
-function _getPkPlantillas() { try { return JSON.parse(localStorage.getItem('pk_plantillas')||'[]'); } catch(e){ return []; } }
-function _getPkAsignados()  { try { return JSON.parse(localStorage.getItem('pk_asignados') ||'[]'); } catch(e){ return []; } }
-function _savePkPlantillas(a) { localStorage.setItem('pk_plantillas', JSON.stringify(a)); }
-function _savePkAsignados(a)  { localStorage.setItem('pk_asignados',  JSON.stringify(a)); }
+function _getPkPlantillas() { try { return JSON.parse(kvGet('pk_plantillas')||'[]'); } catch(e){ return []; } }
+function _getPkAsignados()  { try { return JSON.parse(kvGet('pk_asignados') ||'[]'); } catch(e){ return []; } }
+function _savePkPlantillas(a) { kvSet('pk_plantillas', JSON.stringify(a)); }
+function _savePkAsignados(a)  { kvSet('pk_asignados',  JSON.stringify(a)); }
 
 function renderPaquetes() {
   const search   = ((document.getElementById('pkSearch')||{}).value||'').toLowerCase();
@@ -6075,8 +6127,8 @@ function borrarPlantillaPaquete(idx) {
 // ══════════════════════════════════════════════════════════════
 // ── EMPRESAS CRM ──
 // ══════════════════════════════════════════════════════════════
-function _getEmpresas() { try { return JSON.parse(localStorage.getItem('crm_empresas')||'[]'); } catch(e){ return []; } }
-function _saveEmpresas(a) { localStorage.setItem('crm_empresas', JSON.stringify(a)); }
+function _getEmpresas() { try { return JSON.parse(kvGet('crm_empresas')||'[]'); } catch(e){ return []; } }
+function _saveEmpresas(a) { kvSet('crm_empresas', JSON.stringify(a)); }
 
 function renderEmpresas() {
   const empresas = _getEmpresas();
