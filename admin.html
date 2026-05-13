@@ -1727,16 +1727,20 @@ tr:hover td{background:rgba(126,221,208,.03)}
         </div>
       </div>
 
-      <!-- Buscador de paciente -->
+      <!-- Buscador de paciente (conectado a allData) -->
       <div class="card" style="padding:24px;margin-bottom:16px">
-        <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:10px">Nombre del paciente</label>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <input type="text" id="pasNombreInput" placeholder="Ej: Sara Restrepo"
-            oninput="generarLinkPasaporte()"
-            onkeydown="if(event.key==='Enter') abrirPasaporte()"
-            style="flex:1;min-width:200px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.95rem;padding:11px 16px;outline:none;transition:var(--tr)"
-            onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
-          <button onclick="abrirPasaporte()" style="background:var(--primary);color:#0D0D0D;border:none;border-radius:8px;padding:11px 22px;font-weight:700;font-size:.9rem;cursor:pointer;white-space:nowrap;transition:var(--tr)" onmouseover="this.style.background='var(--primary-h)'" onmouseout="this.style.background='var(--primary)'">
+        <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:10px">Buscar paciente</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start">
+          <div style="position:relative;flex:1;min-width:200px">
+            <input type="text" id="pasNombreInput" placeholder="Escribe el nombre del paciente..."
+              oninput="searchPasPatient(this.value)"
+              onkeydown="if(event.key==='Enter'){document.getElementById('pasDropdown').style.display='none';abrirPasaporte()}"
+              autocomplete="off"
+              style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.95rem;padding:11px 16px;outline:none;transition:var(--tr)"
+              onfocus="this.style.borderColor='var(--primary)'" onblur="setTimeout(()=>document.getElementById('pasDropdown').style.display='none',180)">
+            <div id="pasDropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--s1);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.10);z-index:200;max-height:220px;overflow-y:auto"></div>
+          </div>
+          <button onclick="abrirPasaporte()" style="background:var(--primary);color:#0D0D0D;border:none;border-radius:8px;padding:11px 22px;font-weight:700;font-size:.9rem;cursor:pointer;white-space:nowrap" onmouseover="this.style.background='var(--primary-h)'" onmouseout="this.style.background='var(--primary)'">
             Abrir y editar →
           </button>
         </div>
@@ -6366,8 +6370,50 @@ function exportarCSV(modo) {
 }
 
 // ── PASAPORTE DE MOVIMIENTO ────────────────────────────────────
-const PASAPORTE_BASE = 'https://storied-mousse-3f28a2.netlify.app/pasaporte.html';
+const PASAPORTE_BASE  = 'https://storied-mousse-3f28a2.netlify.app/pasaporte.html';
 const PASAPORTE_TOKEN = 'JESSICA2026';
+let _pasTelefono = '';
+
+function searchPasPatient(q) {
+  generarLinkPasaporte();
+  const dd = document.getElementById('pasDropdown');
+  if (!q || q.length < 2) { dd.style.display = 'none'; return; }
+
+  // Construir lista única de pacientes desde allData
+  const map = {};
+  allData.citas.filter(c => c.estado !== 'Registro').forEach(c => {
+    const key = (c.nombre || '').toLowerCase().trim();
+    if (key && !map[key]) map[key] = { nombre: c.nombre, telefono: c.telefono || '' };
+  });
+  (allData.pacientes || []).forEach(p => {
+    const key = (p.nombre || '').toLowerCase().trim();
+    if (key && !map[key]) map[key] = { nombre: p.nombre, telefono: p.telefono || '' };
+  });
+
+  const term = q.toLowerCase();
+  const matches = Object.values(map)
+    .filter(p => (p.nombre || '').toLowerCase().includes(term))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre))
+    .slice(0, 8);
+
+  if (!matches.length) { dd.style.display = 'none'; return; }
+
+  dd.innerHTML = matches.map(p => `
+    <div onmousedown="selectPasPatient(${JSON.stringify(p).replace(/"/g,'&quot;')})"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--s2)"
+      onmouseenter="this.style.background='var(--s2)'" onmouseleave="this.style.background=''">
+      <div style="font-weight:600;font-size:.88rem;color:var(--text)">${p.nombre}</div>
+      <div style="font-size:.76rem;color:var(--muted)">${p.telefono || 'Sin teléfono'}</div>
+    </div>`).join('');
+  dd.style.display = 'block';
+}
+
+function selectPasPatient(p) {
+  document.getElementById('pasNombreInput').value = p.nombre;
+  document.getElementById('pasDropdown').style.display = 'none';
+  _pasTelefono = (p.telefono || '').replace(/\D/g, '');
+  generarLinkPasaporte();
+}
 
 function generarLinkPasaporte() {
   const nombre = document.getElementById('pasNombreInput').value.trim();
@@ -6378,8 +6424,12 @@ function generarLinkPasaporte() {
   document.getElementById('pasLinkTexto').textContent = link;
   card.style.display = 'block';
 
-  const msg = `Hola ${nombre.split(' ')[0]} 🌿\nAquí está tu Pasaporte de Movimiento:\n${link}\n\nGuárdalo para ver tu progreso de sesiones 💪`;
-  document.getElementById('pasWhatsApp').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  // WhatsApp: directo al número si se seleccionó desde la BD, sino abierto
+  const tel = _pasTelefono.length >= 10
+    ? 'https://wa.me/57' + _pasTelefono.slice(-10)
+    : 'https://wa.me/';
+  const msg = `Hola ${nombre.split(' ')[0]} 🌿\nAquí está tu *Pasaporte de Movimiento* con Jessica Ocampo:\n${link}\n\nGuárdalo — puedes ver tu progreso de sesiones cuando quieras 💪`;
+  document.getElementById('pasWhatsApp').href = tel + '?text=' + encodeURIComponent(msg);
 
   if (typeof QRCode !== 'undefined') {
     QRCode.toCanvas(document.getElementById('pasQR'), link, { width: 112, margin: 1, color: { dark: '#0A1A12', light: '#F7F8FA' } });
@@ -6388,9 +6438,8 @@ function generarLinkPasaporte() {
 
 function abrirPasaporte() {
   const nombre = document.getElementById('pasNombreInput').value.trim();
-  if (!nombre) { alert('Escribe el nombre del paciente primero.'); return; }
-  const link = PASAPORTE_BASE + '?nombre=' + encodeURIComponent(nombre) + '&admin=' + PASAPORTE_TOKEN;
-  window.open(link, '_blank');
+  if (!nombre) { toast('Escribe o selecciona un paciente primero'); return; }
+  window.open(PASAPORTE_BASE + '?nombre=' + encodeURIComponent(nombre) + '&admin=' + PASAPORTE_TOKEN, '_blank');
 }
 
 function copiarLinkPas() {
