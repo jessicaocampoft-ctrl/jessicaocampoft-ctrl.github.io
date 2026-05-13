@@ -32,6 +32,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
   * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
   body { background: #EEF7F3; font-family: 'Outfit', sans-serif; min-height: 100dvh; color: #0A1A12; }
@@ -229,7 +230,7 @@
       </div>
       <div class="text-right">
         <span id="stamp-count" class="text-3xl font-900" style="color:#4BBFA3;">0</span>
-        <span class="text-lg font-600" style="color:rgba(10,26,18,.25);">/8</span>
+        <span class="text-lg font-600" style="color:rgba(10,26,18,.25);">/16</span>
       </div>
     </div>
 
@@ -238,38 +239,75 @@
       <div id="passport-prog" class="prog-fill h-full rounded-full" style="width:0%; background:linear-gradient(90deg,#7DDFC3,#4BBFA3);"></div>
     </div>
 
-    <!-- Grid 4×2 -->
-    <div class="grid grid-cols-4 gap-3 justify-items-center mb-4">
-      <div class="stamp" id="s1" onclick="toggleStamp(1)"><i data-lucide="zap"  class="w-6 h-6 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
-      <div class="stamp" id="s2" onclick="toggleStamp(2)"><i data-lucide="zap"  class="w-6 h-6 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
-      <div class="stamp" id="s3" onclick="toggleStamp(3)"><i data-lucide="zap"  class="w-6 h-6 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
-      <div class="stamp" id="s4" onclick="toggleStamp(4)"><i data-lucide="zap"  class="w-6 h-6 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
-      <div class="stamp" id="s5" onclick="toggleStamp(5)"><i data-lucide="zap"  class="w-6 h-6 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
-      <div class="stamp" id="s6" onclick="toggleStamp(6)"><i data-lucide="zap"  class="w-6 h-6 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
-      <div class="stamp" id="s7" onclick="toggleStamp(7)"><i data-lucide="zap"  class="w-6 h-6 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
-      <div class="stamp reward-circle" id="s8" onclick="toggleStamp(8)"><i data-lucide="gift" class="w-6 h-6 stamp-icon" style="color:rgba(232,184,75,.55);"></i></div>
+    <!-- Grid 4×4 — columna 4 de cada fila es el sello de recompensa -->
+    <div class="grid grid-cols-4 gap-2.5 justify-items-center mb-5">
+      <div class="stamp" id="s1"  onclick="toggleStamp(1)"> <i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp" id="s2"  onclick="toggleStamp(2)"> <i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp" id="s3"  onclick="toggleStamp(3)"> <i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp reward-circle" id="s4"  onclick="toggleStamp(4)"> <i data-lucide="gift"   class="w-5 h-5 stamp-icon" style="color:rgba(232,184,75,.55);"></i></div>
+
+      <div class="stamp" id="s5"  onclick="toggleStamp(5)"> <i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp" id="s6"  onclick="toggleStamp(6)"> <i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp" id="s7"  onclick="toggleStamp(7)"> <i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp reward-circle" id="s8"  onclick="toggleStamp(8)"> <i data-lucide="gift"   class="w-5 h-5 stamp-icon" style="color:rgba(232,184,75,.55);"></i></div>
+
+      <div class="stamp" id="s9"  onclick="toggleStamp(9)"> <i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp" id="s10" onclick="toggleStamp(10)"><i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp" id="s11" onclick="toggleStamp(11)"><i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp reward-circle" id="s12" onclick="toggleStamp(12)"><i data-lucide="gift"   class="w-5 h-5 stamp-icon" style="color:rgba(232,184,75,.55);"></i></div>
+
+      <div class="stamp" id="s13" onclick="toggleStamp(13)"><i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp" id="s14" onclick="toggleStamp(14)"><i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp" id="s15" onclick="toggleStamp(15)"><i data-lucide="zap"    class="w-5 h-5 stamp-icon" style="color:rgba(75,191,163,.45);"></i></div>
+      <div class="stamp reward-circle" id="s16" onclick="toggleStamp(16)"><i data-lucide="trophy" class="w-5 h-5 stamp-icon" style="color:rgba(232,184,75,.55);"></i></div>
     </div>
 
-    <!-- Beneficio siempre visible -->
-    <div id="passport-benefit" class="rounded-2xl p-4 text-center" style="background:rgba(232,184,75,.07); border:1px solid rgba(232,184,75,.22); margin-bottom:0;">
-      <p class="text-sm font-500 leading-snug" style="color:rgba(10,26,18,.55);">
-        Completa 8 sesiones y obtén
-        <span class="font-900 text-base" style="color:#C9962A;"> 15 min de Presoterapia </span>
-        o<br><span class="font-700" style="color:#C9962A;">Descarga Express 20 min — ¡Gratis!</span>
-      </p>
-    </div>
-
-    <!-- Reward banner (al completar las 8) -->
-    <div id="reward-banner" class="hidden rounded-2xl p-4 flex items-center gap-3" style="background:linear-gradient(135deg,rgba(232,184,75,.10),rgba(201,150,42,.14)); border:1px solid rgba(232,184,75,.25);">
-      <span class="text-3xl">🏆</span>
-      <div>
-        <p class="font-900 text-sm tracking-wide uppercase" style="color:#C9962A;">¡Recompensa Desbloqueada!</p>
-        <p class="text-sm font-600 leading-snug" style="color:rgba(10,26,18,.70);">15 min Presoterapia<br><span style="color:rgba(10,26,18,.40);">o</span> Descarga Express 20 min</p>
+    <!-- Niveles de beneficios -->
+    <div class="flex flex-col gap-2 mb-4">
+      <!-- Tier 4 -->
+      <div id="tier-4" class="rounded-2xl px-4 py-3 flex items-center gap-3" style="background:rgba(10,26,18,.03); border:1px solid rgba(10,26,18,.06);">
+        <div id="tier-4-badge" class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-900" style="background:rgba(10,26,18,.07); color:rgba(10,26,18,.35);">4</div>
+        <div class="flex-1">
+          <p id="tier-4-title" class="text-xs font-700 leading-tight" style="color:rgba(10,26,18,.55);">Descarga Localizada · 6 min</p>
+          <p class="text-xs font-500" style="color:rgba(10,26,18,.30);">Zona de tu elección</p>
+        </div>
+        <i data-lucide="lock" id="tier-4-lock" class="w-3.5 h-3.5 flex-shrink-0" style="color:rgba(10,26,18,.20);"></i>
+        <i data-lucide="check-circle" id="tier-4-check" class="w-3.5 h-3.5 flex-shrink-0 hidden" style="color:#C9962A;"></i>
+      </div>
+      <!-- Tier 8 -->
+      <div id="tier-8" class="rounded-2xl px-4 py-3 flex items-center gap-3" style="background:rgba(10,26,18,.03); border:1px solid rgba(10,26,18,.06);">
+        <div id="tier-8-badge" class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-900" style="background:rgba(10,26,18,.07); color:rgba(10,26,18,.35);">8</div>
+        <div class="flex-1">
+          <p id="tier-8-title" class="text-xs font-700 leading-tight" style="color:rgba(10,26,18,.55);">Valoración Funcional Express · 10 min</p>
+          <p class="text-xs font-500" style="color:rgba(10,26,18,.30);">+ PDF con resultados</p>
+        </div>
+        <i data-lucide="lock" id="tier-8-lock" class="w-3.5 h-3.5 flex-shrink-0" style="color:rgba(10,26,18,.20);"></i>
+        <i data-lucide="check-circle" id="tier-8-check" class="w-3.5 h-3.5 flex-shrink-0 hidden" style="color:#C9962A;"></i>
+      </div>
+      <!-- Tier 12 -->
+      <div id="tier-12" class="rounded-2xl px-4 py-3 flex items-center gap-3" style="background:rgba(10,26,18,.03); border:1px solid rgba(10,26,18,.06);">
+        <div id="tier-12-badge" class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-900" style="background:rgba(10,26,18,.07); color:rgba(10,26,18,.35);">12</div>
+        <div class="flex-1">
+          <p id="tier-12-title" class="text-xs font-700 leading-tight" style="color:rgba(10,26,18,.55);">Movilidad Asistida · 10 min</p>
+          <p class="text-xs font-500" style="color:rgba(10,26,18,.30);">+ Botas de Compresión</p>
+        </div>
+        <i data-lucide="lock" id="tier-12-lock" class="w-3.5 h-3.5 flex-shrink-0" style="color:rgba(10,26,18,.20);"></i>
+        <i data-lucide="check-circle" id="tier-12-check" class="w-3.5 h-3.5 flex-shrink-0 hidden" style="color:#C9962A;"></i>
+      </div>
+      <!-- Tier 16 -->
+      <div id="tier-16" class="rounded-2xl px-4 py-3 flex items-center gap-3" style="background:rgba(10,26,18,.03); border:1px solid rgba(10,26,18,.06);">
+        <div id="tier-16-badge" class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-900" style="background:rgba(10,26,18,.07); color:rgba(10,26,18,.35);">16</div>
+        <div class="flex-1">
+          <p id="tier-16-title" class="text-xs font-700 leading-tight" style="color:rgba(10,26,18,.55);">Kinesiotape + Tens · 15 min</p>
+          <p class="text-xs font-500" style="color:rgba(10,26,18,.30);">Readaptación completa</p>
+        </div>
+        <i data-lucide="lock" id="tier-16-lock" class="w-3.5 h-3.5 flex-shrink-0" style="color:rgba(10,26,18,.20);"></i>
+        <i data-lucide="check-circle" id="tier-16-check" class="w-3.5 h-3.5 flex-shrink-0 hidden" style="color:#C9962A;"></i>
       </div>
     </div>
 
-    <!-- Locked notice (paciente no puede editar) -->
-    <p id="passportNotice" class="text-xs text-center mt-4 font-500" style="color:rgba(10,26,18,.28);">
+    <!-- Locked notice -->
+    <p id="passportNotice" class="text-xs text-center mt-2 font-500" style="color:rgba(10,26,18,.28);">
       <i data-lucide="lock" class="w-3 h-3 inline mr-1" style="vertical-align:-2px;"></i>
       Jessica marca tu progreso en cada sesión
     </p>
@@ -327,6 +365,35 @@
   </div>
 </section>
 
+<!-- Share Panel (solo admin) -->
+<div id="adminShare" class="hidden relative z-10 mx-4 mb-5">
+  <div class="card p-6">
+    <div class="flex items-center gap-2 mb-4">
+      <i data-lucide="share-2" class="w-4 h-4" style="color:#4BBFA3;"></i>
+      <span class="text-xs font-800 tracking-widest uppercase" style="color:#4BBFA3;">Compartir con paciente</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <canvas id="qrCanvas" width="96" height="96" class="rounded-xl flex-shrink-0" style="border:1.5px solid #C3E5D8;"></canvas>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-500 mb-1" style="color:rgba(10,26,18,.40);">Link del pasaporte</p>
+        <p id="shareLink" class="text-xs font-600 mb-3 break-all leading-snug" style="color:rgba(10,26,18,.55);"></p>
+        <button type="button" onclick="copyPatientLink()" id="copyBtn"
+          class="w-full py-2.5 rounded-2xl font-800 text-xs flex items-center justify-center gap-2 active:scale-95 transition-transform"
+          style="background:linear-gradient(135deg,#7DDFC3,#4BBFA3); color:#0A1A12;">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span id="copyBtnText">Copiar link</span>
+        </button>
+      </div>
+    </div>
+    <button type="button" onclick="changePatient()"
+      class="mt-4 w-full py-2.5 rounded-2xl font-700 text-xs flex items-center justify-center gap-2 active:scale-95 transition-transform"
+      style="background:rgba(10,26,18,.04); border:1.5px solid rgba(10,26,18,.08); color:rgba(10,26,18,.45);">
+      <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+      Cambiar paciente
+    </button>
+  </div>
+</div>
+
 <!-- Reset (solo admin) -->
 <div id="adminResets" class="hidden relative z-10 mx-4 mb-28 flex gap-3">
   <button onclick="resetPassport()" class="flex-1 card py-3.5 flex items-center justify-center gap-2 text-sm font-600 active:scale-95 transition-transform" style="color:rgba(10,26,18,.40);">
@@ -345,23 +412,24 @@
   Agendar
 </a>
 
-<!-- Reward Modal -->
+<!-- Reward Modal (dinámico según el hito alcanzado) -->
 <div class="reward-modal" id="rewardModal">
   <div class="card p-8 text-center max-w-xs w-full mx-4" style="border:1px solid rgba(232,184,75,.30);">
-    <div class="text-6xl mb-4">🏆</div>
-    <p class="text-xs font-800 tracking-widest uppercase mb-2" style="color:#C9962A;">¡Recompensa Desbloqueada!</p>
-    <h2 class="font-cormorant text-4xl font-700 italic leading-tight mb-4" style="color:#0A1A12;">
-      Sesión 8<br><span style="color:#C9962A;">completada</span>
-    </h2>
+    <div id="modalEmoji" class="text-6xl mb-4">🎁</div>
+    <p class="text-xs font-800 tracking-widest uppercase mb-2" style="color:#C9962A;">¡Beneficio Desbloqueado!</p>
+    <h2 id="modalLabel" class="font-cormorant text-4xl font-700 italic leading-tight mb-4" style="color:#0A1A12;"></h2>
     <div class="rounded-2xl p-4 mb-5" style="background:rgba(232,184,75,.08); border:1px solid rgba(232,184,75,.20);">
       <p class="text-sm font-600 leading-relaxed" style="color:rgba(10,26,18,.75);">
-        🫁 <strong style="color:#C9962A;">15 min Presoterapia</strong><br>
-        <span style="color:rgba(10,26,18,.35); font-size:11px;">— ó —</span><br>
-        ⚡ <strong style="color:#C9962A;">Descarga Express 20 min</strong>
+        <strong id="modalReward1" style="color:#C9962A;"></strong><br>
+        <span id="modalReward2" class="text-xs font-500" style="color:rgba(10,26,18,.50);"></span>
       </p>
     </div>
+    <div class="flex items-center justify-between rounded-2xl px-4 py-2.5 mb-5" style="background:rgba(10,26,18,.04); border:1px solid rgba(10,26,18,.07);">
+      <span id="modalNombre" class="text-xs font-800" style="color:#0A1A12;"></span>
+      <span id="modalFecha" class="text-xs font-500" style="color:rgba(10,26,18,.40);"></span>
+    </div>
     <p class="text-xs font-500 mb-5" style="color:rgba(10,26,18,.40);">Muéstrale esta pantalla a Jessica para reclamar tu beneficio</p>
-    <button onclick="closeModal()" class="w-full py-3.5 rounded-2xl font-800 text-sm tracking-wide" style="background:linear-gradient(135deg,#E8B84B,#C9962A); color:#0A1A12;">
+    <button type="button" onclick="closeModal()" class="w-full py-3.5 rounded-2xl font-800 text-sm tracking-wide" style="background:linear-gradient(135deg,#E8B84B,#C9962A); color:#0A1A12;">
       ¡Genial, gracias! 🎉
     </button>
   </div>
@@ -407,10 +475,13 @@
   lucide.createIcons();
 
   // ─── CONFIGURACIÓN ───────────────────────────────────────────
-  const ADMIN_PIN      = '2610';
-  const ADMIN_KEY      = 'jof_admin_session';
-  const ADMIN_TOKEN    = 'JESSICA2026';
+  // PIN almacenado como hash SHA-256 (no visible en texto plano)
+  const ADMIN_PIN_HASH  = '9d45a4710a9abc4e87cac3a7bc71ca46b79c2cbcce4a01a1f83184f6878744c7';
+  const ADMIN_KEY       = 'jof_admin_session';
+  const ADMIN_TOKEN     = 'JESSICA2026';
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_r7Kr-9Uvu0qIVAJpyu8nzhmcJ9fzpqo2pspvFFHV_14cLzb9qUN9k3Lj8cdXFdIW/exec';
+  // Una vez publicado en Netlify/GitHub Pages, cambia esta URL:
+  const BASE_URL        = window.location.origin + window.location.pathname;
   // ─────────────────────────────────────────────────────────────
 
   // ─── IDENTIFICACIÓN DEL PACIENTE ─────────────────────────────
@@ -436,6 +507,15 @@
   let descargaState  = JSON.parse(localStorage.getItem(claves.descarga)  || '{}');
   let isAdmin = sessionStorage.getItem(ADMIN_KEY) === 'true';
 
+  // Auto-login si viene desde el panel admin con token
+  if (urlParams.get('admin') === ADMIN_TOKEN) {
+    sessionStorage.setItem(ADMIN_KEY, 'true');
+    isAdmin = true;
+    const cleanParams = new URLSearchParams(window.location.search);
+    cleanParams.delete('admin');
+    history.replaceState(null, '', window.location.pathname + (cleanParams.toString() ? '?' + cleanParams.toString() : ''));
+  }
+
   // Género: si el primer nombre termina en 'a' → Bienvenida, sino Bienvenido
   function saludo(nombre) {
     if (!nombre) return 'Bienvenida ✦';
@@ -454,6 +534,7 @@
     document.getElementById('nombrePaciente').textContent = 'Tu ruta al';
     document.title = nombre ? 'Pasaporte de ' + nombre.split(' ')[0] + ' — Jessica Ocampo' : 'Pasaporte de Movimiento — Jessica Ocampo';
     renderPassport(); renderDescarga(); applyAdminMode(isAdmin);
+    if (isAdmin) generateAdminShare();
   }
 
   function guardarNombre() {
@@ -544,8 +625,14 @@
       dot.classList.remove('error');
     }
   }
-  function checkPin() {
-    if (pinInput === ADMIN_PIN) {
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function checkPin() {
+    const hash = await sha256(pinInput);
+    if (hash === ADMIN_PIN_HASH) {
       sessionStorage.setItem(ADMIN_KEY, 'true');
       isAdmin = true;
       closePinModal();
@@ -566,23 +653,84 @@
   function applyAdminMode(active) {
     document.getElementById('adminBar').classList.toggle('show', active);
     document.getElementById('adminResets').classList.toggle('hidden', !active);
+    document.getElementById('adminShare').classList.toggle('hidden', !active);
 
-    // Stamps clickables solo en admin
-    document.querySelectorAll('.stamp').forEach(el => {
-      el.classList.toggle('clickable', active);
-    });
-    document.querySelectorAll('.descarga-circle').forEach(el => {
-      el.classList.toggle('clickable', active);
-    });
+    document.querySelectorAll('.stamp').forEach(el => el.classList.toggle('clickable', active));
+    document.querySelectorAll('.descarga-circle').forEach(el => el.classList.toggle('clickable', active));
 
-    // Aviso al paciente
     const notice = document.getElementById('passportNotice');
     if (active) {
       notice.innerHTML = '<span style="color:#4BBFA3; font-weight:800;">✓ Modo activo — Toca los círculos para marcar</span>';
+      generateAdminShare();
     } else {
       notice.innerHTML = '<span><i data-lucide="lock" class="w-3 h-3 inline mr-1" style="vertical-align:-2px;"></i>Jessica marca tu progreso en cada sesión</span>';
       lucide.createIcons();
     }
+  }
+
+  // ─── PANEL COMPARTIR (admin) ──────────────────────────────────
+  function generateAdminShare() {
+    if (!nombrePaciente) return;
+    const link = BASE_URL + '?nombre=' + encodeURIComponent(nombrePaciente);
+    document.getElementById('shareLink').textContent = link;
+    if (typeof QRCode !== 'undefined') {
+      QRCode.toCanvas(document.getElementById('qrCanvas'), link, { width: 96, margin: 1, color: { dark: '#0A1A12', light: '#F3FAF7' } });
+    }
+    lucide.createIcons();
+  }
+
+  function copyPatientLink() {
+    if (!nombrePaciente) return;
+    const link = BASE_URL + '?nombre=' + encodeURIComponent(nombrePaciente);
+    navigator.clipboard.writeText(link).then(() => {
+      const btn = document.getElementById('copyBtnText');
+      btn.textContent = '¡Copiado!';
+      setTimeout(() => { btn.textContent = 'Copiar link'; }, 2000);
+    });
+  }
+
+  function changePatient() {
+    localStorage.removeItem('jof_nombre_paciente');
+    nombrePaciente = '';
+    const modal = document.getElementById('nombreModal');
+    document.getElementById('nombreInput').value = '';
+    modal.style.display = 'flex';
+    setTimeout(() => document.getElementById('nombreInput').focus(), 100);
+  }
+
+  // ─── HITOS Y BENEFICIOS ───────────────────────────────────────
+  const MILESTONES = {
+    4:  { emoji: '⚡', label: 'Sesión 4 completada', reward1: 'Descarga Localizada · 6 min', reward2: 'en la zona de tu elección' },
+    8:  { emoji: '📋', label: 'Sesión 8 completada', reward1: 'Valoración Funcional Express · 10 min', reward2: '+ PDF con resultados' },
+    12: { emoji: '🩴', label: 'Sesión 12 completada', reward1: 'Movilidad Asistida · 10 min', reward2: '+ Botas de Compresión' },
+    16: { emoji: '🏆', label: '¡Ruta completa! · 16 sesiones', reward1: 'Kinesiotape (vendaje)', reward2: '+ 15 min de Tens (electroterapia)' },
+  };
+
+  function showRewardModal(n) {
+    const m    = MILESTONES[n];
+    const hoy  = new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('modalEmoji').textContent   = m.emoji;
+    document.getElementById('modalLabel').textContent   = m.label;
+    document.getElementById('modalReward1').textContent = m.reward1;
+    document.getElementById('modalReward2').textContent = m.reward2;
+    document.getElementById('modalNombre').textContent  = nombrePaciente || '';
+    document.getElementById('modalFecha').textContent   = hoy;
+    document.getElementById('rewardModal').classList.add('show');
+  }
+
+  function updateTier(n, earned) {
+    const tier  = document.getElementById('tier-' + n);
+    const badge = document.getElementById('tier-' + n + '-badge');
+    const lock  = document.getElementById('tier-' + n + '-lock');
+    const check = document.getElementById('tier-' + n + '-check');
+    const title = document.getElementById('tier-' + n + '-title');
+    tier.style.background  = earned ? 'rgba(232,184,75,.08)' : 'rgba(10,26,18,.03)';
+    tier.style.border      = earned ? '1px solid rgba(232,184,75,.25)' : '1px solid rgba(10,26,18,.06)';
+    badge.style.background = earned ? 'rgba(232,184,75,.15)' : 'rgba(10,26,18,.07)';
+    badge.style.color      = earned ? '#C9962A' : 'rgba(10,26,18,.35)';
+    title.style.color      = earned ? '#0A1A12' : 'rgba(10,26,18,.55)';
+    if (lock)  lock.classList.toggle('hidden', earned);
+    if (check) check.classList.toggle('hidden', !earned);
   }
 
   // ─── TOGGLE STAMP ─────────────────────────────────────────────
@@ -591,8 +739,8 @@
     passportState[n] = !passportState[n];
     savePassport();
     renderPassport();
-    if (passportState[n] && n === 8) {
-      setTimeout(() => document.getElementById('rewardModal').classList.add('show'), 300);
+    if (passportState[n] && MILESTONES[n]) {
+      setTimeout(() => showRewardModal(n), 300);
     }
   }
 
@@ -604,29 +752,30 @@
   }
 
   // ─── RENDER ───────────────────────────────────────────────────
+  const MILESTONE_STAMPS = new Set([4, 8, 12, 16]);
+
   function renderPassport() {
     let count = 0;
-    for (let i = 1; i <= 8; i++) {
-      const el = document.getElementById('s' + i);
+    for (let i = 1; i <= 16; i++) {
+      const el   = document.getElementById('s' + i);
       const icon = el.querySelector('.stamp-icon');
+      const isMilestone = MILESTONE_STAMPS.has(i);
       if (passportState[i]) {
         el.classList.add('stamped');
-        if (i === 8) el.classList.add('pulse-gold');
-        icon.setAttribute('data-lucide', i === 8 ? 'trophy' : 'check');
+        if (i === 16) el.classList.add('pulse-gold');
+        icon.setAttribute('data-lucide', i === 16 ? 'trophy' : 'check');
         icon.removeAttribute('style');
         count++;
       } else {
         el.classList.remove('stamped', 'pulse-gold');
-        icon.setAttribute('data-lucide', i === 8 ? 'gift' : 'zap');
-        icon.setAttribute('style', i === 8 ? 'color:rgba(232,184,75,.55);' : 'color:rgba(75,191,163,.45);');
+        icon.setAttribute('data-lucide', isMilestone ? (i === 16 ? 'trophy' : 'gift') : 'zap');
+        icon.setAttribute('style', isMilestone ? 'color:rgba(232,184,75,.55);' : 'color:rgba(75,191,163,.45);');
       }
     }
     lucide.createIcons();
     document.getElementById('stamp-count').textContent = count;
-    document.getElementById('passport-prog').style.width = (count / 8 * 100) + '%';
-    const done = !!passportState[8];
-    document.getElementById('reward-banner').style.display  = done ? 'flex' : 'none';
-    document.getElementById('passport-benefit').style.display = done ? 'none' : 'block';
+    document.getElementById('passport-prog').style.width = (count / 16 * 100) + '%';
+    [4, 8, 12, 16].forEach(n => updateTier(n, !!passportState[n]));
   }
 
   function renderDescarga() {
