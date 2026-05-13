@@ -364,7 +364,11 @@
       <p class="text-xl mb-1">🎉</p>
       <p class="font-800 text-sm" style="color:#0A1A12;">¡Reto completado!</p>
       <p class="font-700 text-sm mt-0.5" style="color:#C4522A;">30% OFF en tu próxima Descarga Completa</p>
-      <p class="text-xs mt-2 font-500" style="color:rgba(10,26,18,.35);">Muéstrale esta pantalla a Jessica</p>
+      <button type="button" onclick="showDescargaModal()"
+        class="mt-3 w-full py-2.5 rounded-2xl font-800 text-sm"
+        style="background:linear-gradient(135deg,#C4522A,#E8643A); color:white; border:none; cursor:pointer;">
+        Reclamar →
+      </button>
     </div>
   </div>
 </section>
@@ -717,6 +721,17 @@
     document.getElementById('modalLabel').textContent   = m.label;
     document.getElementById('modalReward1').textContent = m.reward1;
     document.getElementById('modalReward2').textContent = m.reward2;
+    document.getElementById('modalNombre').textContent  = nombrePaciente || '';
+    document.getElementById('modalFecha').textContent   = hoy;
+    document.getElementById('rewardModal').classList.add('show');
+  }
+
+  function showDescargaModal() {
+    const hoy = new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('modalEmoji').textContent   = '🎉';
+    document.getElementById('modalLabel').textContent   = '¡Reto Descarga completado!';
+    document.getElementById('modalReward1').textContent = '30% OFF en tu próxima';
+    document.getElementById('modalReward2').textContent = 'Descarga Completa';
     document.getElementById('modalNombre').textContent  = nombrePaciente || '';
     document.getElementById('modalFecha').textContent   = hoy;
     document.getElementById('rewardModal').classList.add('show');
