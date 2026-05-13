@@ -2460,7 +2460,7 @@ function waBtnPasaporte(tel, nombre) {
   const t     = String(tel||'').replace(/\D/g,'');
   const phone = t.length <= 10 ? '57'+t : t;
   const primero = waNombre(nombre);
-  const msg = '¡Hola ' + primero + '!\nTe dejo tu Pasaporte de Movimiento — ahí vas a ver tu progreso después de cada sesión\n' + linkPaciente + '\nGuárdalo y nos vemos pronto 🙌';
+  const msg = '¡Hola ' + primero + '!\nTe dejo tu Pasaporte de Beneficios — ahí vas a ver tu progreso después de cada sesión\n' + linkPaciente + '\nGuárdalo y nos vemos pronto 🙌';
   const waUrl = t.length >= 7
     ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg)
     : 'https://wa.me/?text=' + encodeURIComponent(msg);
@@ -6480,7 +6480,7 @@ function generarLinkPasaporte() {
   const tel = _pasTelefono.length >= 7
     ? 'https://wa.me/57' + _pasTelefono.slice(-10)
     : 'https://wa.me/';
-  const msg = `¡Hola ${nombre.split(' ')[0]}!\nTe dejo tu Pasaporte de Movimiento — ahí vas a ver tu progreso después de cada sesión\n${link}\nGuárdalo y nos vemos pronto 🙌`;
+  const msg = `¡Hola ${nombre.split(' ')[0]}!\nTe dejo tu Pasaporte de Beneficios — ahí vas a ver tu progreso después de cada sesión\n${link}\nGuárdalo y nos vemos pronto 🙌`;
   document.getElementById('pasWhatsApp').href = tel + '?text=' + encodeURIComponent(msg);
 
   if (typeof QRCode !== 'undefined') {

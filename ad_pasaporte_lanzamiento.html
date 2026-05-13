@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publicidad Pasaporte – Capturas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #111;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 56px;
+  }
+
+  .tip {
+    background: #1e1e1e;
+    border: 1px solid #2e2e2e;
+    border-radius: 12px;
+    padding: 12px 20px;
+    color: #888;
+    font-size: .78rem;
+    text-align: center;
+    max-width: 560px;
+    line-height: 1.6;
+  }
+  .tip strong { color: #E8B84B; }
+
+  .label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #444;
+    text-align: center;
+  }
+
+  /* ═══════════════════════════════════════════
+     INSTAGRAM STORY  —  405 × 720 px  (×2.667 = 1080×1920)
+  ═══════════════════════════════════════════ */
+  .story {
+    width: 405px;
+    height: 720px;
+    position: relative;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,.7);
+    flex-shrink: 0;
+  }
+
+  .story-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('Fotos pg Web/Readaptación Miguel.JPG');
+    background-size: cover;
+    background-position: center 20%;
+  }
+
+  /* gradient: top band dark → middle semi → bottom very dark */
+  .story-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(5,12,8,.85)   0%,
+        rgba(5,12,8,.35)  30%,
+        rgba(5,12,8,.20)  52%,
+        rgba(5,12,8,.75)  72%,
+        rgba(5,12,8,.97) 100%
+      );
+  }
+
+  .story-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 32px 24px 28px;
+  }
+
+  /* top */
+  .s-top { display: flex; flex-direction: column; gap: 8px; }
+
+  .s-logo {
+    height: 38px;
+    object-fit: contain;
+    object-position: left;
+    filter: brightness(0) invert(1);
+    opacity: .92;
+  }
+
+  .s-launch-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(232,184,75,.18);
+    border: 1px solid rgba(232,184,75,.4);
+    color: #E8B84B;
+    font-size: .6rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 4px 11px;
+    border-radius: 100px;
+    align-self: flex-start;
+  }
+
+  /* middle headline — sits over the photo */
+  .s-mid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .s-headline {
+    font-size: 2.05rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.08;
+    letter-spacing: -.03em;
+    text-shadow: 0 2px 20px rgba(0,0,0,.5);
+  }
+  .s-headline em {
+    font-style: normal;
+    background: linear-gradient(135deg, #E8B84B, #C9962A);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .s-sub {
+    font-size: .75rem;
+    color: rgba(255,255,255,.6);
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  /* bottom rewards */
+  .s-bottom { display: flex; flex-direction: column; gap: 7px; }
+
+  .s-reward {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(10,26,18,.72);
+    border: 1px solid rgba(255,255,255,.09);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-radius: 13px;
+    padding: 9px 13px;
+  }
+  .s-reward-emoji { font-size: 1.05rem; flex-shrink: 0; }
+  .s-reward-body { flex: 1; }
+  .s-reward-name {
+    font-size: .72rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .s-reward-detail {
+    font-size: .6rem;
+    color: rgba(255,255,255,.45);
+    font-weight: 500;
+  }
+  .s-reward-pill {
+    font-size: .58rem;
+    font-weight: 800;
+    color: #E8B84B;
+    background: rgba(232,184,75,.13);
+    border: 1px solid rgba(232,184,75,.28);
+    padding: 2px 8px;
+    border-radius: 100px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .s-cta-btn {
+    margin-top: 2px;
+    padding: 12px;
+    background: linear-gradient(135deg, #E8B84B, #C9962A);
+    border-radius: 13px;
+    font-size: .82rem;
+    font-weight: 800;
+    color: #0A1A12;
+    text-align: center;
+    letter-spacing: .01em;
+  }
+
+  /* ═══════════════════════════════════════════
+     WHATSAPP CUADRADA  —  480 × 480 px  (×2.25 = 1080×1080)
+  ═══════════════════════════════════════════ */
+  .square {
+    width: 480px;
+    height: 480px;
+    position: relative;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,.7);
+    flex-shrink: 0;
+  }
+
+  /* photo fills left ~55% */
+  .sq-photo {
+    position: absolute;
+    top: 0; left: 0;
+    width: 58%; height: 100%;
+    background-image: url('Fotos pg Web/Comprimidas/IMG_0671.jpg');
+    background-size: cover;
+    background-position: center top;
+  }
+  /* right-side fade */
+  .sq-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, transparent 40%, #080F09 100%);
+  }
+  /* top/bottom fade on photo */
+  .sq-photo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(8,15,9,.5) 0%, transparent 25%, transparent 75%, rgba(8,15,9,.6) 100%);
+    z-index: 1;
+  }
+
+  /* dark right panel */
+  .sq-panel {
+    position: absolute;
+    top: 0; right: 0;
+    width: 54%;
+    height: 100%;
+    background: #080F09;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 22px 20px 20px;
+  }
+
+  .sq-logo {
+    height: 28px;
+    object-fit: contain;
+    object-position: left;
+    filter: brightness(0) invert(1);
+    opacity: .88;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .sq-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(232,184,75,.15);
+    border: 1px solid rgba(232,184,75,.35);
+    color: #E8B84B;
+    font-size: .52rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 100px;
+    margin-bottom: 8px;
+  }
+
+  .sq-title {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    margin-bottom: 4px;
+  }
+  .sq-title em {
+    font-style: normal;
+    background: linear-gradient(135deg, #E8B84B, #C9962A);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .sq-concept {
+    font-size: .6rem;
+    color: rgba(255,255,255,.45);
+    font-weight: 500;
+    line-height: 1.55;
+    margin-bottom: 12px;
+  }
+
+  .sq-rewards { display: flex; flex-direction: column; gap: 5px; }
+
+  .sq-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 9px;
+    padding: 6px 9px;
+  }
+  .sq-emoji { font-size: .85rem; flex-shrink: 0; }
+  .sq-body { flex: 1; min-width: 0; }
+  .sq-name {
+    font-size: .59rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sq-detail { font-size: .52rem; color: rgba(255,255,255,.38); font-weight: 500; }
+  .sq-pill {
+    font-size: .5rem;
+    font-weight: 800;
+    color: #E8B84B;
+    background: rgba(232,184,75,.1);
+    border: 1px solid rgba(232,184,75,.22);
+    padding: 1px 6px;
+    border-radius: 100px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .sq-cta {
+    padding: 9px 12px;
+    background: linear-gradient(135deg, #E8B84B, #C9962A);
+    border-radius: 10px;
+    font-size: .68rem;
+    font-weight: 800;
+    color: #0A1A12;
+    text-align: center;
+  }
+
+  /* ═══════════════════════════════════════════
+     COPY DE TEXTO
+  ═══════════════════════════════════════════ */
+  .copy-box {
+    width: 480px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 16px;
+    padding: 22px 26px;
+  }
+  .copy-label {
+    font-size: .6rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    color: #E8B84B;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .copy-text {
+    font-size: .8rem;
+    color: #bbb;
+    line-height: 1.8;
+    white-space: pre-line;
+  }
+  .copy-text strong { color: #fff; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="tip">
+  <strong>Cómo capturar:</strong> Haz <strong>Ctrl + −</strong> hasta ver toda la tarjeta · luego
+  <strong>Win + Shift + S</strong> para recortar exactamente la tarjeta · o clic derecho → Guardar imagen.
+</div>
+
+<!-- ─── INSTAGRAM STORY ──────────────────────────── -->
+<div class="label">Instagram Story — captura solo esta tarjeta</div>
+
+<div class="story">
+  <div class="story-bg"></div>
+  <div class="story-overlay"></div>
+  <div class="story-content">
+
+    <div class="s-top">
+      <img src="Logo/2.png" class="s-logo" alt="Jessica Ocampo">
+      <div class="s-launch-badge">🚀 Ya disponible</div>
+    </div>
+
+    <div class="s-mid">
+      <div class="s-headline">Pasaporte de<br><em>Movimiento</em></div>
+      <div class="s-sub">Cada sesión que asistes suma un sello.<br>Al llegar a los hitos, desbloqueas premios reales.</div>
+    </div>
+
+    <div class="s-bottom">
+      <div class="s-reward">
+        <div class="s-reward-emoji">⚡</div>
+        <div class="s-reward-body">
+          <div class="s-reward-name">Descarga Localizada · 6 min</div>
+          <div class="s-reward-detail">en la zona de tu elección</div>
+        </div>
+        <div class="s-reward-pill">Sesión 4</div>
+      </div>
+      <div class="s-reward">
+        <div class="s-reward-emoji">📋</div>
+        <div class="s-reward-body">
+          <div class="s-reward-name">Valoración Funcional Express</div>
+          <div class="s-reward-detail">+ PDF con resultados · 10 min</div>
+        </div>
+        <div class="s-reward-pill">Sesión 8</div>
+      </div>
+      <div class="s-reward">
+        <div class="s-reward-emoji">🩴</div>
+        <div class="s-reward-body">
+          <div class="s-reward-name">Movilidad Asistida</div>
+          <div class="s-reward-detail">+ Botas de Compresión · 10 min</div>
+        </div>
+        <div class="s-reward-pill">Sesión 12</div>
+      </div>
+      <div class="s-reward">
+        <div class="s-reward-emoji">🏆</div>
+        <div class="s-reward-body">
+          <div class="s-reward-name">Kinesiotape + Electroterapia</div>
+          <div class="s-reward-detail">15 min de Tens · premio final</div>
+        </div>
+        <div class="s-reward-pill">Sesión 16</div>
+      </div>
+      <div class="s-cta-btn">💬 Escríbeme y te lo activo</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── WHATSAPP CUADRADA ────────────────────────── -->
+<div class="label">Imagen para WhatsApp — captura solo esta tarjeta</div>
+
+<div class="square">
+  <div class="sq-photo"></div>
+  <div class="sq-panel">
+    <div class="sq-top">
+      <img src="Logo/2.png" class="sq-logo" alt="Jessica Ocampo">
+      <div class="sq-badge">🚀 Ya disponible</div>
+      <div class="sq-title">Pasaporte<br>de <em>Movimiento</em></div>
+      <div class="sq-concept">Cada sesión = 1 sello · 16 sesiones · 4 premios reales. Sin sorteos, sin condiciones.</div>
+      <div class="sq-rewards">
+        <div class="sq-row">
+          <div class="sq-emoji">⚡</div>
+          <div class="sq-body">
+            <div class="sq-name">Descarga Localizada</div>
+            <div class="sq-detail">Zona de tu elección · 6 min</div>
+          </div>
+          <div class="sq-pill">Ses. 4</div>
+        </div>
+        <div class="sq-row">
+          <div class="sq-emoji">📋</div>
+          <div class="sq-body">
+            <div class="sq-name">Valoración Funcional + PDF</div>
+            <div class="sq-detail">Express · 10 min</div>
+          </div>
+          <div class="sq-pill">Ses. 8</div>
+        </div>
+        <div class="sq-row">
+          <div class="sq-emoji">🩴</div>
+          <div class="sq-body">
+            <div class="sq-name">Movilidad + Botas Compresión</div>
+            <div class="sq-detail">Asistida · 10 min</div>
+          </div>
+          <div class="sq-pill">Ses. 12</div>
+        </div>
+        <div class="sq-row">
+          <div class="sq-emoji">🏆</div>
+          <div class="sq-body">
+            <div class="sq-name">Kinesiotape + Tens</div>
+            <div class="sq-detail">Electroterapia · 15 min</div>
+          </div>
+          <div class="sq-pill">Ses. 16</div>
+        </div>
+      </div>
+    </div>
+    <div class="sq-cta">💬 Escríbeme y lo activamos</div>
+  </div>
+</div>
+
+<!-- ─── COPY DE TEXTO ────────────────────────────── -->
+<div class="label">Textos para copiar y pegar</div>
+
+<div class="copy-box">
+  <div class="copy-label">📸 Caption Instagram</div>
+  <div class="copy-text"><strong>¡Ya llegó el Pasaporte de Beneficios! 🛂✨</strong>
+
+Porque cada sesión que asistes merece algo a cambio — y a partir de hoy, así es.
+
+Así funciona:
+⚡ Sesión 4 → Descarga Localizada gratis (zona de tu elección · 6 min)
+📋 Sesión 8 → Valoración Funcional Express + PDF con resultados
+🩴 Sesión 12 → Movilidad Asistida + Botas de Compresión
+🏆 Sesión 16 → Kinesiotape + Electroterapia (Tens · 15 min)
+
+Sin sorteos. Sin letras pequeñas. Solo tú y tu constancia. 💪
+
+Escríbeme por DM o WhatsApp y en tu próxima sesión lo activamos 🙌
+
+<strong>#FisioterapiaPereira #Dosquebradas #PasaporteDeMovimiento #Fisioterapia #MovimientoEsSalud #RehabilitacionDeportiva</strong></div>
+</div>
+
+<div class="copy-box">
+  <div class="copy-label">💬 Mensaje WhatsApp / Estado</div>
+  <div class="copy-text"><strong>🛂 ¡Ya llegó el Pasaporte de Beneficios!</strong>
+
+Cada sesión que asistes = 1 sello en tu pasaporte digital.
+Al llegar a los hitos, desbloqueas premios reales:
+
+⚡ Sesión 4 — Descarga Localizada gratis
+📋 Sesión 8 — Valoración Funcional Express + PDF
+🩴 Sesión 12 — Movilidad Asistida + Botas de Compresión
+🏆 Sesión 16 — Kinesiotape + Electroterapia (Tens)
+
+¿Te interesa? Escríbeme y en tu próxima cita lo activamos 🙌
+— Jessica Ocampo · Fisioterapeuta</div>
+</div>
+
+</body>
+</html>

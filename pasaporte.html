@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Pasaporte de Movimiento — Jessica Ocampo</title>
+<title>Pasaporte de Beneficios — Jessica Ocampo</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -216,7 +216,7 @@
 <!-- Divider -->
 <div class="mx-5 h-px mb-5" style="background: linear-gradient(90deg, transparent, rgba(10,26,18,.10), transparent);"></div>
 
-<!-- Pasaporte de Movimiento -->
+<!-- Pasaporte de Beneficios -->
 <section class="relative z-10 mx-4 mb-5">
   <div class="card p-6">
     <!-- Header -->
@@ -224,7 +224,7 @@
       <div>
         <div class="flex items-center gap-2 mb-1">
           <i data-lucide="award" class="w-4 h-4" style="color:#C9962A;"></i>
-          <span class="text-xs font-800 tracking-widest uppercase" style="color:#C9962A;">Pasaporte de Movimiento</span>
+          <span class="text-xs font-800 tracking-widest uppercase" style="color:#C9962A;">Pasaporte de Beneficios</span>
         </div>
         <p class="text-sm font-500" style="color:rgba(10,26,18,.40);">Marca cada sesión completada</p>
       </div>
@@ -540,7 +540,7 @@
     descargaState  = JSON.parse(localStorage.getItem(claves.descarga)  || '{}');
     document.getElementById('saludoLabel').textContent = saludo(nombre);
     document.getElementById('nombrePaciente').textContent = 'Tu ruta al';
-    document.title = nombre ? 'Pasaporte de ' + nombre.split(' ')[0] + ' — Jessica Ocampo' : 'Pasaporte de Movimiento — Jessica Ocampo';
+    document.title = nombre ? 'Pasaporte de ' + nombre.split(' ')[0] + ' — Jessica Ocampo' : 'Pasaporte de Beneficios — Jessica Ocampo';
     renderPassport(); renderDescarga(); applyAdminMode(isAdmin);
     if (isAdmin) generateAdminShare();
   }
