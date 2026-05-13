@@ -273,6 +273,7 @@
         </div>
         <i data-lucide="lock" id="tier-4-lock" class="w-3.5 h-3.5 flex-shrink-0" style="color:rgba(10,26,18,.20);"></i>
         <i data-lucide="check-circle" id="tier-4-check" class="w-3.5 h-3.5 flex-shrink-0 hidden" style="color:#C9962A;"></i>
+        <button type="button" id="tier-4-btn" onclick="showRewardModal(4)" class="hidden" style="background:linear-gradient(135deg,#E8B84B,#C9962A);color:#0A1A12;border:none;border-radius:12px;padding:5px 10px;font-size:.7rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0">Reclamar →</button>
       </div>
       <!-- Tier 8 -->
       <div id="tier-8" class="rounded-2xl px-4 py-3 flex items-center gap-3" style="background:rgba(10,26,18,.03); border:1px solid rgba(10,26,18,.06);">
@@ -283,6 +284,7 @@
         </div>
         <i data-lucide="lock" id="tier-8-lock" class="w-3.5 h-3.5 flex-shrink-0" style="color:rgba(10,26,18,.20);"></i>
         <i data-lucide="check-circle" id="tier-8-check" class="w-3.5 h-3.5 flex-shrink-0 hidden" style="color:#C9962A;"></i>
+        <button type="button" id="tier-8-btn" onclick="showRewardModal(8)" class="hidden" style="background:linear-gradient(135deg,#E8B84B,#C9962A);color:#0A1A12;border:none;border-radius:12px;padding:5px 10px;font-size:.7rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0">Reclamar →</button>
       </div>
       <!-- Tier 12 -->
       <div id="tier-12" class="rounded-2xl px-4 py-3 flex items-center gap-3" style="background:rgba(10,26,18,.03); border:1px solid rgba(10,26,18,.06);">
@@ -293,6 +295,7 @@
         </div>
         <i data-lucide="lock" id="tier-12-lock" class="w-3.5 h-3.5 flex-shrink-0" style="color:rgba(10,26,18,.20);"></i>
         <i data-lucide="check-circle" id="tier-12-check" class="w-3.5 h-3.5 flex-shrink-0 hidden" style="color:#C9962A;"></i>
+        <button type="button" id="tier-12-btn" onclick="showRewardModal(12)" class="hidden" style="background:linear-gradient(135deg,#E8B84B,#C9962A);color:#0A1A12;border:none;border-radius:12px;padding:5px 10px;font-size:.7rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0">Reclamar →</button>
       </div>
       <!-- Tier 16 -->
       <div id="tier-16" class="rounded-2xl px-4 py-3 flex items-center gap-3" style="background:rgba(10,26,18,.03); border:1px solid rgba(10,26,18,.06);">
@@ -303,6 +306,7 @@
         </div>
         <i data-lucide="lock" id="tier-16-lock" class="w-3.5 h-3.5 flex-shrink-0" style="color:rgba(10,26,18,.20);"></i>
         <i data-lucide="check-circle" id="tier-16-check" class="w-3.5 h-3.5 flex-shrink-0 hidden" style="color:#C9962A;"></i>
+        <button type="button" id="tier-16-btn" onclick="showRewardModal(16)" class="hidden" style="background:linear-gradient(135deg,#E8B84B,#C9962A);color:#0A1A12;border:none;border-radius:12px;padding:5px 10px;font-size:.7rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0">Reclamar →</button>
       </div>
     </div>
 
@@ -724,6 +728,7 @@
     const lock  = document.getElementById('tier-' + n + '-lock');
     const check = document.getElementById('tier-' + n + '-check');
     const title = document.getElementById('tier-' + n + '-title');
+    const btn   = document.getElementById('tier-' + n + '-btn');
     tier.style.background  = earned ? 'rgba(232,184,75,.08)' : 'rgba(10,26,18,.03)';
     tier.style.border      = earned ? '1px solid rgba(232,184,75,.25)' : '1px solid rgba(10,26,18,.06)';
     badge.style.background = earned ? 'rgba(232,184,75,.15)' : 'rgba(10,26,18,.07)';
@@ -731,6 +736,7 @@
     title.style.color      = earned ? '#0A1A12' : 'rgba(10,26,18,.55)';
     if (lock)  lock.classList.toggle('hidden', earned);
     if (check) check.classList.toggle('hidden', !earned);
+    if (btn)   btn.classList.toggle('hidden', !earned);
   }
 
   // ─── TOGGLE STAMP ─────────────────────────────────────────────
