@@ -1170,6 +1170,28 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             </div>
           </div>
         </div>
+        <!-- ── ABONO PARCIAL ── -->
+        <div style="margin-top:14px;padding:12px 14px;background:rgba(99,102,241,.05);border:1px solid rgba(99,102,241,.2);border-radius:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" id="ncAbonoCheck" onchange="toggleAbonoPanel()" style="width:16px;height:16px;accent-color:#6366f1;cursor:pointer">
+            <label for="ncAbonoCheck" style="font-size:.88rem;cursor:pointer;color:#4338ca;font-weight:600">💰 Registrar abono parcial</label>
+          </div>
+          <div id="abonoPanel" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(99,102,241,.2)">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div>
+                <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:3px">Monto abonado</label>
+                <input type="text" id="ncAbonoMonto" placeholder="$0" oninput="calcAbono()"
+                  style="width:120px;background:var(--s1);border:1px solid rgba(99,102,241,.3);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:6px 8px;outline:none">
+              </div>
+              <div>
+                <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:3px">Fecha del abono</label>
+                <input type="date" id="ncAbonoFecha" oninput="calcAbono()"
+                  style="background:var(--s1);border:1px solid rgba(99,102,241,.3);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:6px 8px;outline:none">
+              </div>
+            </div>
+            <div id="abonoResumen" style="display:none;margin-top:10px;padding:10px 14px;background:rgba(99,102,241,.08);border-radius:8px;font-size:.85rem;color:#3730a3;line-height:1.6"></div>
+          </div>
+        </div>
         <!-- ── CONVENIO CON GIMNASIO ── -->
         <div class="field" style="margin-top:16px">
           <label>Convenio con gimnasio</label>
@@ -2468,6 +2490,48 @@ function exportarAgendaDia() {
   toast('Agenda exportada');
 }
 
+// ── ABONO PARCIAL ──
+function toggleAbonoPanel() {
+  const panel   = document.getElementById('abonoPanel');
+  const checked = document.getElementById('ncAbonoCheck').checked;
+  panel.style.display = checked ? 'block' : 'none';
+  if (checked) {
+    if (!document.getElementById('ncAbonoFecha').value) document.getElementById('ncAbonoFecha').value = today();
+    calcAbono();
+  } else {
+    document.getElementById('abonoResumen').style.display = 'none';
+  }
+}
+
+function calcAbono() {
+  const monto   = parsePrecio(document.getElementById('ncAbonoMonto').value);
+  const fecha   = document.getElementById('ncAbonoFecha').value;
+  const precio  = parsePrecio(getPrecioFinal());
+  const resumen = document.getElementById('abonoResumen');
+  if (!monto || !fecha) { resumen.style.display = 'none'; return; }
+  const pct     = precio ? Math.round((monto / precio) * 100) : 0;
+  const restante= precio ? precio - monto : 0;
+  const pctRest = 100 - pct;
+  const [y,m,d] = fecha.split('-');
+  const fechaLeg= d + '/' + m + '/' + y;
+  let html = `💰 Abonó <strong>${formatPrecio(monto)}</strong> el ${fechaLeg}`;
+  if (precio) html += ` · <span style="color:#059669;font-weight:700">${pct}% pagado</span> · Restante: <strong>${formatPrecio(restante)}</strong> <span style="color:#dc2626">(${pctRest}%)</span>`;
+  resumen.innerHTML = html;
+  resumen.style.display = 'block';
+}
+
+function getAbonoNota() {
+  if (!document.getElementById('ncAbonoCheck').checked) return '';
+  const monto  = parsePrecio(document.getElementById('ncAbonoMonto').value);
+  const fecha  = document.getElementById('ncAbonoFecha').value;
+  if (!monto || !fecha) return '';
+  const precio = parsePrecio(getPrecioFinal());
+  const pct    = precio ? Math.round((monto / precio) * 100) : 0;
+  const rest   = precio ? precio - monto : 0;
+  const [y,m,d]= fecha.split('-');
+  return `[ABONO: ${formatPrecio(monto)} el ${d}/${m}/${y} · ${pct}% pagado · Restante: ${formatPrecio(rest)}]`;
+}
+
 // ── CITAS RECURRENTES ──
 function toggleRecurringPanel() {
   document.getElementById('recurringPanel').style.display =
@@ -3522,6 +3586,7 @@ function autoFillPrice() {
   checkDomicilioWarn();
   updateSesionesInfo();
   calcConvenio();
+  if (document.getElementById('ncAbonoCheck').checked) calcAbono();
 }
 
 // ══════════════════════════════════════
@@ -3658,7 +3723,7 @@ async function submitAdminBooking() {
     priceD: getPrecioFinal() || 'A convenir',
     address: document.getElementById('ncAddress').value.trim(),
     notes:   document.getElementById('ncNotes').value.trim(),
-    notaAdmin: (() => { const p = (document.getElementById('ncParaQuien').value||'').trim(); return p ? '[PARA: ' + p + ']' : ''; })(),
+    notaAdmin: (() => { const partes = []; const p = (document.getElementById('ncParaQuien').value||'').trim(); if (p) partes.push('[PARA: ' + p + ']'); const ab = getAbonoNota(); if (ab) partes.push(ab); return partes.join(' '); })(),
     ...gimnasioData
   };
 
@@ -3783,6 +3848,11 @@ function clearNuevaCita() {
   });
   document.getElementById('ncService').value='';
   document.getElementById('ncServiceMain').selectedIndex=0;
+  document.getElementById('ncAbonoCheck').checked = false;
+  document.getElementById('ncAbonoMonto').value   = '';
+  document.getElementById('ncAbonoFecha').value   = '';
+  document.getElementById('abonoPanel').style.display   = 'none';
+  document.getElementById('abonoResumen').style.display = 'none';
   const planSel = document.getElementById('ncServicePlan');
   planSel.selectedIndex=0; planSel.style.display='none';
   document.getElementById('ncMod').value='Presencial';
