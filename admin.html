@@ -2071,21 +2071,24 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             <option>Sesiones en Gimnasio</option>
             <option>Jornada Empresarial</option>
           </optgroup>
-          <optgroup label="── Tu cuerpo sin dolor ──">
-            <option>Plan Espalda Sin Dolor</option>
-            <option>Plan Alivio Profundo</option>
-            <option>Plan Alivio en Casa</option>
-            <option>Plan Dúo Mensual</option>
+          <optgroup label="── Combos ──">
+            <option>Combo Diagnóstico Pro</option>
+            <option>Combo Bienvenida</option>
           </optgroup>
-          <optgroup label="── Deportistas ──">
-            <option>Plan Recarga</option>
-            <option>Plan Avanza</option>
-            <option>Plan Elite</option>
+          <optgroup label="── Paquete Full ──">
+            <option>Paquete Recuperación Full</option>
           </optgroup>
-          <optgroup label="── Readaptación funcional ──">
-            <option>Plan Inicio</option>
-            <option>Plan Avance</option>
-            <option>Plan Transforma</option>
+          <optgroup label="── Paquetes Readaptación ──">
+            <option>Paquete Readaptación Inicio</option>
+            <option>Paquete Readaptación Avance</option>
+            <option>Paquete Readaptación Total</option>
+          </optgroup>
+          <optgroup label="── Planes Mensuales ──">
+            <option>Plan Activo</option>
+            <option>Plan Pro</option>
+          </optgroup>
+          <optgroup label="── Servicio adicional ──">
+            <option>Mini-sesión Familiar 20 min</option>
           </optgroup>
         </select>
       </div>
@@ -2843,7 +2846,7 @@ function renderAgenda(keepPage = false) {
   if (search)                  citas = citas.filter(c => (c.nombre+c.servicio+c.email+c.telefono).toLowerCase().includes(search));
   if (fSt)                     citas = citas.filter(c => c.estado === fSt);
   if (fMod)                    citas = citas.filter(c => c.modalidad === fMod);
-  if (fService === '__planes__') citas = citas.filter(c => (c.servicio||'').startsWith('Plan'));
+  if (fService === '__planes__') citas = citas.filter(c => { const s = c.servicio||''; return s.startsWith('Plan') || s.startsWith('Combo') || s.startsWith('Paquete') || s.startsWith('Mini'); });
   else if (fService)           citas = citas.filter(c => c.servicio === fService);
   if (fDesde)                  citas = citas.filter(c => normDate(c.fecha) >= fDesde);
   if (fHasta)                  citas = citas.filter(c => normDate(c.fecha) <= fHasta);

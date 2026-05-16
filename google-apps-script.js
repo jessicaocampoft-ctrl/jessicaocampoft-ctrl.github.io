@@ -604,9 +604,9 @@ function getAdminData() {
         id:         '' + (er[0] || ''),
         titulo:     '' + (er[1] || ''),
         tipo:       '' + (er[2] || ''),
-        fecha:      '' + (er[3] || ''),
-        horaInicio: '' + (er[4] || ''),
-        horaFin:    '' + (er[5] || ''),
+        fecha:      (er[3] instanceof Date) ? fmtDate(er[3]) : (er[3] ? ('' + er[3]).split('T')[0] : ''),
+        horaInicio: st(er[4]),
+        horaFin:    st(er[5]),
         duracion:   '' + (er[6] || ''),
         cobro:      '' + (er[7] || ''),
         notas:      '' + (er[8] || ''),
@@ -1243,6 +1243,9 @@ function crearEvento(p) {
   var sh = getEventosSheet();
   var id = 'EVT-' + new Date().getTime();
   sh.appendRow([id, d.titulo, d.tipo, d.fecha, d.horaInicio, d.horaFin, d.duracion || '', d.cobro || 'Sin cobro', d.notas || '']);
+  // Forzar fecha y horas como texto para evitar auto-detección de Sheets
+  var lastRow = sh.getLastRow();
+  sh.getRange(lastRow, 4, 1, 3).setNumberFormat('@');
   return {ok: true, id: id};
 }
 
