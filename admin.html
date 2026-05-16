@@ -612,6 +612,11 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
       Base de datos
     </button>
 
+    <button class="sb-link" id="sb-codigos" onclick="showView('codigos')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      Códigos REF &amp; BONO
+    </button>
+
     <button class="sb-link" id="sb-paquetes" onclick="showView('paquetes')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
       Paquetes
@@ -1728,6 +1733,17 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
               <option>Empresa</option><option>Página web</option><option>Recomendación médica</option><option>Otro</option>
             </select>
             <input type="text" id="dbOrigenSub" placeholder="Nombre del gimnasio / empresa / detalle..." style="display:none;margin-top:6px;width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;box-sizing:border-box">
+            <!-- Campo extra para referidos -->
+            <input type="text" id="dbReferidoPor" placeholder="Nombre de quien la refirió..." style="display:none;margin-top:6px;width:100%;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.3);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;box-sizing:border-box">
+          </div>
+          <!-- Banner del código generado (se muestra tras guardar un referido) -->
+          <div id="dbCodigoResult" style="display:none;grid-column:1/-1;background:rgba(139,92,246,.08);border:1.5px solid rgba(139,92,246,.35);border-radius:12px;padding:14px 18px">
+            <div style="font-size:.75rem;font-weight:700;color:#7c3aed;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Código REF generado</div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <span id="dbCodigoValor" style="font-family:var(--font-m);font-size:1.3rem;font-weight:700;color:#7c3aed;letter-spacing:.05em"></span>
+              <span style="font-size:.8rem;color:var(--muted)">Guardado en Google Sheets · hoja <strong>Codigos</strong></span>
+              <button class="btn btn-sm" onclick="showView('codigos')" style="background:rgba(139,92,246,.15);color:#7c3aed;border:1px solid rgba(139,92,246,.3);margin-left:auto">Ver todos los códigos →</button>
+            </div>
           </div>
           <div class="field" style="grid-column:1/-1">
             <label>Notas / Diagnóstico</label>
@@ -1785,6 +1801,57 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             <button onclick="clearChangeLog()" style="padding:5px 12px;background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-size:.78rem;cursor:pointer;font-family:var(--font-b)">Limpiar historial</button>
           </div>
           <div id="changeLogBody" style="max-height:320px;overflow-y:auto"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CÓDIGOS REF & BONO ── -->
+    <section id="vCodigos" style="display:none">
+      <div class="page-header">
+        <h1 class="page-title"><em>Códigos</em> REF &amp; BONO</h1>
+        <p class="page-sub">Registro de referidos y bonos generados. Cada código es único por mes.</p>
+      </div>
+
+      <!-- Filtros -->
+      <div class="card" style="margin-bottom:20px;padding:16px 20px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input type="text" id="codSearch" placeholder="Buscar por nombre, código..." oninput="renderCodigos()"
+            style="flex:1;min-width:180px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.85rem;outline:none;color:var(--text)">
+          <select id="codTipoFilter" onchange="renderCodigos()"
+            style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:8px 12px;outline:none">
+            <option value="">Todos los tipos</option>
+            <option value="REF">Solo REF</option>
+            <option value="BONO">Solo BONO</option>
+          </select>
+          <select id="codEstadoFilter" onchange="renderCodigos()"
+            style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:8px 12px;outline:none">
+            <option value="">Todos los estados</option>
+            <option value="Activo">Activo</option>
+            <option value="Usado">Usado</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('codSearch').value='';document.getElementById('codTipoFilter').selectedIndex=0;document.getElementById('codEstadoFilter').selectedIndex=0;renderCodigos()">Limpiar</button>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="card">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Paciente (nuevo referido)</th>
+                <th>Referido por</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Vinculado a</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="codigosTbody">
+              <tr><td colspan="7"><div class="loading-wrap"><div class="spinner"></div> Cargando...</div></td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
@@ -2109,7 +2176,7 @@ function openEvalExpress() {
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
-  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','paquetes','recordatorios','finanzas','seguimiento','empresas','pasaporte'].forEach(id => {
+  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','seguimiento','empresas','pasaporte'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -2145,6 +2212,7 @@ function showView(v) {
   if (v === 'tareasConfig')   initTareasConfig();
   if (v === 'paquetes')       renderPaquetes();
   if (v === 'empresas')       renderEmpresas();
+  if (v === 'codigos')        renderCodigos();
 }
 
 function toggleSidebar() {
@@ -3879,16 +3947,45 @@ async function agregarPacienteDB() {
     address: '', notes: notasFinal
   };
 
+  const esReferido = document.getElementById('dbOrigen').value === 'Referido';
+  const referidoPor = esReferido ? (document.getElementById('dbReferidoPor').value.trim()) : '';
+
   try {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=adminBook&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(data))}`);
     const d = await r.json();
     if (d.ok) {
-      toast(`${nombre} agregado/a correctamente`);
       logChange('Paciente agregado', nombre + (telefono ? ` · ${telefono}` : ''));
-      limpiarFormDB();
       await reload();
       renderBasedatos();
       initDashboard();
+
+      // Si es referido, generar y registrar código REF
+      if (esReferido) {
+        try {
+          const rg = await fetch(`${APPS_SCRIPT_URL}?action=generarCodigo&token=${encodeURIComponent(TOKEN)}&tipo=REF`);
+          const dg = await rg.json();
+          if (dg.ok) {
+            const codData = { codigo: dg.codigo, tipo: 'REF', paciente: nombre, telefono, referidoPor };
+            await fetch(`${APPS_SCRIPT_URL}?action=registrarCodigo&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(codData))}`);
+            // Mostrar banner con el código
+            document.getElementById('dbCodigoValor').textContent = dg.codigo;
+            document.getElementById('dbCodigoResult').style.display = 'block';
+            // Limpiar solo campos del paciente, dejar el banner visible
+            document.getElementById('dbNombre').value   = '';
+            document.getElementById('dbTelefono').value = '';
+            document.getElementById('dbEmail').value    = '';
+            document.getElementById('dbEntidad').value  = '';
+            document.getElementById('dbDeporte').value  = '';
+            document.getElementById('dbNotas').value    = '';
+            document.getElementById('dbReferidoPor').value = '';
+            toast(`${nombre} agregado/a · Código ${dg.codigo} generado ✓`);
+            await reload();
+          } else { toast(`${nombre} agregado/a correctamente`); limpiarFormDB(); }
+        } catch(ex) { toast(`${nombre} agregado/a correctamente`); limpiarFormDB(); }
+      } else {
+        toast(`${nombre} agregado/a correctamente`);
+        limpiarFormDB();
+      }
     } else {
       toast('Error: ' + (d.error || ''), 'err');
     }
@@ -3906,6 +4003,10 @@ function limpiarFormDB() {
   document.getElementById('dbEntidad').value  = '';
   document.getElementById('dbDeporte').value  = '';
   document.getElementById('dbNotas').value    = '';
+  const rp = document.getElementById('dbReferidoPor'); if(rp) { rp.value=''; rp.style.display='none'; }
+  const cr = document.getElementById('dbCodigoResult'); if(cr) cr.style.display='none';
+  document.getElementById('dbOrigen').selectedIndex = 0;
+  dbOnOrigenChange();
 }
 
 // ── CALENDARIO ──
@@ -6531,8 +6632,96 @@ function borrarEmpresa(idx) {
 function dbOnOrigenChange() {
   const val = (document.getElementById('dbOrigen')||{}).value || '';
   const sub = document.getElementById('dbOrigenSub');
+  const ref = document.getElementById('dbReferidoPor');
+  const res = document.getElementById('dbCodigoResult');
   if (sub) sub.style.display = (val==='Gimnasio'||val==='Empresa'||val==='Otro') ? 'block' : 'none';
+  if (ref) ref.style.display = val==='Referido' ? 'block' : 'none';
+  if (res && val!=='Referido') res.style.display = 'none';
 }
+
+// ══════════════════════════════════════════════════════════════
+// CÓDIGOS REF & BONO
+// ══════════════════════════════════════════════════════════════
+function renderCodigos() {
+  const tbody  = document.getElementById('codigosTbody');
+  const search = (document.getElementById('codSearch')?.value || '').toLowerCase();
+  const fTipo  = document.getElementById('codTipoFilter')?.value || '';
+  const fEst   = document.getElementById('codEstadoFilter')?.value || '';
+
+  let lista = [...(allData.codigos || [])];
+  if (search) lista = lista.filter(c =>
+    (c.codigo+c.paciente+c.referidoPor+c.codigoRef).toLowerCase().includes(search));
+  if (fTipo) lista = lista.filter(c => c.tipo === fTipo);
+  if (fEst)  lista = lista.filter(c => c.estado === fEst);
+
+  // Ordenar: más recientes primero
+  lista.sort((a,b) => (b.codigo).localeCompare(a.codigo));
+
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><p>No hay códigos registrados aún</p><p style="font-size:.8rem;color:var(--muted);margin-top:6px">Los códigos REF se generan al agregar un paciente con origen <strong>Referido</strong></p></div></td></tr>`;
+    return;
+  }
+
+  // Construir mapa de qué REF ya tienen BONO
+  const refConBono = new Set(lista.filter(c=>c.tipo==='BONO').map(c=>c.codigoRef));
+
+  tbody.innerHTML = lista.map(c => {
+    const esREF   = c.tipo === 'REF';
+    const chipColor = esREF ? 'background:rgba(139,92,246,.12);color:#7c3aed;border:1px solid rgba(139,92,246,.3)'
+                            : 'background:rgba(234,179,8,.12);color:#92400e;border:1px solid rgba(234,179,8,.3)';
+    const estadoChip = c.estado === 'Activo'
+      ? `<span class="chip chip-ok" style="font-size:.7rem">${c.estado}</span>`
+      : `<span class="chip chip-no" style="font-size:.7rem">${c.estado}</span>`;
+    const vinculo = c.tipo === 'BONO' && c.codigoRef
+      ? `<span style="font-family:var(--font-m);font-size:.8rem;color:var(--muted)">← ${c.codigoRef}</span>`
+      : (c.tipo === 'REF' && refConBono.has(c.codigo)
+          ? `<span style="font-family:var(--font-m);font-size:.8rem;color:#92400e">BONO-${c.codigo.slice(4)} ✓</span>`
+          : '—');
+    const btnBono = esREF && !refConBono.has(c.codigo)
+      ? `<button class="btn btn-sm" onclick="generarBono('${c.codigo}','${(c.referidoPor||'').replace(/'/g,"\\'")}','${(c.telefono||'').replace(/'/g,"\\'")}' )"
+           style="background:rgba(234,179,8,.12);color:#92400e;border:1px solid rgba(234,179,8,.3);font-size:.75rem">
+           🎁 Generar Bono
+         </button>`
+      : '';
+    const btnMarcar = '';
+
+    return `<tr>
+      <td><span style="font-family:var(--font-m);font-size:.88rem;font-weight:700;padding:3px 8px;border-radius:6px;${chipColor}">${c.codigo}</span></td>
+      <td><strong style="font-size:.88rem">${c.paciente||'—'}</strong>${c.telefono?`<br><small style="color:var(--muted)">${c.telefono}</small>`:''}</td>
+      <td style="font-size:.85rem">${c.referidoPor||'—'}</td>
+      <td style="font-family:var(--font-m);font-size:.78rem;color:var(--muted)">${c.fecha||''}</td>
+      <td>${estadoChip}</td>
+      <td>${vinculo}</td>
+      <td><div style="display:flex;gap:6px;flex-wrap:wrap">${btnBono}${btnMarcar}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+async function generarBono(codigoRef, referidoPor, telefonoRef) {
+  if (!confirm(`¿Generar bono para ${referidoPor || 'quien refirió'}?\nEsto creará un código BONO vinculado a ${codigoRef}`)) return;
+  try {
+    // Generar el número (mismo que el REF)
+    const numRef  = codigoRef.split('-').pop(); // ej: "001"
+    const mesRef  = codigoRef.split('-')[1];    // ej: "MAY"
+    const codBono = `BONO-${mesRef}-${numRef}`;
+
+    const codData = {
+      codigo:      codBono,
+      tipo:        'BONO',
+      paciente:    referidoPor,
+      telefono:    telefonoRef,
+      referidoPor: '',
+      codigoRef:   codigoRef
+    };
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=registrarCodigo&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(codData))}`);
+    const d = await r.json();
+    if (!d.ok) { toast('Error al generar bono', 'err'); return; }
+    toast(`Bono ${codBono} generado para ${referidoPor || 'el referidor'} ✓`);
+    await reload();
+    renderCodigos();
+  } catch(e) { toast('Error de conexión', 'err'); }
+}
+
 
 function resRow(label, val, style='') {
   return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;padding:3px 0">
