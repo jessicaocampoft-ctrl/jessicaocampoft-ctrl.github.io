@@ -2045,7 +2045,7 @@ async function _flushKV() {
 }
 
 let TOKEN  = sessionStorage.getItem('adminToken') || '';
-let allData = {citas: [], bloqueos: []};
+let allData = {citas: [], bloqueos: [], eventos: []};
 let _submittingBooking = false;
 let _submittingPatient = false;
 
@@ -2719,14 +2719,13 @@ function renderAgenda(keepPage = false) {
 
   // Mezclar eventos (solo si no hay filtros de estado/modalidad/servicio)
   if (!fSt && !fMod && !fService) {
-    let evts = getEventos();
-    if (search) evts = evts.filter(e => (e.titulo+e.tipo+e.notas).toLowerCase().includes(search));
+    let evts = (allData.eventos || []);
+    if (search) evts = evts.filter(e => (e.titulo+e.tipo+(e.notas||'')).toLowerCase().includes(search));
     if (fDesde) evts = evts.filter(e => e.fecha >= fDesde);
     if (fHasta) evts = evts.filter(e => e.fecha <= fHasta);
-    // Normalizar eventos para que encajen en la misma lista
     evts = evts.map(e => ({
       ...e,
-      nombre: e.titulo, hora: e.horaInicio, fecha: e.fecha,
+      nombre: e.titulo, hora: e.horaInicio,
       servicio: e.tipo, precio: e.cobro, modalidad:'—', estado:'—', telefono:'', email:''
     }));
     citas = [...citas, ...evts];
@@ -3179,7 +3178,7 @@ function autoFillPrice() {
 }
 
 // ══════════════════════════════════════
-// EVENTOS (localStorage)
+// EVENTOS (Google Sheets via Apps Script)
 // ══════════════════════════════════════
 function switchNuevaMode(mode) {
   const isEvento = mode === 'evento';
@@ -3203,45 +3202,46 @@ function calcDuracion() {
   lbl.style.display = 'block';
 }
 
-function getEventos() {
-  try { return JSON.parse(localStorage.getItem('adminEventos') || '[]'); } catch(e) { return []; }
-}
-function saveEventos(evts) {
-  localStorage.setItem('adminEventos', JSON.stringify(evts));
+function getDuracionStr(hi, hf) {
+  const [hh,mm]   = hi.split(':').map(Number);
+  const [hh2,mm2] = hf.split(':').map(Number);
+  const mins = (hh2*60+mm2) - (hh*60+mm);
+  if (mins <= 0) return '';
+  const h = Math.floor(mins/60), m = mins%60;
+  return (h ? h+'h ' : '') + (m ? m+'min' : '');
 }
 
-function submitEvento() {
+async function submitEvento() {
   const titulo = document.getElementById('evTitulo').value.trim();
   const fecha  = document.getElementById('evFecha').value;
   const hi     = document.getElementById('evHoraInicio').value;
   const hf     = document.getElementById('evHoraFin').value;
   if (!titulo || !fecha || !hi || !hf) { toast('Completa los campos obligatorios (*)', 'err'); return; }
-  const [hh,mm]   = hi.split(':').map(Number);
-  const [hh2,mm2] = hf.split(':').map(Number);
-  const mins = (hh2*60+mm2) - (hh*60+mm);
-  let duracion = '';
-  if (mins > 0) { const h=Math.floor(mins/60),m=mins%60; duracion=(h?h+'h ':'')+(m?m+'min':''); }
 
-  const evento = {
-    id: 'evt_' + Date.now(),
+  const btn = document.querySelector('#formEvento .btn-teal');
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+
+  const data = {
     titulo,
-    tipo:     document.getElementById('evTipo').value,
+    tipo:       document.getElementById('evTipo').value,
     fecha,
     horaInicio: hi,
     horaFin:    hf,
-    duracion,
-    cobro:  document.getElementById('evCobro').value.trim() || 'Sin cobro',
-    notas:  document.getElementById('evNotas').value.trim(),
-    creado: new Date().toISOString(),
-    _esEvento: true
+    duracion:   getDuracionStr(hi, hf),
+    cobro:      document.getElementById('evCobro').value.trim() || 'Sin cobro',
+    notas:      document.getElementById('evNotas').value.trim()
   };
 
-  const evts = getEventos();
-  evts.push(evento);
-  saveEventos(evts);
-  clearEvento();
-  toast('Evento creado ✓');
-  showView('agenda');
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=crearEvento&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(data))}`);
+    const d = await r.json();
+    if (!d.ok) { toast('Error: ' + (d.error||''), 'err'); return; }
+    toast('Evento creado ✓');
+    clearEvento();
+    await reload();
+    showView('agenda');
+  } catch(e) { toast('Error de conexión', 'err'); }
+  finally { btn.textContent = 'Crear evento'; btn.disabled = false; }
 }
 
 function clearEvento() {
@@ -3252,11 +3252,16 @@ function clearEvento() {
   document.getElementById('evDuracionLabel').style.display = 'none';
 }
 
-function eliminarEvento(id) {
+async function eliminarEvento(id) {
   if (!confirm('¿Eliminar este evento?')) return;
-  saveEventos(getEventos().filter(e => e.id !== id));
-  renderAgenda();
-  toast('Evento eliminado');
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=eliminarEvento&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(id)}`);
+    const d = await r.json();
+    if (!d.ok) { toast('Error al eliminar', 'err'); return; }
+    toast('Evento eliminado');
+    await reload();
+    renderAgenda();
+  } catch(e) { toast('Error de conexión', 'err'); }
 }
 
 async function submitAdminBooking() {

@@ -57,6 +57,8 @@ function doGet(e) {
   if (p.action === 'generarCodigo')  return js(generarCodigo(p));
   if (p.action === 'registrarCodigo') return js(registrarCodigo(p));
   if (p.action === 'getCodigos')     return js(getCodigos());
+  if (p.action === 'crearEvento')    return js(crearEvento(p));
+  if (p.action === 'eliminarEvento') return js(eliminarEvento(p));
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -590,7 +592,30 @@ function getAdminData() {
     }
   }
 
-  return {ok: true, citas: citas, bloqueos: bloqueos, pacientes: pacientes, codigos: codigos};
+  // Hoja Eventos
+  var eventos = [];
+  var evSheet = ss.getSheetByName('Eventos');
+  if (evSheet) {
+    var evRows = evSheet.getDataRange().getValues();
+    for (var ev = 1; ev < evRows.length; ev++) {
+      var er = evRows[ev];
+      if (!er[0]) continue;
+      eventos.push({
+        id:         '' + (er[0] || ''),
+        titulo:     '' + (er[1] || ''),
+        tipo:       '' + (er[2] || ''),
+        fecha:      '' + (er[3] || ''),
+        horaInicio: '' + (er[4] || ''),
+        horaFin:    '' + (er[5] || ''),
+        duracion:   '' + (er[6] || ''),
+        cobro:      '' + (er[7] || ''),
+        notas:      '' + (er[8] || ''),
+        _esEvento:  true
+      });
+    }
+  }
+
+  return {ok: true, citas: citas, bloqueos: bloqueos, pacientes: pacientes, codigos: codigos, eventos: eventos};
 }
 
 // -------------------------------------------------------------
@@ -1195,6 +1220,42 @@ function generateEvalReport(d, photos) {
   } catch(e) {
     return { ok: false, error: e.message };
   }
+}
+
+// =============================================================
+//  EVENTOS (agenda interna)
+// =============================================================
+
+function getEventosSheet() {
+  var ss = getOrCreateSheet();
+  var sh = ss.getSheetByName('Eventos');
+  if (!sh) {
+    sh = ss.insertSheet('Eventos');
+    sh.appendRow(['ID','Título','Tipo','Fecha','HoraInicio','HoraFin','Duración','Cobro','Notas']);
+    sh.getRange(1,1,1,9).setFontWeight('bold').setBackground('#7c3aed').setFontColor('#ffffff');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function crearEvento(p) {
+  var d  = JSON.parse(p.data);
+  var sh = getEventosSheet();
+  var id = 'EVT-' + new Date().getTime();
+  sh.appendRow([id, d.titulo, d.tipo, d.fecha, d.horaInicio, d.horaFin, d.duracion || '', d.cobro || 'Sin cobro', d.notas || '']);
+  return {ok: true, id: id};
+}
+
+function eliminarEvento(p) {
+  var sh   = getEventosSheet();
+  var rows = sh.getDataRange().getValues();
+  for (var i = rows.length - 1; i >= 1; i--) {
+    if ('' + rows[i][0] === '' + p.id) {
+      sh.deleteRow(i + 1);
+      return {ok: true};
+    }
+  }
+  return {ok: false, error: 'Evento no encontrado'};
 }
 
 // =============================================================
