@@ -54,6 +54,9 @@ function doGet(e) {
   if (p.action === 'updatePago')     return js(doUpdatePago(p));
   if (p.action === 'getAdminKV')     return js(getAdminKV());
   if (p.action === 'setAdminKV')     return js(doSetAdminKV(p.data));
+  if (p.action === 'generarCodigo')  return js(generarCodigo(p));
+  if (p.action === 'registrarCodigo') return js(registrarCodigo(p));
+  if (p.action === 'getCodigos')     return js(getCodigos());
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -567,7 +570,27 @@ function getAdminData() {
     });
   }
 
-  return {ok: true, citas: citas, bloqueos: bloqueos, pacientes: pacientes};
+  // Hoja Codigos (referidos y bonos)
+  var codigos = [];
+  var coSheet = ss.getSheetByName('Codigos');
+  if (coSheet) {
+    var coRows = coSheet.getDataRange().getValues();
+    for (var c = 1; c < coRows.length; c++) {
+      var cr = coRows[c];
+      codigos.push({
+        codigo:      '' + (cr[0] || ''),
+        tipo:        '' + (cr[1] || ''),
+        paciente:    '' + (cr[2] || ''),
+        telefono:    '' + (cr[3] || ''),
+        referidoPor: '' + (cr[4] || ''),
+        fecha:       '' + (cr[5] || ''),
+        estado:      '' + (cr[6] || ''),
+        codigoRef:   '' + (cr[7] || '')
+      });
+    }
+  }
+
+  return {ok: true, citas: citas, bloqueos: bloqueos, pacientes: pacientes, codigos: codigos};
 }
 
 // -------------------------------------------------------------
@@ -1172,6 +1195,82 @@ function generateEvalReport(d, photos) {
   } catch(e) {
     return { ok: false, error: e.message };
   }
+}
+
+// =============================================================
+//  SISTEMA DE CÓDIGOS — REF-MES-NNN  /  BONO-MES-NNN
+// =============================================================
+
+function getCodigosSheet() {
+  var ss = getOrCreateSheet();
+  var sh = ss.getSheetByName('Codigos');
+  if (!sh) {
+    sh = ss.insertSheet('Codigos');
+    sh.appendRow(['Código','Tipo','Paciente','Teléfono','Referido por','Fecha','Estado','CódigoRef']);
+    sh.getRange(1,1,1,8).setFontWeight('bold').setBackground('#1BBFB0').setFontColor('#ffffff');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function generarCodigo(p) {
+  var tipo = p.tipo || 'REF';
+  var sh   = getCodigosSheet();
+  var MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  var mes    = MESES[new Date().getMonth()];
+  var prefix = tipo + '-' + mes + '-';
+
+  var datos  = sh.getDataRange().getValues();
+  var maxNum = 0;
+  for (var i = 1; i < datos.length; i++) {
+    var cod = '' + (datos[i][0] || '');
+    if (cod.indexOf(prefix) === 0) {
+      var num = parseInt(cod.replace(prefix, ''), 10) || 0;
+      if (num > maxNum) maxNum = num;
+    }
+  }
+
+  var codigo = prefix + ('' + (maxNum + 1)).padStart(3, '0');
+  return {ok: true, codigo: codigo};
+}
+
+function registrarCodigo(p) {
+  var data = JSON.parse(p.data);
+  // data: { codigo, tipo, paciente, telefono, referidoPor, codigoRef }
+  var sh    = getCodigosSheet();
+  var fecha = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy');
+  sh.appendRow([
+    data.codigo,
+    data.tipo,
+    data.paciente    || '',
+    ('' + (data.telefono || '')).replace(/\D/g, ''),
+    data.referidoPor || '',
+    fecha,
+    'Activo',
+    data.codigoRef   || ''
+  ]);
+  // Formatear teléfono como texto
+  sh.getRange(sh.getLastRow(), 4).setNumberFormat('@');
+  return {ok: true, codigo: data.codigo};
+}
+
+function getCodigos() {
+  var sh    = getCodigosSheet();
+  var rows  = sh.getDataRange().getValues();
+  var lista = [];
+  for (var i = 1; i < rows.length; i++) {
+    lista.push({
+      codigo:      '' + (rows[i][0] || ''),
+      tipo:        '' + (rows[i][1] || ''),
+      paciente:    '' + (rows[i][2] || ''),
+      telefono:    '' + (rows[i][3] || ''),
+      referidoPor: '' + (rows[i][4] || ''),
+      fecha:       '' + (rows[i][5] || ''),
+      estado:      '' + (rows[i][6] || ''),
+      codigoRef:   '' + (rows[i][7] || '')
+    });
+  }
+  return {ok: true, codigos: lista};
 }
 
 function buildEvalPrompt(d) {
