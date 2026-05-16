@@ -3696,6 +3696,15 @@ async function submitAdminBooking() {
     clearNuevaCita();
     await reload();
     initDashboard();
+    // Ir a la agenda filtrada por el paciente para que la cita recién creada sea visible
+    document.getElementById('fSearch').value = name;
+    document.getElementById('fDesde').value  = '';
+    document.getElementById('fHasta').value  = '';
+    document.getElementById('fStatus').selectedIndex  = 0;
+    document.getElementById('fMod').selectedIndex     = 0;
+    document.getElementById('fService').selectedIndex = 0;
+    sessionStorage.removeItem('agendaFilters');
+    showView('agenda');
   } catch(e) { toast('Error de conexión','err'); }
   finally {
     _submittingBooking = false;
