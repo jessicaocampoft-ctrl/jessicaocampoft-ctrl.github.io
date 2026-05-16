@@ -2971,7 +2971,7 @@ function renderAgenda(keepPage = false) {
         <small style="color:var(--muted)">${c.telefono||''}</small><br>
         <button class="btn btn-ghost btn-sm" style="margin-top:3px;font-size:.7rem;padding:2px 7px" onclick="verHistorial('${encodeURIComponent(c.nombre)}')">📋 Historial</button>
       </td>
-      <td style="font-size:.82rem">${c.servicio}</td>
+      <td style="font-size:.82rem">${c.servicio}${sesionBadge(c.nombre, c.servicio)}</td>
       <td><span class="chip ${c.modalidad==='Domicilio'?'chip-info':'chip-ok'}" style="font-size:.7rem">${c.modalidad}</span></td>
       <td style="font-family:var(--font-m);color:var(--primary);font-size:.82rem">${c.precio}<br>${pagoBadge(c.id)}</td>
       <td>
@@ -3398,16 +3398,42 @@ function checkDomicilioWarn() {
 }
 
 function updateSesionesInfo() {
-  const serv = document.getElementById('ncService').value;
-  const el   = document.getElementById('ncSesionesInfo');
+  const serv   = document.getElementById('ncService').value;
+  const nombre = (document.getElementById('ncName').value||'').trim().toLowerCase();
+  const el     = document.getElementById('ncSesionesInfo');
   if (!el) return;
   const n = sesionesPorPaquete[serv];
-  if (n && n > 1) {
-    el.textContent = '📦 Este paquete incluye ' + n + ' sesiones.';
+  if (n) {
+    let html = `📦 Este paquete incluye ${n} sesiones.`;
+    if (nombre && allData && allData.citas) {
+      const hechas = allData.citas.filter(c =>
+        (c.nombre||'').toLowerCase().trim() === nombre &&
+        c.servicio === serv && c.estado !== 'Cancelada'
+      ).length;
+      if (hechas > 0) {
+        const rest  = Math.max(0, n - hechas);
+        const color = rest === 0 ? '#dc2626' : rest === 1 ? '#d97706' : '#059669';
+        html += `<br><span style="color:${color};font-weight:700">📊 ${hechas} realizadas · ${rest} restantes de ${n}</span>`;
+      }
+    }
+    el.innerHTML = html;
     el.style.display = 'block';
   } else {
     el.style.display = 'none';
   }
+}
+
+function sesionBadge(nombre, servicio) {
+  const n = sesionesPorPaquete[servicio];
+  if (!n) return '';
+  const norm   = (nombre||'').toLowerCase().trim();
+  const hechas = allData.citas.filter(c =>
+    (c.nombre||'').toLowerCase().trim() === norm &&
+    c.servicio === servicio && c.estado !== 'Cancelada'
+  ).length;
+  const rest  = Math.max(0, n - hechas);
+  const color = rest === 0 ? '#dc2626' : rest === 1 ? '#d97706' : '#059669';
+  return `<br><span style="font-size:.72rem;color:${color};font-weight:700">📊 ${hechas}/${n} sesiones · ${rest} restantes</span>`;
 }
 
 // ── CONVENIO HANDLERS ──
@@ -3832,6 +3858,7 @@ function fillPatient(p) {
   document.getElementById('pacSearch').value = p.nombre + ' — ' + (p.telefono||'');
   document.getElementById('pacDropdown').style.display = 'none';
   toast('Datos de ' + p.nombre + ' cargados');
+  updateSesionesInfo();
 }
 
 // Cerrar dropdown al hacer clic fuera
