@@ -1077,32 +1077,39 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             <!-- Selector de planes (visible solo al elegir "Planes ▶") -->
             <select id="ncServicePlan" onchange="onServicePlanChange()" style="display:none;margin-top:6px">
               <option value="">Selecciona un plan</option>
-              <optgroup label="── Tu cuerpo sin dolor ──">
-                <option value="Plan Espalda Sin Dolor">Plan Espalda Sin Dolor</option>
-                <option value="Plan Alivio Profundo">Plan Alivio Profundo</option>
-                <option value="Plan Alivio en Casa">Plan Alivio en Casa</option>
-                <option value="Plan Dúo Mensual">Plan Dúo Mensual</option>
+              <optgroup label="── Combos ──">
+                <option value="Combo Diagnóstico Pro">Combo Diagnóstico Pro</option>
+                <option value="Combo Bienvenida">Combo Bienvenida (Referidos)</option>
               </optgroup>
-              <optgroup label="── Deportistas ──">
-                <option value="Plan Recarga">Plan Recarga</option>
-                <option value="Plan Avanza">Plan Avanza</option>
-                <option value="Plan Elite">Plan Elite</option>
+              <optgroup label="── Paquete Full ──">
+                <option value="Paquete Recuperación Full">Paquete Recuperación Full (3 Full)</option>
               </optgroup>
-              <optgroup label="── Readaptación funcional ──">
-                <option value="Plan Inicio">Plan Inicio</option>
-                <option value="Plan Avance">Plan Avance</option>
-                <option value="Plan Transforma">Plan Transforma</option>
+              <optgroup label="── Paquetes Readaptación ──">
+                <option value="Paquete Readaptación Inicio">Paquete Readaptación Inicio (6 ses)</option>
+                <option value="Paquete Readaptación Avance">Paquete Readaptación Avance (8 ses)</option>
+                <option value="Paquete Readaptación Total">Paquete Readaptación Total (10 ses)</option>
+              </optgroup>
+              <optgroup label="── Planes Mensuales ──">
+                <option value="Plan Activo">Plan Activo (2 Express/mes)</option>
+                <option value="Plan Pro">Plan Pro (1 Full + 2 Express/mes)</option>
+              </optgroup>
+              <optgroup label="── Servicio adicional ──">
+                <option value="Mini-sesión Familiar 20 min">Mini-sesión Familiar 20 min</option>
               </optgroup>
             </select>
             <!-- Campo oculto que guarda el valor final del servicio -->
             <input type="hidden" id="ncService">
+            <div id="ncSesionesInfo" style="display:none;margin-top:5px;padding:6px 10px;background:rgba(27,191,176,.06);border-radius:6px;font-size:.78rem;color:var(--muted)"></div>
           </div>
           <div class="field">
             <label>Modalidad *</label>
-            <select id="ncMod" onchange="toggleNcAddress(); autoFillPrice()">
+            <select id="ncMod" onchange="toggleNcAddress(); autoFillPrice(); checkDomicilioWarn()">
               <option value="Presencial">Presencial</option>
               <option value="Domicilio">Domicilio</option>
             </select>
+            <div id="ncDomicilioWarn" style="display:none;margin-top:6px;padding:7px 11px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.3);border-radius:8px;font-size:.80rem;color:#d97706">
+              ⚠️ Este servicio solo está disponible de forma presencial (en consultorio).
+            </div>
           </div>
           <div class="field">
             <label>Fecha *</label>
@@ -1120,6 +1127,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
                 style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;transition:var(--tr)"
                 onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
               <datalist id="ncPriceList">
+                <option value="$40.000">
                 <option value="$70.000">
                 <option value="$75.000">
                 <option value="$80.000">
@@ -1127,24 +1135,21 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
                 <option value="$90.000">
                 <option value="$95.000">
                 <option value="$110.000">
+                <option value="$120.000">
                 <option value="$125.000">
                 <option value="$135.000">
-                <option value="$162.000">
-                <option value="$210.000">
-                <option value="$245.000">
-                <option value="$294.000">
-                <option value="$295.000">
-                <option value="$350.000">
+                <option value="$160.000">
+                <option value="$165.000">
+                <option value="$185.000">
+                <option value="$230.000">
+                <option value="$264.000">
+                <option value="$275.000">
                 <option value="$378.000">
-                <option value="$410.000">
-                <option value="$459.000">
+                <option value="$469.000">
                 <option value="$476.000">
-                <option value="$495.000">
                 <option value="$560.000">
-                <option value="$578.000">
-                <option value="$580.000">
-                <option value="$680.000">
-                <option value="$690.000">
+                <option value="$598.000">
+                <option value="$722.000">
                 <option value="A convenir">
               </datalist>
               <button type="button" onclick="toggleDescuento()" style="white-space:nowrap;padding:8px 12px;background:var(--s2);border:1px solid var(--teal);border-radius:8px;color:var(--teal);font-family:var(--font-b);font-size:.82rem;cursor:pointer">🏷️ Descuento</button>
@@ -1165,6 +1170,49 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             </div>
           </div>
         </div>
+        <!-- ── CONVENIO CON GIMNASIO ── -->
+        <div class="field" style="margin-top:16px">
+          <label>Convenio con gimnasio</label>
+          <select id="ncConvenio" onchange="onConvenioChange()">
+            <option value="">Sin convenio (cliente directo)</option>
+            <option value="Gimnasio Valhalla">Gimnasio Valhalla</option>
+            <option value="Gimnasio King Bull">Gimnasio King Bull</option>
+            <option value="Gimnasio Titanium">Gimnasio Titanium</option>
+            <option value="Gimnasio Fighters">Gimnasio Fighters</option>
+          </select>
+          <!-- Panel editable de convenio -->
+          <div id="ncConvenioPanel" style="display:none;margin-top:10px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px">
+            <div style="margin-bottom:12px">
+              <label style="font-size:.80rem;color:var(--muted);display:block;margin-bottom:6px;font-weight:600">Descuento al cliente</label>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <input type="number" id="ncConvDescValor" min="0" placeholder="0" oninput="calcConvenio()"
+                  style="width:90px;background:var(--s1);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:6px 8px;outline:none">
+                <select id="ncConvDescTipo" onchange="calcConvenio()"
+                  style="background:var(--s1);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:6px 8px;outline:none">
+                  <option value="pct">%</option>
+                  <option value="monto">$</option>
+                </select>
+                <span style="font-size:.75rem;color:var(--muted)">sobre el precio normal</span>
+              </div>
+            </div>
+            <div>
+              <label style="font-size:.80rem;color:var(--muted);display:block;margin-bottom:6px;font-weight:600">Comisión al gimnasio</label>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <input type="number" id="ncConvComValor" min="0" placeholder="0" oninput="calcConvenio()"
+                  style="width:90px;background:var(--s1);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:6px 8px;outline:none">
+                <select id="ncConvComTipo" onchange="calcConvenio()"
+                  style="background:var(--s1);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:6px 8px;outline:none">
+                  <option value="pct">%</option>
+                  <option value="monto">$</option>
+                </select>
+                <span style="font-size:.75rem;color:var(--muted)">sobre lo que paga el cliente</span>
+              </div>
+            </div>
+          </div>
+          <!-- Resumen financiero del convenio -->
+          <div id="ncConvenioResumen" style="display:none;margin-top:10px;background:rgba(27,191,176,.05);border:1px solid rgba(27,191,176,.2);border-radius:10px;padding:14px;font-size:.84rem"></div>
+        </div>
+
         <div class="field" id="ncAddrWrap" style="display:none;margin-top:16px">
           <label>Dirección domicilio</label>
           <input type="text" id="ncAddress" placeholder="Dirección completa">
@@ -1597,6 +1645,21 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Ingreso total generado por franja horaria — saber a qué hora cobras más</div>
             <div id="metricHorasRentables"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- Comisiones por Convenio -->
+      <div style="margin-top:20px">
+        <div class="fin-section-title">🏋️ Comisiones por Convenio</div>
+        <div class="card">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+            <label style="font-size:.85rem;color:var(--muted)">Filtrar por mes:</label>
+            <input type="month" id="convenioMesFiltro"
+              style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:6px 10px;outline:none"
+              oninput="renderConveniosReport()">
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('convenioMesFiltro').value='';renderConveniosReport()">Todos</button>
+          </div>
+          <div id="conveniosReportResult"></div>
         </div>
       </div>
 
@@ -3205,6 +3268,8 @@ function onServiceMainChange() {
     planSel.style.display = 'block';
     planSel.selectedIndex = 0;
     document.getElementById('ncService').value = '';
+    updateSesionesInfo();
+    checkDomicilioWarn();
   } else {
     planSel.style.display = 'none';
     document.getElementById('ncService').value = val;
@@ -3218,6 +3283,215 @@ function onServicePlanChange() {
   autoFillPrice();
 }
 
+// ── DATOS DE CONVENIOS Y COSTOS ──
+const convenios = {
+  'Gimnasio Valhalla':  { descTipo:'pct', descValor:0, comTipo:'pct', comValor:0 },
+  'Gimnasio King Bull': { descTipo:'pct', descValor:0, comTipo:'pct', comValor:0 },
+  'Gimnasio Titanium':  { descTipo:'pct', descValor:0, comTipo:'pct', comValor:0 },
+  'Gimnasio Fighters':  { descTipo:'pct', descValor:0, comTipo:'pct', comValor:0 },
+};
+
+const costosReales = {
+  'Descarga Muscular — Cuello y Espalda': 31815,
+  'Descarga Muscular — Piernas':          31815,
+  'Descarga Muscular Completa':           54021,
+  'Valoración Funcional':                 23000,
+  'Readaptación Funcional':               28000,
+  'Combo Diagnóstico Pro':                93000,
+  'Combo Bienvenida':                     54815,
+  'Mini-sesión Familiar 20 min':          14500,
+  'Paquete Recuperación Full':            162063,
+  'Paquete Readaptación Inicio':          168000,
+  'Paquete Readaptación Avance':          224000,
+  'Paquete Readaptación Total':           280000,
+  'Plan Activo':                          63630,
+  'Plan Pro':                             117651,
+};
+
+const sesionesPorPaquete = {
+  'Combo Diagnóstico Pro':       2,
+  'Combo Bienvenida':            2,
+  'Mini-sesión Familiar 20 min': 1,
+  'Paquete Recuperación Full':   3,
+  'Paquete Readaptación Inicio': 6,
+  'Paquete Readaptación Avance': 8,
+  'Paquete Readaptación Total':  10,
+  'Plan Activo':                 2,
+  'Plan Pro':                    3,
+};
+
+// ── SERVICIOS SOLO PRESENCIAL ──
+const soloPresencial = ['Combo Bienvenida', 'Paquete Recuperación Full'];
+
+function checkDomicilioWarn() {
+  const serv = document.getElementById('ncService').value;
+  const mod  = document.getElementById('ncMod').value;
+  const warn = document.getElementById('ncDomicilioWarn');
+  if (warn) warn.style.display = (mod === 'Domicilio' && soloPresencial.includes(serv)) ? 'block' : 'none';
+}
+
+function updateSesionesInfo() {
+  const serv = document.getElementById('ncService').value;
+  const el   = document.getElementById('ncSesionesInfo');
+  if (!el) return;
+  const n = sesionesPorPaquete[serv];
+  if (n && n > 1) {
+    el.textContent = '📦 Este paquete incluye ' + n + ' sesiones.';
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// ── CONVENIO HANDLERS ──
+function parsePrecioNum(str) {
+  if (!str) return 0;
+  return parseInt(str.replace(/[^0-9]/g, '')) || 0;
+}
+
+function fmtPeso(n) {
+  return '$' + Math.round(n).toLocaleString('es-CO');
+}
+
+function onConvenioChange() {
+  const gym   = document.getElementById('ncConvenio').value;
+  const panel = document.getElementById('ncConvenioPanel');
+  const resumen = document.getElementById('ncConvenioResumen');
+  if (!gym) {
+    panel.style.display   = 'none';
+    resumen.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+  const cfg = convenios[gym] || { descTipo:'pct', descValor:0, comTipo:'pct', comValor:0 };
+  document.getElementById('ncConvDescValor').value = cfg.descValor || '';
+  document.getElementById('ncConvDescTipo').value  = cfg.descTipo  || 'pct';
+  document.getElementById('ncConvComValor').value  = cfg.comValor  || '';
+  document.getElementById('ncConvComTipo').value   = cfg.comTipo   || 'pct';
+  calcConvenio();
+}
+
+function calcConvenio() {
+  const gym = document.getElementById('ncConvenio').value;
+  if (!gym) return;
+
+  const descValor = parseFloat(document.getElementById('ncConvDescValor').value) || 0;
+  const descTipo  = document.getElementById('ncConvDescTipo').value;
+  const comValor  = parseFloat(document.getElementById('ncConvComValor').value)  || 0;
+  const comTipo   = document.getElementById('ncConvComTipo').value;
+
+  if (convenios[gym]) {
+    convenios[gym].descValor = descValor;
+    convenios[gym].descTipo  = descTipo;
+    convenios[gym].comValor  = comValor;
+    convenios[gym].comTipo   = comTipo;
+  }
+
+  const serv        = document.getElementById('ncService').value;
+  const precioStr   = document.getElementById('ncPrice').value;
+  const precioNormal = parsePrecioNum(precioStr);
+  const resumen     = document.getElementById('ncConvenioResumen');
+
+  if (!precioNormal) { resumen.style.display = 'none'; return; }
+
+  const descuento  = descTipo === 'pct' ? precioNormal * descValor / 100 : descValor;
+  const clientePaga = precioNormal - descuento;
+  const comision   = comTipo === 'pct' ? clientePaga * comValor / 100 : comValor;
+  const ingresoReal = clientePaga - comision;
+  const costoReal   = costosReales[serv] || 0;
+  const utilidad    = ingresoReal - costoReal;
+  const margen      = ingresoReal > 0 ? Math.round((utilidad / ingresoReal) * 100) : 0;
+
+  let margenColor = '#16a34a';
+  if (margen < 35) margenColor = '#dc2626';
+  else if (margen < 45) margenColor = '#d97706';
+
+  let alertaHtml = '';
+  if (utilidad < 0) {
+    alertaHtml = '<div style="margin-top:8px;color:#dc2626;font-weight:600;font-size:.80rem">⚠️ PÉRDIDA: esta cita te genera pérdida.</div>';
+  } else if (margen < 35) {
+    alertaHtml = '<div style="margin-top:8px;color:#dc2626;font-size:.80rem">⚠️ Margen bajo. Revisa el descuento o la comisión antes de confirmar.</div>';
+  }
+
+  const row = (label, val, bold, color) =>
+    `<div style="display:flex;justify-content:space-between;padding:3px 0;${bold?'font-weight:600;':''}${color?'color:'+color+';':''}">
+      <span style="color:var(--muted)">${label}</span><span>${val}</span></div>`;
+
+  resumen.innerHTML =
+    row('Precio normal:', fmtPeso(precioNormal)) +
+    row('Descuento al cliente:', descuento > 0 ? '−' + fmtPeso(descuento) : 'Sin descuento al cliente') +
+    row('Cliente paga:', fmtPeso(clientePaga), true) +
+    '<div style="border-top:1px solid var(--border);margin:6px 0"></div>' +
+    row('Comisión ' + gym + ':', comision > 0 ? fmtPeso(comision) : 'Sin comisión a este gimnasio') +
+    (costoReal ? row('Costo real del servicio:', fmtPeso(costoReal)) : '') +
+    row('Tu ingreso real:', fmtPeso(ingresoReal), true) +
+    (costoReal ? row('Tu utilidad:', fmtPeso(utilidad), false, utilidad < 0 ? '#dc2626' : '') : '') +
+    (costoReal ? row('Tu margen:', margen + '%', true, margenColor) : '') +
+    alertaHtml;
+  resumen.style.display = 'block';
+}
+
+// ── REPORTE CONVENIOS (Finanzas) ──
+function renderConveniosReport() {
+  const filtroMes = document.getElementById('convenioMesFiltro').value; // 'YYYY-MM' o vacío
+  const el = document.getElementById('conveniosReportResult');
+  if (!el) return;
+
+  const citas = (allData.citas || []).filter(c => {
+    if (!c.gimnasio) return false;
+    if (filtroMes && c.date && !c.date.startsWith(filtroMes)) return false;
+    return true;
+  });
+
+  if (!citas.length) {
+    el.innerHTML = '<p style="font-size:.85rem;color:var(--muted);text-align:center;padding:20px 0">No hay citas con convenio' + (filtroMes ? ' en este mes' : '') + '.</p>';
+    return;
+  }
+
+  const porGym = {};
+  citas.forEach(c => {
+    const g = c.gimnasio;
+    if (!porGym[g]) porGym[g] = { citas:0, facturado:0, comisiones:0 };
+    porGym[g].citas++;
+    porGym[g].facturado   += parsePrecioNum(c.ingresoReal || c.priceP || '0') || 0;
+    porGym[g].comisiones  += parsePrecioNum(c.comisionGym || '0') || 0;
+  });
+
+  let html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.84rem">' +
+    '<thead><tr style="border-bottom:2px solid var(--border)">' +
+    '<th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600">Gimnasio</th>' +
+    '<th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600">Citas</th>' +
+    '<th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600">Facturado</th>' +
+    '<th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600">Comisión a pagar</th>' +
+    '<th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600">Ingreso neto</th>' +
+    '</tr></thead><tbody>';
+
+  let totCitas = 0, totFact = 0, totCom = 0;
+  Object.entries(porGym).forEach(([gym, d]) => {
+    const neto = d.facturado - d.comisiones;
+    totCitas += d.citas; totFact += d.facturado; totCom += d.comisiones;
+    html += `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:9px 10px;font-weight:600">${gym}</td>
+      <td style="padding:9px 10px;text-align:right">${d.citas}</td>
+      <td style="padding:9px 10px;text-align:right">${fmtPeso(d.facturado)}</td>
+      <td style="padding:9px 10px;text-align:right;color:#d97706;font-weight:600">${fmtPeso(d.comisiones)}</td>
+      <td style="padding:9px 10px;text-align:right;color:var(--primary);font-weight:600">${fmtPeso(neto)}</td>
+    </tr>`;
+  });
+
+  const netoTotal = totFact - totCom;
+  html += `<tr style="border-top:2px solid var(--border);font-weight:700">
+    <td style="padding:9px 10px">TOTAL</td>
+    <td style="padding:9px 10px;text-align:right">${totCitas}</td>
+    <td style="padding:9px 10px;text-align:right">${fmtPeso(totFact)}</td>
+    <td style="padding:9px 10px;text-align:right;color:#d97706">${fmtPeso(totCom)}</td>
+    <td style="padding:9px 10px;text-align:right;color:var(--primary)">${fmtPeso(netoTotal)}</td>
+  </tr>`;
+
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
 function autoFillPrice() {
   const serv = document.getElementById('ncService').value;
   const mod  = document.getElementById('ncMod').value;
@@ -3229,20 +3503,22 @@ function autoFillPrice() {
     'Descarga Muscular Completa':           { Presencial:'$110.000', Domicilio:'$125.000' },
     'Valoración Funcional':                 { Presencial:'$80.000',  Domicilio:'$95.000' },
     'Readaptación Funcional':               { Presencial:'$70.000',  Domicilio:'$85.000' },
-    'Plan Espalda Sin Dolor':               { Presencial:'$135.000', Domicilio:'$162.000' },
-    'Plan Alivio Profundo':                 { Presencial:'$350.000', Domicilio:'$410.000' },
-    'Plan Alivio en Casa':                  { Presencial:'$295.000', Domicilio:'$295.000' },
-    'Plan Dúo Mensual':                     { Presencial:'$210.000', Domicilio:'$210.000' },
-    'Plan Recarga':                         { Presencial:'$245.000', Domicilio:'$294.000' },
-    'Plan Avanza':                          { Presencial:'$495.000', Domicilio:'$580.000' },
-    'Plan Elite':                           { Presencial:'$580.000', Domicilio:'$690.000' },
-    'Plan Inicio':                          { Presencial:'$378.000', Domicilio:'$459.000' },
-    'Plan Avance':                          { Presencial:'$476.000', Domicilio:'$578.000' },
-    'Plan Transforma':                      { Presencial:'$560.000', Domicilio:'$680.000' },
+    'Combo Diagnóstico Pro':                { Presencial:'$160.000', Domicilio:'$185.000' },
+    'Combo Bienvenida':                     { Presencial:'$120.000', Domicilio:'$120.000' },
+    'Mini-sesión Familiar 20 min':          { Presencial:'$40.000',  Domicilio:'$40.000' },
+    'Paquete Recuperación Full':            { Presencial:'$264.000', Domicilio:'$264.000' },
+    'Paquete Readaptación Inicio':          { Presencial:'$378.000', Domicilio:'$469.000' },
+    'Paquete Readaptación Avance':          { Presencial:'$476.000', Domicilio:'$598.000' },
+    'Paquete Readaptación Total':           { Presencial:'$560.000', Domicilio:'$722.000' },
+    'Plan Activo':                          { Presencial:'$135.000', Domicilio:'$165.000' },
+    'Plan Pro':                             { Presencial:'$230.000', Domicilio:'$275.000' },
   };
 
   const precio = precios[serv] ? (precios[serv][mod] || precios[serv]['Presencial']) : '';
   if (precio) document.getElementById('ncPrice').value = precio;
+  checkDomicilioWarn();
+  updateSesionesInfo();
+  calcConvenio();
 }
 
 // ══════════════════════════════════════
@@ -3346,6 +3622,31 @@ async function submitAdminBooking() {
   const btn = document.getElementById('ncSubmitBtn');
   btn.textContent = 'Creando...'; btn.disabled = true;
 
+  // Calcular campos de convenio para guardar
+  const gymSel = document.getElementById('ncConvenio').value;
+  let gimnasioData = {};
+  if (gymSel) {
+    const descValor = parseFloat(document.getElementById('ncConvDescValor').value) || 0;
+    const descTipo  = document.getElementById('ncConvDescTipo').value;
+    const comValor  = parseFloat(document.getElementById('ncConvComValor').value)  || 0;
+    const comTipo   = document.getElementById('ncConvComTipo').value;
+    const precioNormal = parsePrecioNum(document.getElementById('ncPrice').value);
+    const descuento  = descTipo === 'pct' ? precioNormal * descValor / 100 : descValor;
+    const clientePaga = precioNormal - descuento;
+    const comision   = comTipo === 'pct' ? clientePaga * comValor / 100 : comValor;
+    const ingresoReal = clientePaga - comision;
+    const costoReal   = costosReales[serv] || 0;
+    const utilidad    = ingresoReal - costoReal;
+    const margen      = ingresoReal > 0 ? Math.round((utilidad / ingresoReal) * 100) : 0;
+    gimnasioData = {
+      gimnasio:         gymSel,
+      descuentoCliente: fmtPeso(descuento),
+      comisionGym:      fmtPeso(comision),
+      ingresoReal:      fmtPeso(ingresoReal),
+      margenPct:        margen + '%',
+    };
+  }
+
   const data = {
     name, phone,
     email: document.getElementById('ncEmail').value.trim(),
@@ -3354,7 +3655,8 @@ async function submitAdminBooking() {
     priceD: getPrecioFinal() || 'A convenir',
     address: document.getElementById('ncAddress').value.trim(),
     notes:   document.getElementById('ncNotes').value.trim(),
-    notaAdmin: (() => { const p = (document.getElementById('ncParaQuien').value||'').trim(); return p ? '[PARA: ' + p + ']' : ''; })()
+    notaAdmin: (() => { const p = (document.getElementById('ncParaQuien').value||'').trim(); return p ? '[PARA: ' + p + ']' : ''; })(),
+    ...gimnasioData
   };
 
   const isRecurring   = document.getElementById('ncRecurring').checked;
@@ -5620,6 +5922,14 @@ function renderMetricas() {
     fechaInp.value = today();
     setModoIngresos('semana');
   }
+
+  // Inicializar filtro de convenios con el mes actual
+  const convMesFiltro = document.getElementById('convenioMesFiltro');
+  if (convMesFiltro && !convMesFiltro.value) {
+    const nm = now.getMonth()+1;
+    convMesFiltro.value = y + '-' + String(nm).padStart(2,'0');
+  }
+  renderConveniosReport();
 }
 
 // ── Alerta semana floja ──
