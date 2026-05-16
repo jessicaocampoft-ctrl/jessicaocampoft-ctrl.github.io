@@ -209,6 +209,16 @@ tr:hover td{background:rgba(126,221,208,.03)}
 .field textarea{resize:vertical;min-height:80px}
 .field input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.5)}
 
+/* ── EVENTO CHIP ── */
+.chip-evento{background:rgba(139,92,246,.12);color:#7c3aed;border:1px solid rgba(139,92,246,.3)}
+/* ── NUEVA CITA TOGGLE ── */
+.nc-toggle{display:flex;gap:0;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:0}
+.nc-toggle-btn{flex:1;padding:9px 16px;border:none;border-radius:7px;background:transparent;font-family:var(--font-b);font-size:.88rem;font-weight:500;color:var(--muted);cursor:pointer;transition:var(--tr)}
+.nc-toggle-btn.active{background:var(--s1);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+/* ── ROW EVENTO AGENDA ── */
+tr.evt-row td{background:rgba(139,92,246,.03)}
+tr.evt-row:hover td{background:rgba(139,92,246,.07)}
+
 /* ── TIMELINE TODAY ── */
 .timeline{display:flex;flex-direction:column;gap:10px}
 .tl-item{
@@ -936,6 +946,65 @@ tr:hover td{background:rgba(126,221,208,.03)}
       </div>
       <div class="card nc-form" style="max-width:640px">
 
+        <!-- ── TOGGLE CITA / EVENTO ── -->
+        <div class="nc-toggle" style="margin-bottom:20px">
+          <button class="nc-toggle-btn active" id="toggleCita" onclick="switchNuevaMode('cita')">🗓️ Cita de paciente</button>
+          <button class="nc-toggle-btn" id="toggleEvento" onclick="switchNuevaMode('evento')">⚡ Evento</button>
+        </div>
+
+        <!-- ══ FORMULARIO EVENTO ══ -->
+        <div id="formEvento" style="display:none">
+          <div class="form-grid">
+            <div class="field" style="grid-column:1/-1">
+              <label>Título del evento *</label>
+              <input type="text" id="evTitulo" placeholder="Ej: Taller de movilidad, Clase grupal CrossFit...">
+            </div>
+            <div class="field">
+              <label>Tipo de evento</label>
+              <select id="evTipo">
+                <option value="Clase grupal">Clase grupal</option>
+                <option value="Taller">Taller</option>
+                <option value="Jornada">Jornada</option>
+                <option value="Capacitación">Capacitación</option>
+                <option value="Evento externo">Evento externo</option>
+                <option value="Reunión">Reunión</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Fecha *</label>
+              <input type="date" id="evFecha">
+            </div>
+            <div class="field">
+              <label>Hora inicio *</label>
+              <input type="time" id="evHoraInicio" oninput="calcDuracion()">
+            </div>
+            <div class="field">
+              <label>Hora fin *</label>
+              <input type="time" id="evHoraFin" oninput="calcDuracion()">
+              <span id="evDuracionLabel" style="font-size:.75rem;color:var(--primary);margin-top:4px;display:none"></span>
+            </div>
+            <div class="field">
+              <label>Cobro / Precio</label>
+              <input type="text" id="evCobro" placeholder="Ej: $50.000, Gratis, A convenir">
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <label>Descripción / Notas</label>
+              <textarea id="evNotas" rows="2" placeholder="Detalles del evento, lugar, participantes..."></textarea>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:10px">
+            <button class="btn btn-teal" onclick="submitEvento()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 8v4l3 3"/></svg>
+              Crear evento
+            </button>
+            <button class="btn btn-ghost" onclick="clearEvento()">Limpiar</button>
+          </div>
+        </div>
+
+        <!-- ══ FORMULARIO CITA (existente) ══ -->
+        <div id="formCita">
+
         <!-- ── COMANDO DE VOZ ── -->
         <button type="button" id="voiceBtn" onclick="toggleVoicePanel()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(27,191,176,.08);border:1.5px solid var(--primary);border-radius:10px;color:var(--primary);font-family:var(--font-b);font-size:.95rem;font-weight:600;padding:13px;margin-bottom:0;cursor:pointer">
           🎙️ Dictar cita por voz
@@ -1127,6 +1196,8 @@ tr:hover td{background:rgba(126,221,208,.03)}
           </button>
           <button class="btn btn-ghost" onclick="clearNuevaCita()">Limpiar</button>
         </div>
+
+        </div><!-- /formCita -->
       </div>
     </section>
 
@@ -2635,7 +2706,8 @@ function renderAgenda(keepPage = false) {
     {search, status: fSt, mod: fMod, service: fService, desde: fDesde, hasta: fHasta}
   ));
 
-  let citas = [...allData.citas].sort((a,b) => (normDate(b.fecha)+b.hora).localeCompare(normDate(a.fecha)+a.hora));
+  // Citas normales
+  let citas = [...allData.citas].map(c => ({...c, _esEvento:false}));
 
   if (search)                  citas = citas.filter(c => (c.nombre+c.servicio+c.email+c.telefono).toLowerCase().includes(search));
   if (fSt)                     citas = citas.filter(c => c.estado === fSt);
@@ -2644,6 +2716,23 @@ function renderAgenda(keepPage = false) {
   else if (fService)           citas = citas.filter(c => c.servicio === fService);
   if (fDesde)                  citas = citas.filter(c => normDate(c.fecha) >= fDesde);
   if (fHasta)                  citas = citas.filter(c => normDate(c.fecha) <= fHasta);
+
+  // Mezclar eventos (solo si no hay filtros de estado/modalidad/servicio)
+  if (!fSt && !fMod && !fService) {
+    let evts = getEventos();
+    if (search) evts = evts.filter(e => (e.titulo+e.tipo+e.notas).toLowerCase().includes(search));
+    if (fDesde) evts = evts.filter(e => e.fecha >= fDesde);
+    if (fHasta) evts = evts.filter(e => e.fecha <= fHasta);
+    // Normalizar eventos para que encajen en la misma lista
+    evts = evts.map(e => ({
+      ...e,
+      nombre: e.titulo, hora: e.horaInicio, fecha: e.fecha,
+      servicio: e.tipo, precio: e.cobro, modalidad:'—', estado:'—', telefono:'', email:''
+    }));
+    citas = [...citas, ...evts];
+  }
+
+  citas.sort((a,b) => (normDate(b.fecha)+b.hora).localeCompare(normDate(a.fecha)+a.hora));
 
   const total      = citas.length;
   const totalPages = Math.max(1, Math.ceil(total / AGENDA_PER_PAGE));
@@ -2660,8 +2749,25 @@ function renderAgenda(keepPage = false) {
     return;
   }
 
-  tbody.innerHTML = pageCitas.map(c => `
-    <tr>
+  tbody.innerHTML = pageCitas.map(c => {
+    if (c._esEvento) {
+      const durStr = c.duracion ? ` · ${c.duracion}` : '';
+      return `<tr class="evt-row">
+        <td><span style="font-family:var(--font-m);font-size:.8rem">${fmtDate(c.fecha)}</span><br><small style="color:var(--muted)">${c.horaInicio}–${c.horaFin}</small></td>
+        <td>
+          <span class="chip chip-evento" style="font-size:.7rem;margin-bottom:4px;display:inline-block">⚡ Evento</span><br>
+          <strong>${c.titulo}</strong>${c.notas ? `<br><small style="color:var(--muted)">${c.notas}</small>` : ''}
+        </td>
+        <td style="font-size:.82rem">${c.tipo}${durStr}</td>
+        <td>—</td>
+        <td style="font-family:var(--font-m);color:#7c3aed;font-size:.82rem">${c.cobro}</td>
+        <td>—</td>
+        <td>
+          <button class="btn btn-err btn-sm" onclick="eliminarEvento('${c.id}')" title="Eliminar evento">🗑️ Eliminar</button>
+        </td>
+      </tr>`;
+    }
+    return `<tr>
       <td><span style="font-family:var(--font-m);font-size:.8rem">${fmtDate(c.fecha)}</span><br><small style="color:var(--muted)">${c.hora}</small></td>
       <td>
         <strong>${c.nombre}</strong><br>
@@ -2691,15 +2797,18 @@ function renderAgenda(keepPage = false) {
           ${c.estado!=='Cancelada'?`<button class="btn btn-danger btn-sm" onclick="cancelarCita('${c.id}','${c.nombre.replace(/'/g,"\\'")}')" title="Cancelar">🚫</button>`:''}
         </div>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   // Paginación
   if (pag) {
+    const nEvts = pageCitas.filter(c=>c._esEvento).length;
+    const totalLabel = nEvts ? `${total} registros (${nEvts} evento(s))` : `${total} cita(s)`;
     if (total <= AGENDA_PER_PAGE) {
-      pag.innerHTML = `<span>${total} cita(s)</span>`;
+      pag.innerHTML = `<span>${totalLabel}</span>`;
     } else {
       pag.innerHTML = `
-        <span>${start+1}–${Math.min(start+AGENDA_PER_PAGE,total)} de ${total} citas</span>
+        <span>${start+1}–${Math.min(start+AGENDA_PER_PAGE,total)} de ${total}</span>
         <div style="display:flex;align-items:center;gap:8px">
           <button class="btn btn-ghost btn-sm" ${_agendaPage===0?'disabled':''} onclick="_agendaPage--;renderAgenda(true)">← Ant.</button>
           <span style="font-family:var(--font-m);font-size:.78rem">Pág. ${_agendaPage+1} / ${totalPages}</span>
@@ -3067,6 +3176,87 @@ function autoFillPrice() {
 
   const precio = precios[serv] ? (precios[serv][mod] || precios[serv]['Presencial']) : '';
   if (precio) document.getElementById('ncPrice').value = precio;
+}
+
+// ══════════════════════════════════════
+// EVENTOS (localStorage)
+// ══════════════════════════════════════
+function switchNuevaMode(mode) {
+  const isEvento = mode === 'evento';
+  document.getElementById('formCita').style.display   = isEvento ? 'none' : 'block';
+  document.getElementById('formEvento').style.display = isEvento ? 'block' : 'none';
+  document.getElementById('toggleCita').classList.toggle('active', !isEvento);
+  document.getElementById('toggleEvento').classList.toggle('active', isEvento);
+}
+
+function calcDuracion() {
+  const hi = document.getElementById('evHoraInicio').value;
+  const hf = document.getElementById('evHoraFin').value;
+  const lbl = document.getElementById('evDuracionLabel');
+  if (!hi || !hf) { lbl.style.display='none'; return; }
+  const [hh,mm] = hi.split(':').map(Number);
+  const [hh2,mm2] = hf.split(':').map(Number);
+  const mins = (hh2*60+mm2) - (hh*60+mm);
+  if (mins <= 0) { lbl.style.display='none'; return; }
+  const h = Math.floor(mins/60), m = mins%60;
+  lbl.textContent = '⏱ ' + (h ? h + 'h ' : '') + (m ? m + 'min' : '');
+  lbl.style.display = 'block';
+}
+
+function getEventos() {
+  try { return JSON.parse(localStorage.getItem('adminEventos') || '[]'); } catch(e) { return []; }
+}
+function saveEventos(evts) {
+  localStorage.setItem('adminEventos', JSON.stringify(evts));
+}
+
+function submitEvento() {
+  const titulo = document.getElementById('evTitulo').value.trim();
+  const fecha  = document.getElementById('evFecha').value;
+  const hi     = document.getElementById('evHoraInicio').value;
+  const hf     = document.getElementById('evHoraFin').value;
+  if (!titulo || !fecha || !hi || !hf) { toast('Completa los campos obligatorios (*)', 'err'); return; }
+  const [hh,mm]   = hi.split(':').map(Number);
+  const [hh2,mm2] = hf.split(':').map(Number);
+  const mins = (hh2*60+mm2) - (hh*60+mm);
+  let duracion = '';
+  if (mins > 0) { const h=Math.floor(mins/60),m=mins%60; duracion=(h?h+'h ':'')+(m?m+'min':''); }
+
+  const evento = {
+    id: 'evt_' + Date.now(),
+    titulo,
+    tipo:     document.getElementById('evTipo').value,
+    fecha,
+    horaInicio: hi,
+    horaFin:    hf,
+    duracion,
+    cobro:  document.getElementById('evCobro').value.trim() || 'Sin cobro',
+    notas:  document.getElementById('evNotas').value.trim(),
+    creado: new Date().toISOString(),
+    _esEvento: true
+  };
+
+  const evts = getEventos();
+  evts.push(evento);
+  saveEventos(evts);
+  clearEvento();
+  toast('Evento creado ✓');
+  showView('agenda');
+}
+
+function clearEvento() {
+  ['evTitulo','evFecha','evHoraInicio','evHoraFin','evCobro','evNotas'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('evTipo').selectedIndex = 0;
+  document.getElementById('evDuracionLabel').style.display = 'none';
+}
+
+function eliminarEvento(id) {
+  if (!confirm('¿Eliminar este evento?')) return;
+  saveEventos(getEventos().filter(e => e.id !== id));
+  renderAgenda();
+  toast('Evento eliminado');
 }
 
 async function submitAdminBooking() {
