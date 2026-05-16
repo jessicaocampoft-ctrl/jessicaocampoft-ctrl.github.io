@@ -325,7 +325,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
             <img id="prev-frontal" src="" alt="" style="display:none">
             <button class="photo-remove" onclick="removePhoto(event,'frontal')">✕</button>
           </div>
-          <input class="photo-input" type="file" id="inp-frontal" accept="image/*" capture="environment" onchange="handlePhoto('frontal',this)">
+          <input class="photo-input" type="file" id="inp-frontal" accept="image/*" onchange="handlePhoto('frontal',this)">
         </div>
         <div>
           <div class="photo-box" id="box-lateralD" onclick="document.getElementById('inp-lateralD').click()">
@@ -333,7 +333,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
             <img id="prev-lateralD" src="" alt="" style="display:none">
             <button class="photo-remove" onclick="removePhoto(event,'lateralD')">✕</button>
           </div>
-          <input class="photo-input" type="file" id="inp-lateralD" accept="image/*" capture="environment" onchange="handlePhoto('lateralD',this)">
+          <input class="photo-input" type="file" id="inp-lateralD" accept="image/*" onchange="handlePhoto('lateralD',this)">
         </div>
         <div>
           <div class="photo-box" id="box-lateralI" onclick="document.getElementById('inp-lateralI').click()">
@@ -341,7 +341,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
             <img id="prev-lateralI" src="" alt="" style="display:none">
             <button class="photo-remove" onclick="removePhoto(event,'lateralI')">✕</button>
           </div>
-          <input class="photo-input" type="file" id="inp-lateralI" accept="image/*" capture="environment" onchange="handlePhoto('lateralI',this)">
+          <input class="photo-input" type="file" id="inp-lateralI" accept="image/*" onchange="handlePhoto('lateralI',this)">
         </div>
         <div>
           <div class="photo-box" id="box-posterior" onclick="document.getElementById('inp-posterior').click()">
@@ -349,10 +349,10 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
             <img id="prev-posterior" src="" alt="" style="display:none">
             <button class="photo-remove" onclick="removePhoto(event,'posterior')">✕</button>
           </div>
-          <input class="photo-input" type="file" id="inp-posterior" accept="image/*" capture="environment" onchange="handlePhoto('posterior',this)">
+          <input class="photo-input" type="file" id="inp-posterior" accept="image/*" onchange="handlePhoto('posterior',this)">
         </div>
       </div>
-      <p class="photo-note">💡 Atleta en ropa ajustada, de pie relajado — frente · lateral derecha · lateral izquierda · espalda</p>
+      <p class="photo-note">💡 Atleta en ropa ajustada, de pie relajado — frente · lateral derecha · lateral izquierda · espalda<br>📂 Toca cada cuadro para elegir desde la <strong>galería</strong> o tomar foto en el momento.</p>
     </div>
     <div class="step-controls">
       <button class="btn btn-ghost" onclick="goStep(1)">← Atrás</button>
@@ -435,7 +435,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-ds" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'ds')">✕</button>
               </div>
-              <input type="file" id="minp-ds" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('ds',this)">
+              <input type="file" id="minp-ds" accept="image/*" style="display:none" onchange="handleTestPhoto('ds',this)">
             </div>
           </div>
           <div class="field" style="margin-top:10px">
@@ -470,7 +470,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-oh" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'oh')">✕</button>
               </div>
-              <input type="file" id="minp-oh" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('oh',this)">
+              <input type="file" id="minp-oh" accept="image/*" style="display:none" onchange="handleTestPhoto('oh',this)">
             </div>
           </div>
           <div class="field" style="margin-top:10px">
@@ -502,7 +502,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-slsd" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'slsd')">✕</button>
               </div>
-              <input type="file" id="minp-slsd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('slsd',this)">
+              <input type="file" id="minp-slsd" accept="image/*" style="display:none" onchange="handleTestPhoto('slsd',this)">
             </div>
             <div>
               <div class="bilateral-label">Izquierdo (I)</div>
@@ -517,7 +517,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-slsi" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'slsi')">✕</button>
               </div>
-              <input type="file" id="minp-slsi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('slsi',this)">
+              <input type="file" id="minp-slsi" accept="image/*" style="display:none" onchange="handleTestPhoto('slsi',this)">
             </div>
           </div>
           <div class="field" style="margin-top:10px">
@@ -549,7 +549,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-shd" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'shd')">✕</button>
               </div>
-              <input type="file" id="minp-shd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('shd',this)">
+              <input type="file" id="minp-shd" accept="image/*" style="display:none" onchange="handleTestPhoto('shd',this)">
             </div>
             <div>
               <div class="bilateral-label">Mano I arriba</div>
@@ -564,7 +564,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-shi" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'shi')">✕</button>
               </div>
-              <input type="file" id="minp-shi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('shi',this)">
+              <input type="file" id="minp-shi" accept="image/*" style="display:none" onchange="handleTestPhoto('shi',this)">
             </div>
           </div>
           <div class="field" style="margin-top:10px">
@@ -597,7 +597,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-trdd" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'trdd')">✕</button>
               </div>
-              <input type="file" id="minp-trdd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('trdd',this)">
+              <input type="file" id="minp-trdd" accept="image/*" style="display:none" onchange="handleTestPhoto('trdd',this)">
             </div>
             <div>
               <div class="bilateral-label">Apoyo I (evalúa glúteo I)</div>
@@ -610,7 +610,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-trdi" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'trdi')">✕</button>
               </div>
-              <input type="file" id="minp-trdi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('trdi',this)">
+              <input type="file" id="minp-trdi" accept="image/*" style="display:none" onchange="handleTestPhoto('trdi',this)">
             </div>
           </div>
           <div class="field" style="margin-top:10px">
@@ -647,7 +647,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-sbd" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'sbd')">✕</button>
               </div>
-              <input type="file" id="minp-sbd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('sbd',this)">
+              <input type="file" id="minp-sbd" accept="image/*" style="display:none" onchange="handleTestPhoto('sbd',this)">
             </div>
             <div>
               <div class="bilateral-label">Pierna I</div>
@@ -667,7 +667,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-sbi" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'sbi')">✕</button>
               </div>
-              <input type="file" id="minp-sbi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('sbi',this)">
+              <input type="file" id="minp-sbi" accept="image/*" style="display:none" onchange="handleTestPhoto('sbi',this)">
             </div>
           </div>
           <div class="field" style="margin-top:10px">
@@ -701,7 +701,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-bdd" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'bdd')">✕</button>
               </div>
-              <input type="file" id="minp-bdd" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('bdd',this)">
+              <input type="file" id="minp-bdd" accept="image/*" style="display:none" onchange="handleTestPhoto('bdd',this)">
             </div>
             <div>
               <div class="bilateral-label">Lado I (brazo I / pierna D)</div>
@@ -716,7 +716,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-h
                 <img id="mimg-bdi" src="" alt="" style="display:none">
                 <button class="trm" onclick="removeTestPhoto(event,'bdi')">✕</button>
               </div>
-              <input type="file" id="minp-bdi" accept="image/*" capture="environment" style="display:none" onchange="handleTestPhoto('bdi',this)">
+              <input type="file" id="minp-bdi" accept="image/*" style="display:none" onchange="handleTestPhoto('bdi',this)">
             </div>
           </div>
           <div class="field" style="margin-top:10px">
