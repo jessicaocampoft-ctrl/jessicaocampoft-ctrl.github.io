@@ -3678,6 +3678,14 @@ async function submitEvento() {
     toast('Evento creado ✓');
     clearEvento();
     await reload();
+    // Limpiar filtros para que el evento sea visible (eventos se ocultan si hay filtros activos)
+    document.getElementById('fSearch').value = '';
+    document.getElementById('fDesde').value  = '';
+    document.getElementById('fHasta').value  = '';
+    document.getElementById('fStatus').selectedIndex  = 0;
+    document.getElementById('fMod').selectedIndex     = 0;
+    document.getElementById('fService').selectedIndex = 0;
+    sessionStorage.removeItem('agendaFilters');
     showView('agenda');
   } catch(e) { toast('Error de conexión', 'err'); }
   finally { btn.textContent = 'Crear evento'; btn.disabled = false; }
