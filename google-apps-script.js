@@ -620,6 +620,64 @@ function getAdminData() {
 }
 
 // -------------------------------------------------------------
+//  HELPERS PLANES — detección y lógica de pagos
+// -------------------------------------------------------------
+function infoPlan(serv, mod) {
+  var s = (serv || '').split('(')[0].trim();
+  var esDom = mod === 'Domicilio';
+  var planes = {
+    'Paquete Readaptación Inicio': { total:6,  pagoDosEn:4, mitadP:'$189.000', mitadD:'$234.500' },
+    'Paquete Readaptación Avance': { total:8,  pagoDosEn:5, mitadP:'$238.000', mitadD:'$299.000' },
+    'Paquete Readaptación Total':  { total:10, pagoDosEn:6, mitadP:'$280.000', mitadD:'$361.000' },
+    'Paquete Recuperación Full':   { total:3,  pagoDosEn:null, mitadP:null, mitadD:null },
+    'Combo Diagnóstico Pro':       { total:2,  pagoDosEn:null, mitadP:null, mitadD:null },
+    'Combo Bienvenida':            { total:2,  pagoDosEn:null, mitadP:null, mitadD:null },
+    'Plan Activo':                 { total:2,  pagoDosEn:null, mitadP:null, mitadD:null },
+    'Plan Pro':                    { total:3,  pagoDosEn:null, mitadP:null, mitadD:null },
+    'Mini-sesión Familiar 20 min': { total:1,  pagoDosEn:null, mitadP:null, mitadD:null },
+  };
+  for (var k in planes) {
+    if (s === k || s.indexOf(k) === 0) {
+      var p = planes[k];
+      return { total: p.total, pagoDosEn: p.pagoDosEn, mitad: esDom ? p.mitadD : p.mitadP };
+    }
+  }
+  var sl = s.toLowerCase();
+  if (sl.indexOf('paquete') === 0 || sl.indexOf('plan ') === 0 || sl.indexOf('combo') === 0 || sl.indexOf('mini') === 0) {
+    return { total: null, pagoDosEn: null, mitad: null };
+  }
+  return null;
+}
+
+function contarSesiones(rows, nombre, serv, excludeFecha) {
+  var norm    = (nombre || '').toLowerCase().trim();
+  var planKey = (serv || '').split('(')[0].trim();
+  var count   = 0;
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (r[10] === 'Cancelada') continue;
+    var rNombre  = ('' + (r[2] || '')).toLowerCase().trim();
+    var rPlanKey = ('' + (r[5] || '')).split('(')[0].trim();
+    var rFecha   = (r[7] instanceof Date) ? fmtDate(r[7]) : ('' + (r[7]||'')).split('T')[0];
+    if (rNombre === norm && rPlanKey === planKey && rFecha < excludeFecha) count++;
+  }
+  return count;
+}
+
+function mensajePlanWA(nombre, serv, hora, plan, sesionActual, esHoy) {
+  var base = 'Hola ' + nombre + '! ' + (esHoy ? 'Hoy tienes' : 'Mañana tienes') + ' tu sesión de ' + serv + ' a las ' + hora + '.';
+  if (!plan || !sesionActual) return base + (esHoy ? ' ¡Nos vemos! - Jessica' : ' Cualquier cambio avísame! - Jessica');
+  if (sesionActual === 1) {
+    return base + ' Recuerda llevar el pago inicial' + (plan.mitad ? ' de ' + plan.mitad : '') + ' para comenzar. ¡Nos vemos! - Jessica';
+  }
+  if (plan.pagoDosEn && sesionActual === plan.pagoDosEn) {
+    return base + ' Esta es la sesión del segundo pago' + (plan.mitad ? ' (' + plan.mitad + ')' : '') + ', recuerda traerlo. ¡Nos vemos! - Jessica';
+  }
+  var prog = plan.total ? ' (sesión ' + sesionActual + ' de ' + plan.total + ')' : '';
+  return base + ' Esta sesión está incluida en tu plan ✅' + prog + '. ¡Nos vemos! - Jessica';
+}
+
+// -------------------------------------------------------------
 //  RECORDATORIOS DIARIOS — ejecutar con trigger 7am
 // -------------------------------------------------------------
 function sendReminders() {
@@ -646,6 +704,13 @@ function sendReminders() {
     var phone  = rawTel.replace(/\D/g,'');
     if (phone.length <= 10) phone = '57' + phone;
 
+    // Detectar si es plan y calcular sesión actual
+    var plan = infoPlan(serv, mod);
+    var sesionActual = null;
+    if (plan) {
+      sesionActual = contarSesiones(rows, nombre, serv, fecha) + 1;
+    }
+
     if (fecha === tomorrow) {
       if (email && email.indexOf('@') > 0) {
         var dp = fecha.split('-');
@@ -655,11 +720,11 @@ function sendReminders() {
           email,
           'Recordatorio: mañana tienes cita — Jessica Ocampo Fisioterapeuta',
           'Este correo requiere un cliente de correo con soporte HTML.',
-          {htmlBody: buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, false),
+          {htmlBody: buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, false, plan, sesionActual),
            name: 'Jessica Ocampo Fisioterapeuta'}
         );
       }
-      var msg1 = 'Hola ' + nombre + '! Te recuerdo que mañana tienes cita de ' + serv + ' a las ' + hora + '. Cualquier cambio avísame! - Jessica';
+      var msg1 = mensajePlanWA(nombre, serv, hora, plan, sesionActual, false);
       linksMañana.push(nombre + ' (' + hora + '): https://wa.me/' + phone + '?text=' + encodeURIComponent(msg1));
     }
 
@@ -672,11 +737,11 @@ function sendReminders() {
           email,
           '⏰ Hoy tienes cita — Jessica Ocampo Fisioterapeuta',
           'Este correo requiere un cliente de correo con soporte HTML.',
-          {htmlBody: buildReminderEmail(nombre, serv, fechaLegible2, hora, mod, precio, true),
+          {htmlBody: buildReminderEmail(nombre, serv, fechaLegible2, hora, mod, precio, true, plan, sesionActual),
            name: 'Jessica Ocampo Fisioterapeuta'}
         );
       }
-      var msg2 = 'Hola ' + nombre + '! Hoy tienes tu cita de ' + serv + ' a las ' + hora + '. Nos vemos! - Jessica';
+      var msg2 = mensajePlanWA(nombre, serv, hora, plan, sesionActual, true);
       linksHoy.push(nombre + ' (' + hora + '): https://wa.me/' + phone + '?text=' + encodeURIComponent(msg2));
     }
   }
@@ -845,11 +910,60 @@ function buildEmailCliente(d, price) {
   return html;
 }
 
-function buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, esHoy) {
+function buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, esHoy, plan, sesionActual) {
   var titulo = esHoy ? '⏰ Hoy tienes cita' : '📅 Recordatorio: mañana tienes cita';
   var intro  = esHoy
     ? '¡Hola <strong>' + nombre + '</strong>! Hoy es el día de tu cita. Aquí te recordamos los detalles:'
     : 'Hola <strong>' + nombre + '</strong>, mañana tienes tu cita. Te recordamos los detalles:';
+
+  // Bloque de pago según si es plan o no
+  var bloqueProgreso = '';
+  var bloquePago = '';
+
+  if (plan && sesionActual) {
+    var progStr = plan.total ? 'Sesión ' + sesionActual + ' de ' + plan.total : 'Sesión ' + sesionActual;
+    bloqueProgreso = '<tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;width:120px">Progreso</td>' +
+      '<td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:600;color:#0d9488">' + progStr + '</td></tr>';
+
+    if (sesionActual === 1) {
+      // Primera sesión: recordar pago inicial
+      bloquePago = '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 18px;margin:16px 0">' +
+        '<p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#92400e">💳 Pago inicial del plan' + (plan.mitad ? ' — ' + plan.mitad : '') + '</p>' +
+        '<p style="margin:0 0 10px;font-size:13px;color:#78350f">Esta es tu primera sesión. Recuerda llevar el pago inicial para comenzar.</p>' +
+        '<table style="width:100%;font-size:13px;color:#44403c;border-collapse:collapse">' +
+        '<tr><td style="padding:3px 0;color:#78716c;width:110px">Bancolombia</td><td style="padding:3px 0;font-weight:600">Cta. Ahorros · 91257857099</td></tr>' +
+        '<tr><td style="padding:3px 0;color:#78716c">Llave</td><td style="padding:3px 0;font-weight:600">1010124692</td></tr>' +
+        '<tr><td style="padding:3px 0;color:#78716c">Nequi</td><td style="padding:3px 0;font-weight:600">3136467945</td></tr>' +
+        '<tr><td style="padding:3px 0;color:#78716c">A nombre de</td><td style="padding:3px 0">Jessica Andrea Ocampo Barbosa</td></tr>' +
+        '</table></div>';
+    } else if (plan.pagoDosEn && sesionActual === plan.pagoDosEn) {
+      // Sesión del segundo pago
+      bloquePago = '<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:14px 18px;margin:16px 0">' +
+        '<p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#92400e">💳 Segundo pago del plan' + (plan.mitad ? ' — ' + plan.mitad : '') + '</p>' +
+        '<p style="margin:0 0 10px;font-size:13px;color:#78350f">Esta sesión corresponde al segundo y último pago de tu plan. Recuerda traerlo.</p>' +
+        '<table style="width:100%;font-size:13px;color:#44403c;border-collapse:collapse">' +
+        '<tr><td style="padding:3px 0;color:#78716c;width:110px">Bancolombia</td><td style="padding:3px 0;font-weight:600">Cta. Ahorros · 91257857099</td></tr>' +
+        '<tr><td style="padding:3px 0;color:#78716c">Llave</td><td style="padding:3px 0;font-weight:600">1010124692</td></tr>' +
+        '<tr><td style="padding:3px 0;color:#78716c">Nequi</td><td style="padding:3px 0;font-weight:600">3136467945</td></tr>' +
+        '<tr><td style="padding:3px 0;color:#78716c">A nombre de</td><td style="padding:3px 0">Jessica Andrea Ocampo Barbosa</td></tr>' +
+        '</table></div>';
+    } else {
+      // Sesión intermedia incluida en el plan
+      bloquePago = '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px 18px;margin:16px 0">' +
+        '<p style="margin:0;font-size:13px;font-weight:700;color:#166534">✅ Esta sesión está incluida en tu plan — no necesitas hacer ningún pago hoy.</p>' +
+        '</div>';
+    }
+  } else {
+    // Servicio normal: bloque de pago estándar
+    bloquePago = '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 18px;margin:16px 0">' +
+      '<p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#92400e">💳 Formas de pago</p>' +
+      '<table style="width:100%;font-size:13px;color:#44403c;border-collapse:collapse">' +
+      '<tr><td style="padding:3px 0;color:#78716c;width:110px">Bancolombia</td><td style="padding:3px 0;font-weight:600">Cta. Ahorros · 91257857099</td></tr>' +
+      '<tr><td style="padding:3px 0;color:#78716c">Llave</td><td style="padding:3px 0;font-weight:600">1010124692</td></tr>' +
+      '<tr><td style="padding:3px 0;color:#78716c">Nequi</td><td style="padding:3px 0;font-weight:600">3136467945</td></tr>' +
+      '<tr><td style="padding:3px 0;color:#78716c">A nombre de</td><td style="padding:3px 0">Jessica Andrea Ocampo Barbosa</td></tr>' +
+      '</table></div>';
+  }
 
   return '<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">' +
     '<div style="background:' + (esHoy ? '#0284c7' : '#0d9488') + ';padding:24px 32px;text-align:center">' +
@@ -862,18 +976,11 @@ function buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, esHoy
     '<tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;width:120px">Servicio</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:600">' + serv + '</td></tr>' +
     '<tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280">Fecha</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:600">' + fechaLegible + '</td></tr>' +
     '<tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280">Hora</td><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:600">' + hora + '</td></tr>' +
-    '<tr><td style="padding:10px 0;color:#6b7280">Modalidad</td><td style="padding:10px 0">' + mod + '</td></tr>' +
-    (precio ? '<tr><td style="padding:10px 0;color:#6b7280">Valor</td><td style="padding:10px 0">' + precio + '</td></tr>' : '') +
+    '<tr><td style="padding:10px 0;' + (bloqueProgreso ? 'border-bottom:1px solid #f3f4f6;' : '') + 'color:#6b7280">Modalidad</td><td style="padding:10px 0;' + (bloqueProgreso ? 'border-bottom:1px solid #f3f4f6;' : '') + '">' + mod + '</td></tr>' +
+    bloqueProgreso +
+    (!plan && precio ? '<tr><td style="padding:10px 0;color:#6b7280">Valor</td><td style="padding:10px 0">' + precio + '</td></tr>' : '') +
     '</table>' +
-    '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 18px;margin:16px 0">' +
-    '<p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#92400e">💳 Formas de pago</p>' +
-    '<table style="width:100%;font-size:13px;color:#44403c;border-collapse:collapse">' +
-    '<tr><td style="padding:3px 0;color:#78716c;width:110px">Bancolombia</td><td style="padding:3px 0;font-weight:600">Cta. Ahorros · 91257857099</td></tr>' +
-    '<tr><td style="padding:3px 0;color:#78716c">Llave</td><td style="padding:3px 0;font-weight:600">1010124692</td></tr>' +
-    '<tr><td style="padding:3px 0;color:#78716c">Nequi</td><td style="padding:3px 0;font-weight:600">3136467945</td></tr>' +
-    '<tr><td style="padding:3px 0;color:#78716c">A nombre de</td><td style="padding:3px 0">Jessica Andrea Ocampo Barbosa</td></tr>' +
-    '</table>' +
-    '</div>' +
+    bloquePago +
     '<p style="font-size:13px;color:#6b7280;margin:0">¿Necesitas cancelar o cambiar? Escríbele directamente:<br>' +
     '<a href="https://wa.me/573136467945" style="color:#0d9488">+57 313 646 7945 (WhatsApp)</a></p>' +
     '</div>' +
