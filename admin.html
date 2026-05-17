@@ -2709,6 +2709,15 @@ function waLinkSeg(tel, nombre, serv, notaAdmin) {
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
+function waEncuesta(tel, nombre) {
+  const t = String(tel||'').replace(/\D/g,'');
+  if (!t || t.length < 7) return null;
+  const phone = t.length <= 10 ? '57'+t : t;
+  const primero = waNombre(nombre);
+  const msg = 'Hola ' + primero + '! 👋\n\nMe gustaría conocer tu experiencia con nuestros servicios. ¿Podrías tomarte un momento para responder esta breve encuesta? 🙏\n\nhttps://forms.gle/srX1enyKN59n8TfQA\n\n¡Gracias por confiar en Jessica Ocampo Fisioterapeuta!';
+  return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+}
+
 function waBtn(tel, nombre, fecha, hora, serv, label, precio, modalidad) {
   const url = waLink(tel, nombre, fecha, hora, serv, precio, modalidad);
   if (!url) return '<span style="color:var(--muted);font-size:.75rem">Sin tel.</span>';
@@ -4068,6 +4077,7 @@ function renderPacientes() {
           <button class="btn btn-ghost btn-sm" onclick="verHistorialPac(${idx})">Historial</button>
           ${waBtn(p.telefono,p.nombre,'','','','WA')}
           <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${p.telefono||''}','${p.nombre.replace(/'/g,"\\'")}','${(p.ultimoServicio||'').replace(/'/g,"\\'")}')">💬</button>
+          ${(()=>{const u=waEncuesta(p.telefono,p.nombre);return u?`<a href="${u}" target="_blank" class="btn btn-ghost btn-sm" title="Enviar encuesta de satisfacción por WhatsApp">⭐ Encuesta</a>`:''})()}
           <a href="https://jessicaocampoft-ctrl.github.io/pasaporte.html?nombre=${encodeURIComponent(p.nombre)}" target="_blank" class="btn btn-passport btn-sm">🎯 Pasaporte</a>
           <button class="btn btn-edit btn-sm" onclick="editarPacienteIdx(${idx})">✏️ Editar</button>
           <button class="btn btn-danger btn-sm" onclick="borrarPaciente(${idx})">🗑️ Eliminar</button>
@@ -4969,6 +4979,7 @@ function recCard(p, semanas) {
            </button>`
         : `<span style="font-size:.78rem;color:var(--muted);padding:5px 8px">Sin email</span>`}
       <button type="button" class="btn btn-ghost btn-sm" onclick="agendarDesdePacienteRec('${encodeURIComponent(p.nombre)}','${encodeURIComponent(p.telefono||'')}','${encodeURIComponent(p.email||'')}')">+ Agendar</button>
+      ${(()=>{const u=waEncuesta(p.telefono,p.nombre);return u?`<a href="${u}" target="_blank" class="btn btn-ghost btn-sm" title="Enviar encuesta de satisfacción por WhatsApp">⭐ Encuesta</a>`:''})()}
     </div>
   </div>`;
 }
