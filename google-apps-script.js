@@ -1209,7 +1209,12 @@ function buildReminderMensualEmail(nombre, semanas) {
     '<div style="text-align:center;margin:24px 0">' +
     '<a href="https://jessicaocampoft-ctrl.github.io/#agenda" style="background:#0d9488;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block">Agendar mi cita 📅</a>' +
     '</div>' +
-    '<p style="font-size:13px;color:#6b7280;margin:0">O escríbeme directamente:<br>' +
+    '<hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">' +
+    '<p style="font-size:13px;color:#6b7280;margin:0 0 12px">¿Cómo ha sido tu experiencia? Tu opinión me ayuda a mejorar:</p>' +
+    '<div style="text-align:center;margin:0 0 20px">' +
+    '<a href="https://forms.gle/srX1enyKN59n8TfQA" style="background:#f9fafb;border:1px solid #e5e7eb;color:#0d9488;padding:11px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">⭐ Responder encuesta de satisfacción</a>' +
+    '</div>' +
+    '<p style="font-size:13px;color:#6b7280;margin:0">¿Prefieres escribirme directamente?<br>' +
     '<a href="https://wa.me/573136467945" style="color:#0d9488">+57 313 646 7945 (WhatsApp)</a></p>' +
     '</div>' +
     '<div style="background:#f9fafb;padding:16px 32px;text-align:center;font-size:12px;color:#9ca3af">' +
