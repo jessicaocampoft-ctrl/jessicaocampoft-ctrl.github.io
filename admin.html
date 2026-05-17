@@ -4519,6 +4519,18 @@ async function renderCalendar() {
         </div>`;
       });
 
+      // Eventos internos (hoja Eventos)
+      (allData.eventos || []).forEach(ev => {
+        if (normDate(ev.fecha) !== ds) return;
+        const [ehs] = (ev.horaInicio||'0:0').split(':').map(Number);
+        if (ehs !== h) return;
+        html += `<div class="cal-ev cal-ev-gcal" style="background:#7c3aed22;border-left:3px solid #7c3aed" onclick="event.stopPropagation()" title="${ev.titulo}">
+          <span class="cal-ev-time">${ev.horaInicio}–${ev.horaFin}${ev.duracion?' · '+ev.duracion:''}</span>
+          <span class="cal-ev-name">⚡ ${ev.titulo}</span>
+          <span class="cal-ev-serv">${ev.tipo}${ev.cobro&&ev.cobro!=='Sin cobro'?' · '+ev.cobro:''}</span>
+        </div>`;
+      });
+
       // Eventos personales de Google Calendar
       _calGCevents.forEach(ev => {
         if (ev.fecha !== ds) return;
