@@ -5487,7 +5487,18 @@ function guardarMeta() {
   toast('Meta guardada: $' + val.toLocaleString('es-CO'));
 }
 
-function previewMetaFin(v) { previewMeta(v); }
+function previewMetaFin(v) {
+  const n = parseInt(v.replace(/\D/g,''), 10);
+  if (!n) return;
+  const cobrado = calcCobradoMes();
+  const p = Math.min(Math.round(cobrado / n * 100), 100);
+  const fill = document.getElementById('metaBarFinFill');
+  const pct  = document.getElementById('metaBarFinPct');
+  const wrap = document.getElementById('metaBarFinWrap');
+  if (wrap) wrap.style.display = 'block';
+  if (fill) fill.style.width = p + '%';
+  if (pct)  pct.textContent  = p + '%';
+}
 
 function guardarMetaFin() {
   const val = parseInt((document.getElementById('metaInputFin').value||'').replace(/\D/g,''), 10);
@@ -6043,7 +6054,7 @@ function renderMetricas() {
           <div style="padding:10px 14px;background:var(--s2);border-radius:10px">
             <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:2px">📊 Franjas registradas</div>
             <div style="font-family:var(--font-h);font-size:1.2rem;font-weight:700">${horArr.length} horarios</div>
-            <div style="font-size:.75rem;color:var(--muted);margin-top:2px">${horArr[horArr.length-1].label} — ${horArr.sort((a,b)=>a.h-b.h)[horArr.length-1].label}</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:2px">${(()=>{const s=[...horArr].sort((a,b)=>a.h-b.h);return s[0].label+' — '+s[s.length-1].label;})()}</div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:4px">
@@ -6092,7 +6103,7 @@ function _checkAlertaSemanFloja(citas) {
 
   const apagar = () => {
     if (dashEl) dashEl.style.display = 'none';
-    if (finEl)  finEl.innerHTML = '';
+    if (finEl)  { finEl.style.display = 'none'; finEl.innerHTML = ''; }
   };
 
   if (dow < 3 || dow > 5) { apagar(); return; }
@@ -6153,7 +6164,7 @@ function _checkAlertaSemanFloja(citas) {
 
   if (txtEl) txtEl.textContent = msg;
   if (dashEl) dashEl.style.display = 'flex';
-  if (finEl) finEl.innerHTML = `
+  if (finEl) { finEl.style.display = 'block'; finEl.innerHTML = `
     <div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
       <span style="font-size:1.2rem">📉</span>
       <div style="flex:1">
@@ -6174,7 +6185,7 @@ function _checkAlertaSemanFloja(citas) {
         </div>
       </div>
       <button class="btn btn-sm" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-b);cursor:pointer;white-space:nowrap" onclick="showView('nueva');document.getElementById('ncDate').value=today()">+ Agendar hoy</button>
-    </div>`;
+    </div>`; }
 }
 
 let _modoIngresos = 'dia';
