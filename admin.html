@@ -4520,15 +4520,20 @@ async function renderCalendar() {
         </div>`;
       });
 
-      // Eventos internos (hoja Eventos)
+      // Eventos internos (hoja Eventos) — se despliegan en todas las horas que ocupan
       (allData.eventos || []).forEach(ev => {
         if (normDate(ev.fecha) !== ds) return;
         const [ehs] = (ev.horaInicio||'0:0').split(':').map(Number);
-        if (ehs !== h) return;
-        html += `<div class="cal-ev cal-ev-gcal" style="background:#7c3aed22;border-left:3px solid #7c3aed" onclick="event.stopPropagation()" title="${ev.titulo}">
-          <span class="cal-ev-time">${ev.horaInicio}–${ev.horaFin}${ev.duracion?' · '+ev.duracion:''}</span>
-          <span class="cal-ev-name">⚡ ${ev.titulo}</span>
-          <span class="cal-ev-serv">${ev.tipo}${ev.cobro&&ev.cobro!=='Sin cobro'?' · '+ev.cobro:''}</span>
+        const [ehe] = (ev.horaFin||'0:0').split(':').map(Number);
+        if (h < ehs || h >= ehe) return;
+        const isFirst = h === ehs;
+        html += `<div class="cal-ev" style="background:${isFirst?'#7c3aed22':'#7c3aed0d'};border-left:3px solid #7c3aed;min-height:32px" onclick="event.stopPropagation()" title="${ev.titulo}">
+          ${isFirst
+            ? `<span class="cal-ev-time" style="color:#7c3aed">${ev.horaInicio}–${ev.horaFin}${ev.duracion?' · '+ev.duracion:''}</span>
+               <span class="cal-ev-name" style="color:#5b21b6">⚡ ${ev.titulo}</span>
+               ${ev.cobro&&ev.cobro!=='Sin cobro'?`<span class="cal-ev-serv" style="color:#7c3aed">${ev.tipo} · ${ev.cobro}</span>`:''}`
+            : `<span class="cal-ev-name" style="color:#7c3aed;opacity:.5;font-size:.68rem">⚡ ${ev.titulo}</span>`
+          }
         </div>`;
       });
 
