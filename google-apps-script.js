@@ -127,10 +127,11 @@ function createBooking(d, isAdmin) {
   var cRows  = cSheet.getDataRange().getValues();
   var nameNorm = (d.name || '').toLowerCase().trim();
   for (var i = 1; i < cRows.length; i++) {
-    var rowName = ('' + (cRows[i][2] || '')).toLowerCase().trim();
-    var rowDate = sd(cRows[i][7]);
-    var rowTime = st(cRows[i][8]);
-    if (rowName === nameNorm && rowDate === d.date && rowTime === d.time) {
+    var rowName   = ('' + (cRows[i][2]  || '')).toLowerCase().trim();
+    var rowDate   = sd(cRows[i][7]);
+    var rowTime   = st(cRows[i][8]);
+    var rowStatus = ('' + (cRows[i][10] || '')).trim();
+    if (rowName === nameNorm && rowDate === d.date && rowTime === d.time && rowStatus !== 'Cancelada') {
       return {ok: true, id: cRows[i][0]};
     }
   }
