@@ -2440,7 +2440,7 @@ function checkUpcomingAlerts() {
   if (!banner) return;
 
   const candidates = allData.citas
-    .filter(c => c.estado !== 'Cancelada' && normDate(c.fecha) === todayStr)
+    .filter(c => c.estado !== 'Cancelada' && normDate(c.fecha) === todayStr && c.hora)
     .map(c => {
       const [h, m] = c.hora.split(':').map(Number);
       const dt   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
@@ -4512,6 +4512,7 @@ async function renderCalendar() {
         if (c.estado === 'Cancelada') return;
         if (c.servicio === 'Registro') return;
         if (normDate(c.fecha) !== ds) return;
+        if (!c.hora) return;
         const [ch] = c.hora.split(':').map(Number);
         if (ch !== h) return;
         const cls = c.estado==='Confirmada'?'cal-ev-ok':c.estado==='Atendida'?'cal-ev-info':c.estado==='Cancelada'?'cal-ev-err':'cal-ev-warn';
