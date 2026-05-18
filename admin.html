@@ -1836,8 +1836,13 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
               <option>Empresa</option><option>Página web</option><option>Recomendación médica</option><option>Otro</option>
             </select>
             <input type="text" id="dbOrigenSub" placeholder="Nombre del gimnasio / empresa / detalle..." style="display:none;margin-top:6px;width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;box-sizing:border-box">
-            <!-- Campo extra para referidos -->
-            <input type="text" id="dbReferidoPor" placeholder="Nombre de quien la refirió..." style="display:none;margin-top:6px;width:100%;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.3);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;box-sizing:border-box">
+            <!-- Campo extra para referidos con autocomplete de pacientes -->
+            <div id="dbReferidoPorWrap" style="display:none;margin-top:6px;position:relative">
+              <input type="text" id="dbReferidoPor" placeholder="Nombre de quien la refirió..." autocomplete="off"
+                oninput="dbReferidoFilter()" onfocus="dbReferidoFilter()" onblur="setTimeout(()=>document.getElementById('dbReferidoList').style.display='none',200)"
+                style="width:100%;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.3);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none;box-sizing:border-box">
+              <ul id="dbReferidoList" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;background:var(--s2);border:1px solid rgba(139,92,246,.3);border-radius:8px;margin:3px 0 0;padding:4px 0;max-height:180px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.15);list-style:none"></ul>
+            </div>
           </div>
           <!-- Banner del código generado (se muestra tras guardar un referido) -->
           <div id="dbCodigoResult" style="display:none;grid-column:1/-1;background:rgba(139,92,246,.08);border:1.5px solid rgba(139,92,246,.35);border-radius:12px;padding:14px 18px">
@@ -4486,7 +4491,9 @@ function limpiarFormDB() {
   document.getElementById('dbEntidad').value  = '';
   document.getElementById('dbDeporte').value  = '';
   document.getElementById('dbNotas').value    = '';
-  const rp = document.getElementById('dbReferidoPor'); if(rp) { rp.value=''; rp.style.display='none'; }
+  const rp = document.getElementById('dbReferidoPor'); if(rp) rp.value='';
+  const rw = document.getElementById('dbReferidoPorWrap'); if(rw) rw.style.display='none';
+  const rl = document.getElementById('dbReferidoList'); if(rl) rl.style.display='none';
   const cr = document.getElementById('dbCodigoResult'); if(cr) cr.style.display='none';
   document.getElementById('dbOrigen').selectedIndex = 0;
   dbOnOrigenChange();
@@ -7251,13 +7258,32 @@ function borrarEmpresa(idx) {
 
 // ── Origen del paciente ──
 function dbOnOrigenChange() {
-  const val = (document.getElementById('dbOrigen')||{}).value || '';
-  const sub = document.getElementById('dbOrigenSub');
-  const ref = document.getElementById('dbReferidoPor');
-  const res = document.getElementById('dbCodigoResult');
-  if (sub) sub.style.display = (val==='Gimnasio'||val==='Empresa'||val==='Otro') ? 'block' : 'none';
-  if (ref) ref.style.display = val==='Referido' ? 'block' : 'none';
+  const val  = (document.getElementById('dbOrigen')||{}).value || '';
+  const sub  = document.getElementById('dbOrigenSub');
+  const wrap = document.getElementById('dbReferidoPorWrap');
+  const res  = document.getElementById('dbCodigoResult');
+  if (sub)  sub.style.display  = (val==='Gimnasio'||val==='Empresa'||val==='Otro') ? 'block' : 'none';
+  if (wrap) wrap.style.display = val==='Referido' ? 'block' : 'none';
   if (res && val!=='Referido') res.style.display = 'none';
+}
+
+function dbReferidoFilter() {
+  const input = document.getElementById('dbReferidoPor');
+  const list  = document.getElementById('dbReferidoList');
+  const q     = (input.value || '').toLowerCase().trim();
+  const pacientes = (allData.pacientes || []);
+  const matches = pacientes
+    .map(p => p.nombre)
+    .filter(n => n && (!q || n.toLowerCase().includes(q)))
+    .slice(0, 8);
+  if (!matches.length) { list.style.display = 'none'; return; }
+  list.innerHTML = matches.map(n =>
+    `<li onclick="document.getElementById('dbReferidoPor').value='${n.replace(/'/g,"\\'")}';document.getElementById('dbReferidoList').style.display='none'"
+      style="padding:8px 12px;cursor:pointer;font-size:.88rem;color:var(--text)"
+      onmouseenter="this.style.background='rgba(139,92,246,.1)'"
+      onmouseleave="this.style.background=''">${n}</li>`
+  ).join('');
+  list.style.display = 'block';
 }
 
 // ══════════════════════════════════════════════════════════════
