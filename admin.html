@@ -707,6 +707,24 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
         <button class="btn btn-sm" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-b);cursor:pointer" onclick="showView('finanzas')">Ver finanzas →</button>
       </div>
 
+      <!-- Banner citas sin marcar Atendida -->
+      <div id="bannerAutoAtendida" style="display:none;background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.3);border-radius:10px;padding:12px 18px;margin-bottom:16px;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:1.1rem">📋</span>
+        <span style="flex:1;font-size:.88rem;color:#4338ca" id="bannerAutoAtendidaTxt"></span>
+        <button class="btn btn-sm" style="background:#6366f1;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-b);cursor:pointer" onclick="marcarTodasAtendidas()">Marcar como Atendidas →</button>
+      </div>
+
+      <!-- Banner cobros pendientes (3+ días sin registrar pago) -->
+      <div id="bannerCobros" style="display:none;margin-bottom:16px">
+        <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:14px 18px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <span style="font-size:1.1rem">💰</span>
+            <span style="font-size:.9rem;font-weight:700;color:#92400e" id="bannerCobrosTxt">Cobros pendientes</span>
+          </div>
+          <div id="bannerCobrosLista" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+
       <!-- Banner tareas pendientes -->
       <div id="bannerTareas" style="display:none;background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.3);border-radius:10px;padding:12px 18px;margin-bottom:16px;align-items:center;gap:12px;flex-wrap:wrap">
         <span style="font-size:1.1rem">✅</span>
@@ -2205,7 +2223,18 @@ let _submittingBooking = false;
 let _submittingPatient = false;
 
 // ── LOGIN ──
+let _loginAttempts = 0;
+let _loginLockedUntil = 0;
+
 async function doLogin() {
+  const ahora = Date.now();
+  if (_loginLockedUntil > ahora) {
+    const segs = Math.ceil((_loginLockedUntil - ahora) / 1000);
+    const errEl = document.getElementById('loginErr');
+    errEl.textContent = `Demasiados intentos. Espera ${segs} segundo${segs !== 1 ? 's' : ''}.`;
+    errEl.style.display = 'block';
+    return;
+  }
   const pw  = document.getElementById('pwInput').value.trim();
   const btn = document.getElementById('loginBtn');
   if (!pw) return;
@@ -2214,6 +2243,7 @@ async function doLogin() {
     const r = await fetch(APPS_SCRIPT_URL + '?action=adminData&token=' + encodeURIComponent(pw));
     const d = await r.json();
     if (d.ok) {
+      _loginAttempts = 0;
       TOKEN = pw;
       sessionStorage.setItem('adminToken', pw);
       document.getElementById('loginScreen').style.display = 'none';
@@ -2222,7 +2252,17 @@ async function doLogin() {
       await loadAdminKV();
       initDashboard();
     } else {
-      document.getElementById('loginErr').style.display = 'block';
+      _loginAttempts++;
+      const errEl = document.getElementById('loginErr');
+      if (_loginAttempts >= 5) {
+        _loginLockedUntil = Date.now() + 120000;
+        _loginAttempts = 0;
+        errEl.textContent = 'Demasiados intentos fallidos. Acceso bloqueado por 2 minutos.';
+      } else {
+        const restantes = 5 - _loginAttempts;
+        errEl.textContent = `Contraseña incorrecta. Intentos restantes: ${restantes}`;
+      }
+      errEl.style.display = 'block';
     }
   } catch(e) {
     document.getElementById('loginErr').textContent = 'Error de conexión. Revisa tu internet.';
@@ -4309,6 +4349,10 @@ async function guardarPacienteDB() {
   const telefono      = document.getElementById('epTelefono').value.trim();
   const email         = document.getElementById('epEmail').value.trim();
   if (!newNombre) { toast('El nombre no puede estar vacío', 'err'); return; }
+  if (telefono && telefono.replace(/\D/g, '').length < 10) {
+    toast('El teléfono debe tener al menos 10 dígitos', 'err');
+    return;
+  }
   const btn = document.getElementById('epSaveBtn');
   btn.textContent = 'Guardando...'; btn.disabled = true;
   try {
@@ -4362,6 +4406,10 @@ async function agregarPacienteDB() {
   const notas    = document.getElementById('dbNotas').value.trim();
 
   if (!nombre) { toast('El nombre es obligatorio', 'err'); return; }
+  if (telefono && telefono.replace(/\D/g, '').length < 10) {
+    toast('El teléfono debe tener al menos 10 dígitos', 'err');
+    return;
+  }
 
   _submittingPatient = true;
   const btn = document.getElementById('dbSubmitBtn');
@@ -6097,6 +6145,78 @@ function renderMetricas() {
     convMesFiltro.value = y + '-' + String(nm).padStart(2,'0');
   }
   renderConveniosReport();
+  _checkAutoAtendida();
+  _checkCobrosPendientes();
+}
+
+// ── Automatización #2: marcar citas pasadas como Atendidas ──
+function _checkAutoAtendida() {
+  const nowMs = Date.now();
+  const pendientes = (allData.citas || []).filter(c => {
+    if (!['Confirmada','Pendiente'].includes(c.estado)) return false;
+    if (esRegistroServ(c.servicio)) return false;
+    const f = normDate(c.fecha);
+    if (!f || !c.hora) return false;
+    const [hh, mm] = c.hora.split(':').map(Number);
+    const citaEnd = new Date(f + 'T' + c.hora);
+    citaEnd.setMinutes(citaEnd.getMinutes() + 60);
+    return citaEnd.getTime() < nowMs;
+  });
+  window._autoAtendidaList = pendientes;
+  const banner = document.getElementById('bannerAutoAtendida');
+  const txt    = document.getElementById('bannerAutoAtendidaTxt');
+  if (!banner) return;
+  banner.style.display = pendientes.length > 0 ? 'flex' : 'none';
+  if (txt && pendientes.length) txt.textContent = `${pendientes.length} cita${pendientes.length !== 1 ? 's' : ''} pasada${pendientes.length !== 1 ? 's' : ''} aún sin marcar como Atendida`;
+}
+
+async function marcarTodasAtendidas() {
+  const pendientes = window._autoAtendidaList || [];
+  if (!pendientes.length) return;
+  if (!confirm(`¿Marcar ${pendientes.length} cita${pendientes.length !== 1 ? 's' : ''} como Atendidas?`)) return;
+  let ok = 0;
+  for (const c of pendientes) {
+    try {
+      const r = await fetch(`${APPS_SCRIPT_URL}?action=updateStatus&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(c.id)}&status=Atendida`).then(x => x.json());
+      if (r.ok) { c.estado = 'Atendida'; ok++; }
+    } catch(e) {}
+  }
+  toast(`${ok} cita${ok !== 1 ? 's' : ''} marcadas como Atendidas ✓`);
+  initDashboard();
+}
+
+// ── Automatización #3: cobros pendientes (3+ días sin registrar pago) ──
+function _checkCobrosPendientes() {
+  const hoyStr = today();
+  const pendientes = citasReales().filter(c => {
+    if (c.estado !== 'Atendida') return false;
+    if (c.pago) return false;
+    if (localStorage.getItem('pago_' + c.id) === '1') return false;
+    if (parsePrecio(c.precio) === 0) return false;
+    const f = normDate(c.fecha);
+    if (!f) return false;
+    const diff = Math.round((new Date(hoyStr + 'T12:00:00') - new Date(f + 'T12:00:00')) / 86400000);
+    return diff >= 3;
+  });
+  const banner = document.getElementById('bannerCobros');
+  const txtEl  = document.getElementById('bannerCobrosTxt');
+  const lista  = document.getElementById('bannerCobrosLista');
+  if (!banner) return;
+  if (!pendientes.length) { banner.style.display = 'none'; return; }
+  banner.style.display = 'block';
+  if (txtEl) txtEl.textContent = `${pendientes.length} cobro${pendientes.length !== 1 ? 's' : ''} pendiente${pendientes.length !== 1 ? 's' : ''} · 3+ días sin registrar pago`;
+  if (lista) lista.innerHTML = pendientes.map(c => {
+    const tel = (c.telefono || '').replace(/\D/g, '');
+    const msg = `Hola ${(c.nombre || '').split(' ')[0]}, te recuerdo que queda pendiente el pago de tu sesión del ${fmtDate(normDate(c.fecha))} por ${c.precio}. ¿Cuándo lo puedes hacer efectivo? 🙏`;
+    const wa  = tel.length >= 7 ? `https://wa.me/57${tel.slice(-10)}?text=${encodeURIComponent(msg)}` : null;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.82rem;padding:7px 12px;background:rgba(255,255,255,.6);border-radius:7px;gap:10px;flex-wrap:wrap">
+      <span><strong>${c.nombre || '—'}</strong> · ${fmtDate(normDate(c.fecha))} · <span style="color:#92400e;font-weight:600">${c.precio}</span></span>
+      <div style="display:flex;gap:6px">
+        ${wa ? `<a href="${wa}" target="_blank" class="btn btn-sm" style="background:#d97706;color:#fff;border:none;text-decoration:none">💬 Cobrar WA</a>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="openPago('${c.id}')">💳 Registrar pago</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ── Alerta semana floja ──
@@ -6917,10 +7037,29 @@ function renderPaquetes() {
     const vencido   = p.vencimiento && p.vencimiento < hoy;
     const borderC   = agotado?'rgba(239,68,68,.35)':penultimo?'rgba(251,191,36,.35)':'var(--border)';
     const barC      = agotado?'#ef4444':penultimo?'#f59e0b':'var(--primary)';
+    const pkTel    = (p.telefono || '').replace(/\D/g, '');
+    const pkNombre = (p.paciente || '').split(' ')[0];
+    const _pkWa    = (msg) => pkTel.length >= 7 ? `https://wa.me/57${pkTel.slice(-10)}?text=${encodeURIComponent(msg)}` : null;
     let alerta = '';
-    if (agotado)   alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;font-size:.8rem;color:#dc2626">🔴 Paquete agotado — proponer nuevo paquete</div>`;
-    else if (penultimo) alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:8px;font-size:.8rem;color:#92400e">⚠️ Última sesión restante — ofrecer renovación</div>`;
-    else if (vencido)   alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:.8rem;color:#dc2626">⏰ Paquete vencido (${fmtDate(p.vencimiento)})</div>`;
+    if (agotado) {
+      const waLink = _pkWa(`Hola ${pkNombre}! 🎯 Tu paquete "${p.nombre||''}" se agotó. ¿Quieres renovarlo para continuar con tu tratamiento? Te paso las opciones disponibles. 💪`);
+      alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;font-size:.8rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <span style="color:#dc2626">🔴 Paquete agotado — proponer renovación</span>
+        ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-teal btn-sm" style="text-decoration:none;font-size:.75rem">💬 WA Renovación</a>` : ''}
+      </div>`;
+    } else if (penultimo) {
+      const waLink = _pkWa(`Hola ${pkNombre}! ⚠️ Te aviso que te queda solo 1 sesión en tu paquete "${p.nombre||''}". ¿Renovamos antes de que se acabe para no perder el ritmo? 💪`);
+      alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:8px;font-size:.8rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <span style="color:#92400e">⚠️ Última sesión restante — ofrecer renovación</span>
+        ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-sm" style="background:#f59e0b;color:#fff;border:none;text-decoration:none;font-size:.75rem">💬 WA Renovación</a>` : ''}
+      </div>`;
+    } else if (vencido) {
+      const waLink = _pkWa(`Hola ${pkNombre}! Tu paquete "${p.nombre||''}" venció el ${fmtDate(p.vencimiento)}. Si quieres seguir con tu plan, podemos renovarlo ahora. ¿Te interesa? 🙏`);
+      alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:.8rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <span style="color:#dc2626">⏰ Paquete vencido (${fmtDate(p.vencimiento)})</span>
+        ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-err btn-sm" style="text-decoration:none;font-size:.75rem">💬 WA Recordar</a>` : ''}
+      </div>`;
+    }
     return `<div style="padding:14px 18px;border:1.5px solid ${borderC};border-radius:12px;margin-bottom:10px;background:var(--s1)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
         <div>
@@ -7250,7 +7389,7 @@ function exportarCSV(modo) {
 
 // ── PASAPORTE DE MOVIMIENTO ────────────────────────────────────
 const PASAPORTE_BASE  = 'https://storied-mousse-3f28a2.netlify.app/pasaporte.html';
-const PASAPORTE_TOKEN = 'JESSICA2026';
+const PASAPORTE_TOKEN = 'jof_pasaporte_admin_2026';
 let _pasTelefono = '';
 let _pasConfirmado = false;  // true solo cuando se seleccionó desde la BD
 

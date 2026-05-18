@@ -486,7 +486,7 @@
   // PIN almacenado como hash SHA-256 (no visible en texto plano)
   const ADMIN_PIN_HASH  = '9d45a4710a9abc4e87cac3a7bc71ca46b79c2cbcce4a01a1f83184f6878744c7';
   const ADMIN_KEY       = 'jof_admin_session';
-  const ADMIN_TOKEN     = 'JESSICA2026';
+  const PASAPORTE_ADM_HASH = '115cb47969ddd187b9c0c240fd1fb4f8a8ade82853a19febc05beb817a7ef71e';
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_r7Kr-9Uvu0qIVAJpyu8nzhmcJ9fzpqo2pspvFFHV_14cLzb9qUN9k3Lj8cdXFdIW/exec';
   // Una vez publicado en Netlify/GitHub Pages, cambia esta URL:
   const BASE_URL        = window.location.origin + window.location.pathname;
@@ -515,13 +515,20 @@
   let descargaState  = JSON.parse(localStorage.getItem(claves.descarga)  || '{}');
   let isAdmin = sessionStorage.getItem(ADMIN_KEY) === 'true';
 
-  // Auto-login si viene desde el panel admin con token
-  if (urlParams.get('admin') === ADMIN_TOKEN) {
-    sessionStorage.setItem(ADMIN_KEY, 'true');
-    isAdmin = true;
-    const cleanParams = new URLSearchParams(window.location.search);
-    cleanParams.delete('admin');
-    history.replaceState(null, '', window.location.pathname + (cleanParams.toString() ? '?' + cleanParams.toString() : ''));
+  // Auto-login desde admin.html — validación asíncrona por hash SHA-256 (token nunca viaja en texto plano en este archivo)
+  const _adminParam = urlParams.get('admin');
+  if (_adminParam && !isAdmin) {
+    sha256(_adminParam).then(hash => {
+      if (hash === PASAPORTE_ADM_HASH) {
+        sessionStorage.setItem(ADMIN_KEY, 'true');
+        isAdmin = true;
+        const cleanParams = new URLSearchParams(window.location.search);
+        cleanParams.delete('admin');
+        history.replaceState(null, '', window.location.pathname + (cleanParams.toString() ? '?' + cleanParams.toString() : ''));
+        applyAdminMode(true);
+        if (typeof generateAdminShare === 'function') generateAdminShare();
+      }
+    });
   }
 
   // Género: si el primer nombre termina en 'a' → Bienvenida, sino Bienvenido
@@ -606,7 +613,19 @@
 
   // ─── PIN MODAL ───────────────────────────────────────────────
   let pinInput = '';
+  let _pinAttempts = 0;
+  let _pinLockedUntil = 0;
+  const PIN_MAX_ATTEMPTS = 5;
+  const PIN_LOCKOUT_MS   = 60000; // 1 minuto de bloqueo
+
   function openPinModal() {
+    if (Date.now() < _pinLockedUntil) {
+      const segsLeft = Math.ceil((_pinLockedUntil - Date.now()) / 1000);
+      document.getElementById('pinError').textContent = `Bloqueado. Intenta en ${segsLeft}s.`;
+      document.getElementById('pinError').classList.remove('hidden');
+      document.getElementById('pinModal').classList.add('show');
+      return;
+    }
     pinInput = ''; updatePinDots();
     document.getElementById('pinError').classList.add('hidden');
     document.getElementById('pinModal').classList.add('show');
@@ -616,6 +635,7 @@
     pinInput = ''; updatePinDots();
   }
   function pinKey(d) {
+    if (Date.now() < _pinLockedUntil) return;
     if (pinInput.length >= 4) return;
     pinInput += d;
     updatePinDots();
@@ -641,13 +661,25 @@
   async function checkPin() {
     const hash = await sha256(pinInput);
     if (hash === ADMIN_PIN_HASH) {
+      _pinAttempts = 0;
       sessionStorage.setItem(ADMIN_KEY, 'true');
       isAdmin = true;
       closePinModal();
       applyAdminMode(true);
     } else {
+      _pinAttempts++;
       for (let i = 1; i <= 4; i++) document.getElementById('pd' + i).classList.add('error');
-      document.getElementById('pinError').classList.remove('hidden');
+      const errEl = document.getElementById('pinError');
+      if (_pinAttempts >= PIN_MAX_ATTEMPTS) {
+        _pinLockedUntil = Date.now() + PIN_LOCKOUT_MS;
+        _pinAttempts = 0;
+        errEl.textContent = 'Demasiados intentos. Bloqueado 60s.';
+        errEl.classList.remove('hidden');
+        setTimeout(closePinModal, 1500);
+      } else {
+        errEl.textContent = `PIN incorrecto. Intentos restantes: ${PIN_MAX_ATTEMPTS - _pinAttempts}`;
+        errEl.classList.remove('hidden');
+      }
       setTimeout(() => { pinInput = ''; updatePinDots(); }, 900);
     }
   }
