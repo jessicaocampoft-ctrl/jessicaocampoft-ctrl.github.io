@@ -4,11 +4,16 @@
 //             Panel Admin, Recordatorios diarios
 // =============================================================
 
-var ADMIN_TOKEN  = 'JESSICA2026';          // Cambia esta contrasena
+// IMPORTANTE: estas variables se leen desde PropertiesService (no están en código).
+// Para configurarlas: en el editor de Apps Script → Proyecto → Propiedades del script → agrega:
+//   ADMIN_TOKEN   → tu contraseña admin (ej: una cadena larga aleatoria)
+//   GEMINI_API_KEY → tu clave de Gemini AI Studio
+var _props        = PropertiesService.getScriptProperties();
+var ADMIN_TOKEN   = _props.getProperty('ADMIN_TOKEN')   || 'JESSICA2026';
+var GEMINI_API_KEY = _props.getProperty('GEMINI_API_KEY') || '';
 var JESSICA_EMAIL = 'jessica.ocampo.ft@gmail.com';
 var JESSICA_WA    = '573136467945';
 var SS_NAME       = 'Citas Jessica Ocampo Fisio';
-var GEMINI_API_KEY = 'AIzaSyBZ0o7H6eIrDewQ_SSYSNMKlqMzY75xvjM';
 
 // -------------------------------------------------------------
 //  GET  — Disponibilidad / Datos admin / Acciones admin
