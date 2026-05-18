@@ -2271,7 +2271,8 @@ function showView(v) {
     if (sb)  sb.classList.remove('active');
   });
   document.getElementById('v' + v.charAt(0).toUpperCase() + v.slice(1)).style.display = 'block';
-  document.getElementById('sb-' + v).classList.add('active');
+  const _sbActive = document.getElementById('sb-' + v);
+  if (_sbActive) _sbActive.classList.add('active');
   document.getElementById('sidebar').classList.remove('open');
 
   if (v === 'agenda') {
@@ -2819,10 +2820,13 @@ function initDashboard() {
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
   document.getElementById('stCobradoHoy').textContent = cobradoHoy > 0 ? '$'+cobradoHoy.toLocaleString('es-CO') : '—';
 
-  // Por cobrar = solo citas FUTURAS del mes (aún no han ocurrido)
+  // Por cobrar = citas FUTURAS del mes + eventos futuros del mes con cobro
+  const porCobrarEventos = (allData.eventos || [])
+    .filter(e => { const [cy,cm]=normDate(e.fecha).split('-'); return +cm===m && +cy===y && normDate(e.fecha) > todayStr; })
+    .reduce((s,e) => s + parsePrecio(e.cobro), 0);
   const porCobrar = citasMesAll
     .filter(c => normDate(c.fecha) > todayStr)
-    .reduce((s,c) => s + parsePrecio(c.precio), 0);
+    .reduce((s,c) => s + parsePrecio(c.precio), 0) + porCobrarEventos;
   document.getElementById('stPorCobrar').textContent = porCobrar > 0 ? '$'+porCobrar.toLocaleString('es-CO') : '—';
 
   // Meta mensual
@@ -2932,6 +2936,7 @@ function renderAgenda(keepPage = false) {
     if (fHasta) evts = evts.filter(e => e.fecha <= fHasta);
     evts = evts.map(e => ({
       ...e,
+      _esEvento: true,
       nombre: e.titulo, hora: e.horaInicio,
       servicio: e.tipo, precio: e.cobro, modalidad:'—', estado:'—', telefono:'', email:''
     }));
@@ -3542,7 +3547,7 @@ function renderConveniosReport() {
 
   const citas = (allData.citas || []).filter(c => {
     if (!c.gimnasio) return false;
-    if (filtroMes && c.date && !c.date.startsWith(filtroMes)) return false;
+    if (filtroMes && !normDate(c.fecha).startsWith(filtroMes)) return false;
     return true;
   });
 
@@ -5677,7 +5682,10 @@ function renderFinanzas() {
   const canceladasN  = allData.citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y && c.estado==='Cancelada' && !esRegistroServ(c.servicio); }).length;
   const pasadasN     = citasMes.filter(c => normDate(c.fecha) <= todayStr2).length;
   const futurasN     = citasMes.filter(c => normDate(c.fecha) > todayStr2).length;
-  const futurasVal   = citasMes.filter(c => normDate(c.fecha) > todayStr2).reduce((s,c) => s + parsePrecio(c.precio), 0);
+  const eventosValFuturas = (allData.eventos || [])
+    .filter(e => { const [cy,cm]=normDate(e.fecha).split('-'); return +cm===m && +cy===y && normDate(e.fecha) > todayStr2; })
+    .reduce((s,e) => s + parsePrecio(e.cobro), 0);
+  const futurasVal   = citasMes.filter(c => normDate(c.fecha) > todayStr2).reduce((s,c) => s + parsePrecio(c.precio), 0) + eventosValFuturas;
   const ticketProm   = pasadasN > 0 ? Math.round(cobradoMes / pasadasN) : 0;
 
   const resEl = document.getElementById('finResumenMes');
@@ -6748,6 +6756,8 @@ function generarTareas() {
     if (seen.has(key)) return;
     seen.add(key);
     const estado = _tareaEstado(c);
+    const posponerHasta = kvGet(_tareaKey(c)+'_posponer');
+    if (posponerHasta && hoyStr < posponerHasta) return;
     const vencida = diasDiff > ft.diasDelay + 3 && estado === 'pendiente';
     tareas.push({ c, ft, fSesion, diasDesde: diasDiff, estado: vencida ? 'vencida' : estado });
   });
@@ -6836,6 +6846,9 @@ function marcarTareaCompletada(key) {
   renderTareas(); toast('Tarea completada ✓');
 }
 function posponerTarea(key) {
+  const manana = new Date(); manana.setDate(manana.getDate()+1);
+  const mananaStr = manana.toISOString().slice(0,10);
+  kvSet(key+'_posponer', mananaStr);
   toast('Tarea pospuesta para mañana'); renderTareas();
 }
 function omitirTarea(key) {
