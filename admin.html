@@ -6196,7 +6196,7 @@ function _checkCobrosPendientes() {
     const f = normDate(c.fecha);
     if (!f) return false;
     const diff = Math.round((new Date(hoyStr + 'T12:00:00') - new Date(f + 'T12:00:00')) / 86400000);
-    return diff >= 3;
+    return diff >= 1;
   });
   const banner = document.getElementById('bannerCobros');
   const txtEl  = document.getElementById('bannerCobrosTxt');
