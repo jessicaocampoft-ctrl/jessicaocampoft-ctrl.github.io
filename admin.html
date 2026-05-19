@@ -7082,6 +7082,7 @@ function renderPaquetes() {
       ${alerta}
       <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
         <button class="btn btn-teal btn-sm" onclick="usarSesion(${i})" ${agotado?'disabled':''}>➕ Usar sesión</button>
+        <button class="btn btn-ghost btn-sm" onclick="ajustarSesiones(${i})">✏️ Ajustar sesiones</button>
         <button class="btn btn-ghost btn-sm" onclick="borrarPaqueteAsignado(${i})">🗑️ Eliminar</button>
       </div>
     </div>`;
@@ -7118,6 +7119,16 @@ function usarSesion(idx) {
   if ((p.consumidas||0) >= p.sesiones) { toast('Paquete agotado','err'); return; }
   p.consumidas = (p.consumidas||0)+1; _savePkAsignados(a);
   renderPaquetes(); toast(`Sesión registrada: ${p.consumidas}/${p.sesiones}`);
+}
+function ajustarSesiones(idx) {
+  const a = _getPkAsignados(); const p = a[idx]; if (!p) return;
+  const val = prompt(`Sesiones consumidas de "${p.nombre}" (${p.paciente})\nActual: ${p.consumidas||0} de ${p.sesiones}`, p.consumidas||0);
+  if (val === null) return;
+  const n = parseInt(val, 10);
+  if (isNaN(n) || n < 0) { toast('Número inválido','err'); return; }
+  if (n > p.sesiones) { toast(`No puede superar el total (${p.sesiones})`, 'err'); return; }
+  p.consumidas = n; _savePkAsignados(a);
+  renderPaquetes(); toast(`Sesiones actualizadas: ${n}/${p.sesiones}`);
 }
 function borrarPaqueteAsignado(idx) {
   if (!confirm('¿Eliminar este paquete?')) return;
