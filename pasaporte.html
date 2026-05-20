@@ -561,19 +561,28 @@
   }
 
   // ─── CLOUD SYNC ───────────────────────────────────────────────
-  async function cloudLoad(nombre) {
+  const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+  async function cloudLoad(nombre, force = false) {
+    const tsKey = 'jof_sync_ts_' + slugify(nombre);
+    const lastSync = parseInt(localStorage.getItem(tsKey) || '0', 10);
+    const cacheReciente = (Date.now() - lastSync) < CACHE_TTL_MS;
+    if (!force && cacheReciente) return; // usar caché local, sin llamada a la nube
     try {
       const url = APPS_SCRIPT_URL + '?action=getPassport&nombre=' + encodeURIComponent(nombre);
-      const r   = await fetch(url);
-      const d   = await r.json();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 4000); // timeout 4s
+      const r = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+      const d = await r.json();
       if (d.ok) {
         passportState = d.passport || {};
         descargaState  = d.descarga  || {};
-        // Actualizar caché local
         localStorage.setItem(claves.passport, JSON.stringify(passportState));
         localStorage.setItem(claves.descarga,  JSON.stringify(descargaState));
+        localStorage.setItem(tsKey, Date.now().toString());
       }
-    } catch(e) { /* sin internet: usa localStorage como fallback */ }
+    } catch(e) { /* sin internet o timeout: usa localStorage como fallback */ }
   }
 
   async function cloudSave() {
@@ -587,6 +596,8 @@
         descarga: JSON.stringify(descargaState),
       });
       await fetch(APPS_SCRIPT_URL + '?' + params.toString());
+      // Invalidar caché para que el paciente vea los cambios al próximo load
+      localStorage.removeItem('jof_sync_ts_' + slugify(nombrePaciente));
     } catch(e) { /* guarda solo en local si no hay internet */ }
   }
 
