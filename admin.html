@@ -612,9 +612,10 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
       Base de datos
     </button>
 
-    <button class="sb-link" id="sb-codigos" onclick="showView('codigos')">
+    <button class="sb-link" id="sb-codigos" onclick="showView('codigos')" style="position:relative">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       Códigos REF &amp; BONO
+      <span id="badgeBonos" style="display:none;margin-left:auto;background:#d97706;color:#fff;border-radius:99px;font-size:.68rem;font-weight:700;padding:1px 7px;min-width:18px;text-align:center;line-height:1.6"></span>
     </button>
 
     <button class="sb-link" id="sb-paquetes" onclick="showView('paquetes')">
@@ -730,6 +731,16 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
         <span style="font-size:1.1rem">✅</span>
         <span style="flex:1;font-size:.88rem;color:#065f46" id="bannerTareasTxt">Tienes tareas de seguimiento pendientes hoy</span>
         <button class="btn btn-sm" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-b);cursor:pointer" onclick="showView('tareas')">Ir a tareas →</button>
+      </div>
+
+      <!-- Banner bonos de referidos pendientes -->
+      <div id="bannerBonos" style="display:none;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.35);border-radius:10px;padding:12px 18px;margin-bottom:16px;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <span style="font-size:1.2rem;margin-top:1px">🎁</span>
+        <div style="flex:1">
+          <span style="font-size:.88rem;font-weight:700;color:#92400e;display:block;margin-bottom:4px">Bonos de referidos por generar</span>
+          <span style="font-size:.82rem;color:#78350f" id="bannerBonosTxt"></span>
+        </div>
+        <button class="btn btn-sm" style="background:#d97706;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-b);cursor:pointer;white-space:nowrap" onclick="showView('codigos')">Ver Códigos →</button>
       </div>
 
       <!-- Fila 1: Citas -->
@@ -1920,6 +1931,15 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
         <p class="page-sub">Registro de referidos y bonos generados. Cada código es único por mes.</p>
       </div>
 
+      <!-- Banner bonos pendientes en vista Códigos -->
+      <div id="bonoPendingBanner" style="display:none;background:rgba(217,119,6,.09);border:1px solid rgba(217,119,6,.4);border-radius:10px;padding:14px 20px;margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:1.1rem">🎁</span>
+          <strong style="font-size:.9rem;color:#92400e">Bonos pendientes de generar</strong>
+        </div>
+        <div id="bonoPendingLista" style="display:flex;flex-direction:column;gap:7px"></div>
+      </div>
+
       <!-- Filtros -->
       <div class="card" style="margin-bottom:20px;padding:16px 20px">
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -2895,6 +2915,7 @@ function initDashboard() {
   actualizarMetaBarra(cobrado);
 
   updateBadge();
+  updateBonosBadge();
   renderWeekGrid();
   checkUpcomingAlerts();
   const _lu = document.getElementById('lastUpdated');
@@ -7377,6 +7398,55 @@ function dbReferidoFilter() {
 // ══════════════════════════════════════════════════════════════
 // CÓDIGOS REF & BONO
 // ══════════════════════════════════════════════════════════════
+function updateBonosBadge() {
+  const codigos = allData.codigos || [];
+  const refConBono = new Set(codigos.filter(c => c.tipo === 'BONO').map(c => c.codigoRef));
+  const pendientes = codigos.filter(c => c.tipo === 'REF' && !refConBono.has(c.codigo) && c.estado !== 'Usado');
+
+  // Sidebar badge
+  const badge = document.getElementById('badgeBonos');
+  if (badge) {
+    if (pendientes.length > 0) { badge.textContent = pendientes.length; badge.style.display = 'inline-block'; }
+    else { badge.style.display = 'none'; }
+  }
+
+  // Dashboard banner
+  const bannerBonos = document.getElementById('bannerBonos');
+  if (bannerBonos) {
+    if (pendientes.length > 0) {
+      const nombres = pendientes.map(c => `<strong>${c.referidoPor || '—'}</strong> (por haber referido a ${c.paciente || '?'})`).join(' · ');
+      document.getElementById('bannerBonosTxt').innerHTML = nombres;
+      bannerBonos.style.display = 'flex';
+    } else {
+      bannerBonos.style.display = 'none';
+    }
+  }
+
+  // Banner detallado en vista Códigos
+  const bonoPendingBanner = document.getElementById('bonoPendingBanner');
+  const bonoPendingLista  = document.getElementById('bonoPendingLista');
+  if (bonoPendingBanner && bonoPendingLista) {
+    if (pendientes.length > 0) {
+      bonoPendingLista.innerHTML = pendientes.map(c => `
+        <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.6);border:1px solid rgba(217,119,6,.25);border-radius:8px;padding:8px 12px">
+          <span style="font-family:var(--font-m);font-size:.8rem;font-weight:700;color:#7c3aed;background:rgba(139,92,246,.1);padding:2px 8px;border-radius:6px;white-space:nowrap">${c.codigo}</span>
+          <div style="flex:1;font-size:.85rem">
+            <strong style="color:#92400e">${c.referidoPor || '—'}</strong>
+            <span style="color:var(--muted)"> tiene bono pendiente — refirió a <strong>${c.paciente || '?'}</strong></span>
+          </div>
+          <span style="font-family:var(--font-m);font-size:.75rem;color:var(--muted)">${c.fecha || ''}</span>
+          <button class="btn btn-sm" onclick="generarBono('${c.codigo}','${(c.referidoPor||'').replace(/'/g,"\\'")}','${(c.telefono||'').replace(/'/g,"\\'")}' )"
+            style="background:rgba(234,179,8,.15);color:#92400e;border:1px solid rgba(234,179,8,.4);font-size:.75rem;white-space:nowrap">
+            🎁 Generar Bono
+          </button>
+        </div>`).join('');
+      bonoPendingBanner.style.display = 'block';
+    } else {
+      bonoPendingBanner.style.display = 'none';
+    }
+  }
+}
+
 function renderCodigos() {
   const tbody  = document.getElementById('codigosTbody');
   const search = (document.getElementById('codSearch')?.value || '').toLowerCase();
@@ -7418,7 +7488,12 @@ function renderCodigos() {
            🎁 Generar Bono
          </button>`
       : '';
-    const btnMarcar = '';
+    const btnMarcar = c.estado === 'Activo'
+      ? `<button class="btn btn-sm" onclick="marcarUsado('${c.codigo}')"
+           style="background:rgba(107,114,128,.1);color:#374151;border:1px solid rgba(107,114,128,.25);font-size:.75rem">
+           ✓ Usado
+         </button>`
+      : '';
 
     return `<tr>
       <td><span style="font-family:var(--font-m);font-size:.88rem;font-weight:700;padding:3px 8px;border-radius:6px;${chipColor}">${c.codigo}</span></td>
@@ -7430,6 +7505,20 @@ function renderCodigos() {
       <td><div style="display:flex;gap:6px;flex-wrap:wrap">${btnBono}${btnMarcar}</div></td>
     </tr>`;
   }).join('');
+
+  updateBonosBadge();
+}
+
+async function marcarUsado(codigo) {
+  if (!confirm(`¿Marcar ${codigo} como Usado?\nEsto cambiará el estado en Google Sheets.`)) return;
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=actualizarCodigo&token=${encodeURIComponent(TOKEN)}&codigo=${encodeURIComponent(codigo)}&estado=Usado`);
+    const d = await r.json();
+    if (!d.ok) { toast('Error al actualizar el estado', 'err'); return; }
+    toast(`${codigo} marcado como Usado ✓`);
+    await reload();
+    renderCodigos();
+  } catch(e) { toast('Error de conexión', 'err'); }
 }
 
 async function generarBono(codigoRef, referidoPor, telefonoRef) {
