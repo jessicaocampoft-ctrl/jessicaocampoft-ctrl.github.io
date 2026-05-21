@@ -11,6 +11,37 @@
 var _props        = PropertiesService.getScriptProperties();
 var ADMIN_TOKEN   = _props.getProperty('ADMIN_TOKEN')   || 'JESSICA2026';
 var GEMINI_API_KEY = _props.getProperty('GEMINI_API_KEY') || '';
+
+// ── SESIONES ── token UUID almacenado en CacheService (TTL 4 horas)
+function generateSessionToken() {
+  var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  var t = '';
+  for (var i = 0; i < 48; i++) t += chars.charAt(Math.floor(Math.random() * chars.length));
+  return t;
+}
+function createSession() {
+  var token = generateSessionToken();
+  CacheService.getScriptCache().put('sess_' + token, '1', 14400); // 4 horas
+  return token;
+}
+function validateSession(token) {
+  if (!token || token.length < 20) return false;
+  return CacheService.getScriptCache().get('sess_' + token) === '1';
+}
+
+// ── RATE LIMITING LOGIN ── máx 5 intentos fallidos en 5 minutos (global)
+function loginAllowed() {
+  var v = CacheService.getScriptCache().get('login_fails');
+  return !v || parseInt(v, 10) < 5;
+}
+function recordLoginFail() {
+  var cache = CacheService.getScriptCache();
+  var count = parseInt(cache.get('login_fails') || '0', 10) + 1;
+  cache.put('login_fails', '' + count, 300); // ventana de 5 minutos
+}
+function resetLoginFails() {
+  CacheService.getScriptCache().remove('login_fails');
+}
 var JESSICA_EMAIL = 'jessica.ocampo.ft@gmail.com';
 var JESSICA_WA    = '573136467945';
 var SS_NAME       = 'Citas Jessica Ocampo Fisio';
@@ -39,10 +70,13 @@ function doGet(e) {
     return js(getGoogleReviews());
   }
 
-  if (p.token !== ADMIN_TOKEN) {
+  if (!validateSession(p.token)) {
     return js({ok: false, error: 'Sin permiso'});
   }
+  // Ventana deslizante: renovar TTL en cada acción válida
+  CacheService.getScriptCache().put('sess_' + p.token, '1', 14400);
 
+  if (p.action === 'ping')          return js({ok: true});
   if (p.action === 'adminData')     return js(getAdminData());
   if (p.action === 'block')         return js(doBlock(p));
   if (p.action === 'unblock')       return js(doUnblock(p));
@@ -61,6 +95,7 @@ function doGet(e) {
   if (p.action === 'setAdminKV')     return js(doSetAdminKV(p.data));
   if (p.action === 'generarCodigo')  return js(generarCodigo(p));
   if (p.action === 'registrarCodigo') return js(registrarCodigo(p));
+  if (p.action === 'actualizarCodigo') return js(actualizarCodigo(p));
   if (p.action === 'getCodigos')     return js(getCodigos());
   if (p.action === 'crearEvento')    return js(crearEvento(p));
   if (p.action === 'eliminarEvento') return js(eliminarEvento(p));
@@ -79,8 +114,27 @@ function doGet(e) {
 function doPost(e) {
   try {
     var d = JSON.parse(e.postData.contents);
+    if (d.action === 'adminLogin') {
+      if (!loginAllowed()) return js({ok: false, error: 'Demasiados intentos fallidos. Espera 5 minutos.'});
+      if (!d.password || d.password !== ADMIN_TOKEN) {
+        recordLoginFail();
+        return js({ok: false, error: 'Credenciales incorrectas'});
+      }
+      resetLoginFails();
+      var sessionToken = createSession();
+      var adminData = getAdminData();
+      adminData.sessionToken = sessionToken;
+      return js(adminData);
+    }
+    if (d.action === 'changePassword') {
+      if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+      if (!d.currentPassword || d.currentPassword !== ADMIN_TOKEN) return js({ok: false, error: 'La contraseña actual es incorrecta.'});
+      if (!d.newPassword || d.newPassword.length < 8) return js({ok: false, error: 'La nueva contraseña debe tener al menos 8 caracteres.'});
+      PropertiesService.getScriptProperties().setProperty('ADMIN_TOKEN', d.newPassword);
+      return js({ok: true});
+    }
     if (d.action === 'generateEval') {
-      if (d.token !== ADMIN_TOKEN) return js({ok: false, error: 'Sin permiso'});
+      if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
       return js(generateEvalReport(d.data, d.photos || {}));
     }
     return js(createBooking(d, false));
@@ -1429,6 +1483,18 @@ function registrarCodigo(p) {
   // Formatear teléfono como texto
   sh.getRange(sh.getLastRow(), 4).setNumberFormat('@');
   return {ok: true, codigo: data.codigo};
+}
+
+function actualizarCodigo(p) {
+  var sh    = getCodigosSheet();
+  var rows  = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (('' + rows[i][0]) === p.codigo) {
+      sh.getRange(i + 1, 7).setValue(p.estado); // columna 7 = Estado
+      return {ok: true};
+    }
+  }
+  return {ok: false, error: 'Código no encontrado'};
 }
 
 function getCodigos() {

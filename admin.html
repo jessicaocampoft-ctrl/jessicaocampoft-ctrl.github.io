@@ -219,6 +219,31 @@ tr:hover td{background:rgba(126,221,208,.03)}
 tr.evt-row td{background:rgba(139,92,246,.03)}
 tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 
+/* ── SIDEBAR PROFILE CARD ── */
+.sb-profile{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  background:var(--s2);border:1px solid var(--border);border-radius:10px;margin:4px 0 2px;
+}
+.sb-profile-avatar{
+  width:34px;height:34px;border-radius:50%;background:var(--primary);
+  color:#0D0D0D;font-weight:700;font-size:.75rem;font-family:var(--font-m);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:.03em;
+}
+.sb-profile-info{flex:1;min-width:0}
+.sb-profile-name{font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-profile-session{display:flex;align-items:center;gap:4px;font-size:.68rem;color:var(--muted);font-family:var(--font-m);margin-top:1px}
+.sb-session-dot{width:6px;height:6px;border-radius:50%;background:#16a34a;flex-shrink:0;box-shadow:0 0 0 2px rgba(22,163,74,.2)}
+.sb-profile-btn{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;display:flex;align-items:center;transition:var(--tr)}
+.sb-profile-btn:hover{color:var(--primary);background:var(--s3)}
+.sb-profile-stats{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px}
+.sb-stat{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center}
+.sb-stat-val{display:block;font-family:var(--font-h);font-size:1.25rem;font-weight:600;color:var(--primary);line-height:1.1}
+.sb-stat-label{display:block;font-size:.6rem;color:var(--muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.sb-stat-delta{display:block;font-size:.6rem;font-family:var(--font-m);margin-top:3px;font-weight:600}
+.sb-stat-delta.up{color:var(--ok)}
+.sb-stat-delta.down{color:var(--err)}
+.sb-stat-delta.eq{color:var(--muted)}
+
 /* ── TIMELINE TODAY ── */
 .timeline{display:flex;flex-direction:column;gap:10px}
 .tl-item{
@@ -666,7 +691,34 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
       Eval. Express ⚡
     </button>
 
-    <div style="font-size:.68rem;color:var(--muted);text-align:center;padding:2px 8px;margin-bottom:2px" id="lastUpdated"></div>
+    <div class="sb-sep" style="margin-top:auto"></div>
+
+    <!-- ── Tarjeta de perfil ── -->
+    <div class="sb-profile">
+      <div class="sb-profile-avatar">JO</div>
+      <div class="sb-profile-info">
+        <div class="sb-profile-name">Jessica Ocampo</div>
+        <div class="sb-profile-session" id="sbSessionInfo">
+          <span class="sb-session-dot"></span> Sesión activa
+        </div>
+      </div>
+      <button class="sb-profile-btn" onclick="openCambiarPassword()" title="Cambiar contraseña">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+    <div class="sb-profile-stats">
+      <div class="sb-stat">
+        <span class="sb-stat-val" id="sbStSemana">—</span>
+        <span class="sb-stat-label">Esta semana</span>
+        <span class="sb-stat-delta eq" id="sbDeltaSemana">vs sem. ant.</span>
+      </div>
+      <div class="sb-stat">
+        <span class="sb-stat-val" id="sbStMes">—</span>
+        <span class="sb-stat-label">Este mes</span>
+        <span class="sb-stat-delta eq" id="sbDeltaMes">vs mes ant.</span>
+      </div>
+    </div>
+
     <button class="sb-link" id="darkModeBtn" onclick="toggleDarkMode()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       <span id="darkModeTxt">Modo oscuro</span>
@@ -2067,6 +2119,32 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
   </main>
 </div>
 
+<!-- ── MODAL CAMBIAR CONTRASEÑA ── -->
+<div class="modal-bg" id="modalCambiarPassword">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-title">Cambiar contraseña</div>
+    <div class="form-grid g1" style="gap:14px">
+      <div class="field">
+        <label>Contraseña actual</label>
+        <input type="password" id="pwActual" placeholder="Tu contraseña actual">
+      </div>
+      <div class="field">
+        <label>Nueva contraseña</label>
+        <input type="password" id="pwNueva" placeholder="Mínimo 8 caracteres">
+      </div>
+      <div class="field">
+        <label>Confirmar nueva contraseña</label>
+        <input type="password" id="pwConfirmar" placeholder="Repite la nueva contraseña">
+      </div>
+    </div>
+    <p id="pwChangeErr" style="color:var(--err);font-size:.82rem;margin-top:12px;display:none"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalCambiarPassword')">Cancelar</button>
+      <button class="btn btn-teal" id="pwChangeBtn" onclick="cambiarPassword()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL DETALLE CITA ── -->
 <div class="modal-bg" id="modalDetalle">
   <div class="modal">
@@ -2263,6 +2341,7 @@ let TOKEN  = sessionStorage.getItem('adminToken') || '';
 let allData = {citas: [], bloqueos: [], eventos: []};
 let _submittingBooking = false;
 let _submittingPatient = false;
+let _loginTime = null;
 
 // ── LOGIN ──
 let _loginAttempts = 0;
@@ -2282,12 +2361,17 @@ async function doLogin() {
   if (!pw) return;
   btn.textContent = 'Verificando...'; btn.disabled = true;
   try {
-    const r = await fetch(APPS_SCRIPT_URL + '?action=adminData&token=' + encodeURIComponent(pw));
+    const r = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action: 'adminLogin', password: pw})
+    });
     const d = await r.json();
     if (d.ok) {
       _loginAttempts = 0;
-      TOKEN = pw;
-      sessionStorage.setItem('adminToken', pw);
+      TOKEN = d.sessionToken;
+      sessionStorage.setItem('adminToken', d.sessionToken);
+      _loginTime = Date.now();
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('adminApp').style.display   = 'block';
       allData = d;
@@ -2318,6 +2402,34 @@ function logout() {
   location.reload();
 }
 
+// ── TIMEOUT DE INACTIVIDAD (30 min) ──
+let _lastActivity = Date.now();
+const _INACTIVITY_MS = 30 * 60 * 1000;
+
+function _resetActivity() { _lastActivity = Date.now(); }
+['click','keydown','scroll','touchstart'].forEach(ev =>
+  document.addEventListener(ev, _resetActivity, {passive: true})
+);
+setInterval(() => {
+  if (TOKEN && Date.now() - _lastActivity > _INACTIVITY_MS) {
+    alert('Sesión cerrada por inactividad (30 min).');
+    logout();
+  }
+}, 60_000);
+
+// ── VERIFICAR SESIÓN AL VOLVER A LA PESTAÑA ──
+// Cubre el caso de suspensión del equipo donde JS se pausa y los timers no disparan
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState !== 'visible' || !TOKEN) return;
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=ping&token=${encodeURIComponent(TOKEN)}`).then(x => x.json());
+    if (!r.ok) {
+      alert('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+      logout();
+    }
+  } catch(e) {}
+});
+
 // Auto-login si tiene sesión guardada
 window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('dashDate').textContent = new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -2327,6 +2439,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       const r = await fetch(APPS_SCRIPT_URL + '?action=adminData&token=' + encodeURIComponent(TOKEN));
       const d = await r.json();
       if (d.ok) {
+        _loginTime = Date.now();
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminApp').style.display   = 'block';
         allData = d;
@@ -2338,6 +2451,115 @@ window.addEventListener('DOMContentLoaded', async () => {
     sessionStorage.removeItem('adminToken');
   }
 });
+
+// ── PERFIL DEL ADMIN ──
+function updateProfileCard() {
+  const now = new Date();
+  const wd  = now.getDay();
+  const todayDay = now.getDate();
+  const m = now.getMonth() + 1, y = now.getFullYear();
+
+  // Semana actual (lun–dom)
+  const startW = new Date(now); startW.setDate(now.getDate() - wd + (wd === 0 ? -6 : 1)); startW.setHours(0,0,0,0);
+  const endW   = new Date(startW); endW.setDate(startW.getDate() + 6); endW.setHours(23,59,59,999);
+
+  // Semana anterior (7 días antes)
+  const startPW = new Date(startW); startPW.setDate(startW.getDate() - 7);
+  const endPW   = new Date(startPW); endPW.setDate(startPW.getDate() + 6); endPW.setHours(23,59,59,999);
+
+  // Mes anterior
+  const prevMDate = new Date(y, now.getMonth() - 1, 1);
+  const pm = prevMDate.getMonth() + 1, py = prevMDate.getFullYear();
+
+  const citas = citasReales();
+
+  const semana = citas.filter(c => {
+    const [cy,cm,cd] = normDate(c.fecha).split('-');
+    const d = new Date(+cy, +cm-1, +cd);
+    return d >= startW && d <= endW;
+  }).length;
+
+  const semanaPrev = citas.filter(c => {
+    const [cy,cm,cd] = normDate(c.fecha).split('-');
+    const d = new Date(+cy, +cm-1, +cd);
+    return d >= startPW && d <= endPW;
+  }).length;
+
+  const mes = citas.filter(c => {
+    const [cy,cm] = normDate(c.fecha).split('-');
+    return +cm === m && +cy === y;
+  }).length;
+
+  // Mes anterior prorateado: solo hasta el mismo día del mes para comparación justa
+  const mesPrev = citas.filter(c => {
+    const [cy,cm,cd] = normDate(c.fecha).split('-');
+    return +cm === pm && +cy === py && +cd <= todayDay;
+  }).length;
+
+  function setDelta(el, curr, prev) {
+    if (!el) return;
+    const diff = curr - prev;
+    el.className = 'sb-stat-delta ' + (diff > 0 ? 'up' : diff < 0 ? 'down' : 'eq');
+    el.textContent = diff > 0 ? `↑${diff} vs ant.` : diff < 0 ? `↓${Math.abs(diff)} vs ant.` : '= vs ant.';
+  }
+
+  const sbW = document.getElementById('sbStSemana');
+  const sbM = document.getElementById('sbStMes');
+
+  if (sbW) sbW.textContent = semana;
+  if (sbM) sbM.textContent = mes;
+  setDelta(document.getElementById('sbDeltaSemana'), semana, semanaPrev);
+  setDelta(document.getElementById('sbDeltaMes'), mes, mesPrev);
+
+  // Tiempo de sesión activa
+  if (_loginTime) {
+    const mins = Math.round((Date.now() - _loginTime) / 60000);
+    const h = Math.floor(mins / 60), rm = mins % 60;
+    const label = h > 0 ? `${h}h ${rm}min` : `${mins}min`;
+    const el = document.getElementById('sbSessionInfo');
+    if (el) el.innerHTML = `<span class="sb-session-dot"></span> ${label}`;
+  }
+}
+
+function openCambiarPassword() {
+  ['pwActual','pwNueva','pwConfirmar'].forEach(id => { document.getElementById(id).value = ''; });
+  const errEl = document.getElementById('pwChangeErr');
+  errEl.style.display = 'none';
+  document.getElementById('modalCambiarPassword').classList.add('open');
+}
+
+async function cambiarPassword() {
+  const actual    = document.getElementById('pwActual').value.trim();
+  const nueva     = document.getElementById('pwNueva').value.trim();
+  const confirmar = document.getElementById('pwConfirmar').value.trim();
+  const errEl     = document.getElementById('pwChangeErr');
+  const btn       = document.getElementById('pwChangeBtn');
+
+  errEl.style.display = 'none';
+  if (!actual || !nueva || !confirmar) { errEl.textContent = 'Completa todos los campos.'; errEl.style.display = 'block'; return; }
+  if (nueva.length < 8) { errEl.textContent = 'La nueva contraseña debe tener al menos 8 caracteres.'; errEl.style.display = 'block'; return; }
+  if (nueva !== confirmar) { errEl.textContent = 'Las contraseñas nuevas no coinciden.'; errEl.style.display = 'block'; return; }
+
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+  try {
+    const r = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action: 'changePassword', token: TOKEN, currentPassword: actual, newPassword: nueva})
+    }).then(x => x.json());
+    if (r.ok) {
+      closeModal('modalCambiarPassword');
+      toast('Contraseña actualizada correctamente', 'ok');
+    } else {
+      errEl.textContent = r.error || 'Error al cambiar la contraseña.';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Error de conexión. Intenta de nuevo.';
+    errEl.style.display = 'block';
+  }
+  btn.textContent = 'Guardar'; btn.disabled = false;
+}
 
 // ── EVAL EXPRESS ──
 function openEvalExpress() {
@@ -2456,8 +2678,8 @@ function getPrecioFinal() {
   if (monto > 0) return formatPrecio(Math.max(0, base - monto));
   return sel;
 }
-function markWaSent(id, type) { localStorage.setItem('wa_'+id+'_'+type, '1'); }
-function wasWaSent(id, type)  { return !!localStorage.getItem('wa_'+id+'_'+type); }
+function markWaSent(id, type) { kvSet('wa_'+id+'_'+type, '1'); }
+function wasWaSent(id, type)  { return !!kvGet('wa_'+id+'_'+type); }
 function agendarHoy() { showView('nueva'); document.getElementById('ncDate').value = today(); }
 
 // ── PAGO POR CITA ──
@@ -2465,7 +2687,7 @@ let _pagoIdActivo = null;
 
 function isPagada(id) {
   const c = allData.citas.find(x => x.id === id);
-  return !!(c && c.pago) || localStorage.getItem('pago_'+id) === '1';
+  return !!(c && c.pago) || kvGet('pago_'+id) === '1';
 }
 
 function getMetodoPago(id) {
@@ -2475,7 +2697,7 @@ function getMetodoPago(id) {
 
 function pagoBadge(id) {
   const metodo = getMetodoPago(id);
-  const paid   = !!(metodo) || localStorage.getItem('pago_'+id) === '1';
+  const paid   = !!(metodo) || kvGet('pago_'+id) === '1';
   const label  = metodo ? '✓ ' + metodo : (paid ? '✓ Pagada' : '⏳ Pago pend.');
   return `<button type="button" class="pago-btn ${paid?'pagada':'pendiente'}" onclick="event.stopPropagation();abrirModalPago('${id}')" title="Clic para registrar método de pago">${label}</button>`;
 }
@@ -2506,8 +2728,8 @@ async function confirmarPago(metodo) {
     if (r.ok) {
       const c = allData.citas.find(x => x.id === id);
       if (c) c.pago = metodo;
-      if (metodo) localStorage.setItem('pago_'+id, '1');
-      else localStorage.removeItem('pago_'+id);
+      if (metodo) kvSet('pago_'+id, '1');
+      else kvRemove('pago_'+id);
       toast(metodo ? 'Pago registrado: ' + metodo : 'Marcado como pendiente', 'ok');
       renderAgenda(); initDashboard(); renderFinanzas();
     } else toast('Error al guardar: ' + (r.error || ''), 'err');
@@ -2848,9 +3070,9 @@ async function reload() {
 // ── HELPERS FINANCIEROS ──
 const esRegistroServ = s => (s || '').toLowerCase().trim().startsWith('registro');
 
-// Una cita se considera "cobrada" si tiene método de pago registrado, está Atendida, o fue marcada en localStorage
+// Una cita se considera "cobrada" si tiene método de pago registrado, está Atendida, o fue marcada en KV
 function esCobrada(c) {
-  return !!(c.pago) || c.estado === 'Atendida' || localStorage.getItem('pago_'+c.id) === '1';
+  return !!(c.pago) || c.estado === 'Atendida' || kvGet('pago_'+c.id) === '1';
 }
 
 // Citas reales (sin registros, sin canceladas, sin duplicados)
@@ -2918,8 +3140,7 @@ function initDashboard() {
   updateBonosBadge();
   renderWeekGrid();
   checkUpcomingAlerts();
-  const _lu = document.getElementById('lastUpdated');
-  if (_lu) _lu.textContent = 'Act. ' + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  updateProfileCard();
   initQuickNotes();
   // Revisar alerta cada minuto
   if (window._alertInterval) clearInterval(window._alertInterval);
@@ -5128,10 +5349,10 @@ function recCard(p, semanas) {
   </div>`;
 }
 
-function recEnviado(nombre, semanas)  { return !!localStorage.getItem('rec_wa_'+semanas+'_'+nombre); }
-function recEmailEnviado(nombre)      { return !!localStorage.getItem('rec_email_'+nombre); }
+function recEnviado(nombre, semanas)  { return !!kvGet('rec_wa_'+semanas+'_'+nombre); }
+function recEmailEnviado(nombre)      { return !!kvGet('rec_email_'+nombre); }
 function marcarRecordatorioEnviado(nombre, semanas) {
-  localStorage.setItem('rec_wa_'+semanas+'_'+nombre, '1');
+  kvSet('rec_wa_'+semanas+'_'+nombre, '1');
   // Re-render para mostrar checkmark
   if (_remData) renderRecordatorios(_remData);
 }
@@ -5147,7 +5368,7 @@ async function enviarEmailsRecordatorio() {
       // Marcar emails enviados localmente
       if (_remData) {
         [...(_remData.semana4||[]), ...(_remData.semana5||[])].forEach(p => {
-          if (p.email && p.email.indexOf('@') >= 0) localStorage.setItem('rec_email_'+p.nombre, '1');
+          if (p.email && p.email.indexOf('@') >= 0) kvSet('rec_email_'+p.nombre, '1');
         });
         renderRecordatorios(_remData);
       }
@@ -5580,7 +5801,7 @@ async function enviarEmailUno(encNombre, semanas) {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=sendReminders&token=${encodeURIComponent(TOKEN)}`);
     const d = await r.json();
     if (d.ok) {
-      localStorage.setItem('rec_email_'+nombre, '1');
+      kvSet('rec_email_'+nombre, '1');
       toast('Email de recordatorio enviado a ' + nombre.split(' ')[0]);
       if (_remData) renderRecordatorios(_remData);
     } else toast('Error al enviar email', 'err');
@@ -5930,7 +6151,7 @@ function renderMetricas() {
   // 2. Métodos de pago
   const pagoMap = { 'Efectivo':0, 'Nequi':0, 'Bancolombia':0, 'Transferencia':0, 'Pendiente':0 };
   citas.forEach(c => {
-    const m = c.pago || (localStorage.getItem('pago_'+c.id)==='1' ? 'Efectivo' : '');
+    const m = c.pago || (kvGet('pago_'+c.id)==='1' ? 'Efectivo' : '');
     if (m && pagoMap[m] !== undefined) pagoMap[m]++;
     else if (!m) pagoMap['Pendiente']++;
   });
@@ -6296,7 +6517,7 @@ function _checkCobrosPendientes() {
   const pendientes = citasReales().filter(c => {
     if (c.estado !== 'Atendida') return false;
     if (c.pago) return false;
-    if (localStorage.getItem('pago_' + c.id) === '1') return false;
+    if (kvGet('pago_' + c.id) === '1') return false;
     if (parsePrecio(c.precio) === 0) return false;
     const f = normDate(c.fecha);
     if (!f) return false;
