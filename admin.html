@@ -2363,7 +2363,6 @@ async function doLogin() {
   try {
     const r = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({action: 'adminLogin', password: pw})
     });
     const d = await r.json();
@@ -2544,7 +2543,6 @@ async function cambiarPassword() {
   try {
     const r = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({action: 'changePassword', token: TOKEN, currentPassword: actual, newPassword: nueva})
     }).then(x => x.json());
     if (r.ok) {
