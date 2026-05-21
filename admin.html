@@ -6652,6 +6652,7 @@ function setModoIngresos(modo) {
     if (el) el.className = m === modo ? 'btn btn-teal btn-sm' : 'btn btn-ghost btn-sm';
   });
   // En modo mes el input de fecha solo necesita año-mes; mostramos un mes-picker alternativo
+  renderCitasResumen();
   renderIngresosDetalle();
 }
 
