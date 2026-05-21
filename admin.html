@@ -6661,100 +6661,97 @@ function _ingFmtLabel(d) { return d.toLocaleDateString('es-CO',{day:'2-digit',mo
 function _ingFmtMes(d) { return d.toLocaleDateString('es-CO',{month:'long',year:'numeric'}); }
 
 function renderCitasResumen() {
-  const el = document.getElementById('citasResumenStats');
-  if (!el) return;
-  const citas  = citasReales();
-  const fechaInp = document.getElementById('ingresosFechaInput');
-  const fechaSel = (fechaInp && fechaInp.value) ? fechaInp.value : today();
-  const modo   = _modoIngresos || 'semana';
-  const MESES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const DIAS   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const fmtD   = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  try {
+    const el = document.getElementById('citasResumenStats');
+    if (!el) return;
+    const citas = citasReales();
+    const fechaInp = document.getElementById('ingresosFechaInput');
+    const fechaSel = (fechaInp && fechaInp.value) ? fechaInp.value : today();
+    const modo = _modoIngresos || 'semana';
+    const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const DIAS  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 
-  const badge = (n, nAnt, label) => {
-    const diff = n - nAnt;
-    const color = diff > 0 ? '#059669' : diff < 0 ? '#ef4444' : 'var(--muted)';
-    const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '=';
-    const txt   = diff !== 0 ? `${arrow} ${Math.abs(diff)} cita${Math.abs(diff)!==1?'s':''}` : '= igual';
-    return `<div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <span style="font-size:.7rem;color:var(--muted)">${label} (${nAnt})</span>
-      <span style="font-size:.72rem;color:${color};font-weight:600">${txt}</span>
-    </div>`;
-  };
+    // Cuenta citas en un rango [desde, hasta] (strings YYYY-MM-DD)
+    const contarEntre = (desde, hasta) =>
+      citas.filter(c => { const f = normDate(c.fecha); return f >= desde && f <= hasta; }).length;
 
-  const card = (titulo, n, badgeHtml, color) =>
-    `<div style="padding:12px 14px;background:var(--s2);border-radius:10px;border-left:3px solid ${color}">
-      <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:4px">${titulo}</div>
-      <div style="font-family:var(--font-h);font-size:1.6rem;font-weight:700;color:${color};line-height:1">${n}</div>
-      ${badgeHtml}
-    </div>`;
+    // Formatea Date → 'YYYY-MM-DD'
+    const ds = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 
-  let html = '';
+    const badge = (diff, nAnt, label) => {
+      const color = diff > 0 ? '#059669' : diff < 0 ? '#ef4444' : 'var(--muted)';
+      const txt = diff > 0 ? '↑ '+diff+' cita'+(diff!==1?'s':'')
+                : diff < 0 ? '↓ '+Math.abs(diff)+' cita'+(Math.abs(diff)!==1?'s':'')
+                : '= igual';
+      return `<div style="margin-top:5px;font-size:.71rem;color:var(--muted)">${label}: <strong style="color:${color}">${txt}</strong> (antes: ${nAnt})</div>`;
+    };
 
-  if (modo === 'dia') {
-    const ref  = new Date(fechaSel+'T12:00:00');
-    const nDia = citas.filter(c => normDate(c.fecha) === fechaSel).length;
-    // vs mismo día semana anterior
-    const semAnt = new Date(ref); semAnt.setDate(ref.getDate()-7);
-    const nSemAnt = citas.filter(c => normDate(c.fecha) === fmtD(semAnt)).length;
-    // vs día anterior
-    const ayer = new Date(ref); ayer.setDate(ref.getDate()-1);
-    const nAyer = citas.filter(c => normDate(c.fecha) === fmtD(ayer)).length;
-    const labelDia = DIAS[ref.getDay()] + ' ' + ref.getDate() + ' ' + MESES[ref.getMonth()];
-    html = card(labelDia, nDia, badge(nDia, nSemAnt, 'vs mismo día sem. ant.'), '#6366f1')
-         + card('Día anterior', nAyer, badge(nDia, nAyer, 'citas ayer'), 'var(--primary)');
+    const card = (titulo, n, badgeHtml, color) =>
+      `<div style="padding:12px 14px;background:var(--s2);border-radius:10px;border-left:3px solid ${color}">
+        <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">${titulo}</div>
+        <div style="font-family:var(--font-h);font-size:1.6rem;font-weight:700;color:${color};line-height:1.1">${n}</div>
+        ${badgeHtml}
+      </div>`;
 
-  } else if (modo === 'semana') {
-    const ref  = new Date(fechaSel+'T12:00:00');
-    const dow  = ref.getDay();
-    const lun  = new Date(ref); lun.setDate(ref.getDate()-(dow===0?6:dow-1));
-    const dom  = new Date(lun); dom.setDate(lun.getDate()+6);
-    const nSem = citas.filter(c => { const f=normDate(c.fecha); return f>=fmtD(lun)&&f<=fmtD(dom); }).length;
-    // semana anterior
-    const lunAnt = new Date(lun); lunAnt.setDate(lun.getDate()-7);
-    const domAnt = new Date(lunAnt); domAnt.setDate(lunAnt.getDate()+6);
-    const nSemAnt = citas.filter(c => { const f=normDate(c.fecha); return f>=fmtD(lunAnt)&&f<=fmtD(domAnt); }).length;
-    // mismo período mes anterior
-    const lunMA = new Date(lun); lunMA.setMonth(lun.getMonth()-1);
-    const domMA = new Date(lunMA); domMA.setDate(lunMA.getDate()+6);
-    const nMesAnt = citas.filter(c => { const f=normDate(c.fecha); return f>=fmtD(lunMA)&&f<=fmtD(domMA); }).length;
-    const labelSem = _ingFmtLabel(lun)+' – '+_ingFmtLabel(dom);
-    html = card(labelSem, nSem, badge(nSem, nSemAnt, 'vs sem. anterior'), '#6366f1')
-         + card('Mismo período mes ant.', nMesAnt, badge(nSem, nMesAnt, 'citas ese período'), 'var(--primary)');
+    let c1 = '', c2 = '';
 
-  } else {
-    // mes
-    const ref  = new Date(fechaSel+'T12:00:00');
-    const mesN = ref.getMonth(), yearN = ref.getFullYear();
-    const diaCorte = ref.getFullYear()+'-'+ref.getMonth()+'-'+ref.getDate() === today().slice(0,7)+'-'+new Date().getDate()
-      ? new Date().getDate() : new Date(yearN, mesN+1, 0).getDate();
-    const nMes = citas.filter(c => {
-      const f = normDate(c.fecha);
-      return f >= yearN+'-'+String(mesN+1).padStart(2,'0')+'-01' &&
-             f <= yearN+'-'+String(mesN+1).padStart(2,'0')+'-'+String(new Date(yearN,mesN+1,0).getDate()).padStart(2,'0');
-    }).length;
-    // mes anterior prorated
-    const mesAntN = mesN===0?11:mesN-1, yearAntN = mesN===0?yearN-1:yearN;
-    const diasMesAnt = new Date(yearAntN, mesAntN+1, 0).getDate();
-    const hasta = String(Math.min(new Date().getDate(), diasMesAnt)).padStart(2,'0');
-    const nMesAnt = citas.filter(c => {
-      const f = normDate(c.fecha);
-      return f >= yearAntN+'-'+String(mesAntN+1).padStart(2,'0')+'-01' &&
-             f <= yearAntN+'-'+String(mesAntN+1).padStart(2,'0')+'-'+hasta;
-    }).length;
-    html = card(MESES[mesN]+' '+yearN, nMes, badge(nMes, nMesAnt, 'vs '+MESES[mesAntN]+' hasta día '+parseInt(hasta)), 'var(--primary)')
-         + card(MESES[mesAntN]+' (completo)', citas.filter(c => {
-             const f=normDate(c.fecha);
-             return f>=yearAntN+'-'+String(mesAntN+1).padStart(2,'0')+'-01' &&
-                    f<=yearAntN+'-'+String(mesAntN+1).padStart(2,'0')+'-'+String(diasMesAnt).padStart(2,'0');
-           }).length, '', '#6366f1');
+    if (modo === 'dia') {
+      const ref  = new Date(fechaSel+'T12:00:00');
+      const nDia = contarEntre(fechaSel, fechaSel);
+      const ayer = new Date(ref); ayer.setDate(ref.getDate()-1);
+      const nAyer = contarEntre(ds(ayer), ds(ayer));
+      const semAnt = new Date(ref); semAnt.setDate(ref.getDate()-7);
+      const nSemAnt = contarEntre(ds(semAnt), ds(semAnt));
+      const label = DIAS[ref.getDay()]+' '+ref.getDate()+' de '+MESES[ref.getMonth()];
+      c1 = card(label, nDia, badge(nDia-nAyer, nAyer, 'vs ayer'), '#6366f1');
+      c2 = card('Mismo día sem. anterior', nSemAnt, badge(nDia-nSemAnt, nSemAnt, 'diferencia'), 'var(--primary)');
+
+    } else if (modo === 'semana') {
+      const ref = new Date(fechaSel+'T12:00:00');
+      const dow = ref.getDay();
+      const lun = new Date(ref); lun.setDate(ref.getDate()-(dow===0?6:dow-1));
+      const dom = new Date(lun); dom.setDate(lun.getDate()+6);
+      const nSem = contarEntre(ds(lun), ds(dom));
+      const lunAnt = new Date(lun); lunAnt.setDate(lun.getDate()-7);
+      const domAnt = new Date(dom); domAnt.setDate(dom.getDate()-7);
+      const nSemAnt = contarEntre(ds(lunAnt), ds(domAnt));
+      const label = lun.getDate()+'/'+String(lun.getMonth()+1).padStart(2,'0')+' – '+dom.getDate()+'/'+String(dom.getMonth()+1).padStart(2,'0');
+      c1 = card('Semana '+label, nSem, badge(nSem-nSemAnt, nSemAnt, 'vs sem. anterior'), '#6366f1');
+      // Mes completo en que cae esta semana
+      const mesN = lun.getMonth(), yearN = lun.getFullYear();
+      const inicioMes = yearN+'-'+String(mesN+1).padStart(2,'0')+'-01';
+      const finMes    = yearN+'-'+String(mesN+1).padStart(2,'0')+'-'+String(new Date(yearN,mesN+1,0).getDate()).padStart(2,'0');
+      const nMes = contarEntre(inicioMes, finMes);
+      const mesAntN = mesN===0?11:mesN-1, yearAntN = mesN===0?yearN-1:yearN;
+      const diasAnt = new Date(yearAntN,mesAntN+1,0).getDate();
+      const hastaMA = String(Math.min(new Date().getDate(), diasAnt)).padStart(2,'0');
+      const nMesAnt = contarEntre(yearAntN+'-'+String(mesAntN+1).padStart(2,'0')+'-01', yearAntN+'-'+String(mesAntN+1).padStart(2,'0')+'-'+hastaMA);
+      c2 = card(MESES[mesN]+' '+yearN, nMes, badge(nMes-nMesAnt, nMesAnt, 'vs '+MESES[mesAntN]+' día '+parseInt(hastaMA)), 'var(--primary)');
+
+    } else {
+      const ref  = new Date(fechaSel+'T12:00:00');
+      const mesN = ref.getMonth(), yearN = ref.getFullYear();
+      const inicioMes = yearN+'-'+String(mesN+1).padStart(2,'0')+'-01';
+      const finMes    = yearN+'-'+String(mesN+1).padStart(2,'0')+'-'+String(new Date(yearN,mesN+1,0).getDate()).padStart(2,'0');
+      const nMes = contarEntre(inicioMes, finMes);
+      const mesAntN = mesN===0?11:mesN-1, yearAntN = mesN===0?yearN-1:yearN;
+      const diasAnt = new Date(yearAntN,mesAntN+1,0).getDate();
+      const hastaMA = String(Math.min(new Date().getDate(), diasAnt)).padStart(2,'0');
+      const nMesAnt = contarEntre(yearAntN+'-'+String(mesAntN+1).padStart(2,'0')+'-01', yearAntN+'-'+String(mesAntN+1).padStart(2,'0')+'-'+hastaMA);
+      const nMesAntCompleto = contarEntre(yearAntN+'-'+String(mesAntN+1).padStart(2,'0')+'-01', yearAntN+'-'+String(mesAntN+1).padStart(2,'0')+'-'+String(diasAnt).padStart(2,'0'));
+      c1 = card(MESES[mesN]+' '+yearN, nMes, badge(nMes-nMesAnt, nMesAnt, 'vs '+MESES[mesAntN]+' hasta día '+parseInt(hastaMA)), 'var(--primary)');
+      c2 = card(MESES[mesAntN]+' (mes completo)', nMesAntCompleto, '', '#6366f1');
+    }
+
+    el.innerHTML = `
+      <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px">
+        <div style="font-size:.75rem;font-family:var(--font-m);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">📊 Resumen de citas</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${c1}${c2}</div>
+      </div>`;
+  } catch(err) {
+    const el = document.getElementById('citasResumenStats');
+    if (el) el.innerHTML = '';
   }
-
-  el.innerHTML = `
-    <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px">
-      <div style="font-size:.75rem;font-family:var(--font-m);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">📊 Resumen de citas</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${html}</div>
-    </div>`;
 }
 
 function renderIngresosDetalle() {
