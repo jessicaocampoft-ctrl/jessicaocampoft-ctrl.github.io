@@ -2980,41 +2980,33 @@ function waLink(tel, nombre, fecha, hora, serv, precio, modalidad) {
   const t = String(tel||'').replace(/\D/g,'');
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
-  // Emojis via fromCodePoint — solo numeros en el archivo, nunca bytes emoji
-  var E_OK  = String.fromCodePoint(0x2705);   // checkmark verde
-  var E_CAL = String.fromCodePoint(0x1F4C5);  // calendario
-  var E_PIN = String.fromCodePoint(0x1F4CD);  // pin ubicacion
-  var E_MNY = String.fromCodePoint(0x1F4B0);  // dinero
-  var E_BNK = String.fromCodePoint(0x1F3E6);  // banco
-  var E_PHN = String.fromCodePoint(0x1F4F1);  // celular
-  var E_KEY = String.fromCodePoint(0x1F511);  // llave
   const conPago  = /descarga|valoraci/i.test(serv);
   const infoSes  = getInfoSesion(nombre, serv, fecha);
   const servLine = infoSes
     ? '*' + serv + '* — ' + ordinalES(infoSes.numero) + ' sesion de ' + infoSes.total
     : '*' + serv + '*';
   const lines = [
-    'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada ' + E_OK,
+    'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada.',
     '',
     servLine,
-    E_CAL + ' ' + waFechaES(fecha) + ' · ' + waAmPm(hora),
-    E_PIN + ' ' + (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
+    waFechaES(fecha) + ' · ' + waAmPm(hora),
+    (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
   ];
   if (conPago && precio) {
     lines.push(
       '',
-      E_MNY + ' Valor: *' + precio + '*',
+      'Valor: *' + precio + '*',
       '',
       'Para el pago:',
-      E_BNK + ' Bancolombia Ahorros: 91257857099',
-      E_PHN + ' Nequi: 3136467945',
-      E_KEY + ' Llave: 1010124692',
+      'Bancolombia Ahorros: 91257857099',
+      'Nequi: 3136467945',
+      'Llave: 1010124692',
       'Titular: Jessica Andrea Ocampo Barbosa'
     );
   }
   lines.push(
     '',
-    'Cualquier duda me avisas. Hasta pronto! ' + String.fromCodePoint(0x1F60A),
+    'Cualquier duda me avisas. Hasta pronto!',
     '— Jessica Ocampo Fisioterapeuta'
   );
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(lines.join('\n'));
@@ -3028,9 +3020,7 @@ function waLinkRec(tel, nombre, fecha, hora, serv) {
   const sesStr  = infoSes
     ? 'tu ' + ordinalES(infoSes.numero) + ' sesion de ' + infoSes.total + ' de *' + serv + '*'
     : 'tu cita de *' + serv + '*';
-  var E_CAL2 = String.fromCodePoint(0x1F4C5);
-  var E_MSC  = String.fromCodePoint(0x1F4AA);
-  const msg = 'Hola ' + waNombre(nombre) + '! ' + E_CAL2 + ' Te recuerdo ' + sesStr + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda. ' + E_MSC + '\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + waNombre(nombre) + '! Te recuerdo ' + sesStr + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda.\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
@@ -3062,7 +3052,7 @@ function waEncuesta(tel, nombre) {
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
   const primero = waNombre(nombre);
-  const msg = 'Hola ' + primero + '! 😊\n\nTu opinión me importa mucho. ¿Me regalas 2 minutos para contarme cómo fue tu experiencia? 🙏\n\nhttps://forms.gle/srX1enyKN59n8TfQA\n\n📸 *¡Premio!* Cuando termines la encuesta, envíame un pantallazo y en tu próxima sesión te regalo *10 min de Botas de Compresión* 💪\n\n¡Gracias por confiar en mí! — Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + primero + '! Tu opinion me importa mucho. ¿Me regalas 2 minutos para contarme como fue tu experiencia?\n\nhttps://forms.gle/srX1enyKN59n8TfQA\n\n*Premio!* Cuando termines la encuesta, enviame un pantallazo y en tu proxima sesion te regalo *10 min de Botas de Compresion*\n\nGracias por confiar en mi! — Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
@@ -3086,7 +3076,7 @@ function waBtnPasaporte(tel, nombre) {
   const t     = String(tel||'').replace(/\D/g,'');
   const phone = t.length <= 10 ? '57'+t : t;
   const primero = waNombre(nombre);
-  const msg = '¡Hola ' + primero + '!\nTe dejo tu Pasaporte de Beneficios — ahí vas a ver tu progreso después de cada sesión 🎯\n' + linkPaciente + '\n\n🎁 *¿Cómo ganar beneficios?*\nCada sesión sumas avances. Al llegar a:\n\n⚡ *4 sesiones:* Descarga Localizada 10 min (zona de tu elección)\n⚡ *8 sesiones:* Valoración Funcional Express 10 min + PDF con resultados\n⚡ *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresión\n⚡ *16 sesiones:* Kinesiotape + Tens 15 min (Readaptación completa)\n\nGuárdalo y nos vemos pronto 🙌';
+  const msg = 'Hola ' + primero + '!\nTe dejo tu Pasaporte de Beneficios — ahi vas a ver tu progreso despues de cada sesion.\n' + linkPaciente + '\n\n*Como ganar beneficios?*\nCada sesion sumas avances. Al llegar a:\n\n- *4 sesiones:* Descarga Localizada 10 min (zona de tu eleccion)\n- *8 sesiones:* Valoracion Funcional Express 10 min + PDF con resultados\n- *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresion\n- *16 sesiones:* Kinesiotape + Tens 15 min (Readaptacion completa)\n\nGuardalo y nos vemos pronto!';
   const waUrl = t.length >= 7
     ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg)
     : 'https://wa.me/?text=' + encodeURIComponent(msg);
@@ -5269,11 +5259,11 @@ function _parseVoice(text) {
 // Mensajes predefinidos con el nombre del paciente
 function msgSemana4(nombre) {
   const primero = nombre.split(' ')[0];
-  return `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta👋 Ya vamos en la semana 4 desde tu última descarga muscular — la próxima semana sería el momento ideal para hacerla antes de que el cuerpo empiece a acumular tensión de nuevo. ¿Te agendo?`;
+  return `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta. Ya vamos en la semana 4 desde tu ultima descarga muscular — la proxima semana seria el momento ideal para hacerla antes de que el cuerpo empiece a acumular tension de nuevo. ¿Te agendo?`;
 }
 function msgSemana5(nombre) {
   const primero = nombre.split(' ')[0];
-  return `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta👋 Ya se cumplieron las 5 semanas desde tu última sesión de descarga — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ¿Te agendo esta semana?`;
+  return `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta. Ya se cumplieron las 5 semanas desde tu ultima sesion de descarga — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ¿Te agendo esta semana?`;
 }
 function waRecordatorio(tel, nombre, semanas) {
   const t = String(tel||'').replace(/\D/g,'');
@@ -5647,10 +5637,10 @@ function _segCard(p) {
   const sujeto5 = paraQuien ? `la última sesión de descarga muscular ${zonaDesc} de ${paraQuien}` : `tu última sesión de descarga muscular ${zonaDesc}`;
   const cierre3 = paraQuien ? '¿Reagendamos?' : '¿Te agendo?';
   const cierre4 = paraQuien ? '¿Reagendamos esta semana?' : '¿Te agendo esta semana?';
-  const cierre5 = paraQuien ? '¿Cuándo les viene bien retomar? Cuéntame y coordinamos 💪' : '¿Cuándo te viene bien retomar? Cuéntame y coordinamos 💪';
-  const msg3 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Ya van 3 semanas desde ${sujeto3}. La próxima semana sería el momento ideal para reagendar antes de que el cuerpo empiece a acumular tensión. ${cierre3}`;
-  const msg4 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Ya se cumplieron las 4 semanas desde ${sujeto4} — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ${cierre4}`;
-  const msg5 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 Hace más de un mes desde ${sujeto5}. El cuerpo ya empieza a acumular tensión de nuevo. ${cierre5}`;
+  const cierre5 = paraQuien ? '¿Cuándo les viene bien retomar? Cuéntame y coordinamos.' : '¿Cuándo te viene bien retomar? Cuéntame y coordinamos.';
+  const msg3 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta. Ya van 3 semanas desde ${sujeto3}. La proxima semana seria el momento ideal para reagendar antes de que el cuerpo empiece a acumular tension. ${cierre3}`;
+  const msg4 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta. Ya se cumplieron las 4 semanas desde ${sujeto4} — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ${cierre4}`;
+  const msg5 = `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta. Hace mas de un mes desde ${sujeto5}. El cuerpo ya empieza a acumular tension de nuevo. ${cierre5}`;
 
   const wa3 = hasWA ? `https://wa.me/${phone}?text=${encodeURIComponent(msg3)}` : null;
   const wa4 = hasWA ? `https://wa.me/${phone}?text=${encodeURIComponent(msg4)}` : null;
@@ -5701,8 +5691,8 @@ function _segCardReadap(p) {
 
   const msgReadap = zona
     ? paraQuienR
-      ? `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 ¿Cómo ha estado ${paraQuienR} con el proceso de readaptación funcional de ${zona}? Quería saber cómo se siente y si quieren continuar con el plan. ¿Me cuentas cómo va? 💪`
-      : `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta 👋 ¿Cómo has estado con tu proceso de readaptación funcional de ${zona}? Quería saber cómo te sientes y si quieres continuar con tu plan. ¿Me cuentas cómo vas? 💪`
+      ? `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta. ¿Como ha estado ${paraQuienR} con el proceso de readaptacion funcional de ${zona}? Queria saber como se siente y si quieren continuar con el plan. ¿Me cuentas como va?`
+      : `Hola ${primero}! Soy Jessica Ocampo Fisioterapeuta. ¿Como has estado con tu proceso de readaptacion funcional de ${zona}? Queria saber como te sientes y si quieres continuar con tu plan. ¿Me cuentas como vas?`
     : null;
   const waReadap = (hasWA && msgReadap) ? `https://wa.me/${phone}?text=${encodeURIComponent(msgReadap)}` : null;
 
@@ -6577,7 +6567,7 @@ function _checkCobrosPendientes() {
   if (txtEl) txtEl.textContent = `${pendientes.length} cobro${pendientes.length !== 1 ? 's' : ''} pendiente${pendientes.length !== 1 ? 's' : ''} · 3+ días sin registrar pago`;
   if (lista) lista.innerHTML = pendientes.map(c => {
     const tel = (c.telefono || '').replace(/\D/g, '');
-    const msg = `Hola ${(c.nombre || '').split(' ')[0]}, te recuerdo que queda pendiente el pago de tu sesión del ${fmtDate(normDate(c.fecha))} por ${c.precio}. ¿Cuándo lo puedes hacer efectivo? 🙏`;
+    const msg = `Hola ${(c.nombre || '').split(' ')[0]}, te recuerdo que queda pendiente el pago de tu sesion del ${fmtDate(normDate(c.fecha))} por ${c.precio}. ¿Cuando lo puedes hacer efectivo?`;
     const wa  = tel.length >= 7 ? `https://wa.me/57${tel.slice(-10)}?text=${encodeURIComponent(msg)}` : null;
     return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.82rem;padding:7px 12px;background:rgba(255,255,255,.6);border-radius:7px;gap:10px;flex-wrap:wrap">
       <span><strong>${c.nombre || '—'}</strong> · ${fmtDate(normDate(c.fecha))} · <span style="color:#92400e;font-weight:600">${c.precio}</span></span>
@@ -7296,9 +7286,9 @@ function _renderAnalisis(titulo, positivos, alertas, recs) {
 // ── TAREAS DEL DÍA ──
 // ══════════════════════════════════════════════════════════════
 const _TPL_DEFAULT = {
-  descarga:     'Hola {nombre}, soy Jessica 👋 Han pasado {dias_desde_sesion} dias desde tu {tipo_servicio} del {fecha_sesion}. Como te has sentido? Notas mejoria en la zona trabajada? Cualquier molestia me cuentas para ajustar tu proximo plan. 💪',
-  valoracion:   'Hola {nombre}, soy Jessica 👋 Como te has sentido despues de la {tipo_servicio} de ayer ({fecha_sesion})? Si tienes alguna duda sobre los hallazgos o el plan que conversamos, quedo atenta. 🙏',
-  readaptacion: 'Hola {nombre}, soy Jessica 👋 Como te ha ido con los ejercicios del plan de ayer ({fecha_sesion})? Recuerda hacer las repeticiones que acordamos. Si sientes alguna molestia o duda, me cuentas para ajustarlo. 💪'
+  descarga:     'Hola {nombre}, soy Jessica. Han pasado {dias_desde_sesion} dias desde tu {tipo_servicio} del {fecha_sesion}. Como te has sentido? Notas mejoria en la zona trabajada? Cualquier molestia me cuentas para ajustar tu proximo plan.',
+  valoracion:   'Hola {nombre}, soy Jessica. Como te has sentido despues de la {tipo_servicio} de ayer ({fecha_sesion})? Si tienes alguna duda sobre los hallazgos o el plan que conversamos, quedo atenta.',
+  readaptacion: 'Hola {nombre}, soy Jessica. Como te ha ido con los ejercicios del plan de ayer ({fecha_sesion})? Recuerda hacer las repeticiones que acordamos. Si sientes alguna molestia o duda, me cuentas para ajustarlo.'
 };
 let _tareaFiltros = new Set(['pendiente','vencida','completada']);
 
@@ -7507,19 +7497,19 @@ function renderPaquetes() {
     const _pkWa    = (msg) => pkTel.length >= 7 ? `https://wa.me/57${pkTel.slice(-10)}?text=${encodeURIComponent(msg)}` : null;
     let alerta = '';
     if (agotado) {
-      const waLink = _pkWa(`Hola ${pkNombre}! 🎯 Tu paquete "${p.nombre||''}" se agotó. ¿Quieres renovarlo para continuar con tu tratamiento? Te paso las opciones disponibles. 💪`);
+      const waLink = _pkWa(`Hola ${pkNombre}! Tu paquete "${p.nombre||''}" se agoto. ¿Quieres renovarlo para continuar con tu tratamiento? Te paso las opciones disponibles.`);
       alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;font-size:.8rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <span style="color:#dc2626">🔴 Paquete agotado — proponer renovación</span>
         ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-teal btn-sm" style="text-decoration:none;font-size:.75rem">💬 WA Renovación</a>` : ''}
       </div>`;
     } else if (penultimo) {
-      const waLink = _pkWa(`Hola ${pkNombre}! ⚠️ Te aviso que te queda solo 1 sesión en tu paquete "${p.nombre||''}". ¿Renovamos antes de que se acabe para no perder el ritmo? 💪`);
+      const waLink = _pkWa(`Hola ${pkNombre}! Te aviso que te queda solo 1 sesion en tu paquete "${p.nombre||''}". ¿Renovamos antes de que se acabe para no perder el ritmo?`);
       alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:8px;font-size:.8rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <span style="color:#92400e">⚠️ Última sesión restante — ofrecer renovación</span>
         ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-sm" style="background:#f59e0b;color:#fff;border:none;text-decoration:none;font-size:.75rem">💬 WA Renovación</a>` : ''}
       </div>`;
     } else if (vencido) {
-      const waLink = _pkWa(`Hola ${pkNombre}! Tu paquete "${p.nombre||''}" venció el ${fmtDate(p.vencimiento)}. Si quieres seguir con tu plan, podemos renovarlo ahora. ¿Te interesa? 🙏`);
+      const waLink = _pkWa(`Hola ${pkNombre}! Tu paquete "${p.nombre||''}" vencio el ${fmtDate(p.vencimiento)}. Si quieres seguir con tu plan, podemos renovarlo ahora. ¿Te interesa?`);
       alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:.8rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <span style="color:#dc2626">⏰ Paquete vencido (${fmtDate(p.vencimiento)})</span>
         ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-err btn-sm" style="text-decoration:none;font-size:.75rem">💬 WA Recordar</a>` : ''}
@@ -8048,7 +8038,7 @@ function generarLinkPasaporte() {
   const tel = _pasTelefono.length >= 7
     ? 'https://wa.me/57' + _pasTelefono.slice(-10)
     : 'https://wa.me/';
-  const msg = `¡Hola ${nombre.split(' ')[0]}!\nTe dejo tu Pasaporte de Beneficios — ahí vas a ver tu progreso después de cada sesión 🎯\n${link}\n\n🎁 *¿Cómo ganar beneficios?*\nCada sesión sumas avances. Al llegar a:\n\n⚡ *4 sesiones:* Descarga Localizada 10 min (zona de tu elección)\n⚡ *8 sesiones:* Valoración Funcional Express 10 min + PDF con resultados\n⚡ *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresión\n⚡ *16 sesiones:* Kinesiotape + Tens 15 min (Readaptación completa)\n\nGuárdalo y nos vemos pronto 🙌`;
+  const msg = `Hola ${nombre.split(' ')[0]}!\nTe dejo tu Pasaporte de Beneficios — ahi vas a ver tu progreso despues de cada sesion.\n${link}\n\n*Como ganar beneficios?*\nCada sesion sumas avances. Al llegar a:\n\n- *4 sesiones:* Descarga Localizada 10 min (zona de tu eleccion)\n- *8 sesiones:* Valoracion Funcional Express 10 min + PDF con resultados\n- *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresion\n- *16 sesiones:* Kinesiotape + Tens 15 min (Readaptacion completa)\n\nGuardalo y nos vemos pronto!`;
   document.getElementById('pasWhatsApp').href = tel + '?text=' + encodeURIComponent(msg);
 
   if (typeof QRCode !== 'undefined') {
