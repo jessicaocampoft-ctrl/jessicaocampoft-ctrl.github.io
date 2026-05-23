@@ -2986,7 +2986,7 @@ function waLinkRec(tel, nombre, fecha, hora, serv) {
   const t = String(tel||'').replace(/\D/g,'');
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
-  const msg = 'Hola ' + waNombre(nombre) + ', te recuerdo que tienes cita de ' + serv + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '.\n\n- Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + waNombre(nombre) + '! 📅 Te recuerdo que tienes cita de *' + serv + '* el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda. 😊\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
@@ -3042,7 +3042,7 @@ function waBtnPasaporte(tel, nombre) {
   const t     = String(tel||'').replace(/\D/g,'');
   const phone = t.length <= 10 ? '57'+t : t;
   const primero = waNombre(nombre);
-  const msg = '¡Hola ' + primero + '!\nTe dejo tu Pasaporte de Beneficios — ahí vas a ver tu progreso después de cada sesión 🎯\n' + linkPaciente + '\n\n🎁 *¿Cómo ganar beneficios?*\nCada sesión sumas avances. Al llegar a:\n\n⚡ *4 sesiones* ▸ Descarga Localizada 10 min (zona de tu elección)\n⚡ *8 sesiones* ▸ Valoración Funcional Express 10 min + PDF con resultados\n⚡ *12 sesiones* ▸ Movilidad Asistida 10 min + Botas de Compresión\n⚡ *16 sesiones* ▸ Kinesiotape + Tens 15 min (Readaptación completa)\n\nGuárdalo y nos vemos pronto 🙌';
+  const msg = '¡Hola ' + primero + '!\nTe dejo tu Pasaporte de Beneficios — ahí vas a ver tu progreso después de cada sesión 🎯\n' + linkPaciente + '\n\n🎁 *¿Cómo ganar beneficios?*\nCada sesión sumas avances. Al llegar a:\n\n⚡ *4 sesiones:* Descarga Localizada 10 min (zona de tu elección)\n⚡ *8 sesiones:* Valoración Funcional Express 10 min + PDF con resultados\n⚡ *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresión\n⚡ *16 sesiones:* Kinesiotape + Tens 15 min (Readaptación completa)\n\nGuárdalo y nos vemos pronto 🙌';
   const waUrl = t.length >= 7
     ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg)
     : 'https://wa.me/?text=' + encodeURIComponent(msg);
@@ -3417,7 +3417,7 @@ async function changeStatus(id, status) {
         const t = String(cita.telefono||'').replace(/\D/g,'');
         const phone = t.length <= 10 ? '57'+t : t;
         if (t.length >= 7 && confirm('¿Enviarle mensaje de reagendamiento a ' + cita.nombre + '?')) {
-          const msg = 'Hola ' + waNombre(cita.nombre) + ', lamentamos que no hayas podido asistir a tu cita. ¿Te gustaría reagendar? Estamos disponibles para encontrar un nuevo horario.\n\n- Jessica Ocampo Fisioterapeuta';
+          const msg = 'Hola ' + waNombre(cita.nombre) + '! 🙏 Vi que no pudiste venir hoy. Espero que todo este bien. Cuando quieras reagendamos, dime que dias te quedan mejor y coordinamos. 😊 — Jessica Ocampo Fisioterapeuta';
           window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
         }
       }
@@ -7252,9 +7252,9 @@ function _renderAnalisis(titulo, positivos, alertas, recs) {
 // ── TAREAS DEL DÍA ──
 // ══════════════════════════════════════════════════════════════
 const _TPL_DEFAULT = {
-  descarga:     'Hola {nombre}, soy el equipo de Jessica Ocampo Fisio. Han pasado {dias_desde_sesion} días desde tu {tipo_servicio} del {fecha_sesion}. ¿Cómo te has sentido? ¿Notas mejoría en la zona trabajada? Cualquier molestia me cuentas para ajustar tu próximo plan. 💪',
-  valoracion:   'Hola {nombre}, espero que estés muy bien. Te escribo para saber cómo te has sentido después de la {tipo_servicio} de ayer ({fecha_sesion}). Si tienes alguna duda sobre los hallazgos o el plan que conversamos, quedo atenta. 🙏',
-  readaptacion: 'Hola {nombre}, ¿cómo te ha ido con los ejercicios del plan de ayer ({fecha_sesion})? Recuerda hacer las repeticiones que acordamos. Si sientes alguna molestia o duda, me cuentas para ajustarlo. 🏃'
+  descarga:     'Hola {nombre}, soy Jessica 👋 Han pasado {dias_desde_sesion} dias desde tu {tipo_servicio} del {fecha_sesion}. Como te has sentido? Notas mejoria en la zona trabajada? Cualquier molestia me cuentas para ajustar tu proximo plan. 💪',
+  valoracion:   'Hola {nombre}, soy Jessica 👋 Como te has sentido despues de la {tipo_servicio} de ayer ({fecha_sesion})? Si tienes alguna duda sobre los hallazgos o el plan que conversamos, quedo atenta. 🙏',
+  readaptacion: 'Hola {nombre}, soy Jessica 👋 Como te ha ido con los ejercicios del plan de ayer ({fecha_sesion})? Recuerda hacer las repeticiones que acordamos. Si sientes alguna molestia o duda, me cuentas para ajustarlo. 💪'
 };
 let _tareaFiltros = new Set(['pendiente','vencida','completada']);
 
@@ -8004,7 +8004,7 @@ function generarLinkPasaporte() {
   const tel = _pasTelefono.length >= 7
     ? 'https://wa.me/57' + _pasTelefono.slice(-10)
     : 'https://wa.me/';
-  const msg = `¡Hola ${nombre.split(' ')[0]}!\nTe dejo tu Pasaporte de Beneficios — ahí vas a ver tu progreso después de cada sesión 🎯\n${link}\n\n🎁 *¿Cómo ganar beneficios?*\nCada sesión sumas avances. Al llegar a:\n\n⚡ *4 sesiones* ▸ Descarga Localizada 10 min (zona de tu elección)\n⚡ *8 sesiones* ▸ Valoración Funcional Express 10 min + PDF con resultados\n⚡ *12 sesiones* ▸ Movilidad Asistida 10 min + Botas de Compresión\n⚡ *16 sesiones* ▸ Kinesiotape + Tens 15 min (Readaptación completa)\n\nGuárdalo y nos vemos pronto 🙌`;
+  const msg = `¡Hola ${nombre.split(' ')[0]}!\nTe dejo tu Pasaporte de Beneficios — ahí vas a ver tu progreso después de cada sesión 🎯\n${link}\n\n🎁 *¿Cómo ganar beneficios?*\nCada sesión sumas avances. Al llegar a:\n\n⚡ *4 sesiones:* Descarga Localizada 10 min (zona de tu elección)\n⚡ *8 sesiones:* Valoración Funcional Express 10 min + PDF con resultados\n⚡ *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresión\n⚡ *16 sesiones:* Kinesiotape + Tens 15 min (Readaptación completa)\n\nGuárdalo y nos vemos pronto 🙌`;
   document.getElementById('pasWhatsApp').href = tel + '?text=' + encodeURIComponent(msg);
 
   if (typeof QRCode !== 'undefined') {
