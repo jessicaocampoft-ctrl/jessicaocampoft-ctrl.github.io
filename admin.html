@@ -2983,30 +2983,30 @@ function waLink(tel, nombre, fecha, hora, serv, precio, modalidad) {
   const conPago  = /descarga|valoraci/i.test(serv);
   const infoSes  = getInfoSesion(nombre, serv, fecha);
   const servLine = infoSes
-    ? '📋 *' + serv + '* — ' + ordinalES(infoSes.numero) + ' sesión de ' + infoSes.total
-    : '📋 *' + serv + '*';
+    ? '*' + serv + '* — ' + ordinalES(infoSes.numero) + ' sesion de ' + infoSes.total
+    : '*' + serv + '*';
   const lines = [
-    'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada ✅',
+    'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada.',
     '',
     servLine,
-    '📅 ' + waFechaES(fecha) + ' · ' + waAmPm(hora),
-    '📍 ' + (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
+    waFechaES(fecha) + ' · ' + waAmPm(hora),
+    (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
   ];
   if (conPago && precio) {
     lines.push(
       '',
-      '💰 Valor: ' + precio,
+      'Valor: *' + precio + '*',
       '',
       'Para el pago:',
-      '🏦 Bancolombia Ahorros: 91257857099',
-      '📱 Nequi: 3136467945',
-      '🔑 Llave: 1010124692',
+      'Bancolombia Ahorros: 91257857099',
+      'Nequi: 3136467945',
+      'Llave: 1010124692',
       'Titular: Jessica Andrea Ocampo Barbosa'
     );
   }
   lines.push(
     '',
-    'Cualquier duda me avisas. Hasta pronto! 😊',
+    'Cualquier duda me avisas. Hasta pronto!',
     '— Jessica Ocampo Fisioterapeuta'
   );
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(lines.join('\n'));
@@ -3018,9 +3018,9 @@ function waLinkRec(tel, nombre, fecha, hora, serv) {
   const phone   = t.length <= 10 ? '57'+t : t;
   const infoSes = getInfoSesion(nombre, serv, fecha);
   const sesStr  = infoSes
-    ? 'tu ' + ordinalES(infoSes.numero) + ' sesión de ' + infoSes.total + ' de *' + serv + '*'
+    ? 'tu ' + ordinalES(infoSes.numero) + ' sesion de ' + infoSes.total + ' de *' + serv + '*'
     : 'tu cita de *' + serv + '*';
-  const msg = 'Hola ' + waNombre(nombre) + '! 📅 Te recuerdo ' + sesStr + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda. 😊\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + waNombre(nombre) + '! Te recuerdo ' + sesStr + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda.\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
