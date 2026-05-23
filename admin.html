@@ -3018,7 +3018,7 @@ function waEncuesta(tel, nombre) {
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
   const primero = waNombre(nombre);
-  const msg = 'Hola ' + primero + '! 😊\n\nTu opinión me importa mucho. ¿Me regalas 2 minutos para contarme cómo fue tu experiencia? 🙏\n\nhttps://forms.gle/srX1enyKN59n8TfQA\n\n📸 *¡Premio!* Cuando termines la encuesta, envíame un pantallazo y en tu próxima sesión te regalo *10 min de Botas de Compresión* 🧣\n\n¡Gracias por confiar en mí! — Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + primero + '! 😊\n\nTu opinión me importa mucho. ¿Me regalas 2 minutos para contarme cómo fue tu experiencia? 🙏\n\nhttps://forms.gle/srX1enyKN59n8TfQA\n\n📸 *¡Premio!* Cuando termines la encuesta, envíame un pantallazo y en tu próxima sesión te regalo *10 min de Botas de Compresión* 💪\n\n¡Gracias por confiar en mí! — Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
