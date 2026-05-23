@@ -2980,33 +2980,41 @@ function waLink(tel, nombre, fecha, hora, serv, precio, modalidad) {
   const t = String(tel||'').replace(/\D/g,'');
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
+  // Emojis via fromCodePoint — solo numeros en el archivo, nunca bytes emoji
+  var E_OK  = String.fromCodePoint(0x2705);   // checkmark verde
+  var E_CAL = String.fromCodePoint(0x1F4C5);  // calendario
+  var E_PIN = String.fromCodePoint(0x1F4CD);  // pin ubicacion
+  var E_MNY = String.fromCodePoint(0x1F4B0);  // dinero
+  var E_BNK = String.fromCodePoint(0x1F3E6);  // banco
+  var E_PHN = String.fromCodePoint(0x1F4F1);  // celular
+  var E_KEY = String.fromCodePoint(0x1F511);  // llave
   const conPago  = /descarga|valoraci/i.test(serv);
   const infoSes  = getInfoSesion(nombre, serv, fecha);
   const servLine = infoSes
     ? '*' + serv + '* — ' + ordinalES(infoSes.numero) + ' sesion de ' + infoSes.total
     : '*' + serv + '*';
   const lines = [
-    'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada.',
+    'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada ' + E_OK,
     '',
     servLine,
-    waFechaES(fecha) + ' · ' + waAmPm(hora),
-    (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
+    E_CAL + ' ' + waFechaES(fecha) + ' · ' + waAmPm(hora),
+    E_PIN + ' ' + (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
   ];
   if (conPago && precio) {
     lines.push(
       '',
-      'Valor: *' + precio + '*',
+      E_MNY + ' Valor: *' + precio + '*',
       '',
       'Para el pago:',
-      'Bancolombia Ahorros: 91257857099',
-      'Nequi: 3136467945',
-      'Llave: 1010124692',
+      E_BNK + ' Bancolombia Ahorros: 91257857099',
+      E_PHN + ' Nequi: 3136467945',
+      E_KEY + ' Llave: 1010124692',
       'Titular: Jessica Andrea Ocampo Barbosa'
     );
   }
   lines.push(
     '',
-    'Cualquier duda me avisas. Hasta pronto!',
+    'Cualquier duda me avisas. Hasta pronto! ' + String.fromCodePoint(0x1F60A),
     '— Jessica Ocampo Fisioterapeuta'
   );
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(lines.join('\n'));
@@ -3020,7 +3028,9 @@ function waLinkRec(tel, nombre, fecha, hora, serv) {
   const sesStr  = infoSes
     ? 'tu ' + ordinalES(infoSes.numero) + ' sesion de ' + infoSes.total + ' de *' + serv + '*'
     : 'tu cita de *' + serv + '*';
-  const msg = 'Hola ' + waNombre(nombre) + '! Te recuerdo ' + sesStr + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda.\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
+  var E_CAL2 = String.fromCodePoint(0x1F4C5);
+  var E_MSC  = String.fromCodePoint(0x1F4AA);
+  const msg = 'Hola ' + waNombre(nombre) + '! ' + E_CAL2 + ' Te recuerdo ' + sesStr + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda. ' + E_MSC + '\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
