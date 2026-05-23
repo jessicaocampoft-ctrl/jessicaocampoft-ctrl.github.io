@@ -2956,15 +2956,39 @@ function waAmPm(hora) {
   return h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
 }
 
+function ordinalES(n) {
+  const s = ['','ra','da','ra','ta','ta','ta','ma','va','na','ma'];
+  return n + (n <= 10 ? s[n] : 'ra');
+}
+
+function getInfoSesion(nombre, servicio, fecha) {
+  const total = sesionesPorPaquete[servicio];
+  if (!total) return null;
+  const norm  = (nombre||'').toLowerCase().trim();
+  const hasta = normDate(fecha);
+  const lista = (allData && allData.citas) ? allData.citas : [];
+  const numero = lista.filter(c =>
+    (c.nombre||'').toLowerCase().trim() === norm &&
+    c.servicio === servicio &&
+    c.estado !== 'Cancelada' &&
+    normDate(c.fecha) <= hasta
+  ).length;
+  return { numero: Math.max(1, numero), total };
+}
+
 function waLink(tel, nombre, fecha, hora, serv, precio, modalidad) {
   const t = String(tel||'').replace(/\D/g,'');
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
-  const conPago = /descarga|valoraci/i.test(serv);
+  const conPago  = /descarga|valoraci/i.test(serv);
+  const infoSes  = getInfoSesion(nombre, serv, fecha);
+  const servLine = infoSes
+    ? '📋 *' + serv + '* — ' + ordinalES(infoSes.numero) + ' sesión de ' + infoSes.total
+    : '📋 *' + serv + '*';
   const lines = [
     'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada ✅',
     '',
-    '📋 *' + serv + '*',
+    servLine,
     '📅 ' + waFechaES(fecha) + ' · ' + waAmPm(hora),
     '📍 ' + (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
   ];
@@ -2991,8 +3015,12 @@ function waLink(tel, nombre, fecha, hora, serv, precio, modalidad) {
 function waLinkRec(tel, nombre, fecha, hora, serv) {
   const t = String(tel||'').replace(/\D/g,'');
   if (!t || t.length < 7) return null;
-  const phone = t.length <= 10 ? '57'+t : t;
-  const msg = 'Hola ' + waNombre(nombre) + '! 📅 Te recuerdo que tienes cita de *' + serv + '* el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda. 😊\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
+  const phone   = t.length <= 10 ? '57'+t : t;
+  const infoSes = getInfoSesion(nombre, serv, fecha);
+  const sesStr  = infoSes
+    ? 'tu ' + ordinalES(infoSes.numero) + ' sesión de ' + infoSes.total + ' de *' + serv + '*'
+    : 'tu cita de *' + serv + '*';
+  const msg = 'Hola ' + waNombre(nombre) + '! 📅 Te recuerdo ' + sesStr + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda. 😊\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
