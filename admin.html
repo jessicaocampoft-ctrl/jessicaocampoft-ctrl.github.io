@@ -2960,24 +2960,30 @@ function waLink(tel, nombre, fecha, hora, serv, precio, modalidad) {
   const t = String(tel||'').replace(/\D/g,'');
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
+  const conPago = /descarga|valoraci/i.test(serv);
   const lines = [
-    'Hola ' + waNombre(nombre) + ', aquí los detalles de tu cita confirmada:',
+    'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada ✅',
     '',
-    'Servicio: ' + serv,
-    'Fecha: ' + waFechaES(fecha) + ' a las ' + waAmPm(hora),
-    'Modalidad: ' + (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
+    '📋 *' + serv + '*',
+    '📅 ' + waFechaES(fecha) + ' · ' + waAmPm(hora),
+    '📍 ' + (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
   ];
-  if (precio) lines.push('Valor a cancelar: ' + precio);
+  if (conPago && precio) {
+    lines.push(
+      '',
+      '💰 Valor: ' + precio,
+      '',
+      'Para el pago:',
+      '🏦 Bancolombia Ahorros: 91257857099',
+      '📱 Nequi: 3136467945',
+      '🔑 Llave: 1010124692',
+      'Titular: Jessica Andrea Ocampo Barbosa'
+    );
+  }
   lines.push(
     '',
-    'Formas de pago:',
-    'Bancolombia Ahorros: 91257857099',
-    'Llave: 1010124692',
-    'Nequi: 3136467945',
-    'Titular: Jessica Andrea Ocampo Barbosa',
-    '',
-    'Hasta pronto. Gracias por confiar en nuestros servicios.',
-    '- Jessica Ocampo Fisioterapeuta'
+    'Cualquier duda me avisas. Hasta pronto! 😊',
+    '— Jessica Ocampo Fisioterapeuta'
   );
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(lines.join('\n'));
 }
