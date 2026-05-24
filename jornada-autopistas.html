@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Jornada Empresarial — Jessica Ocampo Fisioterapeuta</title>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
@@ -178,7 +177,7 @@
     gap: 8px;
   }
 
-  #qrCanvas {
+  #qrImg {
     border-radius: 8px;
     display: block;
   }
@@ -383,7 +382,10 @@
     <div class="qr-box">
       <!-- QR generado dinámicamente -->
       <div class="qr-left">
-        <canvas id="qrCanvas"></canvas>
+        <img id="qrImg"
+             src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=H&data=https%3A%2F%2Fforms.gle%2FaMfrBxFJpJBvuQgy9"
+             width="200" height="200"
+             alt="QR Formulario Jessica Ocampo">
         <div class="qr-scan-label">Escanea aquí</div>
       </div>
 
@@ -452,19 +454,6 @@
 
 </div><!-- /wrap -->
 
-<script>
-  QRCode.toCanvas(
-    document.getElementById('qrCanvas'),
-    'https://forms.gle/aMfrBxFJpJBvuQgy9',
-    {
-      width: 200,
-      margin: 1,
-      color: { dark: '#07111f', light: '#ffffff' },
-      errorCorrectionLevel: 'H'
-    },
-    function(err) { if (err) console.error('QR error:', err); }
-  );
-</script>
 
 </body>
 </html>
