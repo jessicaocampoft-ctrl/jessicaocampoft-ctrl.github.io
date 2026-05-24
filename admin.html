@@ -780,7 +780,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 
       <!-- Banner tareas pendientes -->
       <div id="bannerTareas" style="display:none;background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.3);border-radius:10px;padding:12px 18px;margin-bottom:16px;align-items:center;gap:12px;flex-wrap:wrap">
-        <span style="font-size:1.1rem">✅</span>
+        <span style="font-size:1.1rem">\u2705</span>
         <span style="flex:1;font-size:.88rem;color:#065f46" id="bannerTareasTxt">Tienes tareas de seguimiento pendientes hoy</span>
         <button class="btn btn-sm" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-b);cursor:pointer" onclick="showView('tareas')">Ir a tareas →</button>
       </div>
@@ -946,7 +946,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
       </div>
       <div style="display:flex;flex-direction:column;gap:20px">
         <div class="card">
-          <div class="card-title">💪 Descarga muscular <span style="font-size:.78rem;font-weight:400;color:var(--muted)">(2 días después)</span></div>
+          <div class="card-title">\uD83D\uDCAA Descarga muscular <span style="font-size:.78rem;font-weight:400;color:var(--muted)">(2 días después)</span></div>
           <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Variables: {nombre}, {fecha_sesion}, {tipo_servicio}, {dias_desde_sesion}</div>
           <textarea id="tplDescarga" rows="4" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:10px 12px;outline:none;resize:vertical" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
           <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="guardarPlantillaTarea('descarga')">Guardar</button>
@@ -1034,7 +1034,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 
         <!-- ── TOGGLE CITA / EVENTO ── -->
         <div class="nc-toggle" style="margin-bottom:20px">
-          <button class="nc-toggle-btn active" id="toggleCita" onclick="switchNuevaMode('cita')">🗓️ Cita de paciente</button>
+          <button class="nc-toggle-btn active" id="toggleCita" onclick="switchNuevaMode('cita')">\uD83D\uDDD3\uFE0F Cita de paciente</button>
           <button class="nc-toggle-btn" id="toggleEvento" onclick="switchNuevaMode('evento')">⚡ Evento</button>
         </div>
 
@@ -1647,7 +1647,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 
       <!-- Meta mensual -->
       <div class="card" style="margin-bottom:20px">
-        <div class="card-title">🎯 Meta mensual de ingresos</div>
+        <div class="card-title">\uD83C\uDFAF Meta mensual de ingresos</div>
         <div class="meta-input-row">
           <label style="font-size:.85rem;color:var(--muted)">Meta:</label>
           <input type="text" id="metaInputFin" placeholder="Ej: 10.000.000" oninput="previewMetaFin(this.value)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
@@ -1710,7 +1710,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             <div id="metricPacientes"></div>
           </div>
           <div class="card">
-            <div class="card-title" style="margin-bottom:14px">❌ Cancelaciones últimos 4 meses</div>
+            <div class="card-title" style="margin-bottom:14px">\u274C Cancelaciones últimos 4 meses</div>
             <div id="metricCancelacion"></div>
           </div>
 
@@ -1724,7 +1724,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             <div id="metricIngresoPorServicio"></div>
           </div>
           <div class="card">
-            <div class="card-title" style="margin-bottom:14px">🎯 Proyección mes actual vs meta</div>
+            <div class="card-title" style="margin-bottom:14px">\uD83C\uDFAF Proyección mes actual vs meta</div>
             <div id="metricProyeccion"></div>
           </div>
           <div class="card">
@@ -1771,7 +1771,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 
       <!-- Ingresos por día / semana -->
       <div style="margin-top:20px">
-        <div class="fin-section-title">🗓️ Ingresos detallados + Análisis financiero</div>
+        <div class="fin-section-title">\uD83D\uDDD3\uFE0F Ingresos detallados + Análisis financiero</div>
         <div class="card">
           <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
             <div style="display:flex;gap:6px">
@@ -1796,8 +1796,8 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
         <div class="pago-modal-sub" id="pagoModalNombre"></div>
         <div class="pago-metodos">
           <button class="pago-metodo-btn" onclick="confirmarPago('Efectivo')">💵 Efectivo</button>
-          <button class="pago-metodo-btn" onclick="confirmarPago('Nequi')">📱 Nequi</button>
-          <button class="pago-metodo-btn" onclick="confirmarPago('Bancolombia')">🏦 Bancolombia</button>
+          <button class="pago-metodo-btn" onclick="confirmarPago('Nequi')">\uD83D\uDCF1 Nequi</button>
+          <button class="pago-metodo-btn" onclick="confirmarPago('Bancolombia')">\uD83C\uDFE6 Bancolombia</button>
           <button class="pago-metodo-btn" onclick="confirmarPago('Transferencia')">↗ Transferencia</button>
         </div>
         <button class="pago-metodo-btn" style="width:100%;color:var(--muted);font-size:.78rem" onclick="confirmarPago('')">Marcar como pendiente</button>
@@ -2986,27 +2986,27 @@ function waLink(tel, nombre, fecha, hora, serv, precio, modalidad) {
     ? '*' + serv + '* — ' + ordinalES(infoSes.numero) + ' sesion de ' + infoSes.total
     : '*' + serv + '*';
   const lines = [
-    'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada ✅',
+    'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada \u2705',
     '',
     servLine,
-    '🗓️ ' + waFechaES(fecha) + ' · ' + waAmPm(hora),
-    '📍 ' + (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
+    '\uD83D\uDDD3\uFE0F ' + waFechaES(fecha) + ' · ' + waAmPm(hora),
+    '\uD83D\uDCCD ' + (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
   ];
   if (conPago && precio) {
     lines.push(
       '',
-      '⭐ Valor: *' + precio + '*',
+      '\u2B50 Valor: *' + precio + '*',
       '',
       'Para el pago:',
-      '🏦 Bancolombia Ahorros: 91257857099',
-      '📱 Nequi: 3136467945',
-      '🗝️ Llave: 1010124692',
+      '\uD83C\uDFE6 Bancolombia Ahorros: 91257857099',
+      '\uD83D\uDCF1 Nequi: 3136467945',
+      '\uD83D\uDDDD\uFE0F Llave: 1010124692',
       'Titular: Jessica Andrea Ocampo Barbosa'
     );
   }
   lines.push(
     '',
-    'Cualquier duda me avisas. Hasta pronto! 😊',
+    'Cualquier duda me avisas. Hasta pronto! \uD83D\uDE0A',
     '— Jessica Ocampo Fisioterapeuta'
   );
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(lines.join('\n'));
@@ -3020,7 +3020,7 @@ function waLinkRec(tel, nombre, fecha, hora, serv) {
   const sesStr  = infoSes
     ? 'tu ' + ordinalES(infoSes.numero) + ' sesion de ' + infoSes.total + ' de *' + serv + '*'
     : 'tu cita de *' + serv + '*';
-  const msg = 'Hola ' + waNombre(nombre) + '! 🗓️ Te recuerdo ' + sesStr + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda. 💪\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + waNombre(nombre) + '! \uD83D\uDDD3\uFE0F Te recuerdo ' + sesStr + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda. \uD83D\uDCAA\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
@@ -3042,8 +3042,8 @@ function waLinkSeg(tel, nombre, serv, notaAdmin) {
   const paraMatch = notaAdmin && notaAdmin.match(/\[PARA:\s*([^\]]+)\]/i);
   const paraQuien = paraMatch ? paraMatch[1].trim() : null;
   const msg = paraQuien
-    ? 'Hola ' + waNombre(nombre) + '! 👋 Espero que esten bien. ¿Como le fue a ' + paraQuien + ' con ' + det + '? Quedo atenta a cualquier duda o molestia. 🙏\n\n— Jessica Ocampo Fisioterapeuta'
-    : 'Hola ' + waNombre(nombre) + '! 👋 Espero que estes bien. ¿Como te fue con ' + det + '? Quedo atenta a cualquier duda o molestia. 🙏\n\n— Jessica Ocampo Fisioterapeuta';
+    ? 'Hola ' + waNombre(nombre) + '! \uD83D\uDC4B Espero que esten bien. ¿Como le fue a ' + paraQuien + ' con ' + det + '? Quedo atenta a cualquier duda o molestia. \uD83D\uDE4F\n\n— Jessica Ocampo Fisioterapeuta'
+    : 'Hola ' + waNombre(nombre) + '! \uD83D\uDC4B Espero que estes bien. ¿Como te fue con ' + det + '? Quedo atenta a cualquier duda o molestia. \uD83D\uDE4F\n\n— Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
@@ -3052,7 +3052,7 @@ function waEncuesta(tel, nombre) {
   if (!t || t.length < 7) return null;
   const phone = t.length <= 10 ? '57'+t : t;
   const primero = waNombre(nombre);
-  const msg = 'Hola ' + primero + '! 😊 Tu opinion me importa mucho. ¿Me regalas 2 minutos para contarme como fue tu experiencia? 🙏\n\nhttps://forms.gle/srX1enyKN59n8TfQA\n\n⭐ *Premio!* Cuando termines la encuesta, enviame un pantallazo y en tu proxima sesion te regalo *10 min de Botas de Compresion* 💪\n\nGracias por confiar en mi! — Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + primero + '! \uD83D\uDE0A Tu opinion me importa mucho. ¿Me regalas 2 minutos para contarme como fue tu experiencia? \uD83D\uDE4F\n\nhttps://forms.gle/srX1enyKN59n8TfQA\n\n\u2B50 *Premio!* Cuando termines la encuesta, enviame un pantallazo y en tu proxima sesion te regalo *10 min de Botas de Compresion* \uD83D\uDCAA\n\nGracias por confiar en mi! — Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
@@ -3076,12 +3076,12 @@ function waBtnPasaporte(tel, nombre) {
   const t     = String(tel||'').replace(/\D/g,'');
   const phone = t.length <= 10 ? '57'+t : t;
   const primero = waNombre(nombre);
-  const msg = 'Hola ' + primero + '! 👋\nTe dejo tu Pasaporte de Beneficios — ahi vas a ver tu progreso despues de cada sesion.\n' + linkPaciente + '\n\n⭐ *Como ganar beneficios?*\nCada sesion sumas avances. Al llegar a:\n\n✅ *4 sesiones:* Descarga Localizada 10 min (zona de tu eleccion)\n✅ *8 sesiones:* Valoracion Funcional Express 10 min + PDF con resultados\n✅ *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresion\n✅ *16 sesiones:* Kinesiotape + Tens 15 min (Readaptacion completa)\n\nGuardalo y nos vemos pronto! 😊';
+  const msg = 'Hola ' + primero + '! \uD83D\uDC4B\nTe dejo tu Pasaporte de Beneficios — ahi vas a ver tu progreso despues de cada sesion.\n' + linkPaciente + '\n\n\u2B50 *Como ganar beneficios?*\nCada sesion sumas avances. Al llegar a:\n\n\u2705 *4 sesiones:* Descarga Localizada 10 min (zona de tu eleccion)\n\u2705 *8 sesiones:* Valoracion Funcional Express 10 min + PDF con resultados\n\u2705 *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresion\n\u2705 *16 sesiones:* Kinesiotape + Tens 15 min (Readaptacion completa)\n\nGuardalo y nos vemos pronto! \uD83D\uDE0A';
   const waUrl = t.length >= 7
     ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg)
     : 'https://wa.me/?text=' + encodeURIComponent(msg);
-  return '<a href="' + linkAdmin + '" target="_blank" class="btn btn-passport btn-sm" title="Abrir en modo admin">🎯 Pasaporte</a>'
-       + '<a href="' + waUrl + '" target="_blank" class="btn btn-teal btn-sm" title="Enviar link al paciente por WhatsApp" style="margin-left:4px">📲</a>';
+  return '<a href="' + linkAdmin + '" target="_blank" class="btn btn-passport btn-sm" title="Abrir en modo admin">\uD83C\uDFAF Pasaporte</a>'
+       + '<a href="' + waUrl + '" target="_blank" class="btn btn-teal btn-sm" title="Enviar link al paciente por WhatsApp" style="margin-left:4px">\uD83D\uDCF2</a>';
 }
 
 function toast(msg, type='ok') {
@@ -3451,7 +3451,7 @@ async function changeStatus(id, status) {
         const t = String(cita.telefono||'').replace(/\D/g,'');
         const phone = t.length <= 10 ? '57'+t : t;
         if (t.length >= 7 && confirm('¿Enviarle mensaje de reagendamiento a ' + cita.nombre + '?')) {
-          const msg = 'Hola ' + waNombre(cita.nombre) + '! 🙏 Vi que no pudiste venir hoy. Espero que todo este bien. Cuando quieras reagendamos, dime que dias te quedan mejor y coordinamos. 😊 — Jessica Ocampo Fisioterapeuta';
+          const msg = 'Hola ' + waNombre(cita.nombre) + '! \uD83D\uDE4F Vi que no pudiste venir hoy. Espero que todo este bien. Cuando quieras reagendamos, dime que dias te quedan mejor y coordinamos. \uD83D\uDE0A — Jessica Ocampo Fisioterapeuta';
           window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
         }
       }
@@ -4464,8 +4464,8 @@ function renderPacientes() {
           <button class="btn btn-ghost btn-sm" onclick="verHistorialPac(${idx})">Historial</button>
           ${waBtn(p.telefono,p.nombre,'','','','WA')}
           <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${p.telefono||''}','${p.nombre.replace(/'/g,"\\'")}','${(p.ultimoServicio||'').replace(/'/g,"\\'")}')">💬</button>
-          ${(()=>{const u=waEncuesta(p.telefono,p.nombre);return u?`<a href="${u}" target="_blank" class="btn btn-ghost btn-sm" title="Enviar encuesta de satisfacción por WhatsApp">⭐ Encuesta</a>`:''})()}
-          <a href="https://jessicaocampoft-ctrl.github.io/pasaporte.html?nombre=${encodeURIComponent(p.nombre)}" target="_blank" class="btn btn-passport btn-sm">🎯 Pasaporte</a>
+          ${(()=>{const u=waEncuesta(p.telefono,p.nombre);return u?`<a href="${u}" target="_blank" class="btn btn-ghost btn-sm" title="Enviar encuesta de satisfacción por WhatsApp">\u2B50 Encuesta</a>`:''})()}
+          <a href="https://jessicaocampoft-ctrl.github.io/pasaporte.html?nombre=${encodeURIComponent(p.nombre)}" target="_blank" class="btn btn-passport btn-sm">\uD83C\uDFAF Pasaporte</a>
           <button class="btn btn-edit btn-sm" onclick="editarPacienteIdx(${idx})">✏️ Editar</button>
           <button class="btn btn-danger btn-sm" onclick="borrarPaciente(${idx})">🗑️ Eliminar</button>
         </div>
@@ -5259,11 +5259,11 @@ function _parseVoice(text) {
 // Mensajes predefinidos con el nombre del paciente
 function msgSemana4(nombre) {
   const primero = nombre.split(' ')[0];
-  return `Hola ${primero}! 👋 Soy Jessica Ocampo Fisioterapeuta. Ya vamos en la semana 4 desde tu ultima descarga muscular — la proxima semana seria el momento ideal para hacerla antes de que el cuerpo empiece a acumular tension de nuevo. ¿Te agendo? 💪`;
+  return `Hola ${primero}! \uD83D\uDC4B Soy Jessica Ocampo Fisioterapeuta. Ya vamos en la semana 4 desde tu ultima descarga muscular — la proxima semana seria el momento ideal para hacerla antes de que el cuerpo empiece a acumular tension de nuevo. ¿Te agendo? \uD83D\uDCAA`;
 }
 function msgSemana5(nombre) {
   const primero = nombre.split(' ')[0];
-  return `Hola ${primero}! 👋 Soy Jessica Ocampo Fisioterapeuta. Ya se cumplieron las 5 semanas desde tu ultima sesion de descarga — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ¿Te agendo esta semana? 💪`;
+  return `Hola ${primero}! \uD83D\uDC4B Soy Jessica Ocampo Fisioterapeuta. Ya se cumplieron las 5 semanas desde tu ultima sesion de descarga — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ¿Te agendo esta semana? \uD83D\uDCAA`;
 }
 function waRecordatorio(tel, nombre, semanas) {
   const t = String(tel||'').replace(/\D/g,'');
@@ -5299,7 +5299,7 @@ function renderRecordatorios(d) {
 
   if (total === 0) {
     cont.innerHTML = `<div class="empty" style="padding:60px 20px">
-      <p style="font-size:1.1rem">✅ Todos los pacientes están al día</p>
+      <p style="font-size:1.1rem">\u2705 Todos los pacientes están al día</p>
       <p style="margin-top:8px;font-size:.85rem">No hay pacientes con más de 4 semanas sin sesión.</p>
     </div>`;
     return;
@@ -5377,7 +5377,7 @@ function recCard(p, semanas) {
            </button>`
         : `<span style="font-size:.78rem;color:var(--muted);padding:5px 8px">Sin email</span>`}
       <button type="button" class="btn btn-ghost btn-sm" onclick="agendarDesdePacienteRec('${encodeURIComponent(p.nombre)}','${encodeURIComponent(p.telefono||'')}','${encodeURIComponent(p.email||'')}')">+ Agendar</button>
-      ${(()=>{const u=waEncuesta(p.telefono,p.nombre);return u?`<a href="${u}" target="_blank" class="btn btn-ghost btn-sm" title="Enviar encuesta de satisfacción por WhatsApp">⭐ Encuesta</a>`:''})()}
+      ${(()=>{const u=waEncuesta(p.telefono,p.nombre);return u?`<a href="${u}" target="_blank" class="btn btn-ghost btn-sm" title="Enviar encuesta de satisfacción por WhatsApp">\u2B50 Encuesta</a>`:''})()}
     </div>
   </div>`;
 }
@@ -5397,7 +5397,7 @@ async function enviarEmailsRecordatorio() {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=sendReminders&token=${encodeURIComponent(TOKEN)}`);
     const d = await r.json();
     if (d.ok) {
-      toast(`✅ ${d.sent} email(s) enviados · ${d.skipped} sin email (envía WhatsApp manualmente)`);
+      toast(`\u2705 ${d.sent} email(s) enviados · ${d.skipped} sin email (envía WhatsApp manualmente)`);
       // Marcar emails enviados localmente
       if (_remData) {
         [...(_remData.semana4||[]), ...(_remData.semana5||[])].forEach(p => {
@@ -5637,10 +5637,10 @@ function _segCard(p) {
   const sujeto5 = paraQuien ? `la última sesión de descarga muscular ${zonaDesc} de ${paraQuien}` : `tu última sesión de descarga muscular ${zonaDesc}`;
   const cierre3 = paraQuien ? '¿Reagendamos?' : '¿Te agendo?';
   const cierre4 = paraQuien ? '¿Reagendamos esta semana?' : '¿Te agendo esta semana?';
-  const cierre5 = paraQuien ? '¿Cuando les viene bien retomar? Cuentame y coordinamos. 💪' : '¿Cuando te viene bien retomar? Cuentame y coordinamos. 💪';
-  const msg3 = `Hola ${primero}! 👋 Soy Jessica Ocampo Fisioterapeuta. Ya van 3 semanas desde ${sujeto3}. La proxima semana seria el momento ideal para reagendar antes de que el cuerpo empiece a acumular tension. ${cierre3}`;
-  const msg4 = `Hola ${primero}! 👋 Soy Jessica Ocampo Fisioterapeuta. Ya se cumplieron las 4 semanas desde ${sujeto4} — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ${cierre4}`;
-  const msg5 = `Hola ${primero}! 👋 Soy Jessica Ocampo Fisioterapeuta. Hace mas de un mes desde ${sujeto5}. El cuerpo ya empieza a acumular tension de nuevo. ${cierre5}`;
+  const cierre5 = paraQuien ? '¿Cuando les viene bien retomar? Cuentame y coordinamos. \uD83D\uDCAA' : '¿Cuando te viene bien retomar? Cuentame y coordinamos. \uD83D\uDCAA';
+  const msg3 = `Hola ${primero}! \uD83D\uDC4B Soy Jessica Ocampo Fisioterapeuta. Ya van 3 semanas desde ${sujeto3}. La proxima semana seria el momento ideal para reagendar antes de que el cuerpo empiece a acumular tension. ${cierre3}`;
+  const msg4 = `Hola ${primero}! \uD83D\uDC4B Soy Jessica Ocampo Fisioterapeuta. Ya se cumplieron las 4 semanas desde ${sujeto4} — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ${cierre4}`;
+  const msg5 = `Hola ${primero}! \uD83D\uDC4B Soy Jessica Ocampo Fisioterapeuta. Hace mas de un mes desde ${sujeto5}. El cuerpo ya empieza a acumular tension de nuevo. ${cierre5}`;
 
   const wa3 = hasWA ? `https://wa.me/${phone}?text=${encodeURIComponent(msg3)}` : null;
   const wa4 = hasWA ? `https://wa.me/${phone}?text=${encodeURIComponent(msg4)}` : null;
@@ -5691,8 +5691,8 @@ function _segCardReadap(p) {
 
   const msgReadap = zona
     ? paraQuienR
-      ? `Hola ${primero}! 👋 Soy Jessica Ocampo Fisioterapeuta. ¿Como ha estado ${paraQuienR} con el proceso de readaptacion funcional de ${zona}? Queria saber como se siente y si quieren continuar con el plan. ¿Me cuentas como va? 💪`
-      : `Hola ${primero}! 👋 Soy Jessica Ocampo Fisioterapeuta. ¿Como has estado con tu proceso de readaptacion funcional de ${zona}? Queria saber como te sientes y si quieres continuar con tu plan. ¿Me cuentas como vas? 💪`
+      ? `Hola ${primero}! \uD83D\uDC4B Soy Jessica Ocampo Fisioterapeuta. ¿Como ha estado ${paraQuienR} con el proceso de readaptacion funcional de ${zona}? Queria saber como se siente y si quieren continuar con el plan. ¿Me cuentas como va? \uD83D\uDCAA`
+      : `Hola ${primero}! \uD83D\uDC4B Soy Jessica Ocampo Fisioterapeuta. ¿Como has estado con tu proceso de readaptacion funcional de ${zona}? Queria saber como te sientes y si quieres continuar con tu plan. ¿Me cuentas como vas? \uD83D\uDCAA`
     : null;
   const waReadap = (hasWA && msgReadap) ? `https://wa.me/${phone}?text=${encodeURIComponent(msgReadap)}` : null;
 
@@ -6192,7 +6192,7 @@ function renderMetricas() {
   const totalPagos = citas.length || 1;
   const pagoEl = document.getElementById('metricPagos');
   if (pagoEl) {
-    const iconos = { Efectivo:'💵', Nequi:'📱', Bancolombia:'🏦', Transferencia:'↗', Pendiente:'⏳' };
+    const iconos = { Efectivo:'💵', Nequi:'\uD83D\uDCF1', Bancolombia:'\uD83C\uDFE6', Transferencia:'↗', Pendiente:'⏳' };
     pagoEl.innerHTML = pagoArr.length
       ? pagoArr.map(([m, n], i) => `
         <div class="metric-row">
@@ -6459,7 +6459,7 @@ function renderMetricas() {
       horRentEl.innerHTML = `
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:16px">
           <div style="padding:10px 14px;background:rgba(27,191,176,.08);border:1px solid rgba(27,191,176,.25);border-radius:10px">
-            <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:2px">⭐ Hora más rentable</div>
+            <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:2px">\u2B50 Hora más rentable</div>
             <div style="font-family:var(--font-h);font-size:1.2rem;font-weight:700;color:var(--primary)">${top.label}</div>
             <div style="font-size:.75rem;color:var(--muted);margin-top:2px">$${top.total.toLocaleString('es-CO')} total · ${top.count} citas</div>
           </div>
@@ -6567,7 +6567,7 @@ function _checkCobrosPendientes() {
   if (txtEl) txtEl.textContent = `${pendientes.length} cobro${pendientes.length !== 1 ? 's' : ''} pendiente${pendientes.length !== 1 ? 's' : ''} · 3+ días sin registrar pago`;
   if (lista) lista.innerHTML = pendientes.map(c => {
     const tel = (c.telefono || '').replace(/\D/g, '');
-    const msg = `Hola ${(c.nombre || '').split(' ')[0]}! ❗ Te recuerdo que queda pendiente el pago de tu sesion del ${fmtDate(normDate(c.fecha))} por ${c.precio}. ¿Cuando lo puedes hacer efectivo? 🙏`;
+    const msg = `Hola ${(c.nombre || '').split(' ')[0]}! \u2757 Te recuerdo que queda pendiente el pago de tu sesion del ${fmtDate(normDate(c.fecha))} por ${c.precio}. ¿Cuando lo puedes hacer efectivo? \uD83D\uDE4F`;
     const wa  = tel.length >= 7 ? `https://wa.me/57${tel.slice(-10)}?text=${encodeURIComponent(msg)}` : null;
     return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.82rem;padding:7px 12px;background:rgba(255,255,255,.6);border-radius:7px;gap:10px;flex-wrap:wrap">
       <span><strong>${c.nombre || '—'}</strong> · ${fmtDate(normDate(c.fecha))} · <span style="color:#92400e;font-weight:600">${c.precio}</span></span>
@@ -7137,7 +7137,7 @@ function _analisisSemana({ totalSem, nCitas, ticketProm, diffSem, pctDiff, mejor
     else if (d.citas.length < hist.avgCitas*0.5 && hist.avgCitas>=1) gapsDay.push({...d, avgCitas:hist.avgCitas, avgTotal:hist.avgTotal});
   });
 
-  // ── ✅ LO QUE HICISTE BIEN (para repetir) ──
+  // ── \u2705 LO QUE HICISTE BIEN (para repetir) ──
   if (pctDiff!==null && pctDiff>=20)
     positivos.push(`Semana excelente: ingresaste <strong>${pctDiff}% más</strong> que la semana anterior ($${Math.abs(diffSem).toLocaleString('es-CO')} adicionales). Mantén ese ritmo.`);
   else if (pctDiff!==null && pctDiff>=5)
@@ -7228,8 +7228,8 @@ function _analisisMes({ totalMes, nCitasMes, ticketM, diffMes, pctDiffM, mejorDi
   // Meta
   if (meta) {
     const pctMeta = Math.round(totalMes/meta*100);
-    if (pctMeta >= 100) positivos.push(`🎯 ¡Meta cumplida! Alcanzaste el <strong>${pctMeta}%</strong> de tu meta de $${meta.toLocaleString('es-CO')}.`);
-    else if (pctMeta >= 80) recs.push(`🎯 Alcanzaste el ${pctMeta}% de la meta. Faltaron $${(meta-totalMes).toLocaleString('es-CO')} — considera intensificar en días con espacio disponible.`);
+    if (pctMeta >= 100) positivos.push(`\uD83C\uDFAF ¡Meta cumplida! Alcanzaste el <strong>${pctMeta}%</strong> de tu meta de $${meta.toLocaleString('es-CO')}.`);
+    else if (pctMeta >= 80) recs.push(`\uD83C\uDFAF Alcanzaste el ${pctMeta}% de la meta. Faltaron $${(meta-totalMes).toLocaleString('es-CO')} — considera intensificar en días con espacio disponible.`);
     else if (pctMeta < 60) alertas.push(`⚠️ Solo el ${pctMeta}% de la meta mensual. Considera revisar tu estrategia de precios o captar nuevos pacientes.`);
   }
 
@@ -7276,7 +7276,7 @@ function _renderAnalisis(titulo, positivos, alertas, recs) {
     ? `<div style="margin-bottom:12px">${items.map(t=>`<div style="display:flex;gap:10px;padding:10px 14px;background:${bg};border:1px solid ${border};border-radius:8px;margin-bottom:6px;font-size:.83rem;line-height:1.5"><span>${icon}</span><span style="color:${color}">${t}</span></div>`).join('')}</div>` : '';
   return `<div style="border-top:1px solid var(--border);padding-top:20px">
     <div style="font-family:var(--font-h);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--text)">${titulo}</div>
-    ${block(positivos,'rgba(5,150,105,.06)','rgba(5,150,105,.2)','#065f46','✅')}
+    ${block(positivos,'rgba(5,150,105,.06)','rgba(5,150,105,.2)','#065f46','\u2705')}
     ${block(alertas,'rgba(239,68,68,.06)','rgba(239,68,68,.2)','#991b1b','⚠️')}
     ${block(recs,'rgba(27,191,176,.06)','rgba(27,191,176,.2)','#0e7c73','💡')}
   </div>`;
@@ -7286,9 +7286,9 @@ function _renderAnalisis(titulo, positivos, alertas, recs) {
 // ── TAREAS DEL DÍA ──
 // ══════════════════════════════════════════════════════════════
 const _TPL_DEFAULT = {
-  descarga:     'Hola {nombre}! 👋 Soy Jessica. Han pasado {dias_desde_sesion} dias desde tu {tipo_servicio} del {fecha_sesion}. Como te has sentido? Notas mejoria en la zona trabajada? Cualquier molestia me cuentas para ajustar tu proximo plan. 💪',
-  valoracion:   'Hola {nombre}! 👋 Soy Jessica. Como te has sentido despues de la {tipo_servicio} de ayer ({fecha_sesion})? Si tienes alguna duda sobre los hallazgos o el plan que conversamos, quedo atenta. 🙏',
-  readaptacion: 'Hola {nombre}! 👋 Soy Jessica. Como te ha ido con los ejercicios del plan de ayer ({fecha_sesion})? Recuerda hacer las repeticiones que acordamos. Si sientes alguna molestia o duda, me cuentas para ajustarlo. 💪'
+  descarga:     'Hola {nombre}! \uD83D\uDC4B Soy Jessica. Han pasado {dias_desde_sesion} dias desde tu {tipo_servicio} del {fecha_sesion}. Como te has sentido? Notas mejoria en la zona trabajada? Cualquier molestia me cuentas para ajustar tu proximo plan. \uD83D\uDCAA',
+  valoracion:   'Hola {nombre}! \uD83D\uDC4B Soy Jessica. Como te has sentido despues de la {tipo_servicio} de ayer ({fecha_sesion})? Si tienes alguna duda sobre los hallazgos o el plan que conversamos, quedo atenta. \uD83D\uDE4F',
+  readaptacion: 'Hola {nombre}! \uD83D\uDC4B Soy Jessica. Como te ha ido con los ejercicios del plan de ayer ({fecha_sesion})? Recuerda hacer las repeticiones que acordamos. Si sientes alguna molestia o duda, me cuentas para ajustarlo. \uD83D\uDCAA'
 };
 let _tareaFiltros = new Set(['pendiente','vencida','completada']);
 
@@ -7402,7 +7402,7 @@ function _renderTareasLista(tareas) {
       </div>
       ${estado !== 'completada'
         ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-            <a href="${waLink}" target="_blank" class="btn btn-teal btn-sm" style="text-decoration:none" onclick="marcarTareaWA('${key}')">📱 Enviar WA</a>
+            <a href="${waLink}" target="_blank" class="btn btn-teal btn-sm" style="text-decoration:none" onclick="marcarTareaWA('${key}')">\uD83D\uDCF1 Enviar WA</a>
             <button class="btn btn-ghost btn-sm" onclick="marcarTareaCompletada('${key}')">✓ Completada</button>
             <button class="btn btn-ghost btn-sm" onclick="posponerTarea('${key}')">⏭ Posponer 1 día</button>
             <button class="btn btn-ghost btn-sm" style="color:#dc2626" onclick="omitirTarea('${key}')">🚫 Omitir</button>
@@ -7497,19 +7497,19 @@ function renderPaquetes() {
     const _pkWa    = (msg) => pkTel.length >= 7 ? `https://wa.me/57${pkTel.slice(-10)}?text=${encodeURIComponent(msg)}` : null;
     let alerta = '';
     if (agotado) {
-      const waLink = _pkWa(`Hola ${pkNombre}! ❗ Tu paquete "${p.nombre||''}" se agoto. ¿Quieres renovarlo para continuar con tu tratamiento? Te paso las opciones disponibles. 💪`);
+      const waLink = _pkWa(`Hola ${pkNombre}! \u2757 Tu paquete "${p.nombre||''}" se agoto. ¿Quieres renovarlo para continuar con tu tratamiento? Te paso las opciones disponibles. \uD83D\uDCAA`);
       alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;font-size:.8rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <span style="color:#dc2626">🔴 Paquete agotado — proponer renovación</span>
         ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-teal btn-sm" style="text-decoration:none;font-size:.75rem">💬 WA Renovación</a>` : ''}
       </div>`;
     } else if (penultimo) {
-      const waLink = _pkWa(`Hola ${pkNombre}! ❗ Te aviso que te queda solo 1 sesion en tu paquete "${p.nombre||''}". ¿Renovamos antes de que se acabe para no perder el ritmo? 💪`);
+      const waLink = _pkWa(`Hola ${pkNombre}! \u2757 Te aviso que te queda solo 1 sesion en tu paquete "${p.nombre||''}". ¿Renovamos antes de que se acabe para no perder el ritmo? \uD83D\uDCAA`);
       alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:8px;font-size:.8rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <span style="color:#92400e">⚠️ Última sesión restante — ofrecer renovación</span>
         ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-sm" style="background:#f59e0b;color:#fff;border:none;text-decoration:none;font-size:.75rem">💬 WA Renovación</a>` : ''}
       </div>`;
     } else if (vencido) {
-      const waLink = _pkWa(`Hola ${pkNombre}! ❌ Tu paquete "${p.nombre||''}" vencio el ${fmtDate(p.vencimiento)}. Si quieres seguir con tu plan, podemos renovarlo ahora. ¿Te interesa? 🙏`);
+      const waLink = _pkWa(`Hola ${pkNombre}! \u274C Tu paquete "${p.nombre||''}" vencio el ${fmtDate(p.vencimiento)}. Si quieres seguir con tu plan, podemos renovarlo ahora. ¿Te interesa? \uD83D\uDE4F`);
       alerta = `<div style="margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:.8rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <span style="color:#dc2626">⏰ Paquete vencido (${fmtDate(p.vencimiento)})</span>
         ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-err btn-sm" style="text-decoration:none;font-size:.75rem">💬 WA Recordar</a>` : ''}
@@ -7651,7 +7651,7 @@ function renderEmpresas() {
       ${e.ultimoContacto?`<div style="font-size:.78rem;color:var(--muted)">Último contacto: ${fmtDate(e.ultimoContacto)}</div>`:''}
       ${e.notas?`<div style="font-size:.78rem;color:var(--muted);margin-top:4px;white-space:pre-line">${e.notas}</div>`:''}
       <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
-        ${tel?`<a href="https://wa.me/57${tel}" target="_blank" class="btn btn-teal btn-sm" style="text-decoration:none">📱 WA</a>`:''}
+        ${tel?`<a href="https://wa.me/57${tel}" target="_blank" class="btn btn-teal btn-sm" style="text-decoration:none">\uD83D\uDCF1 WA</a>`:''}
         <button class="btn btn-ghost btn-sm" onclick="editarEmpresa(${realIdx})">✏️ Editar</button>
         <button class="btn btn-ghost btn-sm" style="color:#dc2626" onclick="borrarEmpresa(${realIdx})">🗑️</button>
       </div>
@@ -8038,7 +8038,7 @@ function generarLinkPasaporte() {
   const tel = _pasTelefono.length >= 7
     ? 'https://wa.me/57' + _pasTelefono.slice(-10)
     : 'https://wa.me/';
-  const msg = `Hola ${nombre.split(' ')[0]}! 👋\nTe dejo tu Pasaporte de Beneficios — ahi vas a ver tu progreso despues de cada sesion.\n${link}\n\n⭐ *Como ganar beneficios?*\nCada sesion sumas avances. Al llegar a:\n\n✅ *4 sesiones:* Descarga Localizada 10 min (zona de tu eleccion)\n✅ *8 sesiones:* Valoracion Funcional Express 10 min + PDF con resultados\n✅ *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresion\n✅ *16 sesiones:* Kinesiotape + Tens 15 min (Readaptacion completa)\n\nGuardalo y nos vemos pronto! 😊`;
+  const msg = `Hola ${nombre.split(' ')[0]}! \uD83D\uDC4B\nTe dejo tu Pasaporte de Beneficios — ahi vas a ver tu progreso despues de cada sesion.\n${link}\n\n\u2B50 *Como ganar beneficios?*\nCada sesion sumas avances. Al llegar a:\n\n\u2705 *4 sesiones:* Descarga Localizada 10 min (zona de tu eleccion)\n\u2705 *8 sesiones:* Valoracion Funcional Express 10 min + PDF con resultados\n\u2705 *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresion\n\u2705 *16 sesiones:* Kinesiotape + Tens 15 min (Readaptacion completa)\n\nGuardalo y nos vemos pronto! \uD83D\uDE0A`;
   document.getElementById('pasWhatsApp').href = tel + '?text=' + encodeURIComponent(msg);
 
   if (typeof QRCode !== 'undefined') {
