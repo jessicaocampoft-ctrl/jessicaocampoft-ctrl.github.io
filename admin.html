@@ -6074,6 +6074,9 @@ function renderFinanzas() {
       .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===mes.m && +cy===mes.y; })
       .reduce((s,c) => s + parsePrecio(c.precio), 0)
       + calcIngresoPaquetesMes(mes.m, mes.y)
+      + (allData.eventos || [])
+          .filter(e => { const [cy,cm]=normDate(e.fecha).split('-'); return +cm===mes.m && +cy===mes.y; })
+          .reduce((s,e) => s + parsePrecio(e.cobro), 0)
   }));
   const maxVal = Math.max(...totales.map(t => t.total), 1);
   if (chartEl) {
@@ -6100,6 +6103,12 @@ function renderFinanzas() {
     .forEach(c => {
       const s = c.servicio || 'Sin servicio';
       servMap[s] = (servMap[s] || 0) + parsePrecio(c.precio);
+    });
+  (allData.eventos || [])
+    .filter(e => { const [cy,cm]=normDate(e.fecha).split('-'); return +cm===m && +cy===y; })
+    .forEach(e => {
+      const s = e.tipo || 'Evento externo';
+      servMap[s] = (servMap[s] || 0) + parsePrecio(e.cobro);
     });
   _getPkAsignados()
     .filter(p => { if (!p.fechaCompra) return false; const [py,pm]=p.fechaCompra.split('-'); return +pm===m && +py===y; })
@@ -7958,13 +7967,31 @@ function exportarCSV(modo) {
     citas = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
   }
 
+  // Agregar eventos externos como filas adicionales
+  let evts = (allData.eventos || []);
+  if (modo === 'mes') {
+    evts = evts.filter(e => { const [cy,cm]=normDate(e.fecha).split('-'); return +cm===m && +cy===y; });
+  }
+  const filasEventos = evts.map(e => ({
+    fecha: normDate(e.fecha), hora: e.horaInicio||'', nombre: e.titulo||'',
+    telefono: '', email: '', servicio: e.tipo||'Evento externo',
+    modalidad: '—', precio: e.cobro||'', estado: '⚡ Evento'
+  }));
+
   citas.sort((a,b) => normDate(a.fecha).localeCompare(normDate(b.fecha)));
+  filasEventos.sort((a,b) => a.fecha.localeCompare(b.fecha));
 
   const header = ['Fecha','Hora','Paciente','Teléfono','Email','Servicio','Modalidad','Valor','Estado'];
-  const rows = citas.map(c => [
-    normDate(c.fecha), c.hora||'', c.nombre||'', c.telefono||'', c.email||'',
-    c.servicio||'', c.modalidad||'', c.precio||'', c.estado||''
-  ]);
+  const rows = [
+    ...citas.map(c => [
+      normDate(c.fecha), c.hora||'', c.nombre||'', c.telefono||'', c.email||'',
+      c.servicio||'', c.modalidad||'', c.precio||'', c.estado||''
+    ]),
+    ...filasEventos.map(e => [
+      e.fecha, e.hora, e.nombre, e.telefono, e.email,
+      e.servicio, e.modalidad, e.precio, e.estado
+    ])
+  ].sort((a,b) => a[0].localeCompare(b[0]));
 
   const csvContent = [header, ...rows]
     .map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))
