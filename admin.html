@@ -3170,19 +3170,29 @@ function initDashboard() {
   document.getElementById('stMes').textContent      = mes;
   document.getElementById('stPacientes').textContent = pacs;
 
-  // Cobrado = solo citas del mes ya ocurridas (fecha <= hoy), no canceladas
+  // Cobrado = citas del mes ya ocurridas (fecha <= hoy) + eventos del mes ya ocurridos
   const citasMesAll = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
-  const cobrado = citasMesAll.filter(c => normDate(c.fecha) <= todayStr).reduce((s,c) => s + parsePrecio(c.precio), 0);
+  const cobradoCitas = citasMesAll.filter(c => normDate(c.fecha) <= todayStr).reduce((s,c) => s + parsePrecio(c.precio), 0);
+  const cobradoEventosMes = (allData.eventos || [])
+    .filter(e => { const [cy,cm]=normDate(e.fecha).split('-'); return +cm===m && +cy===y && normDate(e.fecha) <= todayStr; })
+    .reduce((s,e) => s + parsePrecio(e.cobro), 0);
+  const cobrado = cobradoCitas + cobradoEventosMes;
   document.getElementById('stCobrado').textContent = cobrado > 0 ? '$'+cobrado.toLocaleString('es-CO') : '—';
 
   const cobradoSemana = citas
     .filter(c => { const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; })
-    .reduce((s,c) => s + parsePrecio(c.precio), 0);
+    .reduce((s,c) => s + parsePrecio(c.precio), 0)
+    + (allData.eventos || [])
+      .filter(e => { const [cy,cm,cd]=normDate(e.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; })
+      .reduce((s,e) => s + parsePrecio(e.cobro), 0);
   document.getElementById('stCobradoSemana').textContent = cobradoSemana > 0 ? '$'+cobradoSemana.toLocaleString('es-CO') : '—';
 
   const cobradoHoy = citas
     .filter(c => normDate(c.fecha) === todayStr)
-    .reduce((s,c) => s + parsePrecio(c.precio), 0);
+    .reduce((s,c) => s + parsePrecio(c.precio), 0)
+    + (allData.eventos || [])
+      .filter(e => normDate(e.fecha) === todayStr)
+      .reduce((s,e) => s + parsePrecio(e.cobro), 0);
   document.getElementById('stCobradoHoy').textContent = cobradoHoy > 0 ? '$'+cobradoHoy.toLocaleString('es-CO') : '—';
 
   // Por cobrar = citas FUTURAS del mes + eventos futuros del mes con cobro
@@ -5947,7 +5957,10 @@ function calcCobradoMes() {
   const citasTotal = citasReales()
     .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y && normDate(c.fecha) <= todayStr; })
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
-  return citasTotal + calcIngresoPaquetesMes(m, y);
+  const eventosTotal = (allData.eventos || [])
+    .filter(e => { const [cy,cm]=normDate(e.fecha).split('-'); return +cm===m && +cy===y && normDate(e.fecha) <= todayStr; })
+    .reduce((s,e) => s + parsePrecio(e.cobro), 0);
+  return citasTotal + calcIngresoPaquetesMes(m, y) + eventosTotal;
 }
 
 // ══════════════════════════════════════════════════════════════
