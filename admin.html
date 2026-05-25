@@ -2095,7 +2095,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
           </button>
         </div>
         <!-- Badge de confirmación -->
-        <div id="pasConfirmBadge" style="display:none;margin-top:10px;display:none;align-items:center;gap:8px">
+        <div id="pasConfirmBadge" style="display:none;margin-top:10px;align-items:center;gap:8px">
           <span style="background:rgba(27,191,176,.12);color:var(--primary);border:1px solid var(--border);border-radius:20px;font-size:.78rem;font-weight:700;padding:3px 10px">✓ Paciente en base de datos</span>
           <span id="pasPhoneBadge" style="font-size:.78rem;color:var(--muted)"></span>
         </div>
@@ -3163,7 +3163,7 @@ function initDashboard() {
   const hoy    = citas.filter(c => normDate(c.fecha) === todayStr).length;
   const semana = citas.filter(c => { const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; }).length;
   const mes    = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; }).length;
-  const pacs   = new Set(citas.map(c => c.telefono || c.email)).size;
+  const pacs   = new Set(citas.map(c => c.telefono || c.email || (c.nombre||'').toLowerCase().trim())).size;
 
   document.getElementById('stHoy').textContent      = hoy;
   document.getElementById('stSemana').textContent   = semana;
@@ -3180,10 +3180,10 @@ function initDashboard() {
   document.getElementById('stCobrado').textContent = cobrado > 0 ? '$'+cobrado.toLocaleString('es-CO') : '—';
 
   const cobradoSemana = citas
-    .filter(c => { const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; })
+    .filter(c => { const f=normDate(c.fecha); const [cy,cm,cd]=f.split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW && f<=todayStr; })
     .reduce((s,c) => s + parsePrecio(c.precio), 0)
     + (allData.eventos || [])
-      .filter(e => { const [cy,cm,cd]=normDate(e.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; })
+      .filter(e => { const f=normDate(e.fecha); const [cy,cm,cd]=f.split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW && f<=todayStr; })
       .reduce((s,e) => s + parsePrecio(e.cobro), 0);
   document.getElementById('stCobradoSemana').textContent = cobradoSemana > 0 ? '$'+cobradoSemana.toLocaleString('es-CO') : '—';
 
@@ -3431,10 +3431,14 @@ function updateBadge() {
 }
 
 function resumenDiaWA() {
-  const hoy = allData.citas
-    .filter(c => normDate(c.fecha) === today() && c.estado !== 'Cancelada')
-    .sort((a,b) => a.hora.localeCompare(b.hora));
-  if (!hoy.length) { toast('No hay citas hoy', 'err'); return; }
+  const todayStr = today();
+  const hoy = citasReales()
+    .filter(c => normDate(c.fecha) === todayStr)
+    .sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+  const eventosHoy = (allData.eventos||[])
+    .filter(e => normDate(e.fecha) === todayStr)
+    .sort((a,b) => (a.horaInicio||'').localeCompare(b.horaInicio||''));
+  if (!hoy.length && !eventosHoy.length) { toast('No hay citas ni eventos hoy', 'err'); return; }
   const fecha = new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
   const lines = ['📋 *Agenda del ' + fecha + ':*', ''];
   hoy.forEach((c,i) => {
@@ -3443,7 +3447,15 @@ function resumenDiaWA() {
     lines.push('   Estado: ' + c.estado);
     lines.push('');
   });
-  lines.push('Total: ' + hoy.length + ' cita(s)');
+  if (eventosHoy.length) {
+    lines.push('⚡ *Eventos del día:*', '');
+    eventosHoy.forEach(e => {
+      lines.push('• ' + (e.horaInicio||'') + '–' + (e.horaFin||'') + ' — *' + (e.titulo||'') + '*');
+      lines.push('   ' + (e.tipo||'') + ' · ' + (e.cobro||''));
+      lines.push('');
+    });
+  }
+  lines.push('Total: ' + hoy.length + ' cita(s)' + (eventosHoy.length ? ' + ' + eventosHoy.length + ' evento(s)' : ''));
   window.open('https://wa.me/573136467945?text=' + encodeURIComponent(lines.join('\n')), '_blank');
 }
 
@@ -4327,6 +4339,7 @@ function clearNuevaCita() {
   planSel.selectedIndex=0; planSel.style.display='none';
   document.getElementById('ncMod').value='Presencial';
   document.getElementById('ncDate').value='';
+  document.getElementById('ncTime').value='';
   document.getElementById('ncAddrWrap').style.display='none';
   const dd = document.getElementById('pacDropdown');
   if (dd) dd.style.display='none';
@@ -6315,6 +6328,10 @@ function renderMetricas() {
     const s = c.servicio || 'Sin servicio';
     servCountMap[s] = (servCountMap[s] || 0) + 1;
   });
+  (allData.eventos || []).forEach(e => {
+    const s = e.tipo || 'Evento externo';
+    servCountMap[s] = (servCountMap[s] || 0) + 1;
+  });
   const servCountArr = Object.entries(servCountMap).sort((a,b) => b[1]-a[1]);
   const maxServCount = servCountArr[0] ? servCountArr[0][1] : 1;
   const servTopEl = document.getElementById('metricServicioTop');
@@ -6334,6 +6351,10 @@ function renderMetricas() {
   citas.forEach(c => {
     const s = c.servicio || 'Sin servicio';
     servIngMap[s] = (servIngMap[s] || 0) + parsePrecio(c.precio);
+  });
+  (allData.eventos || []).forEach(e => {
+    const s = e.tipo || 'Evento externo';
+    servIngMap[s] = (servIngMap[s] || 0) + parsePrecio(e.cobro);
   });
   const servIngArr = Object.entries(servIngMap).sort((a,b) => b[1]-a[1]);
   const maxServIng = servIngArr[0] ? servIngArr[0][1] : 1;
@@ -6606,7 +6627,7 @@ function _checkCobrosPendientes() {
     const f = normDate(c.fecha);
     if (!f) return false;
     const diff = Math.round((new Date(hoyStr + 'T12:00:00') - new Date(f + 'T12:00:00')) / 86400000);
-    return diff >= 1;
+    return diff >= 3;
   });
   const banner = document.getElementById('bannerCobros');
   const txtEl  = document.getElementById('bannerCobrosTxt');
@@ -6662,6 +6683,12 @@ function _checkAlertaSemanFloja(citas) {
       nSemActual++;
     }
   });
+  (allData.eventos || []).forEach(e => {
+    const f = normDate(e.fecha);
+    if (!f) return;
+    const fd = new Date(f + 'T12:00:00');
+    if (fd >= lunes && f <= hoyStr) totalSemActual += parsePrecio(e.cobro);
+  });
 
   // Calcular promedio semanal histórico (últimas 8 semanas completas)
   const semanasHist = [];
@@ -6675,6 +6702,10 @@ function _checkAlertaSemanFloja(citas) {
     citas.forEach(c => {
       const f = normDate(c.fecha);
       if (f && f >= lunesStr && f <= domStr) totalW += parsePrecio(c.precio);
+    });
+    (allData.eventos || []).forEach(e => {
+      const f = normDate(e.fecha);
+      if (f && f >= lunesStr && f <= domStr) totalW += parsePrecio(e.cobro);
     });
     if (totalW > 0) semanasHist.push(totalW);
   }
@@ -6853,11 +6884,13 @@ function renderIngresosDetalle() {
 
   // ── MODO DÍA ──
   if (_modoIngresos === 'dia') {
-    const citasDia = citas.filter(c => normDate(c.fecha) === fechaSel);
-    const total = citasDia.reduce((s,c) => s + parsePrecio(c.precio), 0);
+    const citasDia  = citas.filter(c => normDate(c.fecha) === fechaSel);
+    const evtsDia   = (allData.eventos||[]).filter(e => normDate(e.fecha) === fechaSel);
+    const total     = citasDia.reduce((s,c) => s + parsePrecio(c.precio), 0)
+                    + evtsDia.reduce((s,e) => s + parsePrecio(e.cobro), 0);
     const dObj = new Date(fechaSel+'T12:00:00');
     if (labelEl) labelEl.textContent = DIAS_NOM[dObj.getDay()] + ' ' + dObj.toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
-    if (!citasDia.length) {
+    if (!citasDia.length && !evtsDia.length) {
       resultEl.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:16px 0">Sin citas registradas para este día.</div>';
       if (analEl) analEl.innerHTML = '';
       return;
@@ -6867,11 +6900,12 @@ function renderIngresosDetalle() {
     citasDia.forEach(c => { srvDia[c.servicio||'—'] = (srvDia[c.servicio||'—']||0)+1; });
     const topSrvDia = Object.entries(srvDia).sort((a,b)=>b[1]-a[1])[0];
 
+    const totalItems = citasDia.length + evtsDia.length;
     resultEl.innerHTML = `
       <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:16px;flex-wrap:wrap">
         <span style="font-family:var(--font-h);font-size:1.6rem;color:var(--primary)">$${total.toLocaleString('es-CO')}</span>
-        <span style="font-size:.8rem;color:var(--muted)">${citasDia.length} cita${citasDia.length!==1?'s':''}</span>
-        <span style="font-size:.8rem;color:var(--muted)">· Ticket promedio: <strong>$${Math.round(total/citasDia.length).toLocaleString('es-CO')}</strong></span>
+        <span style="font-size:.8rem;color:var(--muted)">${citasDia.length} cita${citasDia.length!==1?'s':''}${evtsDia.length?' + '+evtsDia.length+' evento(s)':''}</span>
+        ${totalItems > 0 ? `<span style="font-size:.8rem;color:var(--muted)">· Ticket promedio: <strong>$${Math.round(total/totalItems).toLocaleString('es-CO')}</strong></span>` : ''}
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
         ${citasDia.sort((a,b)=>(a.hora||'').localeCompare(b.hora||'')).map(c => `
@@ -6880,6 +6914,13 @@ function renderIngresosDetalle() {
             <span style="flex:1;font-weight:500">${c.nombre||'—'}</span>
             <span style="color:var(--muted);flex:1;font-size:.78rem">${c.servicio||'—'}</span>
             <span style="font-family:var(--font-m);color:var(--primary)">$${parsePrecio(c.precio).toLocaleString('es-CO')}</span>
+          </div>`).join('')}
+        ${evtsDia.sort((a,b)=>(a.horaInicio||'').localeCompare(b.horaInicio||'')).map(e => `
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.82rem;padding:7px 10px;background:rgba(124,58,237,.07);border-radius:8px;gap:10px;border-left:3px solid #7c3aed">
+            <span style="color:var(--muted);min-width:44px">${e.horaInicio||'—'}</span>
+            <span style="flex:1;font-weight:500">⚡ ${e.titulo||'—'}</span>
+            <span style="color:var(--muted);flex:1;font-size:.78rem">${e.tipo||'Evento externo'}</span>
+            <span style="font-family:var(--font-m);color:#7c3aed">$${parsePrecio(e.cobro).toLocaleString('es-CO')}</span>
           </div>`).join('')}
       </div>`;
     if (analEl) analEl.innerHTML = '';
@@ -6897,7 +6938,9 @@ function renderIngresosDetalle() {
       const d = new Date(lunes); d.setDate(lunes.getDate()+i);
       const fStr = _ingFmt(d);
       const cs = citas.filter(c => normDate(c.fecha)===fStr);
-      dias.push({ fecha:fStr, dia:DIAS_NOM[d.getDay()], citas:cs, total:cs.reduce((s,c)=>s+parsePrecio(c.precio),0) });
+      const es = (allData.eventos||[]).filter(e => normDate(e.fecha)===fStr);
+      const totalEvts = es.reduce((s,e)=>s+parsePrecio(e.cobro),0);
+      dias.push({ fecha:fStr, dia:DIAS_NOM[d.getDay()], citas:cs, eventos:es, total:cs.reduce((s,c)=>s+parsePrecio(c.precio),0)+totalEvts });
     }
     const totalSem = dias.reduce((s,d)=>s+d.total,0);
     const nCitas   = dias.reduce((s,d)=>s+d.citas.length,0);
@@ -6911,8 +6954,10 @@ function renderIngresosDetalle() {
     let totalAnt = 0, nCitasAnt = 0;
     for (let i=0;i<7;i++) {
       const d = new Date(lunesAnt); d.setDate(lunesAnt.getDate()+i);
-      const cs = citas.filter(c => normDate(c.fecha)===_ingFmt(d));
-      totalAnt += cs.reduce((s,c)=>s+parsePrecio(c.precio),0);
+      const fAnt = _ingFmt(d);
+      const cs = citas.filter(c => normDate(c.fecha)===fAnt);
+      const es = (allData.eventos||[]).filter(e => normDate(e.fecha)===fAnt);
+      totalAnt += cs.reduce((s,c)=>s+parsePrecio(c.precio),0) + es.reduce((s,e)=>s+parsePrecio(e.cobro),0);
       nCitasAnt += cs.length;
     }
     const diffSem = totalSem - totalAnt;
@@ -6986,13 +7031,15 @@ function renderIngresosDetalle() {
     for (let i=1;i<=diasMes;i++) {
       const fStr = yearN+'-'+String(mesN+1).padStart(2,'0')+'-'+String(i).padStart(2,'0');
       const cs = citas.filter(c => normDate(c.fecha)===fStr);
-      diasData.push({ fecha:fStr, num:i, dia:DIAS_NOM[new Date(fStr+'T12:00:00').getDay()], citas:cs, total:cs.reduce((s,c)=>s+parsePrecio(c.precio),0), esFuturo: fStr > hoyStr });
+      const es = (allData.eventos||[]).filter(e => normDate(e.fecha)===fStr);
+      const totalEvts = es.reduce((s,e)=>s+parsePrecio(e.cobro),0);
+      diasData.push({ fecha:fStr, num:i, dia:DIAS_NOM[new Date(fStr+'T12:00:00').getDay()], citas:cs, eventos:es, total:cs.reduce((s,c)=>s+parsePrecio(c.precio),0)+totalEvts, esFuturo: fStr > hoyStr });
     }
     const totalMes   = diasData.reduce((s,d)=>s+d.total,0);
     const nCitasMes  = diasData.reduce((s,d)=>s+d.citas.length,0);
     const maxDiaMes  = Math.max(...diasData.map(d=>d.total),1);
     const ticketM    = nCitasMes>0 ? Math.round(totalMes/nCitasMes) : 0;
-    const diasConCitas = diasData.filter(d=>d.citas.length>0);
+    const diasConCitas = diasData.filter(d=>d.citas.length>0||d.eventos.length>0);
     const mejorDiaMes  = [...diasData].sort((a,b)=>b.total-a.total)[0];
     const peorDiaMes   = diasConCitas.length ? [...diasConCitas].sort((a,b)=>a.total-b.total)[0] : null;
 
@@ -7004,7 +7051,8 @@ function renderIngresosDetalle() {
     for (let i=1;i<=diasMesAnt;i++) {
       const fStr = yearAntN+'-'+String(mesAntN+1).padStart(2,'0')+'-'+String(i).padStart(2,'0');
       const cs = citas.filter(c=>normDate(c.fecha)===fStr);
-      totalMesAnt += cs.reduce((s,c)=>s+parsePrecio(c.precio),0);
+      const es = (allData.eventos||[]).filter(e=>normDate(e.fecha)===fStr);
+      totalMesAnt += cs.reduce((s,c)=>s+parsePrecio(c.precio),0) + es.reduce((s,e)=>s+parsePrecio(e.cobro),0);
       nCitasMesAnt += cs.length;
     }
     const diffMes = totalMes - totalMesAnt;
@@ -7591,7 +7639,12 @@ function abrirModalPaquete(plIdxPre) {
   const sel = document.getElementById('pkPlantillaSel');
   if (sel) sel.innerHTML = '<option value="">— Elige plantilla —</option>' + plantillas.map((pl,i) => `<option value="${i}" ${i===plIdxPre?'selected':''}>${pl.nombre}</option>`).join('');
   const dl = document.getElementById('pkPacienteList');
-  if (dl) dl.innerHTML = [...new Set(allData.citas.map(c=>c.nombre||'').filter(Boolean))].map(n=>`<option value="${n}">`).join('');
+  if (dl) {
+    const nomCitas = allData.citas.map(c=>c.nombre||'').filter(Boolean);
+    const nomPacs  = (allData.pacientes||[]).map(p=>p.nombre||'').filter(Boolean);
+    const todos    = [...new Set([...nomCitas, ...nomPacs])].sort();
+    dl.innerHTML   = todos.map(n=>`<option value="${n}">`).join('');
+  }
   const fi = document.getElementById('pkFechaCompra'); if (fi) fi.value = today();
   const pkModal = document.getElementById('modalPaquete'); if (pkModal) pkModal.style.display = 'flex';
 }
@@ -7855,7 +7908,7 @@ function renderCodigos() {
 
   let lista = [...(allData.codigos || [])];
   if (search) lista = lista.filter(c =>
-    (c.codigo+c.paciente+c.referidoPor+c.codigoRef).toLowerCase().includes(search));
+    (c.codigo+c.paciente+c.referidoPor+c.codigoRef+(c.fecha||'')).toLowerCase().includes(search));
   if (fTipo) lista = lista.filter(c => c.tipo === fTipo);
   if (fEst)  lista = lista.filter(c => c.estado === fEst);
 
