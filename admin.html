@@ -1675,7 +1675,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 
       <!-- Meta mensual -->
       <div class="card" style="margin-bottom:20px">
-        <div class="card-title">\uD83C\uDFAF Meta mensual de ingresos</div>
+        <div class="card-title">Meta mensual de ingresos</div>
         <div class="meta-input-row">
           <label style="font-size:.85rem;color:var(--muted)">Meta:</label>
           <input type="text" id="metaInputFin" placeholder="Ej: 10.000.000" oninput="previewMetaFin(this.value)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
@@ -1752,7 +1752,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             <div id="metricIngresoPorServicio"></div>
           </div>
           <div class="card">
-            <div class="card-title" style="margin-bottom:14px">\uD83C\uDFAF Proyección mes actual vs meta</div>
+            <div class="card-title" style="margin-bottom:14px">Proyección mes actual vs meta</div>
             <div id="metricProyeccion"></div>
           </div>
           <div class="card">
@@ -3108,7 +3108,7 @@ function waBtnPasaporte(tel, nombre) {
   const waUrl = t.length >= 7
     ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg)
     : 'https://wa.me/?text=' + encodeURIComponent(msg);
-  return '<a href="' + linkAdmin + '" target="_blank" class="btn btn-passport btn-sm" title="Abrir en modo admin">\uD83C\uDFAF Pasaporte</a>'
+  return '<a href="' + linkAdmin + '" target="_blank" class="btn btn-passport btn-sm" title="Abrir en modo admin">Pasaporte</a>'
        + '<a href="' + waUrl + '" target="_blank" class="btn btn-teal btn-sm" title="Enviar link al paciente por WhatsApp" style="margin-left:4px">\uD83D\uDCF2</a>';
 }
 
@@ -4503,7 +4503,7 @@ function renderPacientes() {
           ${waBtn(p.telefono,p.nombre,'','','','WA')}
           <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${p.telefono||''}','${p.nombre.replace(/'/g,"\\'")}','${(p.ultimoServicio||'').replace(/'/g,"\\'")}')">💬</button>
           ${(()=>{const u=waEncuesta(p.telefono,p.nombre);return u?`<a href="${u}" target="_blank" class="btn btn-ghost btn-sm" title="Enviar encuesta de satisfacción por WhatsApp">\u2B50 Encuesta</a>`:''})()}
-          <a href="https://jessicaocampoft-ctrl.github.io/pasaporte.html?nombre=${encodeURIComponent(p.nombre)}" target="_blank" class="btn btn-passport btn-sm">\uD83C\uDFAF Pasaporte</a>
+          <a href="https://jessicaocampoft-ctrl.github.io/pasaporte.html?nombre=${encodeURIComponent(p.nombre)}" target="_blank" class="btn btn-passport btn-sm">Pasaporte</a>
           <button class="btn btn-edit btn-sm" onclick="editarPacienteIdx(${idx})">✏️ Editar</button>
           <button class="btn btn-danger btn-sm" onclick="borrarPaciente(${idx})">🗑️ Eliminar</button>
         </div>
@@ -7278,8 +7278,8 @@ function _analisisMes({ totalMes, nCitasMes, ticketM, diffMes, pctDiffM, mejorDi
   // Meta
   if (meta) {
     const pctMeta = Math.round(totalMes/meta*100);
-    if (pctMeta >= 100) positivos.push(`\uD83C\uDFAF ¡Meta cumplida! Alcanzaste el <strong>${pctMeta}%</strong> de tu meta de $${meta.toLocaleString('es-CO')}.`);
-    else if (pctMeta >= 80) recs.push(`\uD83C\uDFAF Alcanzaste el ${pctMeta}% de la meta. Faltaron $${(meta-totalMes).toLocaleString('es-CO')} — considera intensificar en días con espacio disponible.`);
+    if (pctMeta >= 100) positivos.push(`¡Meta cumplida! Alcanzaste el <strong>${pctMeta}%</strong> de tu meta de $${meta.toLocaleString('es-CO')}.`);
+    else if (pctMeta >= 80) recs.push(`Alcanzaste el ${pctMeta}% de la meta. Faltaron $${(meta-totalMes).toLocaleString('es-CO')} — considera intensificar en días con espacio disponible.`);
     else if (pctMeta < 60) alertas.push(`⚠️ Solo el ${pctMeta}% de la meta mensual. Considera revisar tu estrategia de precios o captar nuevos pacientes.`);
   }
 
