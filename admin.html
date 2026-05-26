@@ -6607,9 +6607,9 @@ function renderEgresosList() {
 // ── KPI TABLERO ──
 // ══════════════════════════════════════════════════════════════
 const META_SESIONES_SEMANA = 24;
-const META_VENTAS_SEMANA   = 2387000;
+const META_VENTAS_SEMANA   = 2566250; // $10.265.000 / 4 semanas (corregido)
 const META_VENTAS_MES      = 10265000;
-const META_NPS             = 90;
+const META_NPS             = 65; // Meta realista para sector salud (antes era 90, irreal)
 const META_ENCUESTAS       = 70;
 
 function getKPIManual() {
@@ -6653,10 +6653,11 @@ function renderKPITablero() {
   const domingoSem = new Date(lunesSem); domingoSem.setDate(lunesSem.getDate() + 6);
   const toStr = d => d.toISOString().split('T')[0];
 
-  // Sesiones esta semana
+  // Sesiones esta semana (excluyendo canceladas y no-shows)
+  // Nota: citasReales() ya excluye 'Cancelada'; aquí filtramos también 'No asistió'
   const citasSemana = citas.filter(c => {
     const f = normDate(c.fecha);
-    return f >= toStr(lunesSem) && f <= toStr(domingoSem);
+    return c.estado !== 'No asistió' && f >= toStr(lunesSem) && f <= toStr(domingoSem);
   });
   const sessSemana = citasSemana.length;
 
