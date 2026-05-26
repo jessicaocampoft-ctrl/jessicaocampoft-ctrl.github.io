@@ -4321,18 +4321,22 @@ function abrirEditarEvento(id) {
   const ev = (allData.eventos || []).find(e => e.id === id);
   if (!ev) { toast('Evento no encontrado', 'err'); return; }
   _eeeId = id;
-  document.getElementById('eeeTitulo').value    = ev.titulo    || '';
-  document.getElementById('eeeFecha').value     = normDate(ev.fecha) || '';
-  document.getElementById('eeeHoraInicio').value = ev.horaInicio || '';
-  document.getElementById('eeeHoraFin').value    = ev.horaFin   || '';
-  document.getElementById('eeeCobro').value      = ev.cobro && ev.cobro !== 'Sin cobro' ? ev.cobro : '';
-  document.getElementById('eeeNotas').value      = ev.notas     || '';
+  document.getElementById('eeeTitulo').value = ev.titulo || '';
+  document.getElementById('eeeFecha').value  = normDate(ev.fecha) || '';
+  document.getElementById('eeeCobro').value  = ev.cobro && ev.cobro !== 'Sin cobro' ? ev.cobro : '';
+  document.getElementById('eeeNotas').value  = ev.notas || '';
   // Tipo
   const sel = document.getElementById('eeeTipo');
   const opt = [...sel.options].find(o => o.value === ev.tipo);
   sel.value = opt ? ev.tipo : 'Evento externo';
-  eeeCalcDuracion();
+  // Mostrar modal ANTES de asignar las horas para que Chrome (Windows 12h)
+  // pueda renderizar correctamente el segmento AM/PM del input[type=time]
   document.getElementById('modalEditarEvento').style.display = 'flex';
+  requestAnimationFrame(() => {
+    document.getElementById('eeeHoraInicio').value = ev.horaInicio || '';
+    document.getElementById('eeeHoraFin').value    = ev.horaFin   || '';
+    eeeCalcDuracion();
+  });
 }
 
 function eeeCalcDuracion() {
