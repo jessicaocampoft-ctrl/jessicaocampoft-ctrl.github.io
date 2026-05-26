@@ -2289,7 +2289,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 </div>
 
 <!-- ── MODAL EDITAR EVENTO ── -->
-<div class="modal-bg" id="modalEditarEvento" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;align-items:center;justify-content:center">
+<div class="modal-bg" id="modalEditarEvento" onclick="if(event.target===this)cerrarModalEditarEvento()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;align-items:center;justify-content:center">
   <div class="modal" style="max-width:480px;width:100%">
     <div class="modal-title" style="display:flex;align-items:center;gap:8px">⚡ Editar evento</div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
@@ -2334,7 +2334,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
       </div>
     </div>
     <div class="modal-actions" style="margin-top:16px">
-      <button class="btn btn-ghost" onclick="closeModal('modalEditarEvento')">Cancelar</button>
+      <button class="btn btn-ghost" onclick="cerrarModalEditarEvento()">Cancelar</button>
       <button class="btn btn-err btn-sm" onclick="eeeEliminar()" style="margin-left:auto">🗑️ Eliminar</button>
       <button class="btn btn-teal" id="eeeGuardarBtn" onclick="eeeGuardar()">Guardar cambios</button>
     </div>
@@ -4317,26 +4317,42 @@ async function eliminarEvento(id) {
 // ── EDITAR EVENTO (modal) ──
 let _eeeId = null; // ID del evento en edición
 
+// Normaliza cualquier string de hora a "HH:MM" (formato que acepta input[type=time])
+function normHHMM(t) {
+  if (!t) return '';
+  const m = String(t).match(/(\d{1,2}):(\d{2})/);
+  if (!m) return '';
+  return m[1].padStart(2,'0') + ':' + m[2];
+}
+
+// Cierra el modal de edición (abre con style.display, no con clase .open)
+function cerrarModalEditarEvento() {
+  document.getElementById('modalEditarEvento').style.display = 'none';
+}
+
 function abrirEditarEvento(id) {
   const ev = (allData.eventos || []).find(e => e.id === id);
   if (!ev) { toast('Evento no encontrado', 'err'); return; }
   _eeeId = id;
   document.getElementById('eeeTitulo').value = ev.titulo || '';
   document.getElementById('eeeFecha').value  = normDate(ev.fecha) || '';
-  document.getElementById('eeeCobro').value  = ev.cobro && ev.cobro !== 'Sin cobro' ? ev.cobro : '';
+  // Normalizar cobro: guardar siempre como número limpio para consistencia visual
+  const cobroNum = parsePrecio(ev.cobro);
+  document.getElementById('eeeCobro').value  = cobroNum > 0 ? cobroNum.toLocaleString('es-CO') : '';
   document.getElementById('eeeNotas').value  = ev.notas || '';
   // Tipo
   const sel = document.getElementById('eeeTipo');
   const opt = [...sel.options].find(o => o.value === ev.tipo);
   sel.value = opt ? ev.tipo : 'Evento externo';
-  // Mostrar modal ANTES de asignar las horas para que Chrome (Windows 12h)
-  // pueda renderizar correctamente el segmento AM/PM del input[type=time]
+  // Mostrar modal primero; luego en doble rAF asignar las horas.
+  // Chrome en Windows 12h necesita que el input sea visible Y haya completado
+  // al menos 2 ciclos de render antes de aceptar el valor programático.
   document.getElementById('modalEditarEvento').style.display = 'flex';
-  requestAnimationFrame(() => {
-    document.getElementById('eeeHoraInicio').value = ev.horaInicio || '';
-    document.getElementById('eeeHoraFin').value    = ev.horaFin   || '';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.getElementById('eeeHoraInicio').value = normHHMM(ev.horaInicio);
+    document.getElementById('eeeHoraFin').value    = normHHMM(ev.horaFin);
     eeeCalcDuracion();
-  });
+  }));
 }
 
 function eeeCalcDuracion() {
@@ -4390,7 +4406,7 @@ async function eeeGuardar() {
     if (!dCre.ok) { toast('Error al actualizar (crear): ' + (dCre.error||''), 'err'); return; }
 
     toast('Evento actualizado ✓');
-    closeModal('modalEditarEvento');
+    cerrarModalEditarEvento();
     await reload();
     renderAgenda();
   } catch(e) { toast('Error de conexión', 'err'); }
@@ -4404,7 +4420,7 @@ async function eeeEliminar() {
     const d = await r.json();
     if (!d.ok) { toast('Error al eliminar', 'err'); return; }
     toast('Evento eliminado');
-    closeModal('modalEditarEvento');
+    cerrarModalEditarEvento();
     await reload();
     renderAgenda();
   } catch(e) { toast('Error de conexión', 'err'); }
@@ -6661,8 +6677,13 @@ function renderKPITablero() {
   });
   const sessSemana = citasSemana.length;
 
-  // Ventas semana
-  const ventasSemana = citasSemana.reduce((s,c) => s + parsePrecio(c.precio), 0);
+  // Ventas semana (citas + eventos — citasReales no incluye eventos)
+  const eventosSemana = (allData.eventos || []).filter(e => {
+    const f = normDate(e.fecha);
+    return f >= toStr(lunesSem) && f <= toStr(domingoSem);
+  });
+  const ventasSemana = citasSemana.reduce((s,c) => s + parsePrecio(c.precio), 0)
+                     + eventosSemana.reduce((s,e) => s + parsePrecio(e.cobro), 0);
 
   // Ventas mes actual
   const ventasMes = calcCobradoMes();
