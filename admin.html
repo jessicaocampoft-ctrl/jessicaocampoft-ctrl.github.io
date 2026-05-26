@@ -1062,7 +1062,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 
         <!-- ── TOGGLE CITA / EVENTO ── -->
         <div class="nc-toggle" style="margin-bottom:20px">
-          <button class="nc-toggle-btn active" id="toggleCita" onclick="switchNuevaMode('cita')">\uD83D\uDDD3\uFE0F Cita de paciente</button>
+          <button class="nc-toggle-btn active" id="toggleCita" onclick="switchNuevaMode('cita')">Cita de paciente</button>
           <button class="nc-toggle-btn" id="toggleEvento" onclick="switchNuevaMode('evento')">⚡ Evento</button>
         </div>
 
@@ -1226,7 +1226,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
           </div>
           <div class="field">
             <label>Hora *</label>
-            <input type="time" id="ncTime" class="nc-input" style="width:100%" onchange="checkTimeConflict()">
+            <input type="time" id="ncTime" class="nc-input" style="width:100%" oninput="checkTimeConflict()" onchange="checkTimeConflict()">
             <div id="ncConflictWarn" style="display:none;margin-top:6px;padding:8px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:8px;font-size:.82rem;color:#991b1b"></div>
           </div>
           <div class="field">
@@ -1799,7 +1799,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 
       <!-- Ingresos por día / semana -->
       <div style="margin-top:20px">
-        <div class="fin-section-title">\uD83D\uDDD3\uFE0F Ingresos detallados + Análisis financiero</div>
+        <div class="fin-section-title">Ingresos detallados + Análisis financiero</div>
         <div class="card">
           <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
             <div style="display:flex;gap:6px">
@@ -3070,7 +3070,7 @@ function waLink(tel, nombre, fecha, hora, serv, precio, modalidad) {
     'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada \u2705',
     '',
     servLine,
-    '\uD83D\uDDD3\uFE0F ' + waFechaES(fecha) + ' · ' + waAmPm(hora),
+    '' + waFechaES(fecha) + ' · ' + waAmPm(hora),
     '\uD83D\uDCCD ' + (modalidad === 'Domicilio' ? 'A domicilio' : 'En sitio'),
   ];
   if (conPago && precio) {
@@ -3101,7 +3101,7 @@ function waLinkRec(tel, nombre, fecha, hora, serv) {
   const sesStr  = infoSes
     ? 'tu ' + ordinalES(infoSes.numero) + ' sesion de ' + infoSes.total + ' de *' + serv + '*'
     : 'tu cita de *' + serv + '*';
-  const msg = 'Hola ' + waNombre(nombre) + '! \uD83D\uDDD3\uFE0F Te recuerdo ' + sesStr + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda. \uD83D\uDCAA\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
+  const msg = 'Hola ' + waNombre(nombre) + '! Te recuerdo ' + sesStr + ' el ' + waFechaES(fecha) + ' a las ' + waAmPm(hora) + '. Recuerda llegar unos minutos antes con ropa comoda. \uD83D\uDCAA\n\nCualquier duda me avisas. Hasta pronto! — Jessica Ocampo Fisioterapeuta';
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
 }
 
@@ -5052,7 +5052,7 @@ let _calGCevents = []; // cache de eventos de Google Calendar
 
 async function renderCalendar() {
   await reload();
-  const HOURS = [7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+  const HOURS = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
   const todayStr = today();
 
   const days = Array.from({length:7}, (_,i) => {
