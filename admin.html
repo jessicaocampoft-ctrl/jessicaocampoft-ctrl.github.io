@@ -2185,6 +2185,59 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
   </div>
 </div>
 
+<!-- ── MODAL EDITAR EVENTO ── -->
+<div class="modal-bg" id="modalEditarEvento" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;align-items:center;justify-content:center">
+  <div class="modal" style="max-width:480px;width:100%">
+    <div class="modal-title" style="display:flex;align-items:center;gap:8px">⚡ Editar evento</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
+      <div>
+        <label style="font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px">Título *</label>
+        <input id="eeeTitulo" type="text" class="form-input" style="width:100%" placeholder="Nombre del evento">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px">Tipo</label>
+          <select id="eeeTipo" class="form-input" style="width:100%">
+            <option value="Evento externo">Evento externo</option>
+            <option value="Capacitación">Capacitación</option>
+            <option value="Congreso">Congreso</option>
+            <option value="Jornada de salud">Jornada de salud</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px">Fecha *</label>
+          <input id="eeeFecha" type="date" class="form-input" style="width:100%">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px">Hora inicio *</label>
+          <input id="eeeHoraInicio" type="time" class="form-input" style="width:100%" oninput="eeeCalcDuracion()">
+        </div>
+        <div>
+          <label style="font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px">Hora fin *</label>
+          <input id="eeeHoraFin" type="time" class="form-input" style="width:100%" oninput="eeeCalcDuracion()">
+        </div>
+      </div>
+      <div id="eeeDuracionLabel" style="display:none;font-size:.78rem;color:#7c3aed;font-weight:600"></div>
+      <div>
+        <label style="font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px">Cobro / Valor</label>
+        <input id="eeeCobro" type="text" class="form-input" style="width:100%" placeholder="Ej: $680.000">
+      </div>
+      <div>
+        <label style="font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px">Notas</label>
+        <textarea id="eeeNotas" rows="2" class="form-input" style="width:100%;resize:vertical" placeholder="Notas adicionales"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeModal('modalEditarEvento')">Cancelar</button>
+      <button class="btn btn-err btn-sm" onclick="eeeEliminar()" style="margin-left:auto">🗑️ Eliminar</button>
+      <button class="btn btn-teal" id="eeeGuardarBtn" onclick="eeeGuardar()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL HISTORIAL PACIENTE ── -->
 <div class="modal-bg" id="modalHistorial">
   <div class="modal">
@@ -3349,6 +3402,7 @@ function renderAgenda(keepPage = false) {
         <td style="font-family:var(--font-m);color:#7c3aed;font-size:.82rem">${c.cobro}</td>
         <td>—</td>
         <td>
+          <button class="btn btn-teal btn-sm" onclick="abrirEditarEvento('${c.id}')" title="Editar evento">✏️ Editar</button>
           <button class="btn btn-err btn-sm" onclick="eliminarEvento('${c.id}')" title="Eliminar evento">🗑️ Eliminar</button>
         </td>
       </tr>`;
@@ -4152,6 +4206,98 @@ async function eliminarEvento(id) {
     const d = await r.json();
     if (!d.ok) { toast('Error al eliminar', 'err'); return; }
     toast('Evento eliminado');
+    await reload();
+    renderAgenda();
+  } catch(e) { toast('Error de conexión', 'err'); }
+}
+
+// ── EDITAR EVENTO (modal) ──
+let _eeeId = null; // ID del evento en edición
+
+function abrirEditarEvento(id) {
+  const ev = (allData.eventos || []).find(e => e.id === id);
+  if (!ev) { toast('Evento no encontrado', 'err'); return; }
+  _eeeId = id;
+  document.getElementById('eeeTitulo').value    = ev.titulo    || '';
+  document.getElementById('eeeFecha').value     = normDate(ev.fecha) || '';
+  document.getElementById('eeeHoraInicio').value = ev.horaInicio || '';
+  document.getElementById('eeeHoraFin').value    = ev.horaFin   || '';
+  document.getElementById('eeeCobro').value      = ev.cobro && ev.cobro !== 'Sin cobro' ? ev.cobro : '';
+  document.getElementById('eeeNotas').value      = ev.notas     || '';
+  // Tipo
+  const sel = document.getElementById('eeeTipo');
+  const opt = [...sel.options].find(o => o.value === ev.tipo);
+  sel.value = opt ? ev.tipo : 'Evento externo';
+  eeeCalcDuracion();
+  document.getElementById('modalEditarEvento').style.display = 'flex';
+}
+
+function eeeCalcDuracion() {
+  const hi = document.getElementById('eeeHoraInicio').value;
+  const hf = document.getElementById('eeeHoraFin').value;
+  const lbl = document.getElementById('eeeDuracionLabel');
+  if (!hi || !hf) { lbl.style.display='none'; return; }
+  const [hh,mm]   = hi.split(':').map(Number);
+  const [hh2,mm2] = hf.split(':').map(Number);
+  const mins = (hh2*60+mm2)-(hh*60+mm);
+  if (mins <= 0) { lbl.style.display='none'; return; }
+  const h = Math.floor(mins/60), m = mins%60;
+  lbl.textContent = '⏱ ' + (h ? h+'h ' : '') + (m ? m+'min' : '');
+  lbl.style.display = 'block';
+}
+
+async function eeeGuardar() {
+  const titulo = document.getElementById('eeeTitulo').value.trim();
+  const fecha  = document.getElementById('eeeFecha').value;
+  const hi     = document.getElementById('eeeHoraInicio').value;
+  const hf     = document.getElementById('eeeHoraFin').value;
+  if (!titulo || !fecha || !hi || !hf) { toast('Completa título, fecha y horas', 'err'); return; }
+
+  const btn = document.getElementById('eeeGuardarBtn');
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+
+  const [hh,mm]   = hi.split(':').map(Number);
+  const [hh2,mm2] = hf.split(':').map(Number);
+  const mins = (hh2*60+mm2)-(hh*60+mm);
+  const dur  = mins > 0 ? (Math.floor(mins/60) ? Math.floor(mins/60)+'h ' : '') + (mins%60 ? mins%60+'min' : '') : '';
+
+  const data = {
+    titulo,
+    tipo:       document.getElementById('eeeTipo').value,
+    fecha,
+    horaInicio: hi,
+    horaFin:    hf,
+    duracion:   dur,
+    cobro:      document.getElementById('eeeCobro').value.trim() || 'Sin cobro',
+    notas:      document.getElementById('eeeNotas').value.trim()
+  };
+
+  try {
+    // Eliminar viejo → crear nuevo con los datos actualizados
+    const rDel = await fetch(`${APPS_SCRIPT_URL}?action=eliminarEvento&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(_eeeId)}`);
+    const dDel = await rDel.json();
+    if (!dDel.ok) { toast('Error al actualizar (eliminar): ' + (dDel.error||''), 'err'); return; }
+
+    const rCre = await fetch(`${APPS_SCRIPT_URL}?action=crearEvento&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(data))}`);
+    const dCre = await rCre.json();
+    if (!dCre.ok) { toast('Error al actualizar (crear): ' + (dCre.error||''), 'err'); return; }
+
+    toast('Evento actualizado ✓');
+    closeModal('modalEditarEvento');
+    await reload();
+    renderAgenda();
+  } catch(e) { toast('Error de conexión', 'err'); }
+  finally { btn.textContent = 'Guardar cambios'; btn.disabled = false; }
+}
+
+async function eeeEliminar() {
+  if (!confirm('¿Eliminar este evento?')) return;
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=eliminarEvento&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(_eeeId)}`);
+    const d = await r.json();
+    if (!d.ok) { toast('Error al eliminar', 'err'); return; }
+    toast('Evento eliminado');
+    closeModal('modalEditarEvento');
     await reload();
     renderAgenda();
   } catch(e) { toast('Error de conexión', 'err'); }
@@ -4986,7 +5132,7 @@ async function renderCalendar() {
         const [ehe] = (ev.horaFin||'0:0').split(':').map(Number);
         if (h < ehs || h >= ehe) return;
         const isFirst = h === ehs;
-        html += `<div class="cal-ev" style="background:${isFirst?'#7c3aed22':'#7c3aed0d'};border-left:3px solid #7c3aed;min-height:32px" onclick="event.stopPropagation()" title="${ev.titulo}">
+        html += `<div class="cal-ev" style="background:${isFirst?'#7c3aed22':'#7c3aed0d'};border-left:3px solid #7c3aed;min-height:32px;cursor:pointer" onclick="event.stopPropagation();abrirEditarEvento('${ev.id}')" title="Click para editar: ${ev.titulo}">
           ${isFirst
             ? `<span class="cal-ev-time" style="color:#7c3aed">${ev.horaInicio}–${ev.horaFin}${ev.duracion?' · '+ev.duracion:''}</span>
                <span class="cal-ev-name" style="color:#5b21b6">⚡ ${ev.titulo}</span>
