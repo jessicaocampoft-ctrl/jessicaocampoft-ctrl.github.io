@@ -3702,8 +3702,8 @@ function initDashboard() {
   const todayStr = today();
   const now  = new Date();
   const wd   = now.getDay();
-  const startW = new Date(now); startW.setDate(now.getDate() - wd + (wd===0?-6:1));
-  const endW   = new Date(startW); endW.setDate(startW.getDate()+6);
+  const startW = new Date(now); startW.setDate(now.getDate() - wd + (wd===0?-6:1)); startW.setHours(0,0,0,0);
+  const endW   = new Date(startW); endW.setDate(startW.getDate()+6); endW.setHours(23,59,59,999);
   const m    = now.getMonth()+1;
   const y    = now.getFullYear();
 
