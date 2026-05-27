@@ -169,7 +169,8 @@
 
 <!-- Admin bar (visible solo en modo admin) -->
 <div id="adminBar" class="admin-bar">
-  <span>✦ Modo Administrador Activo — Marcando como Jessica Ocampo ✦</span>
+  <span id="syncDot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:rgba(125,223,195,.35); margin-right:6px; transition:background .4s; vertical-align:middle;"></span>
+  <span id="syncLabel">✦ Modo Administrador Activo — Marcando como Jessica Ocampo ✦</span>
   <button onclick="exitAdmin()" style="margin-left:14px; background:rgba(125,223,195,.15); border:1px solid rgba(125,223,195,.30); color:#7DDFC3; border-radius:20px; padding:3px 12px; font-size:11px; font-weight:700; cursor:pointer;">Salir</button>
 </div>
 
@@ -567,17 +568,30 @@
     const tsKey = 'jof_sync_ts_' + slugify(nombre);
     const lastSync = parseInt(localStorage.getItem(tsKey) || '0', 10);
     const cacheReciente = (Date.now() - lastSync) < CACHE_TTL_MS;
-    if (!force && cacheReciente) return; // usar caché local, sin llamada a la nube
+    if (!force && cacheReciente) return;
     try {
       const url = APPS_SCRIPT_URL + '?action=getPassport&nombre=' + encodeURIComponent(nombre);
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 4000); // timeout 4s
+      const timeout = setTimeout(() => controller.abort(), 4000);
       const r = await fetch(url, { signal: controller.signal });
       clearTimeout(timeout);
       const d = await r.json();
       if (d.ok) {
-        passportState = d.passport || {};
-        descargaState  = d.descarga  || {};
+        // MERGE: los sellos true de local O nube se conservan — nunca se borran
+        const localPassport = JSON.parse(localStorage.getItem(claves.passport) || '{}');
+        const localDescarga  = JSON.parse(localStorage.getItem(claves.descarga)  || '{}');
+        const cloudPassport  = d.passport || {};
+        const cloudDescarga  = d.descarga  || {};
+
+        passportState = {};
+        for (let i = 1; i <= 16; i++) {
+          if (localPassport[i] || cloudPassport[i]) passportState[i] = true;
+        }
+        descargaState = {};
+        for (let i = 1; i <= 2; i++) {
+          if (localDescarga[i] || cloudDescarga[i]) descargaState[i] = true;
+        }
+
         localStorage.setItem(claves.passport, JSON.stringify(passportState));
         localStorage.setItem(claves.descarga,  JSON.stringify(descargaState));
         localStorage.setItem(tsKey, Date.now().toString());
@@ -585,8 +599,33 @@
     } catch(e) { /* sin internet o timeout: usa localStorage como fallback */ }
   }
 
+  function setSyncStatus(status) {
+    const dot   = document.getElementById('syncDot');
+    const label = document.getElementById('syncLabel');
+    if (!dot) return;
+    if (status === 'saving') {
+      dot.style.background = '#E8B84B';
+      if (label) label.textContent = '✦ Guardando…';
+    } else if (status === 'ok') {
+      dot.style.background = '#4BBFA3';
+      if (label) label.textContent = '✦ Guardado en la nube ✓';
+      setTimeout(() => {
+        dot.style.background = 'rgba(125,223,195,.35)';
+        if (label) label.textContent = '✦ Modo Administrador Activo — Marcando como Jessica Ocampo ✦';
+      }, 2500);
+    } else {
+      dot.style.background = '#C4522A';
+      if (label) label.textContent = '✦ Sin conexión — guardado solo en este dispositivo';
+      setTimeout(() => {
+        dot.style.background = 'rgba(125,223,195,.35)';
+        if (label) label.textContent = '✦ Modo Administrador Activo — Marcando como Jessica Ocampo ✦';
+      }, 4000);
+    }
+  }
+
   async function cloudSave() {
     if (!nombrePaciente) return;
+    setSyncStatus('saving');
     try {
       const params = new URLSearchParams({
         action:   'savePassport',
@@ -595,10 +634,18 @@
         passport: JSON.stringify(passportState),
         descarga: JSON.stringify(descargaState),
       });
-      await fetch(APPS_SCRIPT_URL + '?' + params.toString());
-      // Invalidar caché para que el paciente vea los cambios al próximo load
-      localStorage.removeItem('jof_sync_ts_' + slugify(nombrePaciente));
-    } catch(e) { /* guarda solo en local si no hay internet */ }
+      const r = await fetch(APPS_SCRIPT_URL + '?' + params.toString());
+      const d = await r.json();
+      if (d.ok) {
+        // Invalidar caché solo cuando el guardado fue confirmado
+        localStorage.removeItem('jof_sync_ts_' + slugify(nombrePaciente));
+        setSyncStatus('ok');
+      } else {
+        setSyncStatus('error');
+      }
+    } catch(e) {
+      setSyncStatus('error');
+    }
   }
 
   function savePassport() {
