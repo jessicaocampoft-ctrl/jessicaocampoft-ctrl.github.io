@@ -985,39 +985,23 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
         <textarea id="notasRapidas" placeholder="Anotaciones para hoy: materiales que faltan, pacientes a llamar, recordatorios propios..." oninput="autoGuardarNota()"></textarea>
       </div>
 
-      <!-- Contador de Leads -->
-      <div class="card" style="margin-top:18px">
-        <div class="card-title">📩 Contador de Leads</div>
-        <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px">
-          Cada vez que entra un mensaje con <strong>intención real de compra</strong>
-          (pregunta de precios, agenda, info de servicios), suma +1.
-        </p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px">
-          <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
-            <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700;color:var(--primary)" id="leadsHoyCount">0</div>
-            <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Hoy</div>
-          </div>
-          <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
-            <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700" id="leadsSemanaCount">0</div>
-            <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Esta semana</div>
-          </div>
-          <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
-            <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700" id="leadsMesCount">0</div>
-            <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Este mes</div>
-          </div>
+      <!-- Leads hoy — stat-card de solo lectura -->
+      <div class="stats-grid" style="margin-top:18px">
+        <div class="stat-card" style="cursor:pointer" onclick="showView('finanzas')" title="Ir a KPIs para registrar leads">
+          <div class="stat-label">📩 Leads hoy</div>
+          <div class="stat-val" id="leadsHoyDash">—</div>
+          <div class="stat-desc">toca para registrar →</div>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button onclick="registrarLead('WhatsApp')" style="flex:1;min-width:160px;padding:14px;background:#25d366;color:white;border:none;border-radius:10px;font-family:var(--font-b);font-size:.92rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
-            ➕ Lead WhatsApp
-          </button>
-          <button onclick="registrarLead('Instagram')" style="flex:1;min-width:160px;padding:14px;background:linear-gradient(45deg,#833ab4,#e1306c,#fd1d1d);color:white;border:none;border-radius:10px;font-family:var(--font-b);font-size:.92rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
-            ➕ Lead Instagram
-          </button>
-          <button onclick="deshacerUltimoLead()" style="padding:14px 18px;background:var(--s2);color:var(--text);border:1px solid var(--border);border-radius:10px;font-family:var(--font-b);font-size:.85rem;cursor:pointer" title="Deshacer último lead registrado">
-            ↩️ Deshacer
-          </button>
+        <div class="stat-card">
+          <div class="stat-label">📩 Leads semana</div>
+          <div class="stat-val" id="leadsSemDash">—</div>
+          <div class="stat-desc">mensajes con intención de compra</div>
         </div>
-        <div id="leadFeedback" style="margin-top:12px;font-size:.85rem;text-align:center;min-height:20px;color:var(--primary);font-weight:600"></div>
+        <div class="stat-card">
+          <div class="stat-label">📩 Leads mes</div>
+          <div class="stat-val" id="leadssMesDash">—</div>
+          <div class="stat-desc">acumulado del mes</div>
+        </div>
       </div>
     </section>
 
@@ -2005,6 +1989,41 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
               <button class="btn btn-teal btn-sm" onclick="guardarKPIManual()">Guardar KPIs</button>
             </div>
           </div>
+        </div>
+
+        <!-- Contador de Leads -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title">📩 Contador de Leads</div>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px">
+            Cada vez que entra un mensaje con <strong>intención real de compra</strong>
+            (pregunta de precios, agenda, info de servicios), suma +1.
+          </p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px">
+            <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
+              <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700;color:var(--primary)" id="leadsHoyCount">0</div>
+              <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Hoy</div>
+            </div>
+            <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
+              <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700" id="leadsSemanaCount">0</div>
+              <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Esta semana</div>
+            </div>
+            <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
+              <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700" id="leadsMesCount">0</div>
+              <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Este mes</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button onclick="registrarLead('WhatsApp')" style="flex:1;min-width:160px;padding:14px;background:#25d366;color:white;border:none;border-radius:10px;font-family:var(--font-b);font-size:.92rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+              ➕ Lead WhatsApp
+            </button>
+            <button onclick="registrarLead('Instagram')" style="flex:1;min-width:160px;padding:14px;background:linear-gradient(45deg,#833ab4,#e1306c,#fd1d1d);color:white;border:none;border-radius:10px;font-family:var(--font-b);font-size:.92rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+              ➕ Lead Instagram
+            </button>
+            <button onclick="deshacerUltimoLead()" style="padding:14px 18px;background:var(--s2);color:var(--text);border:1px solid var(--border);border-radius:10px;font-family:var(--font-b);font-size:.85rem;cursor:pointer" title="Deshacer último lead registrado">
+              ↩️ Deshacer
+            </button>
+          </div>
+          <div id="leadFeedback" style="margin-top:12px;font-size:.85rem;text-align:center;min-height:20px;color:var(--primary);font-weight:600"></div>
         </div>
 
         <!-- Dashboard KPIs calculados -->
@@ -3203,7 +3222,7 @@ function showView(v) {
   if (v === 'calendario')     renderCalendar();
   if (v === 'recordatorios')  cargarRecordatorios();
   if (v === 'basedatos')      { renderBasedatos(); initFormDB(); renderChangeLog(); }
-  if (v === 'finanzas')       renderFinanzas();
+  if (v === 'finanzas')       { renderFinanzas(); actualizarContadorLeads(); }
   if (v === 'seguimiento')    renderSeguimiento();
   if (v === 'tareas')         renderTareas();
   if (v === 'tareasConfig')   initTareasConfig();
@@ -7150,12 +7169,21 @@ function deshacerUltimoLead() {
 }
 
 function actualizarContadorLeads() {
+  const hoy = getLeadsHoy(), sem = getLeadsSemana(), mes = getLeadsMes();
+  // Widget completo en KPIs
   const elHoy = document.getElementById('leadsHoyCount');
   const elSem = document.getElementById('leadsSemanaCount');
   const elMes = document.getElementById('leadsMesCount');
-  if (elHoy) elHoy.textContent = getLeadsHoy();
-  if (elSem) elSem.textContent = getLeadsSemana();
-  if (elMes) elMes.textContent = getLeadsMes();
+  if (elHoy) elHoy.textContent = hoy;
+  if (elSem) elSem.textContent = sem;
+  if (elMes) elMes.textContent = mes;
+  // Stat-cards de solo lectura en Dashboard
+  const elDashHoy = document.getElementById('leadsHoyDash');
+  const elDashSem = document.getElementById('leadsSemDash');
+  const elDashMes = document.getElementById('leadssMesDash');
+  if (elDashHoy) elDashHoy.textContent = hoy;
+  if (elDashSem) elDashSem.textContent = sem;
+  if (elDashMes) elDashMes.textContent = mes;
 }
 
 function guardarKPIManual() {
