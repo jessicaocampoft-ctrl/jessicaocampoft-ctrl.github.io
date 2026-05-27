@@ -1211,6 +1211,15 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             <div id="ncSesionesInfo" style="display:none;margin-top:5px;padding:6px 10px;background:rgba(27,191,176,.06);border-radius:6px;font-size:.78rem;color:var(--muted)"></div>
           </div>
           <div class="field">
+            <label>Canal de origen</label>
+            <select id="nuevaCitaCanal" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:9px 11px;outline:none">
+              <option value="Directo">Directo (marca, redes, recomendación)</option>
+              <option value="Gimnasio">Gimnasio (Pass de Rendimiento)</option>
+              <option value="Corporativo">Corporativo (convenio empresa)</option>
+              <option value="Referido">Referido (código REF)</option>
+            </select>
+          </div>
+          <div class="field">
             <label>Modalidad *</label>
             <select id="ncMod" onchange="toggleNcAddress(); autoFillPrice(); checkDomicilioWarn()">
               <option value="Presencial">Presencial</option>
@@ -3295,13 +3304,20 @@ function esCobrada(c) {
 // Citas reales (sin registros, sin canceladas, sin duplicados)
 function citasReales() {
   const seen = new Set();
-  return allData.citas.filter(c => {
+  const result = allData.citas.filter(c => {
     if (c.estado === 'Cancelada' || c.estado === 'Registro' || esRegistroServ(c.servicio)) return false;
     const key = (c.nombre || '').toLowerCase().trim() + '|' + normDate(c.fecha) + '|' + (c.hora || '00:00');
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+  // Normalizar canal para citas antiguas que no lo tienen
+  result.forEach(c => {
+    if (!c.canal) {
+      c.canal = (c.servicio || '').toLowerCase().includes('corporativ') ? 'Corporativo' : 'Directo';
+    }
+  });
+  return result;
 }
 
 // ── DASHBOARD ──
@@ -4474,6 +4490,7 @@ async function submitAdminBooking() {
     address: document.getElementById('ncAddress').value.trim(),
     notes:   document.getElementById('ncNotes').value.trim(),
     notaAdmin: (() => { const partes = []; const p = (document.getElementById('ncParaQuien').value||'').trim(); if (p) partes.push('[PARA: ' + p + ']'); const ab = getAbonoNota(); if (ab) partes.push(ab); return partes.join(' '); })(),
+    canal: document.getElementById('nuevaCitaCanal').value || 'Directo',
     ...gimnasioData
   };
 
@@ -6627,6 +6644,12 @@ const META_VENTAS_SEMANA   = 2566250; // $10.265.000 / 4 semanas (corregido)
 const META_VENTAS_MES      = 10265000;
 const META_NPS             = 65; // Meta realista para sector salud (antes era 90, irreal)
 const META_ENCUESTAS       = 70;
+const META_CANCELACION_PCT = 10;   // Meta: tasa cancelación <10%
+const META_RETENCION_PCT   = 60;   // Meta: >60% pacientes vuelven en 60 días
+const META_CAC_MAX         = 80000; // Meta: CAC <$80.000 por paciente nuevo
+const VENTANA_NUEVO_DIAS   = 180;  // Paciente "nuevo" = sin citas en últimos 180 días (6 meses)
+const VENTANA_RETENCION    = 60;   // Retención = volvió en últimos 60 días
+const CATEGORIAS_MARKETING = ['Pautas Redes', 'Redes Sociales Contenido']; // Egresos que cuentan como CAC
 
 function getKPIManual() {
   try { return JSON.parse(kvGet('kpi_manual') || '{}'); } catch { return {}; }
@@ -6734,6 +6757,71 @@ function renderKPITablero() {
   html += kpiCard('⭐','NPS último mes', (manual.nps||0)+'%', META_NPS, '%', true, `>${META_NPS}%`);
   html += kpiCard('📋','Encuestas realizadas', (manual.encuestas||0)+'%', META_ENCUESTAS, '%', true, `>${META_ENCUESTAS}%`);
   html += kpiCard('🗄️','Base de datos actualizada', (manual.bd||0)+'%', 100, '%', true, '100%');
+
+  // ───── KPI: Ingreso por canal (mes actual) ─────
+  const canalMap = {};
+  citas.filter(c => {
+    const [cy,cm] = normDate(c.fecha).split('-');
+    const estado = (c.estado || '').toLowerCase();
+    return +cm===m && +cy===y && !estado.includes('cancel') && !estado.includes('no asist');
+  }).forEach(c => {
+    const canal = c.canal || 'Directo';
+    canalMap[canal] = (canalMap[canal] || 0) + parsePrecio(c.precio);
+  });
+  const totalCanales = Object.values(canalMap).reduce((s,v) => s+v, 0);
+  const canalTop = Object.entries(canalMap).sort((a,b) => b[1]-a[1])[0];
+  const canalTopTxt = canalTop ? `${canalTop[0]}: ${fmtPeso(canalTop[1])}` : 'Sin datos';
+
+  // ───── KPI: Tasa de cancelación (mes actual) ─────
+  // IMPORTANTE: usa allData.citas (no citasReales) para contar canceladas reales
+  const todasCitasMes = (allData.citas || []).filter(c => {
+    const [cy,cm] = normDate(c.fecha).split('-');
+    return +cm===m && +cy===y;
+  });
+  const canceladasMes = todasCitasMes.filter(c => (c.estado||'').toLowerCase().includes('cancel')).length;
+  const tasaCancel = todasCitasMes.length > 0 ? Math.round((canceladasMes / todasCitasMes.length) * 100) : 0;
+
+  // ───── KPI: CAC (Costo de Adquisición de Cliente) ─────
+  const hoyKPI = new Date();
+  const ventanaAtras = new Date(hoyKPI); ventanaAtras.setDate(hoyKPI.getDate() - VENTANA_NUEVO_DIAS);
+  const pacientesMes = new Set();
+  citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
+    .forEach(c => { if (c.nombre) pacientesMes.add(c.nombre.trim().toLowerCase()); });
+  let nuevosCount = 0;
+  pacientesMes.forEach(pac => {
+    const citasPrevias = allData.citas.filter(c => {
+      if (!c.nombre || c.nombre.trim().toLowerCase() !== pac) return false;
+      const f = new Date(normDate(c.fecha) + 'T12:00:00');
+      return f >= ventanaAtras && f < new Date(y, m-1, 1);
+    });
+    if (citasPrevias.length === 0) nuevosCount++;
+  });
+  const mesStr = `${y}-${String(m).padStart(2,'0')}`;
+  const egresosMktMes = getEgresos().filter(e => {
+    if (!e.fecha || !e.fecha.startsWith(mesStr)) return false;
+    return CATEGORIAS_MARKETING.some(cat => (e.concepto||'').toLowerCase().includes(cat.toLowerCase()));
+  }).reduce((s,e) => s + (e.monto||0), 0);
+  const cac = nuevosCount > 0 ? Math.round(egresosMktMes / nuevosCount) : 0;
+
+  // ───── KPI: Tasa de retención 60 días ─────
+  const hace60 = new Date(hoyKPI); hace60.setDate(hoyKPI.getDate() - VENTANA_RETENCION);
+  const conteoPorPaciente = {};
+  citas.filter(c => new Date(normDate(c.fecha) + 'T12:00:00') >= hace60)
+    .forEach(c => {
+      if (!c.nombre) return;
+      const pac = c.nombre.trim().toLowerCase();
+      conteoPorPaciente[pac] = (conteoPorPaciente[pac] || 0) + 1;
+    });
+  const pacientesUltimos60 = Object.keys(conteoPorPaciente).length;
+  const pacientesConRecompra = Object.values(conteoPorPaciente).filter(n => n >= 2).length;
+  const tasaRetencion = pacientesUltimos60 > 0 ? Math.round((pacientesConRecompra / pacientesUltimos60) * 100) : 0;
+
+  // ───── 4 nuevas tarjetas ─────
+  html += kpiCard('🎯','Canal líder del mes', canalTopTxt, 0, '', true, 'El que más factura');
+  html += kpiCard('❌','Tasa de cancelación', tasaCancel+'%', META_CANCELACION_PCT, '%', false, `<${META_CANCELACION_PCT}%`);
+  html += kpiCard('💸','CAC (Costo adq. cliente)', cac > 0 ? fmtPeso(cac) : `— (${nuevosCount} nuevos)`, META_CAC_MAX, '', false, `<${fmtPeso(META_CAC_MAX)}`);
+  html += kpiCard('🔁','Retención 60 días', tasaRetencion+'%', META_RETENCION_PCT, '%', true, `>${META_RETENCION_PCT}%`);
+
   html += '</div>';
 
   // Mix de servicios mes
@@ -6762,6 +6850,25 @@ function renderKPITablero() {
       </div>`;
     }
     html += '</div>';
+  }
+
+  // Desglose visual de ingresos por canal
+  if (Object.keys(canalMap).length > 0) {
+    const canalArr = Object.entries(canalMap).sort((a,b) => b[1]-a[1]);
+    const CANAL_COLORS = {'Directo':'var(--primary)','Gimnasio':'#10b981','Corporativo':'#6366f1','Referido':'#f59e0b'};
+    html += `<div class="card" style="margin-top:14px">
+      <div class="card-title" style="margin-bottom:14px">📊 Ingresos por canal este mes</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">`;
+    canalArr.forEach(([canal, ingreso]) => {
+      const pct = totalCanales > 0 ? Math.round(ingreso/totalCanales*100) : 0;
+      const color = CANAL_COLORS[canal] || 'var(--muted)';
+      html += `<div style="padding:12px;background:var(--s2);border-radius:10px;border-left:3px solid ${color}">
+        <div style="font-size:.78rem;font-weight:600;color:${color};margin-bottom:6px">${canal}</div>
+        <div style="font-family:var(--font-h);font-size:1.15rem;font-weight:700">${fmtPeso(ingreso)}</div>
+        <div style="font-size:.72rem;color:var(--muted)">${pct}% del total</div>
+      </div>`;
+    });
+    html += `</div></div>`;
   }
 
   el.innerHTML = html;
