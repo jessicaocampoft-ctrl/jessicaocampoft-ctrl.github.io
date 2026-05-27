@@ -544,6 +544,56 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
   .login-card{padding:32px 24px}
   .serv-name{width:120px}
 }
+/* ══════════════════════════════════════════
+   GUIA KPIs - Acordeón y estilo educativo
+══════════════════════════════════════════ */
+.gk-intro{background:linear-gradient(135deg,rgba(27,191,176,.08),rgba(99,102,241,.05));border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px}
+.gk-intro h3{font-family:var(--font-h);font-size:1.3rem;color:var(--primary);margin-bottom:10px;font-weight:600}
+.gk-intro p{font-size:.92rem;line-height:1.6;color:var(--text);margin-bottom:8px}
+.gk-dim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px}
+.gk-dim-card{padding:16px;border-radius:12px;background:var(--s1);border:1px solid var(--border)}
+.gk-dim-card.d1{border-left:4px solid #3b82f6}
+.gk-dim-card.d2{border-left:4px solid #f59e0b}
+.gk-dim-card.d3{border-left:4px solid #ef4444}
+.gk-dim-card.d4{border-left:4px solid #a855f7}
+.gk-dim-card h4{font-family:var(--font-h);font-size:1.05rem;margin-bottom:6px}
+.gk-dim-card .gk-dim-q{font-size:.82rem;color:var(--muted);font-style:italic;margin-bottom:8px}
+.gk-dim-card .gk-dim-warn{font-size:.78rem;color:#ef4444;background:rgba(239,68,68,.06);padding:6px 10px;border-radius:6px}
+.gk-section-title{font-family:var(--font-h);font-size:1.4rem;font-weight:600;margin:32px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:10px}
+.gk-kpi-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;transition:var(--tr)}
+.gk-kpi-card:hover{border-color:var(--primary)}
+.gk-kpi-header{padding:16px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;user-select:none}
+.gk-kpi-header:hover{background:var(--s2)}
+.gk-kpi-left{flex:1}
+.gk-kpi-name{font-family:var(--font-h);font-size:1.1rem;font-weight:600;margin-bottom:4px}
+.gk-kpi-summary{font-size:.85rem;color:var(--muted);line-height:1.5}
+.gk-kpi-meta{font-family:var(--font-m);font-size:.78rem;color:var(--primary);font-weight:600;background:rgba(27,191,176,.08);padding:4px 10px;border-radius:6px;white-space:nowrap}
+.gk-kpi-toggle{font-size:1.2rem;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.gk-kpi-card.open .gk-kpi-toggle{transform:rotate(180deg)}
+.gk-kpi-body{display:none;padding:0 20px 20px;border-top:1px solid var(--border)}
+.gk-kpi-card.open .gk-kpi-body{display:block}
+.gk-kpi-body h5{font-family:var(--font-m);font-size:.78rem;color:var(--primary);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px;font-weight:600}
+.gk-kpi-body p{font-size:.88rem;line-height:1.6;margin-bottom:8px}
+.gk-formula{background:var(--s2);border-left:3px solid var(--primary);padding:12px 16px;border-radius:6px;font-family:var(--font-m);font-size:.85rem;margin:10px 0;white-space:pre-line}
+.gk-ejemplo{background:rgba(99,102,241,.06);border-left:3px solid #6366f1;padding:12px 16px;border-radius:6px;font-size:.85rem;margin:10px 0;line-height:1.6}
+.gk-ejemplo strong{color:#6366f1}
+.gk-semaforo{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0}
+.gk-sem-item{padding:10px 14px;border-radius:8px;font-size:.82rem;display:flex;align-items:center;gap:8px}
+.gk-sem-item.verde{background:rgba(34,197,94,.07);border-left:3px solid #22c55e;color:#15803d}
+.gk-sem-item.amarillo{background:rgba(245,158,11,.07);border-left:3px solid #f59e0b;color:#b45309}
+.gk-sem-item.rojo{background:rgba(239,68,68,.07);border-left:3px solid #ef4444;color:#b91c1c}
+.gk-emergencia-tbl{width:100%;border-collapse:collapse;margin-top:12px;font-size:.86rem}
+.gk-emergencia-tbl thead{background:var(--s2)}
+.gk-emergencia-tbl th{padding:12px 14px;text-align:left;font-family:var(--font-m);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.gk-emergencia-tbl td{padding:14px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5}
+.gk-emergencia-tbl td:first-child{font-weight:600;color:#ef4444;white-space:nowrap}
+.gk-emergencia-tbl td:nth-child(2){color:var(--muted);font-size:.83rem}
+.gk-rutina{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:16px}
+.gk-rutina-grupo{margin-bottom:18px}
+.gk-rutina-grupo:last-child{margin-bottom:0}
+.gk-rutina-titulo{font-family:var(--font-h);font-size:1rem;font-weight:600;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.gk-rutina-item{display:flex;gap:10px;padding:8px 0;font-size:.88rem;line-height:1.5;border-bottom:1px solid rgba(255,255,255,.04)}
+.gk-rutina-item::before{content:"☐";color:var(--primary);font-weight:700;flex-shrink:0}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
@@ -679,6 +729,11 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
     <button class="sb-link" id="sb-finanzas" onclick="showView('finanzas')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       Finanzas
+    </button>
+
+    <button class="sb-link" id="sb-guiakpis" onclick="showView('guiakpis')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Guía de KPIs
     </button>
 
     <button class="sb-link" id="sb-recordatorios" onclick="showView('recordatorios')" style="justify-content:space-between">
@@ -1929,6 +1984,328 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 
     </section>
 
+    <!-- ── GUÍA KPIs ── -->
+    <section id="vGuiakpis" style="display:none">
+      <div class="page-header">
+        <h1 class="page-title">📚 Guía de <em>Indicadores</em></h1>
+        <p class="page-sub">Manual de uso para gestión diaria — léelo con calma, vuelve cuando lo necesites</p>
+      </div>
+
+      <!-- Introducción -->
+      <div class="gk-intro">
+        <h3>💡 ¿Qué son los indicadores de gestión?</h3>
+        <p>Un indicador (o KPI) es <strong>un número que te dice si el negocio va bien o mal en algo específico</strong>. Piensa en el tablero de un carro: no necesitas saber cómo funciona el motor, solo necesitas mirar el velocímetro, el combustible y la temperatura.</p>
+        <p><strong>La clínica es el carro. Los KPIs son tu tablero.</strong> Sin ellos manejas a ciegas: te das cuenta de los problemas cuando ya es muy tarde.</p>
+        <p style="margin-top:12px;font-size:.85rem;color:var(--muted)"><strong>Regla de oro:</strong> los KPIs no son para juzgar a nadie, son para tomar mejores decisiones. Si los reportas con honestidad, todos ganamos.</p>
+      </div>
+
+      <!-- Las 4 dimensiones -->
+      <div class="gk-section-title">🎯 Las 4 dimensiones del negocio</div>
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:14px">Un buen tablero mide pocas cosas pero correctas. Estas son las 4 áreas que vigilamos al mismo tiempo:</p>
+      <div class="gk-dim-grid">
+        <div class="gk-dim-card d1">
+          <h4>🟦 Eficiencia Operativa</h4>
+          <div class="gk-dim-q">¿Estoy usando bien mi tiempo?</div>
+          <div class="gk-dim-warn">Si la ignoras: trabajas mucho pero ganas poco</div>
+        </div>
+        <div class="gk-dim-card d2">
+          <h4>🟨 Comercial y Marketing</h4>
+          <div class="gk-dim-q">¿Está entrando gente nueva?</div>
+          <div class="gk-dim-warn">Si la ignoras: te quedas sin pacientes futuros</div>
+        </div>
+        <div class="gk-dim-card d3">
+          <h4>🟥 Financiera</h4>
+          <div class="gk-dim-q">¿Estoy ganando plata?</div>
+          <div class="gk-dim-warn">Si la ignoras: sobrevives pero no creces</div>
+        </div>
+        <div class="gk-dim-card d4">
+          <h4>🟪 Calidad y Retención</h4>
+          <div class="gk-dim-q">¿Los pacientes vuelven?</div>
+          <div class="gk-dim-warn">Si la ignoras: gastas más cada mes en marketing</div>
+        </div>
+      </div>
+
+      <!-- DIMENSIÓN 1 -->
+      <div class="gk-section-title">🟦 Dimensión 1: Eficiencia Operativa</div>
+
+      <div class="gk-kpi-card" onclick="toggleKPICard(this)">
+        <div class="gk-kpi-header">
+          <div class="gk-kpi-left">
+            <div class="gk-kpi-name">KPI 1 — Volumen de Pacientes Atendidos</div>
+            <div class="gk-kpi-summary">Cuántas sesiones reales se hacen por día, semana y mes. Solo cuentan las atendidas (NO canceladas ni "no asistió").</div>
+          </div>
+          <div class="gk-kpi-meta">Meta: ≥24/semana</div>
+          <div class="gk-kpi-toggle">▼</div>
+        </div>
+        <div class="gk-kpi-body">
+          <h5>Cómo se calcula</h5>
+          <div class="gk-formula">Diario: cuenta de citas atendidas hoy
+Semanal: suma de citas atendidas lunes a domingo
+Mensual: suma del 1 al último día del mes</div>
+          <h5>Por qué la meta es 24 sesiones/semana</h5>
+          <p>Es el <strong>punto de equilibrio operativo</strong>: por debajo de eso, la clínica pierde plata. El cálculo viene de: 104 sesiones/mes ÷ 4.3 semanas ≈ 24/semana.</p>
+          <h5>Cómo se lee</h5>
+          <div class="gk-semaforo">
+            <div class="gk-sem-item verde">🟢 ≥24 — Operación sostenible</div>
+            <div class="gk-sem-item amarillo">🟡 18–23 — Alerta</div>
+            <div class="gk-sem-item rojo">🔴 &lt;18 — Semana floja</div>
+          </div>
+          <h5>Ejemplo</h5>
+          <div class="gk-ejemplo">Si esta semana atendiste <strong>18 sesiones</strong>, el indicador se pone amarillo. Aún puedes corregir: <strong>activa el plan de referidos, pauta extra, recontacta pacientes inactivos.</strong></div>
+        </div>
+      </div>
+
+      <div class="gk-kpi-card" onclick="toggleKPICard(this)">
+        <div class="gk-kpi-header">
+          <div class="gk-kpi-left">
+            <div class="gk-kpi-name">KPI 2 — Mix de Servicios Clínicos</div>
+            <div class="gk-kpi-summary">De las sesiones que hiciste, cuántas fueron Express, Full, Readaptación o Corporativo. <strong>No todos rinden igual por hora.</strong></div>
+          </div>
+          <div class="gk-kpi-meta">Full debe ser ≤30%</div>
+          <div class="gk-kpi-toggle">▼</div>
+        </div>
+        <div class="gk-kpi-body">
+          <h5>La trampa mental que hay que entender</h5>
+          <p>Ves "Full $110.000" y piensas <em>"es la más rentable porque es la más cara"</em>. <strong>FALSO.</strong> Te bloquea 90 minutos.</p>
+          <div class="gk-ejemplo">En esos 90 minutos podrías hacer 1 Express + 1 Readaptación = <strong>$145.000</strong>. La Full te genera $110.000. Estás dejando <strong>$35.000</strong> sobre la mesa cada vez.</div>
+          <h5>Rentabilidad real por hora</h5>
+          <div class="gk-formula">Corporativo:  $120.000/h ✅ MEJOR
+Express:      $90.000/h  ✅
+Readaptación: $84.000/h
+Full:         $73.000/h  ⚠️ PEOR</div>
+          <h5>Cómo se lee</h5>
+          <div class="gk-semaforo">
+            <div class="gk-sem-item verde">🟢 Full ≤30% — Saludable</div>
+            <div class="gk-sem-item amarillo">🟡 Full 31–40% — Vigilar</div>
+            <div class="gk-sem-item rojo">🔴 Full &gt;40% — Pérdida silenciosa</div>
+          </div>
+          <h5>Acción si Full sube</h5>
+          <p>Tu auxiliar debe <strong>ofrecer Express por defecto</strong>, y solo agendar Full cuando lo justifique clínicamente.</p>
+        </div>
+      </div>
+
+      <!-- DIMENSIÓN 2 -->
+      <div class="gk-section-title">🟨 Dimensión 2: Comercial y Marketing</div>
+
+      <div class="gk-kpi-card" onclick="toggleKPICard(this)">
+        <div class="gk-kpi-header">
+          <div class="gk-kpi-left">
+            <div class="gk-kpi-name">KPI 3 — Leads desde Redes Sociales</div>
+            <div class="gk-kpi-summary">Cuántas personas escriben a WhatsApp o DM con <strong>intención real de comprar</strong>. No es un like ni un seguidor.</div>
+          </div>
+          <div class="gk-kpi-meta">Meta: 40–50/mes</div>
+          <div class="gk-kpi-toggle">▼</div>
+        </div>
+        <div class="gk-kpi-body">
+          <h5>¿Qué cuenta como lead?</h5>
+          <div class="gk-ejemplo">✅ <strong>"Tengo dolor en la rodilla, cuánto vale la consulta?"</strong> → SÍ es lead
+✅ <strong>"¿Atiendes los sábados?"</strong> → SÍ es lead
+❌ <strong>"Qué linda la rutina 💪"</strong> → NO es lead
+⚠️ <strong>"¿Tienes consulta en Bogotá?"</strong> → Lead descalificado</div>
+          <h5>Por qué importa</h5>
+          <p>Se invierten <strong>$340.000/mes</strong> en marketing. Si llegan solo 8 leads, cada uno costó $42.500. Si llegan 60, costó $5.667. <strong>El número de leads te dice si el marketing funciona.</strong></p>
+          <h5>Cómo registrarlo</h5>
+          <p>Cada mensaje nuevo que llegue con intención real → suma +1 al contador. <strong>Mantén el conteo diario</strong>, no esperes al cierre de mes.</p>
+        </div>
+      </div>
+
+      <div class="gk-kpi-card" onclick="toggleKPICard(this)">
+        <div class="gk-kpi-header">
+          <div class="gk-kpi-left">
+            <div class="gk-kpi-name">KPI 4 — Tasa de Conversión de Prospectos</div>
+            <div class="gk-kpi-summary">De los leads que entran, qué porcentaje termina agendando cita pagada. <strong>El indicador más revelador del embudo comercial.</strong></div>
+          </div>
+          <div class="gk-kpi-meta">Meta: 25–35%</div>
+          <div class="gk-kpi-toggle">▼</div>
+        </div>
+        <div class="gk-kpi-body">
+          <h5>Fórmula</h5>
+          <div class="gk-formula">Tasa = (Citas agendadas ÷ Total leads) × 100</div>
+          <h5>Ejemplo</h5>
+          <div class="gk-ejemplo">Esta semana entraron <strong>40 leads</strong>. De esos, <strong>12 agendaron cita</strong>.
+Tasa = 12 ÷ 40 × 100 = <strong>30%</strong> → 🟢 Sano</div>
+          <h5>El diagnóstico que da</h5>
+          <p>• Muchos leads, conversión baja → problema en <strong>ventas</strong> (cómo respondemos).<br>
+          • Pocos leads, conversión alta → problema en <strong>marketing</strong> (cómo atraemos).<br>
+          • Ambos malos → problema estructural (marca, precio, oferta).</p>
+          <h5>Errores comunes que tumban la conversión</h5>
+          <div class="gk-ejemplo">• Demorar más de 30 minutos en responder (el lead ya buscó a otra fisio)
+• Mandar el precio sin generar valor primero
+• No preguntar el caso clínico antes de cotizar
+• Responder en horarios extraños sin avisar</div>
+        </div>
+      </div>
+
+      <!-- DIMENSIÓN 3 -->
+      <div class="gk-section-title">🟥 Dimensión 3: Financiera</div>
+
+      <div class="gk-kpi-card" onclick="toggleKPICard(this)">
+        <div class="gk-kpi-header">
+          <div class="gk-kpi-left">
+            <div class="gk-kpi-name">KPI 5 — Ventas Brutas</div>
+            <div class="gk-kpi-summary">El dinero total que entra por servicios y contratos corporativos, <strong>antes de descontar gastos</strong>.</div>
+          </div>
+          <div class="gk-kpi-meta">Meta: $10.265.000/mes</div>
+          <div class="gk-kpi-toggle">▼</div>
+        </div>
+        <div class="gk-kpi-body">
+          <h5>OJO con la palabra "brutas"</h5>
+          <p>Ventas brutas NO es lo que te queda. Es lo que <strong>facturas</strong>. Lo que te queda después de pagar gastos es la <strong>utilidad</strong>.</p>
+          <h5>Metas</h5>
+          <div class="gk-formula">Semanal: $2.566.250  (meta mensual ÷ 4)
+Mensual: $10.265.000
+         = costos $8.622.600 + utilidad 20% $1.642.400</div>
+          <h5>Cómo se lee</h5>
+          <div class="gk-semaforo">
+            <div class="gk-sem-item verde">🟢 ≥100% — Meta cumplida</div>
+            <div class="gk-sem-item amarillo">🟡 84–99% — Cubres operación, no ganas</div>
+            <div class="gk-sem-item rojo">🔴 &lt;80% — Pierdes plata</div>
+          </div>
+          <h5>Truco para no llevarte sorpresas</h5>
+          <p>Compara semana a semana, NO al final del mes. Si en la semana 2 vas en $4M cuando deberías ir en $5.1M, <strong>todavía tienes 2 semanas para corregir</strong>.</p>
+        </div>
+      </div>
+
+      <!-- DIMENSIÓN 4 -->
+      <div class="gk-section-title">🟪 Dimensión 4: Calidad y Retención</div>
+
+      <div class="gk-kpi-card" onclick="toggleKPICard(this)">
+        <div class="gk-kpi-header">
+          <div class="gk-kpi-left">
+            <div class="gk-kpi-name">KPI 6 — Tasa de Encuestas Realizadas</div>
+            <div class="gk-kpi-summary">De los pacientes atendidos, qué porcentaje contestó la encuesta de satisfacción.</div>
+          </div>
+          <div class="gk-kpi-meta">Meta: &gt;70%</div>
+          <div class="gk-kpi-toggle">▼</div>
+        </div>
+        <div class="gk-kpi-body">
+          <h5>Por qué es un KPI "previo" al NPS</h5>
+          <p>El NPS te dice qué tan satisfechos están. Pero si solo el 10% contesta, ese NPS <strong>está sesgado</strong>. Para que el NPS sea confiable, al menos <strong>7 de cada 10 pacientes</strong> deben responder.</p>
+          <h5>Cuándo enviarla</h5>
+          <p>El mismo día de la consulta o al día siguiente. Si no responden, recordar al tercer día.</p>
+        </div>
+      </div>
+
+      <div class="gk-kpi-card" onclick="toggleKPICard(this)">
+        <div class="gk-kpi-header">
+          <div class="gk-kpi-left">
+            <div class="gk-kpi-name">KPI 7 — NPS (Net Promoter Score)</div>
+            <div class="gk-kpi-summary">Mide la <strong>lealtad</strong> de los pacientes: qué tan probable es que te recomienden con otros.</div>
+          </div>
+          <div class="gk-kpi-meta">Meta: &gt;65</div>
+          <div class="gk-kpi-toggle">▼</div>
+        </div>
+        <div class="gk-kpi-body">
+          <h5>La única pregunta del NPS</h5>
+          <div class="gk-ejemplo"><strong>"En una escala de 0 a 10, ¿qué tan probable es que recomiendes a la Fisio Jessica Ocampo a un familiar o amigo?"</strong></div>
+          <h5>Cómo se clasifican las respuestas</h5>
+          <div class="gk-formula">9 o 10  →  PROMOTORES  (te aman, recomiendan)
+7 u 8   →  PASIVOS     (satisfechos, no entusiasmados)
+0 a 6   →  DETRACTORES (mala experiencia)</div>
+          <h5>Fórmula</h5>
+          <div class="gk-formula">NPS = % Promotores − % Detractores</div>
+          <h5>Ejemplo</h5>
+          <div class="gk-ejemplo">50 respuestas: 35 dieron 9-10, 10 dieron 7-8, 5 dieron 0-6.
+• Promotores:   70%
+• Pasivos:      20% (NO suman)
+• Detractores:  10%
+<strong>NPS = 70 − 10 = 60</strong> → 🟢 Excelente</div>
+          <h5>Lo más importante de entender</h5>
+          <p>Los <strong>Pasivos (7-8) NO suman al NPS</strong>. Solo se restan detractores de promotores. Un 7 cuenta como cero — alguien que pone 7 está satisfecho pero no trae nuevos pacientes.</p>
+          <h5>Cómo se lee</h5>
+          <div class="gk-semaforo">
+            <div class="gk-sem-item verde">🟢 &gt;65 — World-class</div>
+            <div class="gk-sem-item amarillo">🟡 30–64 — Bueno, hay espacio</div>
+            <div class="gk-sem-item rojo">🔴 &lt;30 — Crítico</div>
+          </div>
+          <h5>Acción inmediata con detractores</h5>
+          <p>Si alguien califica 6 o menos: <strong>llamarlo en menos de 48 horas</strong>. No para discutir, para escuchar. Un detractor recuperado se vuelve promotor; uno ignorado habla mal con 10 personas más.</p>
+        </div>
+      </div>
+
+      <div class="gk-kpi-card" onclick="toggleKPICard(this)">
+        <div class="gk-kpi-header">
+          <div class="gk-kpi-left">
+            <div class="gk-kpi-name">KPI 8 — Base de Datos Actualizada</div>
+            <div class="gk-kpi-summary">De los pacientes atendidos, qué porcentaje tiene ficha completa (cédula, correo, teléfono, fecha nacimiento, diagnóstico).</div>
+          </div>
+          <div class="gk-kpi-meta">Meta: 100%</div>
+          <div class="gk-kpi-toggle">▼</div>
+        </div>
+        <div class="gk-kpi-body">
+          <h5>Por qué es el KPI más importante de todos</h5>
+          <p>El <strong>activo más valioso</strong> de la clínica no es la camilla, ni el local, ni los equipos. <strong>Es la base de pacientes.</strong></p>
+          <p>Si está incompleta, no se puede:</p>
+          <div class="gk-ejemplo">• Mandar campañas de re-enganche (<em>"¿hace 2 meses no te haces descarga, te agendo?"</em>)
+• Felicitar en cumpleaños (touchpoint emocional barato)
+• Hacer seguimiento post-cirugía
+• Calcular bien la retención</div>
+          <h5>Regla operativa de oro</h5>
+          <div class="gk-ejemplo"><strong>"Ningún paciente sale de la clínica sin ficha completa."</strong></div>
+        </div>
+      </div>
+
+      <!-- MANUAL DE EMERGENCIA -->
+      <div class="gk-section-title">🚨 Manual de Emergencia: ¿Qué hago si...?</div>
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:8px">Cuando un KPI sale rojo, NO es para entrar en pánico. Es para hacer una acción concreta:</p>
+      <div style="overflow-x:auto"><table class="gk-emergencia-tbl">
+        <thead><tr>
+          <th>Si esto sale rojo...</th>
+          <th>El síntoma es...</th>
+          <th>Acción inmediata</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Sesiones semana &lt;18</td><td>Agenda floja</td><td>Activar campaña de referidos + pauta extra + recontactar pacientes inactivos de últimos 3 meses</td></tr>
+          <tr><td>Mix Full &gt;40%</td><td>Pérdida silenciosa de margen</td><td>Capacitar auxiliar para ofrecer Express por defecto. Solo Full si lo justifica clínicamente</td></tr>
+          <tr><td>Conversión &lt;20%</td><td>Fugas en el embudo</td><td>Auditar conversaciones de WhatsApp de la semana, identificar dónde se cae el lead. Revisar tiempos de respuesta</td></tr>
+          <tr><td>Ventas mes &lt;80% meta</td><td>No vas a llegar</td><td>Activar promoción de fin de mes + ofrecer paquetes (3x2, descuento por compra adelantada)</td></tr>
+          <tr><td>NPS &lt;50</td><td>Pacientes insatisfechos</td><td>Llamar a TODOS los detractores en 48h. Hacer reunión de equipo con los hallazgos</td></tr>
+          <tr><td>Encuestas &lt;50%</td><td>No tenemos datos confiables</td><td>Cambiar momento de envío: justo al salir del consultorio en vez de al día siguiente</td></tr>
+          <tr><td>BD actualizada &lt;90%</td><td>Pacientes "fantasma"</td><td>Establecer regla: nadie sale sin ficha completa. Auxiliar revisa antes del cierre del día</td></tr>
+        </tbody>
+      </table></div>
+
+      <!-- RUTINA -->
+      <div class="gk-section-title">📅 Rutina de medición</div>
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:8px">Checklist para la auxiliar administrativa. No intentes medir todo al tiempo — usa estas frecuencias:</p>
+      <div class="gk-rutina">
+        <div class="gk-rutina-grupo">
+          <div class="gk-rutina-titulo">☀️ DIARIO (5 minutos al final del día)</div>
+          <div class="gk-rutina-item">Verificar que todas las citas del día estén marcadas (atendidas, canceladas o no asistió)</div>
+          <div class="gk-rutina-item">Registrar el pago de cada cita atendida (efectivo, Nequi, Bancolombia, transferencia)</div>
+          <div class="gk-rutina-item">Sumar los leads que entraron por WhatsApp/DM con intención real</div>
+          <div class="gk-rutina-item">Validar que todos los pacientes nuevos tienen ficha completa</div>
+        </div>
+        <div class="gk-rutina-grupo">
+          <div class="gk-rutina-titulo">📆 SEMANAL (15 minutos los domingos en la noche)</div>
+          <div class="gk-rutina-item">Revisar total de sesiones de la semana vs meta de 24</div>
+          <div class="gk-rutina-item">Revisar ventas de la semana vs meta de $2.566.250</div>
+          <div class="gk-rutina-item">Calcular tasa de conversión: leads de la semana ÷ citas agendadas</div>
+          <div class="gk-rutina-item">Revisar si hubo cancelaciones inusuales y por qué</div>
+          <div class="gk-rutina-item">Si algún KPI está en rojo: ejecutar la acción del Manual de Emergencia</div>
+        </div>
+        <div class="gk-rutina-grupo">
+          <div class="gk-rutina-titulo">🗓️ MENSUAL (1 hora el primer lunes del mes)</div>
+          <div class="gk-rutina-item">Enviar encuesta NPS a todos los pacientes atendidos en el mes anterior</div>
+          <div class="gk-rutina-item">Calcular NPS con la fórmula (% promotores − % detractores)</div>
+          <div class="gk-rutina-item">Revisar % de actualización de base de datos</div>
+          <div class="gk-rutina-item">Revisar mix de servicios del mes (¿Full superó a Express?)</div>
+          <div class="gk-rutina-item">Comparar ingresos del mes vs mes anterior</div>
+          <div class="gk-rutina-item">Llamar a los detractores del mes (NPS ≤6) para entender qué falló</div>
+        </div>
+      </div>
+
+      <!-- Cierre -->
+      <div class="gk-intro" style="margin-top:30px;margin-bottom:40px">
+        <h3>✨ Las 5 reglas de oro</h3>
+        <p><strong>1.</strong> Un KPI sin meta no es un KPI, es un dato suelto. Siempre hay meta.</p>
+        <p><strong>2.</strong> Si no actúas sobre el KPI, no lo midas. Mejor pocos indicadores que muevan decisiones.</p>
+        <p><strong>3.</strong> El amarillo es tu mejor amigo: te da tiempo de reaccionar. Si solo ves rojo, ya es tarde.</p>
+        <p><strong>4.</strong> La frecuencia importa más que la precisión. Un dato aproximado semanal vale 100 veces más que uno perfecto semestral.</p>
+        <p><strong>5.</strong> Los KPIs no son para juzgar al equipo, son para tomar mejores decisiones de negocio.</p>
+      </div>
+    </section>
+
     <!-- ── MODAL PAGO ── -->
     <div id="modalPago" onclick="if(event.target===this)cerrarModalPago()">
       <div class="pago-modal-box">
@@ -2760,7 +3137,7 @@ function openEvalExpress() {
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
-  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','seguimiento','empresas','pasaporte'].forEach(id => {
+  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','seguimiento','empresas','pasaporte'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -9043,6 +9420,11 @@ function copiarMsgWA() {
     document.body.removeChild(ta);
     toast('Mensaje copiado. Pégalo en WhatsApp Web 💬', 'ok');
   });
+}
+
+// ── GUÍA KPIs — acordeón ──
+function toggleKPICard(el) {
+  el.classList.toggle('open');
 }
 </script>
 </body>
