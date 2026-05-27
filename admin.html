@@ -594,6 +594,29 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 .gk-rutina-titulo{font-family:var(--font-h);font-size:1rem;font-weight:600;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .gk-rutina-item{display:flex;gap:10px;padding:8px 0;font-size:.88rem;line-height:1.5;border-bottom:1px solid rgba(255,255,255,.04)}
 .gk-rutina-item::before{content:"☐";color:var(--primary);font-weight:700;flex-shrink:0}
+
+/* ══════════════════════════════════════════
+   BANNERS CONTEXTUALES — Ayuda en componentes
+══════════════════════════════════════════ */
+.help-banner{background:linear-gradient(135deg,rgba(27,191,176,.08),rgba(99,102,241,.05));border:1px solid rgba(27,191,176,.25);border-radius:12px;margin-bottom:16px;overflow:hidden;transition:var(--tr)}
+.help-banner-header{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;user-select:none}
+.help-banner-header:hover{background:rgba(27,191,176,.04)}
+.help-banner-title{font-family:var(--font-m);font-size:.85rem;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:8px}
+.help-banner-toggle{font-size:.8rem;color:var(--muted);transition:transform .2s;font-weight:600}
+.help-banner.open .help-banner-toggle{transform:rotate(180deg)}
+.help-banner-body{display:none;padding:0 18px 18px;border-top:1px solid rgba(27,191,176,.15)}
+.help-banner.open .help-banner-body{display:block}
+.help-banner-intro{font-size:.86rem;line-height:1.6;color:var(--text);margin:14px 0 12px}
+.help-banner-intro strong{color:var(--primary)}
+.help-banner-steps{margin:10px 0 14px}
+.help-banner-step{display:flex;gap:10px;padding:8px 0;font-size:.85rem;line-height:1.5;align-items:flex-start}
+.help-banner-step-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--primary);color:white;font-family:var(--font-m);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.help-banner-step-text{flex:1}
+.help-banner-step-text strong{color:var(--primary);font-weight:600}
+.help-banner-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px;border-top:1px dashed rgba(27,191,176,.2);flex-wrap:wrap}
+.help-banner-tip{font-size:.78rem;color:var(--muted);font-style:italic;flex:1;min-width:200px}
+.help-banner-link{background:var(--primary);color:white;padding:8px 14px;border-radius:8px;font-family:var(--font-b);font-size:.78rem;font-weight:600;text-decoration:none;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;transition:var(--tr);white-space:nowrap}
+.help-banner-link:hover{background:#159b8e;transform:translateY(-1px)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
@@ -1994,6 +2017,44 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
         <!-- Contador de Leads -->
         <div class="card" style="margin-bottom:16px">
           <div class="card-title">📩 Contador de Leads</div>
+
+          <div class="help-banner open" data-help-id="leads-counter" onclick="toggleHelpBanner(this)">
+            <div class="help-banner-header">
+              <div class="help-banner-title">💡 ¿Cómo usar el contador de leads?</div>
+              <div class="help-banner-toggle">▼</div>
+            </div>
+            <div class="help-banner-body" onclick="event.stopPropagation()">
+              <p class="help-banner-intro">
+                Este contador mide <strong>cuánta gente nueva muestra interés real</strong> en agendar.
+                Sirve para saber si el marketing está funcionando y para calcular la tasa de conversión.
+              </p>
+              <div class="help-banner-steps">
+                <div class="help-banner-step">
+                  <div class="help-banner-step-num">1</div>
+                  <div class="help-banner-step-text">Cuando llegue un mensaje a WhatsApp o DM <strong>preguntando precios, horarios o agendamiento</strong> → haz click en el botón correspondiente.</div>
+                </div>
+                <div class="help-banner-step">
+                  <div class="help-banner-step-num">2</div>
+                  <div class="help-banner-step-text">Solo cuentan los mensajes con <strong>intención real de comprar</strong>. Un "qué linda la rutina 💪" NO es lead.</div>
+                </div>
+                <div class="help-banner-step">
+                  <div class="help-banner-step-num">3</div>
+                  <div class="help-banner-step-text">Si registraste uno por error, usa el botón <strong>↩️ Deshacer</strong> dentro de los siguientes minutos.</div>
+                </div>
+                <div class="help-banner-step">
+                  <div class="help-banner-step-num">4</div>
+                  <div class="help-banner-step-text">Al final del día/semana/mes, los contadores muestran cuántos leads entraron en cada período. El sistema usa esto para calcular automáticamente la <strong>tasa de conversión</strong>.</div>
+                </div>
+              </div>
+              <div class="help-banner-footer">
+                <div class="help-banner-tip">💬 Tip: registra el lead apenas leas el mensaje, no esperes a responderlo.</div>
+                <button class="help-banner-link" onclick="showView('guiakpis'); setTimeout(() => { const el = document.querySelectorAll('.gk-kpi-card')[2]; if(el) { el.classList.add('open'); el.scrollIntoView({behavior:'smooth',block:'center'}); } }, 300)">
+                  📚 Ver guía completa
+                </button>
+              </div>
+            </div>
+          </div>
+
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px">
             Cada vez que entra un mensaje con <strong>intención real de compra</strong>
             (pregunta de precios, agenda, info de servicios), suma +1.
@@ -2026,6 +2087,44 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
           <div id="leadFeedback" style="margin-top:12px;font-size:.85rem;text-align:center;min-height:20px;color:var(--primary);font-weight:600"></div>
         </div>
 
+        <!-- Banner ayuda Tablero KPIs -->
+        <div class="help-banner open" data-help-id="kpi-tablero" onclick="toggleHelpBanner(this)">
+          <div class="help-banner-header">
+            <div class="help-banner-title">💡 ¿Cómo leer el Tablero de KPIs?</div>
+            <div class="help-banner-toggle">▼</div>
+          </div>
+          <div class="help-banner-body" onclick="event.stopPropagation()">
+            <p class="help-banner-intro">
+              Este tablero te dice <strong>si la clínica va bien o mal este mes</strong>, en 8 áreas distintas.
+              Cada tarjeta muestra un número, una meta, y un semáforo de color.
+            </p>
+            <div class="help-banner-steps">
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">1</div>
+                <div class="help-banner-step-text"><strong>🟢 Verde:</strong> vas igual o mejor que la meta. <strong>🟡 Amarillo:</strong> vas algo por debajo, aún hay tiempo de corregir. <strong>🔴 Rojo:</strong> requiere acción inmediata.</div>
+              </div>
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">2</div>
+                <div class="help-banner-step-text">Revisa el tablero al menos <strong>una vez por semana</strong> (idealmente los domingos en la noche). Así detectas problemas cuando aún se pueden arreglar.</div>
+              </div>
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">3</div>
+                <div class="help-banner-step-text">Si ves algo en rojo, <strong>NO entres en pánico</strong>: abre la Guía de KPIs → sección "Manual de Emergencia" y sigue los pasos para esa situación.</div>
+              </div>
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">4</div>
+                <div class="help-banner-step-text">El tablero <strong>se actualiza solo</strong>. Tu única tarea es asegurarte de que las citas y los pagos estén bien registrados en el día a día. El resto lo calcula el sistema.</div>
+              </div>
+            </div>
+            <div class="help-banner-footer">
+              <div class="help-banner-tip">💬 Tip: si no entiendes algún KPI específico, haz click en "Ver guía completa" y busca su explicación.</div>
+              <button class="help-banner-link" onclick="showView('guiakpis')">
+                📚 Ver guía completa
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Dashboard KPIs calculados -->
         <div id="kpiTableroResult"></div>
       </div>
@@ -2033,6 +2132,45 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
       <!-- ══ ESTRUCTURA FINANCIERA ══ -->
       <div style="margin-top:28px;margin-bottom:28px">
         <div class="fin-section-title">🏗️ Estructura Financiera</div>
+
+        <!-- Banner ayuda Estructura Financiera -->
+        <div class="help-banner open" data-help-id="estructura-fin" onclick="toggleHelpBanner(this)">
+          <div class="help-banner-header">
+            <div class="help-banner-title">💡 ¿Qué significan los 3 puntos de equilibrio?</div>
+            <div class="help-banner-toggle">▼</div>
+          </div>
+          <div class="help-banner-body" onclick="event.stopPropagation()">
+            <p class="help-banner-intro">
+              Estos 3 números son tus <strong>líneas rojas financieras</strong>. Te dicen cuánto necesitas
+              vender al mes para sobrevivir, operar tranquila, o ganar la utilidad que quieres.
+            </p>
+            <div class="help-banner-steps">
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">1</div>
+                <div class="help-banner-step-text"><strong>Supervivencia ($8.212.000):</strong> el mínimo para cubrir TODOS los costos del mes. Por debajo, pierdes plata real.</div>
+              </div>
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">2</div>
+                <div class="help-banner-step-text"><strong>Operativo ($8.622.600):</strong> supervivencia + un 5% de colchón para imprevistos. Aquí estás "segura" pero sin ganancia.</div>
+              </div>
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">3</div>
+                <div class="help-banner-step-text"><strong>Meta con utilidad ($10.265.000):</strong> incluye un 20% de ganancia. Es el objetivo real del negocio cada mes.</div>
+              </div>
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">4</div>
+                <div class="help-banner-step-text">El <strong>indicador de progreso</strong> arriba muestra dónde vas hoy en relación a estas 3 metas. <strong>Tu objetivo es siempre llegar al verde.</strong></div>
+              </div>
+            </div>
+            <div class="help-banner-footer">
+              <div class="help-banner-tip">💬 Tip: si en la semana 3 del mes no has llegado al punto operativo, activa promociones o paquetes.</div>
+              <button class="help-banner-link" onclick="showView('guiakpis'); setTimeout(() => { const el = document.querySelectorAll('.gk-kpi-card')[4]; if(el) { el.classList.add('open'); el.scrollIntoView({behavior:'smooth',block:'center'}); } }, 300)">
+                📚 Ver guía completa
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div id="estructuraFinResult"></div>
       </div>
 
@@ -9587,8 +9725,34 @@ function toggleKPICard(el) {
   el.classList.toggle('open');
 }
 
+// ── BANNERS CONTEXTUALES — colapsar/expandir ──
+function toggleHelpBanner(el) {
+  el.classList.toggle('open');
+  const id = el.getAttribute('data-help-id');
+  if (id) {
+    try {
+      localStorage.setItem('helpBanner_' + id, el.classList.contains('open') ? '1' : '0');
+    } catch(e) {}
+  }
+}
+
+function restoreHelpBanners() {
+  document.querySelectorAll('.help-banner[data-help-id]').forEach(el => {
+    const id = el.getAttribute('data-help-id');
+    try {
+      const saved = localStorage.getItem('helpBanner_' + id);
+      // Abiertos por defecto la primera vez; cerrados si el usuario los cerró
+      if (saved === '0') el.classList.remove('open');
+      else el.classList.add('open');
+    } catch(e) {
+      el.classList.add('open');
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(actualizarContadorLeads, 500);
+  setTimeout(restoreHelpBanners, 300);
 });
 </script>
 </body>
