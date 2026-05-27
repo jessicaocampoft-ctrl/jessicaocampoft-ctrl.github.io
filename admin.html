@@ -984,6 +984,41 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
         </div>
         <textarea id="notasRapidas" placeholder="Anotaciones para hoy: materiales que faltan, pacientes a llamar, recordatorios propios..." oninput="autoGuardarNota()"></textarea>
       </div>
+
+      <!-- Contador de Leads -->
+      <div class="card" style="margin-top:18px">
+        <div class="card-title">📩 Contador de Leads</div>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px">
+          Cada vez que entra un mensaje con <strong>intención real de compra</strong>
+          (pregunta de precios, agenda, info de servicios), suma +1.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px">
+          <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
+            <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700;color:var(--primary)" id="leadsHoyCount">0</div>
+            <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Hoy</div>
+          </div>
+          <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
+            <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700" id="leadsSemanaCount">0</div>
+            <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Esta semana</div>
+          </div>
+          <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
+            <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700" id="leadsMesCount">0</div>
+            <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Este mes</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button onclick="registrarLead('WhatsApp')" style="flex:1;min-width:160px;padding:14px;background:#25d366;color:white;border:none;border-radius:10px;font-family:var(--font-b);font-size:.92rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+            ➕ Lead WhatsApp
+          </button>
+          <button onclick="registrarLead('Instagram')" style="flex:1;min-width:160px;padding:14px;background:linear-gradient(45deg,#833ab4,#e1306c,#fd1d1d);color:white;border:none;border-radius:10px;font-family:var(--font-b);font-size:.92rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+            ➕ Lead Instagram
+          </button>
+          <button onclick="deshacerUltimoLead()" style="padding:14px 18px;background:var(--s2);color:var(--text);border:1px solid var(--border);border-radius:10px;font-family:var(--font-b);font-size:.85rem;cursor:pointer" title="Deshacer último lead registrado">
+            ↩️ Deshacer
+          </button>
+        </div>
+        <div id="leadFeedback" style="margin-top:12px;font-size:.85rem;text-align:center;min-height:20px;color:var(--primary);font-weight:600"></div>
+      </div>
     </section>
 
     <!-- ── TAREAS DEL DÍA ── -->
@@ -3175,6 +3210,7 @@ function showView(v) {
   if (v === 'paquetes')       renderPaquetes();
   if (v === 'empresas')       renderEmpresas();
   if (v === 'codigos')        renderCodigos();
+  if (v === 'dashboard')      actualizarContadorLeads();
 }
 
 function toggleSidebar() {
@@ -7033,6 +7069,95 @@ function getKPIManual() {
 }
 function saveKPIManual(obj) { kvSet('kpi_manual', JSON.stringify(obj)); }
 
+// ═══════════════════════════════════════════════
+// LEADS - Sistema de conteo de prospectos
+// ═══════════════════════════════════════════════
+function getLeads() {
+  try {
+    const raw = kvGet('leads_log');
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveLeads(arr) {
+  kvSet('leads_log', JSON.stringify(arr));
+}
+
+function addLead(canal = 'WhatsApp') {
+  const leads = getLeads();
+  const ahora = new Date();
+  leads.push({
+    id: Date.now(),
+    fecha: ahora.toISOString().slice(0,10),  // YYYY-MM-DD
+    hora: ahora.toTimeString().slice(0,5),    // HH:MM
+    canal: canal,
+    timestamp: ahora.getTime()
+  });
+  saveLeads(leads);
+  return leads.length;
+}
+
+function deleteLastLead() {
+  const leads = getLeads();
+  if (leads.length === 0) return false;
+  leads.pop();
+  saveLeads(leads);
+  return true;
+}
+
+function getLeadsHoy() {
+  const hoy = new Date().toISOString().slice(0,10);
+  return getLeads().filter(l => l.fecha === hoy).length;
+}
+
+function getLeadsSemana() {
+  const hoy = new Date();
+  const dia = hoy.getDay();
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - (dia === 0 ? 6 : dia - 1));
+  lunes.setHours(0,0,0,0);
+  return getLeads().filter(l => new Date(l.fecha) >= lunes).length;
+}
+
+function getLeadsMes() {
+  const ahora = new Date();
+  const y = ahora.getFullYear(), m = ahora.getMonth() + 1;
+  return getLeads().filter(l => {
+    const [ly, lm] = l.fecha.split('-');
+    return +ly === y && +lm === m;
+  }).length;
+}
+
+function registrarLead(canal) {
+  addLead(canal);
+  actualizarContadorLeads();
+  const fb = document.getElementById('leadFeedback');
+  if (fb) {
+    fb.textContent = `✅ Lead de ${canal} registrado`;
+    setTimeout(() => { fb.textContent = ''; }, 2500);
+  }
+}
+
+function deshacerUltimoLead() {
+  if (!confirm('¿Quitar el último lead registrado?')) return;
+  const ok = deleteLastLead();
+  actualizarContadorLeads();
+  const fb = document.getElementById('leadFeedback');
+  if (fb) {
+    fb.textContent = ok ? '↩️ Lead deshecho' : '⚠️ No hay leads para deshacer';
+    setTimeout(() => { fb.textContent = ''; }, 2500);
+  }
+}
+
+function actualizarContadorLeads() {
+  const elHoy = document.getElementById('leadsHoyCount');
+  const elSem = document.getElementById('leadsSemanaCount');
+  const elMes = document.getElementById('leadsMesCount');
+  if (elHoy) elHoy.textContent = getLeadsHoy();
+  if (elSem) elSem.textContent = getLeadsSemana();
+  if (elMes) elMes.textContent = getLeadsMes();
+}
+
 function guardarKPIManual() {
   const obj = {
     leads:        parseInt(document.getElementById('kpiLeads').value || '0', 10) || 0,
@@ -7094,8 +7219,15 @@ function renderKPITablero() {
     .forEach(c => { const s = c.servicio || 'Sin tipo'; mixMap[s] = (mixMap[s]||0)+1; });
   const mixArr = Object.entries(mixMap).sort((a,b) => b[1]-a[1]);
 
-  // Tasa conversión
-  const tasa = manual.leads > 0 ? Math.round((manual.convertidos / manual.leads) * 100) : null;
+  // Tasa conversión — usa el contador automático del mes (con fallback al campo manual)
+  const leadsMes = getLeadsMes();
+  const citasNuevasMes = citas.filter(c => {
+    const [cy,cm] = normDate(c.fecha).split('-');
+    return +cm === m && +cy === y;
+  }).length;
+  const tasaConv = leadsMes > 0 ? Math.round((citasNuevasMes / leadsMes) * 100) : null;
+  // Respaldo: si no hay leads en el contador automático, usa el campo manual
+  const tasa = leadsMes > 0 ? tasaConv : (manual.leads > 0 ? Math.round((manual.convertidos / manual.leads) * 100) : null);
 
   function kpiCard(icon, label, valor, meta, unidad='', altoEsMejor=true, meta2txt='') {
     const numVal = parseFloat(String(valor).replace(/[^0-9.]/g,''));
@@ -7120,7 +7252,7 @@ function renderKPITablero() {
   html += kpiCard('📅','Sesiones esta semana', sessSemana, META_SESIONES_SEMANA, ' sesiones', true, `${META_SESIONES_SEMANA} sesiones`);
   html += kpiCard('💰','Ventas esta semana', fmtPeso(ventasSemana), META_VENTAS_SEMANA, '', true, fmtPeso(META_VENTAS_SEMANA));
   html += kpiCard('💰','Ventas mes actual', fmtPeso(ventasMes), META_VENTAS_MES, '', true, fmtPeso(META_VENTAS_MES));
-  html += kpiCard('📣','Leads recibidos (sem)', manual.leads||'—', 0, '', true, 'Registrar arriba');
+  html += kpiCard('📣','Leads recibidos (mes)', leadsMes > 0 ? leadsMes : (manual.leads||'—'), 0, '', true, 'Contador del dashboard');
 
   if (tasa !== null) {
     html += kpiCard('🎯','Tasa de conversión', tasa+'%', 25, '%', true, '25–35%');
@@ -9426,6 +9558,10 @@ function copiarMsgWA() {
 function toggleKPICard(el) {
   el.classList.toggle('open');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(actualizarContadorLeads, 500);
+});
 </script>
 </body>
 </html>
