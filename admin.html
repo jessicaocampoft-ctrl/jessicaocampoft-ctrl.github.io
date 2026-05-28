@@ -594,6 +594,11 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 .gk-rutina-titulo{font-family:var(--font-h);font-size:1rem;font-weight:600;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .gk-rutina-item{display:flex;gap:10px;padding:8px 0;font-size:.88rem;line-height:1.5;border-bottom:1px solid rgba(255,255,255,.04)}
 .gk-rutina-item::before{content:"☐";color:var(--primary);font-weight:700;flex-shrink:0}
+.gk-check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;font-size:.88rem;line-height:1.5;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;border-radius:6px;transition:background .15s;user-select:none}
+.gk-check-item:hover{background:var(--s2)}
+.gk-check-item input[type=checkbox]{flex-shrink:0;width:16px;height:16px;accent-color:var(--primary);margin-top:2px;cursor:pointer}
+.gk-check-item.done span{text-decoration:line-through;color:var(--muted);opacity:.6}
+.gk-check-item.done{background:rgba(27,191,176,.04)}
 
 /* ══════════════════════════════════════════
    BANNERS CONTEXTUALES — Ayuda en componentes
@@ -2603,32 +2608,88 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
 
       <!-- RUTINA -->
       <div class="gk-section-title">📅 Rutina de medición</div>
-      <p style="font-size:.9rem;color:var(--muted);margin-bottom:8px">Checklist para la auxiliar administrativa. No intentes medir todo al tiempo — usa estas frecuencias:</p>
-      <div class="gk-rutina">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <p style="font-size:.9rem;color:var(--muted);margin:0">Checklist diario para la auxiliar administrativa. Se reinicia automáticamente cada día.</p>
+        <button onclick="resetRutina()" style="font-size:.73rem;padding:5px 12px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-family:var(--font-b)">↺ Reiniciar checklist</button>
+      </div>
+      <div class="gk-rutina" id="rutinaChecklist">
+
         <div class="gk-rutina-grupo">
           <div class="gk-rutina-titulo">☀️ DIARIO (5 minutos al final del día)</div>
-          <div class="gk-rutina-item">Verificar que todas las citas del día estén marcadas (atendidas, canceladas o no asistió)</div>
-          <div class="gk-rutina-item">Registrar el pago de cada cita atendida (efectivo, Nequi, Bancolombia, transferencia)</div>
-          <div class="gk-rutina-item">Sumar los leads que entraron por WhatsApp/DM con intención real</div>
-          <div class="gk-rutina-item">Validar que todos los pacientes nuevos tienen ficha completa</div>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('d1')">
+            <input type="checkbox" id="rck_d1" onchange="toggleRutinaCheck('d1')">
+            <span>Verificar que todas las citas del día estén marcadas — atendidas, canceladas (con motivo) o no asistió</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('d2')">
+            <input type="checkbox" id="rck_d2" onchange="toggleRutinaCheck('d2')">
+            <span>Registrar el método de pago de cada cita atendida (efectivo, Nequi, Bancolombia, transferencia)</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('d3')">
+            <input type="checkbox" id="rck_d3" onchange="toggleRutinaCheck('d3')">
+            <span>Sumar los leads desde Indicadores de Gestión (botón ➕ Lead WhatsApp o ➕ Lead Instagram)</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('d4')">
+            <input type="checkbox" id="rck_d4" onchange="toggleRutinaCheck('d4')">
+            <span>Validar que todos los pacientes nuevos tienen teléfono y email en el sistema</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('d5')">
+            <input type="checkbox" id="rck_d5" onchange="toggleRutinaCheck('d5')">
+            <span>Si hubo evento: verificar que está registrado en la agenda con su cobro correcto</span>
+          </label>
         </div>
+
         <div class="gk-rutina-grupo">
           <div class="gk-rutina-titulo">📆 SEMANAL (15 minutos los domingos en la noche)</div>
-          <div class="gk-rutina-item">Revisar total de sesiones de la semana vs meta de 24</div>
-          <div class="gk-rutina-item">Revisar ventas de la semana vs meta de $2.566.250</div>
-          <div class="gk-rutina-item">Calcular tasa de conversión: leads de la semana ÷ citas agendadas</div>
-          <div class="gk-rutina-item">Revisar si hubo cancelaciones inusuales y por qué</div>
-          <div class="gk-rutina-item">Si algún KPI está en rojo: ejecutar la acción del Manual de Emergencia</div>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('s1')">
+            <input type="checkbox" id="rck_s1" onchange="toggleRutinaCheck('s1')">
+            <span>Revisar sesiones de la semana (citas + eventos) vs meta de <span class="kpi-ref" data-ref="meta_sesiones">24</span></span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('s2')">
+            <input type="checkbox" id="rck_s2" onchange="toggleRutinaCheck('s2')">
+            <span>Revisar ventas de la semana vs meta de <span class="kpi-ref" data-ref="meta_ventas_semana">$2.566.250</span></span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('s3')">
+            <input type="checkbox" id="rck_s3" onchange="toggleRutinaCheck('s3')">
+            <span>Revisar tasa de conversión en el tablero (leads ÷ citas agendadas)</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('s4')">
+            <input type="checkbox" id="rck_s4" onchange="toggleRutinaCheck('s4')">
+            <span>Revisar KPI 4B — cancelaciones: ¿qué servicio y qué día cancela más?</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('s5')">
+            <input type="checkbox" id="rck_s5" onchange="toggleRutinaCheck('s5')">
+            <span>Si algún KPI está en rojo: ejecutar la acción del Manual de Emergencia</span>
+          </label>
         </div>
+
         <div class="gk-rutina-grupo">
           <div class="gk-rutina-titulo">🗓️ MENSUAL (1 hora el primer lunes del mes)</div>
-          <div class="gk-rutina-item">Enviar encuesta NPS a todos los pacientes atendidos en el mes anterior</div>
-          <div class="gk-rutina-item">Calcular NPS con la fórmula (% promotores − % detractores)</div>
-          <div class="gk-rutina-item">Revisar % de actualización de base de datos</div>
-          <div class="gk-rutina-item">Revisar mix de servicios del mes (¿Full superó a Express?)</div>
-          <div class="gk-rutina-item">Comparar ingresos del mes vs mes anterior</div>
-          <div class="gk-rutina-item">Llamar a los detractores del mes (NPS ≤6) para entender qué falló</div>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('m1')">
+            <input type="checkbox" id="rck_m1" onchange="toggleRutinaCheck('m1')">
+            <span>Presionar <strong>🔄 Cargar encuestas</strong> para calcular NPS y % de respuestas automáticamente</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('m2')">
+            <input type="checkbox" id="rck_m2" onchange="toggleRutinaCheck('m2')">
+            <span>Revisar BD actualizada — el sistema calcula solo qué pacientes les falta teléfono o email</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('m3')">
+            <input type="checkbox" id="rck_m3" onchange="toggleRutinaCheck('m3')">
+            <span>Revisar mix de servicios del mes — ¿la Descarga Full superó el 30%?</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('m4')">
+            <input type="checkbox" id="rck_m4" onchange="toggleRutinaCheck('m4')">
+            <span>Comparar ingresos del mes vs mes anterior en la gráfica de Finanzas</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('m5')">
+            <input type="checkbox" id="rck_m5" onchange="toggleRutinaCheck('m5')">
+            <span>Llamar a los pacientes que dieron nota 1–3 en la encuesta (detractores) en menos de 48h</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('m6')">
+            <input type="checkbox" id="rck_m6" onchange="toggleRutinaCheck('m6')">
+            <span>Si cambiaron precios de servicios: actualizar en ⚙️ Editar valores de referencia</span>
+          </label>
         </div>
+
       </div>
 
       <!-- Cierre -->
@@ -3544,7 +3605,7 @@ function showView(v) {
   if (v === 'paquetes')       renderPaquetes();
   if (v === 'empresas')       renderEmpresas();
   if (v === 'codigos')        renderCodigos();
-  if (v === 'guiakpis')       { renderKPIGuia(); actualizarContadorLeads(); }
+  if (v === 'guiakpis')       { renderKPIGuia(); actualizarContadorLeads(); loadRutinaChecks(); }
   if (v === 'dashboard')      actualizarContadorLeads();
 }
 
@@ -8229,6 +8290,52 @@ function _renderEncuestaStatsUI(stats) {
   if (encEl) encEl.innerHTML =
     `<span style="font-size:1rem;font-weight:700;color:${colorEnc}">${stats.encuestas}%</span>`+
     ` <span style="color:var(--muted);font-size:.75rem">· ${stats.totalRespuestas} resp. / ${stats.citasMes} citas</span>`;
+}
+
+// ── RUTINA DE MEDICIÓN — checklist tachable con reinicio diario ──
+const RUTINA_IDS = ['d1','d2','d3','d4','d5','s1','s2','s3','s4','s5','m1','m2','m3','m4','m5','m6'];
+
+function _rutinaKey() {
+  const d = new Date();
+  return `rutina_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function loadRutinaChecks() {
+  const today = _rutinaKey();
+  let checked = [];
+  try { checked = JSON.parse(localStorage.getItem(today) || '[]'); } catch {}
+  RUTINA_IDS.forEach(id => {
+    const cb  = document.getElementById('rck_' + id);
+    const lbl = cb ? cb.closest('.gk-check-item') : null;
+    if (!cb || !lbl) return;
+    const done = checked.includes(id);
+    cb.checked = done;
+    lbl.classList.toggle('done', done);
+  });
+}
+
+function toggleRutinaCheck(id) {
+  const cb  = document.getElementById('rck_' + id);
+  const lbl = cb ? cb.closest('.gk-check-item') : null;
+  if (!cb || !lbl) return;
+  // El evento onchange ya cambia cb.checked; el onclick desde el label también
+  // Usamos un pequeño delay para leer el valor actualizado
+  setTimeout(() => {
+    const done = cb.checked;
+    lbl.classList.toggle('done', done);
+    const today = _rutinaKey();
+    let checked = [];
+    try { checked = JSON.parse(localStorage.getItem(today) || '[]'); } catch {}
+    if (done && !checked.includes(id))  checked.push(id);
+    if (!done) checked = checked.filter(x => x !== id);
+    localStorage.setItem(today, JSON.stringify(checked));
+  }, 0);
+}
+
+function resetRutina() {
+  localStorage.removeItem(_rutinaKey());
+  loadRutinaChecks();
+  toast('Checklist reiniciado', 'ok');
 }
 
 function _renderBDBreakdown() {
