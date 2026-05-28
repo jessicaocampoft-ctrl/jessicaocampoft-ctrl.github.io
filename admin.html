@@ -3468,6 +3468,7 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
         <div class="co-res-item"><div class="co-res-label">Total a pagar</div><div class="co-res-val" id="coTotalGeneral">—</div></div>
         <div class="co-res-item"><div class="co-res-label">Auxiliar administrativa</div><div class="co-res-val" id="coTotalAux">—</div></div>
         <div class="co-res-item"><div class="co-res-label">Fisio de apoyo</div><div class="co-res-val" id="coTotalFisio">—</div></div>
+        <div class="co-res-item"><div class="co-res-label" id="coVideoPersonaLabel">Persona del video</div><div class="co-res-val" id="coTotalVideo">—</div></div>
         <div class="co-res-item"><div class="co-res-label">Semanas llenas</div><div class="co-res-val" id="coSemanasRes">—</div></div>
       </div>
 
@@ -3496,14 +3497,36 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
           <div><label class="co-inp-label">Palabra clave descarga muscular</label><input class="co-inp" id="cfg_serv_descarga" type="text" placeholder="Descarga"></div>
         </div>
 
+        <div class="co-sep"></div>
+        <div style="font-size:.72rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Creador de Contenido</div>
+        <div class="co-cfg-grid">
+          <div><label class="co-inp-label">Bono total contenido (si cumple meta)</label><input class="co-inp" id="cfg_bono_contenido" type="number" placeholder="50000"></div>
+          <div><label class="co-inp-label">% del bono que va a la Auxiliar</label><input class="co-inp" id="cfg_contenido_split_aux" type="number" placeholder="50"></div>
+          <div><label class="co-inp-label">Nombre de la persona del video</label><input class="co-inp" id="cfg_contenido_persona" type="text" placeholder="Nombre"></div>
+          <div><label class="co-inp-label">Meta mínima de leads para ganar el bono</label><input class="co-inp" id="cfg_contenido_leads_meta" type="number" placeholder="5"></div>
+        </div>
+
+        <div class="co-sep"></div>
+        <div style="font-size:.72rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Todo el Equipo</div>
+        <div class="co-cfg-grid">
+          <div><label class="co-inp-label">Meta de calidad del servicio (NPS %)</label><input class="co-inp" id="cfg_equipo_nps_meta" type="number" placeholder="90"></div>
+        </div>
+
         <button onclick="saveComisConfig()" style="padding:8px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.83rem">Guardar configuración</button>
         <span id="coConfigMsg" style="font-size:.75rem;color:var(--ok);margin-left:10px;display:none">✓ Guardado</span>
       </div>
 
-      <!-- Tarjetas -->
+      <!-- Tarjetas principales (2-columnas) -->
       <div class="co-grid" id="coCards">
         <div style="color:var(--muted);font-size:.9rem;padding:40px 0;text-align:center;grid-column:1/-1">Cargando comisiones...</div>
       </div>
+
+      <!-- Creador de Contenido (ancho completo) -->
+      <div id="coContenidoWrap" style="margin-top:0"></div>
+
+      <!-- Todo el Equipo -->
+      <div id="coEquipoWrap" style="margin-top:14px"></div>
+
     </section>
 
   </main>
@@ -11316,24 +11339,38 @@ function _comisGetConfig() {
   let cfg = {};
   try { cfg = JSON.parse(kvGet('comisiones_config') || '{}'); } catch(e) {}
   return {
-    bono_agenda:  parseInt(cfg.bono_agenda  || '80000', 10),
-    semanas_meta: parseInt(cfg.semanas_meta || '4',     10),
-    ses_llena:    parseInt(cfg.ses_llena    || '23',    10),
-    bono_react:   parseInt(cfg.bono_react   || '15000', 10),
-    pct_reventa:  parseInt(cfg.pct_reventa  || '5',     10),
-    bono_cruzada: parseInt(cfg.bono_cruzada || '20000', 10),
-    serv_mant:    (cfg.serv_mant     || 'plan activo,plan pro,longevidad,combo bienvenida,combo').split(',').map(s => s.trim().toLowerCase()).filter(Boolean),
-    serv_descarga:(cfg.serv_descarga || 'descarga').toLowerCase().trim(),
+    bono_agenda:           parseInt(cfg.bono_agenda           || '80000', 10),
+    semanas_meta:          parseInt(cfg.semanas_meta          || '4',     10),
+    ses_llena:             parseInt(cfg.ses_llena             || '23',    10),
+    bono_react:            parseInt(cfg.bono_react            || '15000', 10),
+    pct_reventa:           parseInt(cfg.pct_reventa           || '5',     10),
+    bono_cruzada:          parseInt(cfg.bono_cruzada          || '20000', 10),
+    serv_mant:             (cfg.serv_mant     || 'plan activo,plan pro,longevidad,combo bienvenida,combo').split(',').map(s => s.trim().toLowerCase()).filter(Boolean),
+    serv_descarga:         (cfg.serv_descarga || 'descarga').toLowerCase().trim(),
+    bono_contenido:        parseInt(cfg.bono_contenido        || '50000', 10),
+    contenido_split_aux:   parseInt(cfg.contenido_split_aux   || '50',    10),
+    contenido_persona:     cfg.contenido_persona || 'Persona del video',
+    contenido_leads_meta:  parseInt(cfg.contenido_leads_meta  || '5',     10),
+    equipo_nps_meta:       parseInt(cfg.equipo_nps_meta       || '90',    10),
   };
 }
 
 function saveComisConfig() {
   const g = id => (document.getElementById(id)||{}).value || '';
   kvSet('comisiones_config', JSON.stringify({
-    bono_agenda: g('cfg_bono_agenda'), semanas_meta: g('cfg_semanas_meta'),
-    ses_llena: g('cfg_ses_llena'),     bono_react: g('cfg_bono_react'),
-    pct_reventa: g('cfg_pct_reventa'), bono_cruzada: g('cfg_bono_cruzada'),
-    serv_mant: g('cfg_serv_mant'),     serv_descarga: g('cfg_serv_descarga'),
+    bono_agenda:          g('cfg_bono_agenda'),
+    semanas_meta:         g('cfg_semanas_meta'),
+    ses_llena:            g('cfg_ses_llena'),
+    bono_react:           g('cfg_bono_react'),
+    pct_reventa:          g('cfg_pct_reventa'),
+    bono_cruzada:         g('cfg_bono_cruzada'),
+    serv_mant:            g('cfg_serv_mant'),
+    serv_descarga:        g('cfg_serv_descarga'),
+    bono_contenido:       g('cfg_bono_contenido'),
+    contenido_split_aux:  g('cfg_contenido_split_aux'),
+    contenido_persona:    g('cfg_contenido_persona'),
+    contenido_leads_meta: g('cfg_contenido_leads_meta'),
+    equipo_nps_meta:      g('cfg_equipo_nps_meta'),
   }));
   const msg = document.getElementById('coConfigMsg');
   if (msg) { msg.style.display='inline'; setTimeout(()=>msg.style.display='none',2000); }
@@ -11348,10 +11385,19 @@ function toggleComisConfig() {
   if (!open) return;
   const cfg = _comisGetConfig();
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
-  set('cfg_bono_agenda', cfg.bono_agenda);   set('cfg_semanas_meta', cfg.semanas_meta);
-  set('cfg_ses_llena', cfg.ses_llena);       set('cfg_bono_react', cfg.bono_react);
-  set('cfg_pct_reventa', cfg.pct_reventa);   set('cfg_bono_cruzada', cfg.bono_cruzada);
-  set('cfg_serv_mant', cfg.serv_mant.join(', ')); set('cfg_serv_descarga', cfg.serv_descarga);
+  set('cfg_bono_agenda',          cfg.bono_agenda);
+  set('cfg_semanas_meta',         cfg.semanas_meta);
+  set('cfg_ses_llena',            cfg.ses_llena);
+  set('cfg_bono_react',           cfg.bono_react);
+  set('cfg_pct_reventa',          cfg.pct_reventa);
+  set('cfg_bono_cruzada',         cfg.bono_cruzada);
+  set('cfg_serv_mant',            cfg.serv_mant.join(', '));
+  set('cfg_serv_descarga',        cfg.serv_descarga);
+  set('cfg_bono_contenido',       cfg.bono_contenido);
+  set('cfg_contenido_split_aux',  cfg.contenido_split_aux);
+  set('cfg_contenido_persona',    cfg.contenido_persona);
+  set('cfg_contenido_leads_meta', cfg.contenido_leads_meta);
+  set('cfg_equipo_nps_meta',      cfg.equipo_nps_meta);
 }
 
 function _initComisMesSel() {
@@ -11483,42 +11529,71 @@ function renderComisiones() {
   const mes = _comisMesVal();
   if (!mes) return;
   const [year, month] = mes.split('-').map(Number);
-  const cfg = _comisGetConfig();
+  const cfg   = _comisGetConfig();
   const citas = citasReales();
   const mLabels = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
+  // ── SEMANAS LLENAS ──
   const semanas  = _comisSemanasLlenas(citas, allData.eventos||[], year, month, cfg.ses_llena);
   const sLlenas  = semanas.filter(s => s.llena).length;
   const sTotal   = semanas.length;
   const bonoAg   = sTotal > 0 ? (sLlenas >= sTotal ? cfg.bono_agenda : Math.round(cfg.bono_agenda * sLlenas / sTotal)) : 0;
+  const pctOcup  = sTotal > 0 ? Math.round((semanas.reduce((a,s)=>a+s.sesiones,0) / (sTotal * cfg.ses_llena * (cfg.ses_llena/cfg.ses_llena))) / sTotal * 100) : 0;
+  const totalSes = semanas.reduce((a,s)=>a+s.sesiones,0);
+  const capacidad = sTotal * cfg.ses_llena;
+  const pctOcupReal = capacidad > 0 ? (totalSes / capacidad * 100).toFixed(1) : '0';
 
-  const reactAuto = _comisReactivaciones(citas, year, month);
-  const reactMan  = _comisManualReact(year, month);
-  const reactManN = reactMan.filter(n => !reactAuto.find(r => r.nombre.toLowerCase() === n.toLowerCase()));
+  // ── REACTIVACIONES ──
+  const reactAuto  = _comisReactivaciones(citas, year, month);
+  const reactMan   = _comisManualReact(year, month);
+  const reactManN  = reactMan.filter(n => !reactAuto.find(r => r.nombre.toLowerCase() === n.toLowerCase()));
   const totalReact = reactAuto.length + reactManN.length;
   const bonoReact  = totalReact * cfg.bono_react;
 
-  const reventas  = _comisReventas(citas, year, month, cfg.serv_mant, cfg.pct_reventa);
-  const bonoRev   = reventas.reduce((s,r) => s+r.comision, 0);
+  // ── REVENTAS ──
+  const reventas = _comisReventas(citas, year, month, cfg.serv_mant, cfg.pct_reventa);
+  const bonoRev  = reventas.reduce((s,r) => s+r.comision, 0);
 
-  const cruzadas  = _comisVentasCruzadas(citas, year, month, cfg.serv_descarga);
-  const bonoCruz  = cruzadas.length * cfg.bono_cruzada;
+  // ── VENTA CRUZADA ──
+  const cruzadas = _comisVentasCruzadas(citas, year, month, cfg.serv_descarga);
+  const bonoCruz = cruzadas.length * cfg.bono_cruzada;
 
-  const totalAux   = bonoAg + bonoReact;
+  // ── CREADOR DE CONTENIDO ──
+  const leadsActual = (() => { const lm=getLeadsMes(), km=getKPIManual(); return lm>0?lm:(km.leads||0); })();
+  const visitasActual = parseInt(kvGet('comis_visitas_'+mes)||'0', 10);
+  const contenidoOk  = leadsActual >= cfg.contenido_leads_meta;
+  const bonoCont     = contenidoOk ? cfg.bono_contenido : 0;
+  const bonoContAux  = Math.round(bonoCont * cfg.contenido_split_aux / 100);
+  const bonoContVideo= bonoCont - bonoContAux;
+  const splitVideoP  = 100 - cfg.contenido_split_aux;
+
+  // ── NPS / TODO EL EQUIPO ──
+  const _enc    = getEncuestaStats();
+  const npsActual = _enc.nps !== undefined ? _enc.nps : null;
+  const equipoOk  = npsActual !== null && npsActual >= cfg.equipo_nps_meta;
+
+  // ── TOTALES ──
+  const totalAux   = bonoAg + bonoReact + bonoContAux;
   const totalFisio = bonoRev + bonoCruz;
-  const totalGen   = totalAux + totalFisio;
+  const totalVideo = bonoContVideo;
+  const totalGen   = totalAux + totalFisio + totalVideo;
 
   const pagoAux   = kvGet('comis_pago_auxiliar_' + mes);
   const pagoFisio = kvGet('comis_pago_fisio_' + mes);
+  const pagoVideo = kvGet('comis_pago_video_' + mes);
 
+  // ── RESUMEN ──
   const setEl = (id, v) => { const el=document.getElementById(id); if(el) el.innerHTML=v; };
-  setEl('coTotalGeneral', fmtPeso(totalGen));
-  setEl('coTotalAux',     fmtPeso(totalAux));
-  setEl('coTotalFisio',   fmtPeso(totalFisio));
-  setEl('coSemanasRes',   sLlenas + '/' + sTotal);
+  setEl('coTotalGeneral',    fmtPeso(totalGen));
+  setEl('coTotalAux',        fmtPeso(totalAux));
+  setEl('coTotalFisio',      fmtPeso(totalFisio));
+  setEl('coTotalVideo',      fmtPeso(totalVideo));
+  setEl('coSemanasRes',      sLlenas + '/' + sTotal);
+  setEl('coVideoPersonaLabel', cfg.contenido_persona);
 
   const fmtRng = (s,e) => { const ds=new Date(s+'T12:00'),de=new Date(e+'T12:00'); return ds.getDate()+' '+mLabels[ds.getMonth()]+' – '+de.getDate()+' '+mLabels[de.getMonth()]; };
 
+  // ── HTML AUXILIAR ──
   const semanasH = semanas.map(s => `<div class="co-week"><div class="co-wdot ${s.llena?'ok':'no'}"></div><span>${fmtRng(s.start,s.end)}</span><span style="font-family:var(--font-m);color:${s.llena?'var(--ok)':'var(--muted)'}">${s.sesiones} ses.</span><span style="font-size:.72rem;color:${s.llena?'var(--ok)':'#ef4444'}">${s.llena?'✓ llena':'falta'}</span></div>`).join('');
 
   const reactH = [
@@ -11526,38 +11601,119 @@ function renderComisiones() {
     ...reactManN.map(n  => `<div class="co-bd-item"><span>${n} <span style="font-size:.72rem;color:var(--primary)">(manual)</span></span><button onclick="removeManualReactivacion('${n.replace(/'/g,"\\'")}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:.85rem;padding:0 4px">✕</button><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(cfg.bono_react)}</span></div>`)
   ].join('') || '<div class="co-empty">No se detectaron reactivaciones este mes</div>';
 
-  const revH = reventas.map(r => `<div class="co-bd-item"><span>${r.nombre} — <em style="font-size:.78rem">${r.servicio}</em></span><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(r.comision)} <span style="color:var(--muted)">(${cfg.pct_reventa}% de ${fmtPeso(r.precio)})</span></span></div>`).join('') || '<div class="co-empty">No se detectaron reventas de mantenimiento este mes</div>';
-
-  const cruzH = cruzadas.map(c => `<div class="co-bd-item"><span>${c.nombre} — <em style="font-size:.78rem">${c.servicio}</em></span><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(cfg.bono_cruzada)}</span></div>`).join('') || '<div class="co-empty">No se detectaron ventas cruzadas este mes</div>';
-
-  const btnAux   = pagoAux   ? `<button class="co-pay-btn pagado" onclick="desmarcarComisionPagada('auxiliar')">✓ Pagada el ${pagoAux}</button>`   : `<button class="co-pay-btn" onclick="marcarComisionPagada('auxiliar')">Marcar como pagada</button>`;
-  const btnFisio = pagoFisio ? `<button class="co-pay-btn pagado" onclick="desmarcarComisionPagada('fisio')">✓ Pagada el ${pagoFisio}</button>` : `<button class="co-pay-btn" onclick="marcarComisionPagada('fisio')">Marcar como pagada</button>`;
+  const btnAux = pagoAux
+    ? `<button class="co-pay-btn pagado" onclick="desmarcarComisionPagada('auxiliar')">✓ Pagada el ${pagoAux}</button>`
+    : `<button class="co-pay-btn" onclick="marcarComisionPagada('auxiliar')">Marcar como pagada</button>`;
 
   const htmlAux = `<div class="co-card">
-    <div class="co-card-hdr"><div><div class="co-card-title">Auxiliar Administrativa</div><div class="co-card-role">Bonos de conversión y agenda</div></div><div class="co-total">${fmtPeso(totalAux)}</div></div>
-    <div class="co-bono"><div class="co-bono-title">📅 Bono Agenda Llena</div>
-      <div class="co-bono-row"><span class="co-bono-label">${sLlenas} de ${sTotal} semanas llenas (≥${cfg.ses_llena} sesiones)</span><span class="co-bono-amount">${fmtPeso(bonoAg)}</span></div>
+    <div class="co-card-hdr">
+      <div><div class="co-card-title">Auxiliar Administrativa</div><div class="co-card-role">Agenda · Recuperación · Contenido (${cfg.contenido_split_aux}%)</div></div>
+      <div class="co-total">${fmtPeso(totalAux)}</div>
+    </div>
+    <div class="co-bono"><div class="co-bono-title">📅 Bono Agenda Llena · ${pctOcupReal}% ocupación</div>
+      <div class="co-bono-row"><span class="co-bono-label">${sLlenas} de ${sTotal} semanas ≥${cfg.ses_llena} ses. · ${totalSes} sesiones totales</span><span class="co-bono-amount">${fmtPeso(bonoAg)}</span></div>
       <div class="co-breakdown">${semanasH}</div></div>
     <div class="co-bono"><div class="co-bono-title">🔁 Bono Recuperación de Pacientes</div>
-      <div class="co-bono-row"><span class="co-bono-label">${totalReact} paciente${totalReact!==1?'s':''} reactivado${totalReact!==1?'s':''} × ${fmtPeso(cfg.bono_react)}</span><span class="co-bono-amount">${fmtPeso(bonoReact)}</span></div>
+      <div class="co-bono-row"><span class="co-bono-label">${totalReact} reactivado${totalReact!==1?'s':''} × ${fmtPeso(cfg.bono_react)}</span><span class="co-bono-amount">${fmtPeso(bonoReact)}</span></div>
       <div class="co-breakdown">${reactH}</div>
       <div class="co-manual-row"><input class="co-manual-inp" id="coManualReactInp" type="text" placeholder="Agregar reactivación manual..." onkeydown="if(event.key==='Enter')addManualReactivacion()"><button onclick="addManualReactivacion()" style="padding:7px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.8rem;white-space:nowrap">+ Agregar</button></div></div>
+    ${bonoContAux > 0 ? `<div class="co-bono"><div class="co-bono-title">🎬 Parte del Bono Contenido (${cfg.contenido_split_aux}%)</div>
+      <div class="co-bono-row"><span class="co-bono-label">${cfg.contenido_split_aux}% de ${fmtPeso(cfg.bono_contenido)} por meta de leads cumplida</span><span class="co-bono-amount">${fmtPeso(bonoContAux)}</span></div></div>` : ''}
     <div class="co-footer">${btnAux}<span style="font-size:.75rem;color:var(--muted)">Total: ${fmtPeso(totalAux)}</span></div>
   </div>`;
 
+  // ── HTML FISIO ──
+  const revH  = reventas.map(r => `<div class="co-bd-item"><span>${r.nombre} — <em style="font-size:.78rem">${r.servicio}</em></span><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(r.comision)} <span style="color:var(--muted)">(${cfg.pct_reventa}% de ${fmtPeso(r.precio)})</span></span></div>`).join('') || '<div class="co-empty">No se detectaron reventas este mes</div>';
+  const cruzH = cruzadas.map(c => `<div class="co-bd-item"><span>${c.nombre} — <em style="font-size:.78rem">${c.servicio}</em></span><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(cfg.bono_cruzada)}</span></div>`).join('') || '<div class="co-empty">No se detectaron ventas cruzadas este mes</div>';
+
+  const btnFisio = pagoFisio
+    ? `<button class="co-pay-btn pagado" onclick="desmarcarComisionPagada('fisio')">✓ Pagada el ${pagoFisio}</button>`
+    : `<button class="co-pay-btn" onclick="marcarComisionPagada('fisio')">Marcar como pagada</button>`;
+
   const htmlFisio = `<div class="co-card">
-    <div class="co-card-hdr"><div><div class="co-card-title">Fisioterapeuta de Apoyo</div><div class="co-card-role">Bonos de upselling y venta cruzada</div></div><div class="co-total">${fmtPeso(totalFisio)}</div></div>
-    <div class="co-bono"><div class="co-bono-title">🔄 Bono Reventa — ${cfg.pct_reventa}% comisión</div>
-      <div class="co-bono-row"><span class="co-bono-label">${reventas.length} venta${reventas.length!==1?'s':''} de mantenimiento/paquete</span><span class="co-bono-amount">${fmtPeso(bonoRev)}</span></div>
-      <div class="co-breakdown">${revH}<div style="font-size:.7rem;color:var(--muted);margin-top:8px;border-top:1px solid var(--border);padding-top:6px">Servicios que cuentan: ${cfg.serv_mant.map(s=>`<em>${s}</em>`).join(', ')}</div></div></div>
+    <div class="co-card-hdr">
+      <div><div class="co-card-title">Fisioterapeuta de Apoyo</div><div class="co-card-role">Upselling · Venta cruzada</div></div>
+      <div class="co-total">${fmtPeso(totalFisio)}</div>
+    </div>
+    <div class="co-bono"><div class="co-bono-title">🔄 Bono Reventa — ${cfg.pct_reventa}% sobre las ventas</div>
+      <div class="co-bono-row"><span class="co-bono-label">${reventas.length} venta${reventas.length!==1?'s':''} · Total vendido: ${fmtPeso(reventas.reduce((s,r)=>s+r.precio,0))}</span><span class="co-bono-amount">${fmtPeso(bonoRev)}</span></div>
+      <div class="co-breakdown">${revH}<div style="font-size:.7rem;color:var(--muted);margin-top:8px;border-top:1px solid var(--border);padding-top:6px">Servicios: ${cfg.serv_mant.map(s=>`<em>${s}</em>`).join(', ')}</div></div></div>
     <div class="co-bono"><div class="co-bono-title">➕ Bono Venta Cruzada</div>
-      <div class="co-bono-row"><span class="co-bono-label">${cruzadas.length} paciente${cruzadas.length!==1?'s':''} con servicio cruzado × ${fmtPeso(cfg.bono_cruzada)}</span><span class="co-bono-amount">${fmtPeso(bonoCruz)}</span></div>
-      <div class="co-breakdown">${cruzH}<div style="font-size:.7rem;color:var(--muted);margin-top:8px;border-top:1px solid var(--border);padding-top:6px">Cuenta cuando un paciente compra <em>${cfg.serv_descarga}</em> además de otro servicio clínico en el mismo mes.</div></div></div>
+      <div class="co-bono-row"><span class="co-bono-label">${cruzadas.length} paciente${cruzadas.length!==1?'s':''} × ${fmtPeso(cfg.bono_cruzada)}</span><span class="co-bono-amount">${fmtPeso(bonoCruz)}</span></div>
+      <div class="co-breakdown">${cruzH}<div style="font-size:.7rem;color:var(--muted);margin-top:8px;border-top:1px solid var(--border);padding-top:6px">Paciente que compra <em>${cfg.serv_descarga}</em> + otro servicio clínico en el mismo mes.</div></div></div>
     <div class="co-footer">${btnFisio}<span style="font-size:.75rem;color:var(--muted)">Total: ${fmtPeso(totalFisio)}</span></div>
   </div>`;
 
   const cards = document.getElementById('coCards');
   if (cards) cards.innerHTML = htmlAux + htmlFisio;
+
+  // ── CREADOR DE CONTENIDO (ancho completo) ──
+  const visitasGuardadas = visitasActual;
+  const metaLabel = `≥${cfg.contenido_leads_meta} leads`;
+  const estadoCont = contenidoOk
+    ? `<span style="color:var(--ok);font-weight:600">✓ Meta cumplida</span>`
+    : `<span style="color:#ef4444;font-weight:600">✗ Meta no cumplida aún</span>`;
+
+  const btnVideo = pagoVideo
+    ? `<button class="co-pay-btn pagado" onclick="desmarcarComisionPagada('video')">✓ Pagada el ${pagoVideo}</button>`
+    : `<button class="co-pay-btn" onclick="marcarComisionPagada('video')">Marcar como pagada a ${cfg.contenido_persona}</button>`;
+
+  const htmlCont = `<div class="co-card" style="margin-top:14px">
+    <div class="co-card-hdr">
+      <div>
+        <div class="co-card-title">🎬 Creador de Contenido</div>
+        <div class="co-card-role">Compartido: Auxiliar (${cfg.contenido_split_aux}%) + ${cfg.contenido_persona} (${splitVideoP}%)</div>
+      </div>
+      <div style="text-align:right">
+        <div class="co-total">${fmtPeso(bonoCont)}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">${estadoCont}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;padding:16px 24px">
+      <div>
+        <div style="font-size:.7rem;font-family:var(--font-m);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Indicadores del mes</div>
+        <div class="co-bono-row" style="margin-bottom:8px"><span class="co-bono-label">Leads generados</span><span style="font-family:var(--font-m);font-weight:700;color:${contenidoOk?'var(--ok)':'#ef4444'}">${leadsActual} <span style="font-size:.72rem;color:var(--muted);font-weight:400">/ meta ${metaLabel}</span></span></div>
+        <div class="co-bono-row">
+          <span class="co-bono-label">Visitas/alcance del mes</span>
+          <span style="display:flex;align-items:center;gap:8px">
+            <input type="number" value="${visitasGuardadas}" min="0" placeholder="0"
+              style="width:90px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-m);font-size:.82rem;padding:4px 8px;outline:none;text-align:right"
+              onchange="kvSet('comis_visitas_${mes}',this.value)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+            <span style="font-size:.7rem;color:var(--muted)">manual</span>
+          </span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.7rem;font-family:var(--font-m);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">División del bono</div>
+        <div class="co-bono-row" style="margin-bottom:8px"><span class="co-bono-label">Auxiliar Administrativa (${cfg.contenido_split_aux}%)</span><span class="co-bono-amount">${fmtPeso(bonoContAux)}</span></div>
+        <div class="co-bono-row"><span class="co-bono-label">${cfg.contenido_persona} (${splitVideoP}%)</span><span class="co-bono-amount">${fmtPeso(bonoContVideo)}</span></div>
+      </div>
+    </div>
+    <div class="co-footer">
+      ${btnVideo}
+      <span style="font-size:.75rem;color:var(--muted)">Bono total: ${fmtPeso(bonoCont)}</span>
+    </div>
+  </div>`;
+
+  const contWrap = document.getElementById('coContenidoWrap');
+  if (contWrap) contWrap.innerHTML = htmlCont;
+
+  // ── TODO EL EQUIPO ──
+  const npsStr    = npsActual !== null ? npsActual + '%' : '— (carga encuestas)';
+  const equipoCol = equipoOk ? 'var(--ok)' : npsActual !== null ? '#ef4444' : 'var(--muted)';
+  const htmlEquipo = `<div style="background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+    <div>
+      <div style="font-family:var(--font-h);font-size:1.05rem;font-weight:600;margin-bottom:3px">🏆 Todo el Equipo — Calidad del Servicio</div>
+      <div style="font-size:.82rem;color:var(--muted)">Meta: NPS >${cfg.equipo_nps_meta}% · Resultado: <strong style="color:${equipoCol}">${npsStr}</strong></div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-family:var(--font-h);font-size:1.2rem;font-weight:700;color:${equipoCol}">${equipoOk ? '✓ Almuerzo trimestral' : npsActual !== null ? '✗ Meta no cumplida' : '⏳ Sin datos de encuesta'}</div>
+      ${equipoOk ? '<div style="font-size:.72rem;color:var(--muted);margin-top:2px">Recordar agendar el almuerzo del equipo</div>' : ''}
+    </div>
+  </div>`;
+
+  const equipoWrap = document.getElementById('coEquipoWrap');
+  if (equipoWrap) equipoWrap.innerHTML = htmlEquipo;
 }
 </script>
 </body>
