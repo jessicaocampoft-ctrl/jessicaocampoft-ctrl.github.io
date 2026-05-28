@@ -2263,10 +2263,10 @@ Mensual: suma del 1 al último día del mes</div>
           <h5>Utilidad</h5>
           <p>Monitorea cuántas sesiones de cada tipo se ejecutan por día, semana y mes.</p>
           <h5>Importancia</h5>
-          <p>Crucial para la rentabilidad. La <em>Descarga Full (90 min a $110.000)</em> rinde menos por hora (<strong>$73.333/h</strong>) que la <em>Descarga Express (50 min a $75.000)</em> que rinde <strong>$90.000/h</strong>.</p>
+          <p>Crucial para la rentabilidad. La <em>Descarga Full (<span class="kpi-ref" data-ref="duracion_full">90</span> min a <span class="kpi-ref" data-ref="precio_full">$110.000</span>)</em> rinde menos por hora (<strong>$73.333/h</strong>) que la <em>Descarga Express (<span class="kpi-ref" data-ref="duracion_express">50</span> min a <span class="kpi-ref" data-ref="precio_express">$75.000</span>)</em> que rinde <strong>$90.000/h</strong>.</p>
           <h5>La trampa mental que hay que entender</h5>
-          <p>Ves "Full $110.000" y piensas <em>"es la más rentable porque es la más cara"</em>. <strong>FALSO.</strong> Te bloquea 90 minutos.</p>
-          <div class="gk-ejemplo">En esos 90 minutos podrías hacer 1 Express + 1 Readaptación = <strong>$145.000</strong>. La Full te genera $110.000. Estás dejando <strong>$35.000</strong> sobre la mesa cada vez.</div>
+          <p>Ves "Full <span class="kpi-ref" data-ref="precio_full">$110.000</span>" y piensas <em>"es la más rentable porque es la más cara"</em>. <strong>FALSO.</strong> Te bloquea <span class="kpi-ref" data-ref="duracion_full">90</span> minutos.</p>
+          <div class="gk-ejemplo">En esos <span class="kpi-ref" data-ref="duracion_full">90</span> minutos podrías hacer 1 Express + 1 Readaptación = <strong>$145.000</strong>. La Full te genera <span class="kpi-ref" data-ref="precio_full">$110.000</span>. Estás dejando <strong>$35.000</strong> sobre la mesa cada vez.</div>
           <h5>Fórmulas</h5>
           <div class="gk-formula">Nro. Readaptaciones / periodo
 Nro. Descargas Full / periodo
@@ -2290,25 +2290,34 @@ Full:         $73.333/h  ⚠️ PEOR</div>
       </div>
 
       <!-- DIMENSIÓN 2 -->
-      <div class="gk-section-title">🟨 Dimensión 2: Comercial y Marketing</div>
+      <div class="gk-section-title">🟨 Dimensión 2: Gestión Comercial y Marketing (Atracción)</div>
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:14px">Tu pauta en redes (<strong><span class="kpi-ref" data-ref="inv_mkt_pauta">$100.000</span></strong>) y la creación de contenido (<strong><span class="kpi-ref" data-ref="inv_mkt_contenido">$240.000</span></strong>) deben justificarse con pacientes reales en la camilla. Aquí medimos el embudo de ventas.</p>
 
       <div class="gk-kpi-card" onclick="toggleKPICard(this)">
         <div class="gk-kpi-header">
           <div class="gk-kpi-left">
-            <div class="gk-kpi-name">KPI 3 — Leads desde Redes Sociales</div>
-            <div class="gk-kpi-summary">Cuántas personas escriben a WhatsApp o DM con <strong>intención real de comprar</strong>. No es un like ni un seguidor.</div>
+            <div class="gk-kpi-name">KPI 3 — Generación de Leads desde Redes Sociales (MQL)</div>
+            <div class="gk-kpi-summary">Cuántas personas preguntan activamente por tarifas o agendas en Instagram/WhatsApp. <strong>No es un like ni un seguidor.</strong></div>
           </div>
-          <div class="gk-kpi-meta">Meta: 40–50/mes</div>
+          <div class="gk-kpi-meta">Meta: <span class="kpi-ref" data-ref="meta_leads_min">40</span>–<span class="kpi-ref" data-ref="meta_leads_max">50</span>/mes</div>
           <div class="gk-kpi-toggle">▼</div>
         </div>
         <div class="gk-kpi-body">
+          <h5>Utilidad</h5>
+          <p>Mide cuántas personas preguntan activamente por tarifas o agendas en Instagram/WhatsApp debido al contenido o pauta.</p>
+          <h5>Importancia</h5>
+          <p>Evalúa si la inversión de <strong><span class="kpi-ref" data-ref="inv_mkt_total">$340.000</span>/mes</strong> en marketing digital está llamando la atención del público correcto (atletas o personas con dolor).</p>
+          <h5>Fórmula</h5>
+          <div class="gk-formula">Nro. total de mensajes recibidos con intención de compra</div>
+          <h5>Explicación</h5>
+          <div class="gk-ejemplo">Un "Lead" no es un <em>like</em>; es un deportista que escribe: <em>"Hola, sufro de un dolor en la rodilla al correr, ¿qué precio tiene la consulta?"</em>. Tu auxiliar debe tabularlos semanalmente.</div>
           <h5>¿Qué cuenta como lead?</h5>
           <div class="gk-ejemplo">✅ <strong>"Tengo dolor en la rodilla, cuánto vale la consulta?"</strong> → SÍ es lead
 ✅ <strong>"¿Atiendes los sábados?"</strong> → SÍ es lead
 ❌ <strong>"Qué linda la rutina 💪"</strong> → NO es lead
 ⚠️ <strong>"¿Tienes consulta en Bogotá?"</strong> → Lead descalificado</div>
-          <h5>Por qué importa</h5>
-          <p>Se invierten <strong>$340.000/mes</strong> en marketing. Si llegan solo 8 leads, cada uno costó $42.500. Si llegan 60, costó $5.667. <strong>El número de leads te dice si el marketing funciona.</strong></p>
+          <h5>Por qué importa el número</h5>
+          <p>Inversión mensual: pauta <strong><span class="kpi-ref" data-ref="inv_mkt_pauta">$100.000</span></strong> + contenido <strong><span class="kpi-ref" data-ref="inv_mkt_contenido">$240.000</span></strong> = <strong><span class="kpi-ref" data-ref="inv_mkt_total">$340.000</span></strong>. Si llegan solo 8 leads, cada uno costó $42.500. Si llegan 60, costó $5.667. <strong>El número de leads te dice si el marketing funciona.</strong></p>
           <h5>Cómo registrarlo</h5>
           <p>Cada mensaje nuevo que llegue con intención real → suma +1 al contador. <strong>Mantén el conteo diario</strong>, no esperes al cierre de mes.</p>
         </div>
@@ -7223,17 +7232,58 @@ function renderEgresosList() {
 // ══════════════════════════════════════════════════════════════
 // ── KPI TABLERO ──
 // ══════════════════════════════════════════════════════════════
-const META_SESIONES_SEMANA = 24;
-const META_VENTAS_SEMANA   = 2566250; // $10.265.000 / 4 semanas (corregido)
-const META_VENTAS_MES      = 10265000;
-const META_NPS             = 65; // Meta realista para sector salud (antes era 90, irreal)
-const META_ENCUESTAS       = 70;
-const META_CANCELACION_PCT = 10;   // Meta: tasa cancelación <10%
-const META_RETENCION_PCT   = 60;   // Meta: >60% pacientes vuelven en 60 días
-const META_CAC_MAX         = 80000; // Meta: CAC <$80.000 por paciente nuevo
-const VENTANA_NUEVO_DIAS   = 180;  // Paciente "nuevo" = sin citas en últimos 180 días (6 meses)
-const VENTANA_RETENCION    = 60;   // Retención = volvió en últimos 60 días
-const CATEGORIAS_MARKETING = ['Pautas Redes', 'Redes Sociales Contenido']; // Egresos que cuentan como CAC
+
+// Valores por defecto — se sobreescriben con lo guardado en localStorage
+const KPI_CONFIG_DEFAULTS = {
+  meta_sesiones_semana: 24,
+  meta_ventas_mes:      10265000,
+  meta_leads_min:       40,
+  meta_leads_max:       50,
+  meta_conv_min:        25,
+  meta_conv_max:        35,
+  meta_nps:             65,
+  meta_encuestas:       70,
+  meta_cancelacion:     10,
+  meta_retencion:       60,
+  inv_mkt_total:        340000,
+  inv_mkt_pauta:        100000,
+  inv_mkt_contenido:    240000,
+  precio_full:          110000,
+  duracion_full:        90,
+  precio_express:       75000,
+  duracion_express:     50,
+};
+
+function getKPIConfig() {
+  try {
+    const stored = localStorage.getItem('kpiConfig');
+    return stored ? {...KPI_CONFIG_DEFAULTS, ...JSON.parse(stored)} : {...KPI_CONFIG_DEFAULTS};
+  } catch(e) { return {...KPI_CONFIG_DEFAULTS}; }
+}
+
+const _cfg0 = getKPIConfig();
+let META_SESIONES_SEMANA = _cfg0.meta_sesiones_semana;
+let META_VENTAS_SEMANA   = Math.round(_cfg0.meta_ventas_mes / 4);
+let META_VENTAS_MES      = _cfg0.meta_ventas_mes;
+let META_NPS             = _cfg0.meta_nps;
+let META_ENCUESTAS       = _cfg0.meta_encuestas;
+let META_CANCELACION_PCT = _cfg0.meta_cancelacion;
+let META_RETENCION_PCT   = _cfg0.meta_retencion;
+const META_CAC_MAX         = 80000;
+const VENTANA_NUEVO_DIAS   = 180;
+const VENTANA_RETENCION    = 60;
+const CATEGORIAS_MARKETING = ['Pautas Redes', 'Redes Sociales Contenido'];
+
+function reloadMetas() {
+  const cfg = getKPIConfig();
+  META_SESIONES_SEMANA = cfg.meta_sesiones_semana;
+  META_VENTAS_MES      = cfg.meta_ventas_mes;
+  META_VENTAS_SEMANA   = Math.round(cfg.meta_ventas_mes / 4);
+  META_NPS             = cfg.meta_nps;
+  META_ENCUESTAS       = cfg.meta_encuestas;
+  META_CANCELACION_PCT = cfg.meta_cancelacion;
+  META_RETENCION_PCT   = cfg.meta_retencion;
+}
 
 function getKPIManual() {
   try { return JSON.parse(kvGet('kpi_manual') || '{}'); } catch { return {}; }
@@ -7675,13 +7725,120 @@ function renderKPIGuia() {
   html += _kpiCardGuia('❌', 'Cancelaciones mes',       tasaCancel + '%',                    META_CANCELACION_PCT, '%',     false, `<${META_CANCELACION_PCT}%`);
   html += _kpiCardGuia('🔁', 'Retención 60 días',       tasaRet + '%',                       META_RETENCION_PCT,   '%',     true,  `>${META_RETENCION_PCT}%`);
 
+  const cfg = getKPIConfig();
+  const fmtRef = v => v >= 1000 ? '$' + v.toLocaleString('es-CO') : String(v);
+  const inp = (key, label, val, note='') => `
+    <div>
+      <label style="font-size:.7rem;color:var(--muted);display:block;margin-bottom:3px;font-family:var(--font-m)">${label}${note ? `<span style="color:var(--primary);margin-left:4px">${note}</span>` : ''}</label>
+      <input type="number" id="kcfg_${key}" value="${val}"
+        style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.82rem;padding:7px 9px;outline:none;box-sizing:border-box"
+        onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+    </div>`;
+
   html += `</div>
     <div style="margin-top:12px;padding:10px 14px;background:rgba(27,191,176,.06);border:1px solid rgba(27,191,176,.15);border-radius:8px;font-size:.75rem;color:var(--muted)">
       💡 <strong>NPS, Encuestas y BD actualizada</strong> se ingresan manualmente en el Tablero de KPIs dentro de Finanzas. Los demás se calculan solos.
     </div>
+    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+      <button onclick="document.getElementById('kpiConfigBody').style.display=document.getElementById('kpiConfigBody').style.display==='none'?'block':'none'"
+        style="font-size:.73rem;padding:5px 14px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-family:var(--font-b)">
+        ⚙️ Editar valores de referencia
+      </button>
+      <div id="kpiConfigBody" style="display:none;margin-top:14px">
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px">Edita los valores y presiona <strong>Guardar</strong>. Se actualizan los textos, semáforos y metas en toda la guía.</div>
+        <div style="font-size:.72rem;font-family:var(--font-m);color:var(--primary);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">Metas operativas</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px">
+          ${inp('meta_sesiones_semana', 'Sesiones/semana', cfg.meta_sesiones_semana)}
+          ${inp('meta_ventas_mes', 'Ventas brutas/mes ($)', cfg.meta_ventas_mes)}
+          ${inp('meta_leads_min', 'Leads/mes mínimo', cfg.meta_leads_min)}
+          ${inp('meta_leads_max', 'Leads/mes máximo', cfg.meta_leads_max)}
+          ${inp('meta_nps', 'Meta NPS', cfg.meta_nps)}
+          ${inp('meta_encuestas', 'Meta encuestas (%)', cfg.meta_encuestas)}
+        </div>
+        <div style="font-size:.72rem;font-family:var(--font-m);color:var(--primary);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">Inversión en marketing</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px">
+          ${inp('inv_mkt_total', 'Total marketing/mes ($)', cfg.inv_mkt_total)}
+          ${inp('inv_mkt_pauta', 'Pauta en redes ($)', cfg.inv_mkt_pauta)}
+          ${inp('inv_mkt_contenido', 'Creación de contenido ($)', cfg.inv_mkt_contenido)}
+        </div>
+        <div style="font-size:.72rem;font-family:var(--font-m);color:var(--primary);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">Precios y tiempos de servicios</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px">
+          ${inp('precio_full', 'Precio Descarga Full ($)', cfg.precio_full)}
+          ${inp('duracion_full', 'Duración Full (min)', cfg.duracion_full)}
+          ${inp('precio_express', 'Precio Descarga Express ($)', cfg.precio_express)}
+          ${inp('duracion_express', 'Duración Express (min)', cfg.duracion_express)}
+        </div>
+        <button onclick="guardarKPIConfig()"
+          style="padding:8px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.82rem">
+          Guardar cambios
+        </button>
+        <span id="kpiConfigSaveMsg" style="font-size:.75rem;color:var(--ok);margin-left:10px;display:none">✓ Guardado</span>
+      </div>
+    </div>
   </div>`;
 
   el.innerHTML = html;
+  applyKPIRefSpans();
+}
+
+function applyKPIRefSpans() {
+  const cfg = getKPIConfig();
+  const fmt = v => v >= 1000 ? '$' + Number(v).toLocaleString('es-CO') : String(v);
+  const map = {
+    inv_mkt_total:     fmt(cfg.inv_mkt_total),
+    inv_mkt_pauta:     fmt(cfg.inv_mkt_pauta),
+    inv_mkt_contenido: fmt(cfg.inv_mkt_contenido),
+    precio_full:       fmt(cfg.precio_full),
+    duracion_full:     String(cfg.duracion_full),
+    precio_express:    fmt(cfg.precio_express),
+    duracion_express:  String(cfg.duracion_express),
+    meta_sesiones:     String(cfg.meta_sesiones_semana),
+    meta_ventas_mes:   fmt(cfg.meta_ventas_mes),
+    meta_leads_min:    String(cfg.meta_leads_min),
+    meta_leads_max:    String(cfg.meta_leads_max),
+  };
+  document.querySelectorAll('.kpi-ref[data-ref]').forEach(el => {
+    const v = map[el.dataset.ref];
+    if (v !== undefined) el.textContent = v;
+  });
+}
+
+function guardarKPIConfig() {
+  const get = key => {
+    const el = document.getElementById('kcfg_' + key);
+    return el ? (parseInt(el.value, 10) || 0) : undefined;
+  };
+  const prev = getKPIConfig();
+  const updated = {
+    meta_sesiones_semana: get('meta_sesiones_semana') ?? prev.meta_sesiones_semana,
+    meta_ventas_mes:      get('meta_ventas_mes')      ?? prev.meta_ventas_mes,
+    meta_leads_min:       get('meta_leads_min')       ?? prev.meta_leads_min,
+    meta_leads_max:       get('meta_leads_max')       ?? prev.meta_leads_max,
+    meta_nps:             get('meta_nps')             ?? prev.meta_nps,
+    meta_encuestas:       get('meta_encuestas')       ?? prev.meta_encuestas,
+    meta_conv_min:        prev.meta_conv_min,
+    meta_conv_max:        prev.meta_conv_max,
+    meta_cancelacion:     prev.meta_cancelacion,
+    meta_retencion:       prev.meta_retencion,
+    inv_mkt_total:        get('inv_mkt_total')        ?? prev.inv_mkt_total,
+    inv_mkt_pauta:        get('inv_mkt_pauta')        ?? prev.inv_mkt_pauta,
+    inv_mkt_contenido:    get('inv_mkt_contenido')    ?? prev.inv_mkt_contenido,
+    precio_full:          get('precio_full')          ?? prev.precio_full,
+    duracion_full:        get('duracion_full')        ?? prev.duracion_full,
+    precio_express:       get('precio_express')       ?? prev.precio_express,
+    duracion_express:     get('duracion_express')     ?? prev.duracion_express,
+  };
+  localStorage.setItem('kpiConfig', JSON.stringify(updated));
+  reloadMetas();
+  applyKPIRefSpans();
+  renderKPITablero();
+  // Re-render tarjetas live (sin cerrar el panel)
+  renderKPIGuia();
+  const body = document.getElementById('kpiConfigBody');
+  if (body) body.style.display = 'block';
+  const msg = document.getElementById('kpiConfigSaveMsg');
+  if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500); }
+  toast('Valores actualizados ✓', 'ok');
 }
 
 // ══════════════════════════════════════════════════════════════
