@@ -1617,6 +1617,12 @@ function buildEvalPrompt(d) {
 // =============================================================
 //  ENCUESTA DE SATISFACCIÓN — NPS y % respuestas desde Google Forms
 // =============================================================
+// Ejecuta esta función UNA vez para autorizar el permiso de Formularios
+function autorizarFormularios() {
+  FormApp.openById('1UxoEq1x4GXaG9ghBQJO_C85p3ZPU3T7zeKhy0Ij-UA4');
+  Logger.log('Autorización concedida');
+}
+
 function getEncuestaStats_() {
   try {
     var FORM_ID = '1UxoEq1x4GXaG9ghBQJO_C85p3ZPU3T7zeKhy0Ij-UA4';
