@@ -1997,20 +1997,23 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
               <input type="number" id="kpiConvertidos" min="0" placeholder="0" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:9px 11px;outline:none;box-sizing:border-box">
             </div>
             <div class="field" style="margin:0">
-              <label>NPS último mes (0–100)</label>
-              <input type="number" id="kpiNPS" min="0" max="100" placeholder="0" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:9px 11px;outline:none;box-sizing:border-box">
+              <label>NPS último mes</label>
+              <div id="kpiNPSAutoTag" style="padding:9px 11px;background:rgba(27,191,176,.08);border:1px solid rgba(27,191,176,.3);border-radius:8px;font-size:.82rem;color:var(--muted);font-family:var(--font-b)">🤖 Cargando desde formulario...</div>
+              <input type="hidden" id="kpiNPS" value="0">
             </div>
             <div class="field" style="margin:0">
-              <label>Encuestas realizadas (%)</label>
-              <input type="number" id="kpiEncuestas" min="0" max="100" placeholder="0" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:9px 11px;outline:none;box-sizing:border-box">
+              <label>Encuestas realizadas</label>
+              <div id="kpiEncuestasAutoTag" style="padding:9px 11px;background:rgba(27,191,176,.08);border:1px solid rgba(27,191,176,.3);border-radius:8px;font-size:.82rem;color:var(--muted);font-family:var(--font-b)">🤖 Cargando desde formulario...</div>
+              <input type="hidden" id="kpiEncuestas" value="0">
             </div>
             <div class="field" style="margin:0">
               <label>BD actualizada (%)</label>
               <div id="kpiBDAutoTag" style="padding:9px 11px;background:rgba(27,191,176,.08);border:1px solid rgba(27,191,176,.3);border-radius:8px;font-size:.82rem;color:var(--primary);font-family:var(--font-b)">🤖 Calculado automáticamente</div>
               <input type="hidden" id="kpiBD" value="0">
             </div>
-            <div style="display:flex;align-items:flex-end">
-              <button class="btn btn-teal btn-sm" onclick="guardarKPIManual()">Guardar KPIs</button>
+            <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-teal btn-sm" id="btnCargarEncuesta" onclick="loadEncuestaStats()">🔄 Cargar desde formulario</button>
+              <button class="btn btn-ghost btn-sm" onclick="guardarKPIManual()">Guardar manual</button>
             </div>
           </div>
         </div>
@@ -3503,7 +3506,7 @@ function showView(v) {
   if (v === 'calendario')     renderCalendar();
   if (v === 'recordatorios')  cargarRecordatorios();
   if (v === 'basedatos')      { renderBasedatos(); initFormDB(); renderChangeLog(); }
-  if (v === 'finanzas')       { renderFinanzas(); actualizarContadorLeads(); }
+  if (v === 'finanzas')       { renderFinanzas(); actualizarContadorLeads(); _renderEncuestaStatsUI(getEncuestaStats()); }
   if (v === 'seguimiento')    renderSeguimiento();
   if (v === 'tareas')         renderTareas();
   if (v === 'tareasConfig')   initTareasConfig();
@@ -7703,8 +7706,14 @@ function renderKPITablero() {
     </div>`;
   }
 
-  html += kpiCard('⭐','NPS último mes', (manual.nps||0)+'%', META_NPS, '%', true, `>${META_NPS}%`);
-  html += kpiCard('📋','Encuestas realizadas', (manual.encuestas||0)+'%', META_ENCUESTAS, '%', true, `>${META_ENCUESTAS}%`);
+  const _encStats  = getEncuestaStats();
+  const _npsVal    = _encStats.nps      !== undefined ? _encStats.nps      : (manual.nps      || 0);
+  const _encVal    = _encStats.encuestas !== undefined ? _encStats.encuestas : (manual.encuestas || 0);
+  const _npsMeta   = _encStats.promotores !== undefined
+    ? `${_encStats.promotores}P·${_encStats.pasivos}Pa·${_encStats.detractores}D`
+    : `>${META_NPS}%`;
+  html += kpiCard('⭐','NPS (auto formulario)', _npsVal, META_NPS, '', true, _npsMeta);
+  html += kpiCard('📋','Encuestas realizadas', _encVal+'%', META_ENCUESTAS, '%', true, `>${META_ENCUESTAS}%`);
   const _bdAuto = calcBDActualizada();
   const _bdVal  = _bdAuto ? _bdAuto.pct+'%' : (manual.bd||0)+'%';
   const _bdMeta = _bdAuto ? `${_bdAuto.completos}/${_bdAuto.total} pac. con tel+email` : '100%';
@@ -7896,11 +7905,12 @@ function renderKPIGuia() {
   // KPI 5 — Ventas mes
   const ventasMes = calcCobradoMes();
 
-  // KPI 6 — Encuestas (manual)
-  const encuestas = manual.encuestas || 0;
+  // KPI 6 — Encuestas (auto desde formulario, fallback manual)
+  const _encStatsG = getEncuestaStats();
+  const encuestas  = _encStatsG.encuestas !== undefined ? _encStatsG.encuestas : (manual.encuestas || 0);
 
-  // KPI 7 — NPS (manual)
-  const nps = manual.nps || 0;
+  // KPI 7 — NPS (auto desde formulario, fallback manual)
+  const nps = _encStatsG.nps !== undefined ? _encStatsG.nps : (manual.nps || 0);
 
   // KPI 8 — BD actualizada (automático desde datos del sistema)
   const _bdGuia = calcBDActualizada();
@@ -8097,6 +8107,62 @@ function _renderCancelBreakdown() {
 
   html += `</div>`;
   el.innerHTML = html;
+}
+
+// ── ENCUESTA STATS — conectado a Google Forms via GAS ──
+function getEncuestaStats() {
+  try { return JSON.parse(kvGet('encuestaStats') || '{}'); } catch { return {}; }
+}
+
+async function loadEncuestaStats() {
+  const btn = document.getElementById('btnCargarEncuesta');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Cargando...'; }
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=getEncuestaStats&token=${encodeURIComponent(TOKEN)}`);
+    const d = await r.json();
+    if (d.ok) {
+      const now = new Date();
+      const m = now.getMonth()+1, y = now.getFullYear();
+      const citasMes = citasReales().filter(c => {
+        const [cy,cm] = normDate(c.fecha).split('-');
+        return +cm===m && +cy===y;
+      }).length;
+      const encPct  = citasMes > 0 ? Math.round((d.totalMes / citasMes) * 100) : 0;
+      const npsVal  = d.nps !== null ? d.nps : 0;
+      const stats   = {
+        nps: npsVal, encuestas: encPct,
+        totalRespuestas: d.totalMes, citasMes,
+        promotores: d.promotores, pasivos: d.pasivos, detractores: d.detractores,
+        fetchedAt: Date.now()
+      };
+      kvSet('encuestaStats', JSON.stringify(stats));
+      // Actualizar inputs ocultos y guardar
+      const sv = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+      sv('kpiNPS', npsVal); sv('kpiEncuestas', encPct);
+      guardarKPIManual();
+      _renderEncuestaStatsUI(stats);
+      renderKPITablero();
+      renderKPIGuia();
+      toast(`✅ NPS: ${npsVal} · Encuestas: ${encPct}% · ${d.totalMes} respuestas este mes`, 'ok');
+    } else {
+      toast('Error al leer el formulario: ' + (d.error || 'verifica el GAS'), 'err');
+    }
+  } catch(e) { toast('Error de conexión al cargar encuestas', 'err'); }
+  if (btn) { btn.disabled = false; btn.textContent = '🔄 Cargar desde formulario'; }
+}
+
+function _renderEncuestaStatsUI(stats) {
+  if (!stats || stats.nps === undefined) return;
+  const colorNPS  = stats.nps  >= META_NPS       ? 'var(--ok)' : stats.nps  >= 70 ? '#f59e0b' : '#ef4444';
+  const colorEnc  = stats.encuestas >= META_ENCUESTAS ? 'var(--ok)' : '#f59e0b';
+  const npsEl     = document.getElementById('kpiNPSAutoTag');
+  const encEl     = document.getElementById('kpiEncuestasAutoTag');
+  if (npsEl) npsEl.innerHTML =
+    `<span style="font-size:1rem;font-weight:700;color:${colorNPS}">${stats.nps}</span>`+
+    ` <span style="color:var(--muted);font-size:.75rem">· ${stats.promotores}P / ${stats.pasivos}Pa / ${stats.detractores}D</span>`;
+  if (encEl) encEl.innerHTML =
+    `<span style="font-size:1rem;font-weight:700;color:${colorEnc}">${stats.encuestas}%</span>`+
+    ` <span style="color:var(--muted);font-size:.75rem">· ${stats.totalRespuestas} resp. / ${stats.citasMes} citas</span>`;
 }
 
 function _renderBDBreakdown() {
