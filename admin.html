@@ -8472,9 +8472,9 @@ function handleEmStep(event, kpi, idx) {
 function _persistEmStep(kpi, idx, checked) {
   const key = 'em_steps_' + kpi;
   let state = [];
-  try { state = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  try { state = JSON.parse(kvGet(key) || '[]'); } catch(e) {}
   state[idx] = checked;
-  localStorage.setItem(key, JSON.stringify(state));
+  kvSet(key, JSON.stringify(state));
   _updateEmProgress(kpi);
 }
 
@@ -8499,7 +8499,7 @@ function _updateEmProgress(kpi) {
 function loadAllEmSteps() {
   ['sesiones','mixfull','cancel','leads','conv','ventas_sem','ventas_mes','nps','enc','bd'].forEach(kpi => {
     let state = [];
-    try { state = JSON.parse(localStorage.getItem('em_steps_' + kpi) || '[]'); } catch(e) {}
+    try { state = JSON.parse(kvGet('em_steps_' + kpi) || '[]'); } catch(e) {}
     state.forEach((checked, idx) => {
       const ck = document.getElementById('emCk_' + kpi + '_' + idx);
       if (ck) ck.checked = !!checked;
@@ -8510,7 +8510,7 @@ function loadAllEmSteps() {
 
 function markEmDone(kpi, total) {
   const state = Array(total).fill(true);
-  localStorage.setItem('em_steps_' + kpi, JSON.stringify(state));
+  kvSet('em_steps_' + kpi, JSON.stringify(state));
   for (let i = 0; i < total; i++) {
     const ck = document.getElementById('emCk_' + kpi + '_' + i);
     if (ck) ck.checked = true;
@@ -8519,7 +8519,7 @@ function markEmDone(kpi, total) {
 }
 
 function resetEmSteps(kpi, total) {
-  localStorage.removeItem('em_steps_' + kpi);
+  kvRemove('em_steps_' + kpi);
   for (let i = 0; i < total; i++) {
     const ck = document.getElementById('emCk_' + kpi + '_' + i);
     if (ck) ck.checked = false;
