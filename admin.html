@@ -2253,21 +2253,31 @@ Mensual: suma del 1 al último día del mes</div>
       <div class="gk-kpi-card" onclick="toggleKPICard(this)">
         <div class="gk-kpi-header">
           <div class="gk-kpi-left">
-            <div class="gk-kpi-name">KPI 2 — Mix de Servicios Clínicos</div>
-            <div class="gk-kpi-summary">De las sesiones que hiciste, cuántas fueron Express, Full, Readaptación o Corporativo. <strong>No todos rinden igual por hora.</strong></div>
+            <div class="gk-kpi-name">KPI 2 — Mix de Servicios Clínicos (Descarga Full, Express y Readaptación)</div>
+            <div class="gk-kpi-summary">Cuántas sesiones de cada tipo se ejecutan por día, semana y mes. <strong>No todos rinden igual por hora.</strong></div>
           </div>
           <div class="gk-kpi-meta">Full debe ser ≤30%</div>
           <div class="gk-kpi-toggle">▼</div>
         </div>
         <div class="gk-kpi-body">
+          <h5>Utilidad</h5>
+          <p>Monitorea cuántas sesiones de cada tipo se ejecutan por día, semana y mes.</p>
+          <h5>Importancia</h5>
+          <p>Crucial para la rentabilidad. La <em>Descarga Full (90 min a $110.000)</em> rinde menos por hora (<strong>$73.333/h</strong>) que la <em>Descarga Express (50 min a $75.000)</em> que rinde <strong>$90.000/h</strong>.</p>
           <h5>La trampa mental que hay que entender</h5>
           <p>Ves "Full $110.000" y piensas <em>"es la más rentable porque es la más cara"</em>. <strong>FALSO.</strong> Te bloquea 90 minutos.</p>
           <div class="gk-ejemplo">En esos 90 minutos podrías hacer 1 Express + 1 Readaptación = <strong>$145.000</strong>. La Full te genera $110.000. Estás dejando <strong>$35.000</strong> sobre la mesa cada vez.</div>
+          <h5>Fórmulas</h5>
+          <div class="gk-formula">Nro. Readaptaciones / periodo
+Nro. Descargas Full / periodo
+Nro. Descargas Express / periodo</div>
           <h5>Rentabilidad real por hora</h5>
           <div class="gk-formula">Corporativo:  $120.000/h ✅ MEJOR
 Express:      $90.000/h  ✅
 Readaptación: $84.000/h
-Full:         $73.000/h  ⚠️ PEOR</div>
+Full:         $73.333/h  ⚠️ PEOR</div>
+          <h5>Explicación</h5>
+          <p>Si al final del mes el número de <em>Descargas Full</em> es mayor que el de <em>Express</em>, tu rentabilidad por hora clínica bajará. El objetivo comercial debe ser empujar la <em>Readaptación</em> y la <em>Descarga Express</em>.</p>
           <h5>Cómo se lee</h5>
           <div class="gk-semaforo">
             <div class="gk-sem-item verde">🟢 Full ≤30% — Saludable</div>
