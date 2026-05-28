@@ -7973,7 +7973,7 @@ function renderKPIGuia() {
   html += _kpiCardGuia('📅', 'Sesiones esta semana', _sessLabelG, META_SESIONES_SEMANA, '', true,
     _nEvG > 0 && _revOkG ? `≥${META_SESIONES_SEMANA} ses. · ✓ ingresos compensan` : `≥${META_SESIONES_SEMANA} sesiones`,
     _sessEvalG);
-  html += _kpiCardGuia('🔄', 'Mix Full este mes',       fullPct + '%',                       30,                   '%',     false, '≤30% Full');
+  html += _kpiCardGuia('🔄', 'Mix Full este mes', totalMix > 0 ? fullPct : '—', 30, totalMix > 0 ? '%' : '', false, totalMix > 0 ? '≤30% Full' : 'Sin sesiones aún', totalMix > 0 ? fullPct : 0);
   html += _kpiCardGuia('📣', 'Leads este mes',          leadsShow || '—',                    40,                   '',      true,  '40–50 leads');
   html += _kpiCardGuia('🎯', 'Tasa de conversión',      tasaConv !== null ? tasaConv+'%':'—', 25,                   '%',     true,  '25–35%');
   html += _kpiCardGuia('💰', 'Ventas mes actual',       fmtPeso(ventasMes),                  META_VENTAS_MES,      '',      true,  fmtPeso(META_VENTAS_MES));
