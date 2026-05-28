@@ -2006,7 +2006,8 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             </div>
             <div class="field" style="margin:0">
               <label>BD actualizada (%)</label>
-              <input type="number" id="kpiBD" min="0" max="100" placeholder="0" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:9px 11px;outline:none;box-sizing:border-box">
+              <div id="kpiBDAutoTag" style="padding:9px 11px;background:rgba(27,191,176,.08);border:1px solid rgba(27,191,176,.3);border-radius:8px;font-size:.82rem;color:var(--primary);font-family:var(--font-b)">🤖 Calculado automáticamente</div>
+              <input type="hidden" id="kpiBD" value="0">
             </div>
             <div style="display:flex;align-items:flex-end">
               <button class="btn btn-teal btn-sm" onclick="guardarKPIManual()">Guardar KPIs</button>
@@ -2478,24 +2479,24 @@ Por día:      Nro. canceladas por día de la semana / período</div>
           <p>Mide la lealtad de tus pacientes y la probabilidad de que te recomienden con otros deportistas o médicos cirujanos.</p>
           <h5>Importancia</h5>
           <p>Un NPS alto <strong>disminuye tu necesidad de gastar en pauta</strong>, porque el "boca a boca" llena la agenda. Es el indicador más rentable del negocio.</p>
-          <h5>Fórmula — la única pregunta</h5>
-          <div class="gk-ejemplo"><em>"En una escala de 0 a 10, ¿qué tan probable es que recomiendes a la clínica de la Fisio Jessica Ocampo?"</em></div>
+          <h5>Fórmula — la única pregunta (escala 1 a 5)</h5>
+          <div class="gk-ejemplo"><em>"En una escala de 1 a 5, ¿qué tan probable es que recomiendes a la clínica de la Fisio Jessica Ocampo?"</em></div>
           <h5>Cómo se clasifican las respuestas</h5>
-          <div class="gk-formula">Notas 9 y 10  →  PROMOTORES   — Aman tu servicio
-Notas 7 y 8   →  PASIVOS      — Les da igual
-Notas 0 a 6   →  DETRACTORES  — Tuvieron una mala experiencia</div>
+          <div class="gk-formula">Nota 5     →  PROMOTORES   — Aman tu servicio
+Nota 4     →  PASIVOS      — Les da igual
+Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
           <h5>Fórmula de cálculo</h5>
           <div class="gk-formula">NPS = % de Promotores − % de Detractores</div>
           <h5>Explicación</h5>
-          <p>Al buscar un NPS mayor al <strong><span class="kpi-ref" data-ref="meta_nps">90</span>%</strong>, necesitas que casi la totalidad de tus pacientes califiquen con 9 o 10. Si un paciente te evalúa con 7, <strong>financieramente cuenta como cero</strong>, lo que te obliga a llamarlo para entender qué falló en su experiencia clínica.</p>
+          <p>Al buscar un NPS mayor al <strong><span class="kpi-ref" data-ref="meta_nps">90</span>%</strong>, necesitas que casi la totalidad de tus pacientes califiquen con <strong>5</strong>. Si un paciente te pone 4, <strong>financieramente cuenta como cero</strong> — está satisfecho pero no refiere a nadie.</p>
           <h5>Lo más importante de entender</h5>
-          <p>Los <strong>Pasivos (7-8) NO suman al NPS</strong>. Un 7 cuenta como cero — ese paciente está satisfecho pero no trae nuevos pacientes ni recomienda.</p>
+          <p>Los <strong>Pasivos (nota 4) NO suman al NPS</strong>. Solo se restan detractores de promotores. Un 4 cuenta como cero.</p>
           <h5>Ejemplo</h5>
-          <div class="gk-ejemplo">50 respuestas: 45 dieron 9-10, 4 dieron 7-8, 1 dio 0-6.
-• Promotores:   90%
-• Pasivos:       8% (NO suman)
+          <div class="gk-ejemplo">50 respuestas: 46 dieron 5, 3 dieron 4, 1 dio 1–3.
+• Promotores:   92%
+• Pasivos:       6% (NO suman)
 • Detractores:   2%
-<strong>NPS = 90 − 2 = 88</strong> → 🟡 Muy cerca de la meta</div>
+<strong>NPS = 92 − 2 = 90</strong> → 🟢 Meta alcanzada</div>
           <h5>Cómo se lee</h5>
           <div class="gk-semaforo">
             <div class="gk-sem-item verde">🟢 ≥<span class="kpi-ref" data-ref="meta_nps">90</span> — Excelente, el boca a boca trabaja por ti</div>
@@ -2507,7 +2508,7 @@ Notas 0 a 6   →  DETRACTORES  — Tuvieron una mala experiencia</div>
         </div>
       </div>
 
-      <div class="gk-kpi-card" onclick="toggleKPICard(this)">
+      <div class="gk-kpi-card" onclick="toggleKPICard(this); _renderBDBreakdown()">
         <div class="gk-kpi-header">
           <div class="gk-kpi-left">
             <div class="gk-kpi-name">KPI 8 — Porcentaje de Actualización de la Base de Datos</div>
@@ -2538,6 +2539,10 @@ Notas 0 a 6   →  DETRACTORES  — Tuvieron una mala experiencia</div>
             <div class="gk-sem-item verde">🟢 100% — Operación impecable</div>
             <div class="gk-sem-item amarillo">🟡 90–99% — Hay pacientes "fantasma"</div>
             <div class="gk-sem-item rojo">🔴 &lt;90% — Base de datos inutilizable para campañas</div>
+          </div>
+          <h5>Dato en vivo — este mes</h5>
+          <div id="kpiBDLiveBreakdown" style="margin-top:6px">
+            <span style="font-size:.8rem;color:var(--muted)">Cargando...</span>
           </div>
         </div>
       </div>
@@ -7436,6 +7441,49 @@ const VENTANA_NUEVO_DIAS   = 180;
 const VENTANA_RETENCION    = 60;
 const CATEGORIAS_MARKETING = ['Pautas Redes', 'Redes Sociales Contenido'];
 
+function calcBDActualizada() {
+  const now = new Date();
+  const m = now.getMonth() + 1, y = now.getFullYear();
+
+  // Pacientes únicos atendidos este mes (no cancelados)
+  const pacMap = {};
+  (allData.citas || []).filter(c => {
+    const [cy,cm] = normDate(c.fecha).split('-');
+    return +cm===m && +cy===y && !(c.estado||'').toLowerCase().includes('cancel');
+  }).forEach(c => {
+    const key = (c.nombre||'').trim().toLowerCase();
+    if (!key) return;
+    if (!pacMap[key]) pacMap[key] = {nombre: c.nombre, telefono: '', email: ''};
+    if (c.telefono) pacMap[key].telefono = c.telefono;
+    if (c.email)    pacMap[key].email    = c.email;
+  });
+
+  // Enriquecer con hoja Pacientes
+  (allData.pacientes || []).forEach(p => {
+    const key = (p.nombre||'').trim().toLowerCase();
+    if (!pacMap[key]) return;
+    if (p.telefono && !pacMap[key].telefono) pacMap[key].telefono = p.telefono;
+    if (p.email    && !pacMap[key].email)    pacMap[key].email    = p.email;
+  });
+
+  const pacs       = Object.values(pacMap);
+  if (!pacs.length) return null;
+
+  const tienePhone = p => (p.telefono||'').replace(/\D/g,'').length >= 10;
+  const tieneEmail = p => (p.email||'').includes('@');
+  const completos  = pacs.filter(p => tienePhone(p) && tieneEmail(p)).length;
+  const sinTel     = pacs.filter(p => !tienePhone(p)).length;
+  const sinEmail   = pacs.filter(p => !tieneEmail(p)).length;
+
+  return {
+    pct:       Math.round((completos / pacs.length) * 100),
+    completos,
+    total:     pacs.length,
+    sinTel,
+    sinEmail,
+  };
+}
+
 function reloadMetas() {
   const cfg = getKPIConfig();
   META_SESIONES_SEMANA = cfg.meta_sesiones_semana;
@@ -7657,7 +7705,10 @@ function renderKPITablero() {
 
   html += kpiCard('⭐','NPS último mes', (manual.nps||0)+'%', META_NPS, '%', true, `>${META_NPS}%`);
   html += kpiCard('📋','Encuestas realizadas', (manual.encuestas||0)+'%', META_ENCUESTAS, '%', true, `>${META_ENCUESTAS}%`);
-  html += kpiCard('🗄️','Base de datos actualizada', (manual.bd||0)+'%', 100, '%', true, '100%');
+  const _bdAuto = calcBDActualizada();
+  const _bdVal  = _bdAuto ? _bdAuto.pct+'%' : (manual.bd||0)+'%';
+  const _bdMeta = _bdAuto ? `${_bdAuto.completos}/${_bdAuto.total} pac. con tel+email` : '100%';
+  html += kpiCard('🗄️','BD actualizada (auto)', _bdVal, 100, '%', true, _bdMeta);
 
   // ───── KPI: Ingreso por canal (mes actual) ─────
   const canalMap = {};
@@ -7851,8 +7902,9 @@ function renderKPIGuia() {
   // KPI 7 — NPS (manual)
   const nps = manual.nps || 0;
 
-  // KPI 8 — BD actualizada (manual)
-  const bd = manual.bd || 0;
+  // KPI 8 — BD actualizada (automático desde datos del sistema)
+  const _bdGuia = calcBDActualizada();
+  const bd      = _bdGuia ? _bdGuia.pct : (manual.bd || 0);
 
   // Extra — Cancelaciones mes (excluye pruebas)
   const _motivosGuia     = getCancelMotivos();
@@ -7890,7 +7942,8 @@ function renderKPIGuia() {
   html += _kpiCardGuia('💰', 'Ventas mes actual',       fmtPeso(ventasMes),                  META_VENTAS_MES,      '',      true,  fmtPeso(META_VENTAS_MES));
   html += _kpiCardGuia('📋', 'Encuestas realizadas',    encuestas + '%',                     META_ENCUESTAS,       '%',     true,  `>${META_ENCUESTAS}%`);
   html += _kpiCardGuia('⭐', 'NPS último mes',          nps,                                 META_NPS,             '',      true,  `>${META_NPS}`);
-  html += _kpiCardGuia('🗄️', 'BD actualizada',         bd + '%',                            100,                  '%',     true,  '100%');
+  const _bdLabel = _bdGuia ? `${_bdGuia.completos}/${_bdGuia.total}` : '—';
+  html += _kpiCardGuia('🗄️', `BD actualizada (${_bdLabel} pac.)`, bd + '%', 100, '%', true, '100%');
   html += _kpiCardGuia('❌', 'Cancelaciones mes',       tasaCancel + '%',                    META_CANCELACION_PCT, '%',     false, `<${META_CANCELACION_PCT}%`);
   html += _kpiCardGuia('🔁', 'Retención 60 días',       tasaRet + '%',                       META_RETENCION_PCT,   '%',     true,  `>${META_RETENCION_PCT}%`);
 
@@ -7951,6 +8004,7 @@ function renderKPIGuia() {
   el.innerHTML = html;
   applyKPIRefSpans();
   _renderCancelBreakdown();
+  _renderBDBreakdown();
 }
 
 function _renderCancelBreakdown() {
@@ -8043,6 +8097,33 @@ function _renderCancelBreakdown() {
 
   html += `</div>`;
   el.innerHTML = html;
+}
+
+function _renderBDBreakdown() {
+  const el = document.getElementById('kpiBDLiveBreakdown');
+  if (!el) return;
+  const bd = calcBDActualizada();
+  if (!bd) { el.innerHTML = `<span style="font-size:.8rem;color:var(--muted)">Sin citas registradas este mes.</span>`; return; }
+
+  const color = bd.pct === 100 ? 'var(--ok)' : bd.pct >= 90 ? '#f59e0b' : '#ef4444';
+  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
+    <div style="background:var(--s2);border-radius:8px;padding:10px 12px;border-left:3px solid ${color}">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;font-family:var(--font-m)">COMPLETOS (tel+email)</div>
+      <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:700;color:${color}">${bd.pct}%</div>
+      <div style="font-size:.7rem;color:var(--muted)">${bd.completos} de ${bd.total} pacientes</div>
+    </div>
+    ${bd.sinTel ? `<div style="background:var(--s2);border-radius:8px;padding:10px 12px;border-left:3px solid #ef4444">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;font-family:var(--font-m)">SIN TELÉFONO</div>
+      <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:700;color:#ef4444">${bd.sinTel}</div>
+      <div style="font-size:.7rem;color:var(--muted)">pacientes</div>
+    </div>` : ''}
+    ${bd.sinEmail ? `<div style="background:var(--s2);border-radius:8px;padding:10px 12px;border-left:3px solid #f59e0b">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;font-family:var(--font-m)">SIN EMAIL</div>
+      <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:700;color:#f59e0b">${bd.sinEmail}</div>
+      <div style="font-size:.7rem;color:var(--muted)">pacientes</div>
+    </div>` : ''}
+  </div>
+  <div style="margin-top:8px;font-size:.72rem;color:var(--muted)">⚙️ Campos verificados: <strong>teléfono y email</strong>. Cédula y diagnóstico se agregarán cuando estén en el sistema.</div>`;
 }
 
 function applyKPIRefSpans() {
