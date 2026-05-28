@@ -588,6 +588,72 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 .gk-emergencia-tbl td{padding:14px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5}
 .gk-emergencia-tbl td:first-child{font-weight:600;color:#ef4444;white-space:nowrap}
 .gk-emergencia-tbl td:nth-child(2){color:var(--muted);font-size:.83rem}
+/* ── MANUAL DE EMERGENCIA v2 ── */
+.em-status-bar{display:flex;align-items:center;gap:8px;padding:11px 16px;background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;flex-wrap:wrap}
+.em-pill{display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-size:.74rem;font-family:var(--font-m);font-weight:600}
+.em-pill.rojo{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.22)}
+.em-pill.amarillo{background:rgba(245,158,11,.1);color:#d97706;border:1px solid rgba(245,158,11,.22)}
+.em-pill.verde{background:rgba(16,185,129,.1);color:#059669;border:1px solid rgba(16,185,129,.22)}
+.em-pill.gris{background:var(--s2);color:var(--muted);border:1px solid var(--border)}
+.em-status-ts{font-size:.69rem;color:var(--muted);margin-left:auto;white-space:nowrap}
+.em-crisis{padding:15px 20px;background:rgba(239,68,68,.06);border:2px solid rgba(239,68,68,.3);border-radius:12px;margin-bottom:18px;animation:emPulse 2.5s ease-in-out infinite}
+@keyframes emPulse{0%,100%{border-color:rgba(239,68,68,.3)}55%{border-color:rgba(239,68,68,.65)}}
+.em-crisis-title{font-family:var(--font-h);font-size:1rem;font-weight:700;color:#ef4444;margin-bottom:6px}
+.em-dim{border:1px solid var(--border);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.em-dim-hdr{padding:12px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;user-select:none;transition:background .15s;background:var(--s1)}
+.em-dim-hdr:hover{background:var(--s2)}
+.em-dim-hdr.d1{border-left:4px solid #3b82f6}
+.em-dim-hdr.d2{border-left:4px solid #f59e0b}
+.em-dim-hdr.d3{border-left:4px solid #ef4444}
+.em-dim-hdr.d4{border-left:4px solid #a855f7}
+.em-dim-label{font-family:var(--font-m);font-size:.76rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;flex:1}
+.em-dim-badge{font-size:.7rem;padding:2px 10px;border-radius:999px;font-family:var(--font-m);font-weight:700}
+.em-dim-badge.has-red{background:rgba(239,68,68,.12);color:#ef4444}
+.em-dim-badge.all-ok{background:rgba(16,185,129,.1);color:#059669}
+.em-dim-badge.neutral{background:var(--s2);color:var(--muted)}
+.em-dim-arr{color:var(--muted);font-size:.78rem;transition:transform .2s;flex-shrink:0}
+.em-dim.open .em-dim-arr{transform:rotate(180deg)}
+.em-dim-body{display:none;padding:4px 12px 12px}
+.em-dim.open .em-dim-body{display:block}
+.em-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;margin-top:10px;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.em-card.alerta{border-color:rgba(239,68,68,.4);box-shadow:0 0 0 1px rgba(239,68,68,.08)}
+.em-card-hdr{padding:11px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;transition:background .15s}
+.em-card-hdr:hover{background:var(--s2)}
+.em-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;transition:all .3s}
+.em-dot.rojo{background:#ef4444;box-shadow:0 0 7px rgba(239,68,68,.55)}
+.em-dot.amarillo{background:#f59e0b;box-shadow:0 0 5px rgba(245,158,11,.4)}
+.em-dot.verde{background:#22c55e}
+.em-dot.gris{background:var(--muted);opacity:.3}
+.em-card-title{font-size:.87rem;font-weight:600;flex:1;line-height:1.3}
+.em-sev{font-size:.65rem;font-family:var(--font-m);padding:2px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0}
+.em-sev.c{background:rgba(239,68,68,.1);color:#ef4444}
+.em-sev.u{background:rgba(245,158,11,.1);color:#d97706}
+.em-sev.m{background:rgba(99,102,241,.08);color:#6366f1}
+.em-card-time{font-size:.67rem;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.em-carr{color:var(--muted);font-size:.74rem;transition:transform .2s;flex-shrink:0}
+.em-card.open .em-carr{transform:rotate(180deg)}
+.em-card-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border)}
+.em-card.open .em-card-body{display:block}
+.em-symptom{font-size:.8rem;color:var(--muted);margin:10px 0 12px;font-style:italic;padding:8px 12px;background:var(--s2);border-radius:8px;line-height:1.55}
+.em-prog-meta{font-size:.69rem;color:var(--muted);margin-bottom:4px;font-family:var(--font-m)}
+.em-prog-wrap{height:4px;background:var(--s3);border-radius:999px;overflow:hidden;margin-bottom:12px}
+.em-prog-fill{height:100%;background:var(--primary);border-radius:999px;transition:width .35s ease}
+.em-steps{display:flex;flex-direction:column;gap:5px}
+.em-step{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border-radius:8px;background:var(--s2);font-size:.82rem;line-height:1.45;cursor:pointer;user-select:none;transition:background .15s}
+.em-step:hover{background:var(--s3)}
+.em-step.done{opacity:.48}
+.em-step.done .em-step-text{text-decoration:line-through}
+.em-step input[type=checkbox]{flex-shrink:0;width:15px;height:15px;accent-color:var(--primary);margin-top:2px;cursor:pointer;pointer-events:none}
+.em-step-n{font-family:var(--font-m);font-size:.69rem;color:var(--primary);font-weight:700;flex-shrink:0;min-width:18px;margin-top:3px}
+.em-step-text{flex:1}
+.em-goto{font-size:.66rem;padding:2px 8px;background:rgba(27,191,176,.1);border:1px solid rgba(27,191,176,.25);color:var(--primary);border-radius:6px;cursor:pointer;white-space:nowrap;font-family:var(--font-b);flex-shrink:0;align-self:flex-start;margin-top:2px;transition:background .15s}
+.em-goto:hover{background:rgba(27,191,176,.2)}
+.em-card-footer{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.em-done-btn{font-size:.74rem;padding:6px 14px;background:transparent;border:1px solid var(--primary);color:var(--primary);border-radius:8px;cursor:pointer;font-family:var(--font-b);transition:all .15s}
+.em-done-btn:hover{background:rgba(27,191,176,.1)}
+.em-done-btn.done-ok{background:rgba(16,185,129,.1);border-color:#22c55e;color:#16a34a}
+.em-reset-btn{font-size:.69rem;padding:5px 10px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-family:var(--font-b);transition:all .15s}
+.em-reset-btn:hover{border-color:#ef4444;color:#ef4444}
 .gk-rutina{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:16px}
 .gk-rutina-grupo{margin-bottom:18px}
 .gk-rutina-grupo:last-child{margin-bottom:0}
@@ -2594,23 +2660,325 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
 
       <!-- MANUAL DE EMERGENCIA -->
       <div class="gk-section-title">🚨 Manual de Emergencia: ¿Qué hago si...?</div>
-      <p style="font-size:.9rem;color:var(--muted);margin-bottom:8px">Cuando un KPI sale rojo, NO es para entrar en pánico. Es para hacer una acción concreta:</p>
-      <div style="overflow-x:auto"><table class="gk-emergencia-tbl">
-        <thead><tr>
-          <th>Si esto sale rojo...</th>
-          <th>El síntoma es...</th>
-          <th>Acción inmediata</th>
-        </tr></thead>
-        <tbody>
-          <tr><td>Sesiones semana &lt;18</td><td>Agenda floja</td><td>Activar campaña de referidos + pauta extra + recontactar pacientes inactivos de últimos 3 meses</td></tr>
-          <tr><td>Mix Full &gt;40%</td><td>Pérdida silenciosa de margen</td><td>Capacitar auxiliar para ofrecer Express por defecto. Solo Full si lo justifica clínicamente</td></tr>
-          <tr><td>Conversión &lt;20%</td><td>Fugas en el embudo</td><td>Auditar conversaciones de WhatsApp de la semana, identificar dónde se cae el lead. Revisar tiempos de respuesta</td></tr>
-          <tr><td>Ventas mes &lt;80% meta</td><td>No vas a llegar</td><td>Activar promoción de fin de mes + ofrecer paquetes (3x2, descuento por compra adelantada)</td></tr>
-          <tr><td>NPS &lt;50</td><td>Pacientes insatisfechos</td><td>Llamar a TODOS los detractores en 48h. Hacer reunión de equipo con los hallazgos</td></tr>
-          <tr><td>Encuestas &lt;50%</td><td>No tenemos datos confiables</td><td>Cambiar momento de envío: justo al salir del consultorio en vez de al día siguiente</td></tr>
-          <tr><td>BD actualizada &lt;90%</td><td>Pacientes "fantasma"</td><td>Establecer regla: nadie sale sin ficha completa. Auxiliar revisa antes del cierre del día</td></tr>
-        </tbody>
-      </table></div>
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:14px">Cuando un KPI sale rojo, no entres en pánico. <strong>Los semáforos son en tiempo real</strong> — conectados a tus datos. Abre la dimensión con alertas y ejecuta los pasos uno por uno.</p>
+
+      <!-- Barra de estado en vivo -->
+      <div class="em-status-bar" id="emStatusBar">
+        <span class="em-pill gris">⏳ Cargando datos del tablero...</span>
+        <span class="em-status-ts" id="emStatusTs"></span>
+      </div>
+
+      <!-- Banner de crisis (aparece automáticamente con ≥3 rojos) -->
+      <div class="em-crisis" id="emCrisisBanner" style="display:none">
+        <div class="em-crisis-title">⚠️ ALERTA DE CRISIS — 3 o más KPIs en rojo al mismo tiempo</div>
+        <p style="font-size:.84rem;color:var(--text);line-height:1.55">Esto no es una semana mala — es una señal de <strong>problema estructural</strong>. Programa una reunión de revisión estratégica antes del próximo lunes. Empieza por los KPIs marcados <span style="background:rgba(239,68,68,.12);color:#ef4444;padding:1px 7px;border-radius:4px;font-size:.73rem;font-family:var(--font-m)">🔴 Crítico</span>.</p>
+      </div>
+
+      <!-- ══ DIMENSIÓN 1: Operativa ══ -->
+      <div class="em-dim" id="emDim_1">
+        <div class="em-dim-hdr d1" onclick="toggleEmDim(1)">
+          <span class="em-dim-label">🟦 Dimensión 1 — Eficiencia Operativa</span>
+          <span class="em-dim-badge neutral" id="emDB_1">—</span>
+          <span class="em-dim-arr" id="emDA_1">▼</span>
+        </div>
+        <div class="em-dim-body" id="emDB_body_1">
+
+          <!-- KPI: Sesiones semana -->
+          <div class="em-card" id="emCard_sesiones">
+            <div class="em-card-hdr" onclick="toggleEmCard('sesiones')">
+              <div class="em-dot gris" id="emDot_sesiones"></div>
+              <span class="em-card-title">Sesiones semana &lt;18<br><small style="font-weight:400;font-size:.75em;color:var(--muted)">sin compensación de eventos</small></span>
+              <span class="em-sev c">🔴 Crítico</span>
+              <span class="em-card-time">⏱ 20 min</span>
+              <span class="em-carr">▼</span>
+            </div>
+            <div class="em-card-body" id="emBody_sesiones">
+              <div class="em-symptom">💡 Agenda floja — la clínica no llega al punto de equilibrio operativo. Por debajo de 18 sesiones/semana el margen financiero se erosiona rápidamente.</div>
+              <div class="em-prog-meta" id="emPM_sesiones">0 de 4 pasos completados</div>
+              <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_sesiones" style="width:0%"></div></div>
+              <div class="em-steps">
+                <label class="em-step" id="emS_sesiones_0" onclick="handleEmStep(event,'sesiones',0)"><input type="checkbox" id="emCk_sesiones_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Revisar KPI 4B — ¿hubo cancelaciones inusuales esta semana?</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 4B →</button></label>
+                <label class="em-step" id="emS_sesiones_1" onclick="handleEmStep(event,'sesiones',1)"><input type="checkbox" id="emCk_sesiones_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Recontactar pacientes inactivos de los últimos 3 meses por WhatsApp desde Recordatorios</span><button class="em-goto" onclick="event.stopPropagation();showView('recordatorios')">Recordatorios →</button></label>
+                <label class="em-step" id="emS_sesiones_2" onclick="handleEmStep(event,'sesiones',2)"><input type="checkbox" id="emCk_sesiones_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Publicar historia en redes con disponibilidad u oferta ese mismo día</span></label>
+                <label class="em-step" id="emS_sesiones_3" onclick="handleEmStep(event,'sesiones',3)"><input type="checkbox" id="emCk_sesiones_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Si el hueco es mayor a 2 días: activar pauta extra en redes sociales</span></label>
+              </div>
+              <div class="em-card-footer">
+                <button class="em-done-btn" id="emDB_sesiones" onclick="markEmDone('sesiones',4)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('sesiones',4)">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI: Mix Full -->
+          <div class="em-card" id="emCard_mixfull">
+            <div class="em-card-hdr" onclick="toggleEmCard('mixfull')">
+              <div class="em-dot gris" id="emDot_mixfull"></div>
+              <span class="em-card-title">Mix Full &gt;40%</span>
+              <span class="em-sev u">🟠 Urgente</span>
+              <span class="em-card-time">⏱ 15 min</span>
+              <span class="em-carr">▼</span>
+            </div>
+            <div class="em-card-body" id="emBody_mixfull">
+              <div class="em-symptom">💡 Pérdida silenciosa de margen — Full rinde ~$73k/h vs ~$90k/h de Express. Cada 10% de exceso en Full equivale a dejar ~$70k–$100k/semana sobre la mesa.</div>
+              <div class="em-prog-meta" id="emPM_mixfull">0 de 3 pasos completados</div>
+              <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_mixfull" style="width:0%"></div></div>
+              <div class="em-steps">
+                <label class="em-step" id="emS_mixfull_0" onclick="handleEmStep(event,'mixfull',0)"><input type="checkbox" id="emCk_mixfull_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Reunión con auxiliar: ofrecer Express por defecto al agendar. Full solo si el paciente lo pide o hay justificación clínica</span></label>
+                <label class="em-step" id="emS_mixfull_1" onclick="handleEmStep(event,'mixfull',1)"><input type="checkbox" id="emCk_mixfull_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Revisar si hay citas Full activas que pueden migrar a Express + Readaptación sin afectar la evolución clínica</span><button class="em-goto" onclick="event.stopPropagation();showView('citas')">Ver citas →</button></label>
+                <label class="em-step" id="emS_mixfull_2" onclick="handleEmStep(event,'mixfull',2)"><input type="checkbox" id="emCk_mixfull_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Hacer seguimiento al mix la próxima semana — meta: no superar 30% Full en el mes corriente</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 2 →</button></label>
+              </div>
+              <div class="em-card-footer">
+                <button class="em-done-btn" id="emDB_mixfull" onclick="markEmDone('mixfull',3)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('mixfull',3)">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI: Cancelaciones -->
+          <div class="em-card" id="emCard_cancel">
+            <div class="em-card-hdr" onclick="toggleEmCard('cancel')">
+              <div class="em-dot gris" id="emDot_cancel"></div>
+              <span class="em-card-title">Cancelaciones &gt;20%<br><small style="font-weight:400;font-size:.75em;color:var(--muted)">KPI 4B</small></span>
+              <span class="em-sev u">🟠 Urgente</span>
+              <span class="em-card-time">⏱ 25 min</span>
+              <span class="em-carr">▼</span>
+            </div>
+            <div class="em-card-body" id="emBody_cancel">
+              <div class="em-symptom">💡 Patrón de cancelación — cada una es ingreso y tiempo perdido. La meta es &lt;20%; por encima de eso hay un patrón identificable que se puede cortar.</div>
+              <div class="em-prog-meta" id="emPM_cancel">0 de 4 pasos completados</div>
+              <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_cancel" style="width:0%"></div></div>
+              <div class="em-steps">
+                <label class="em-step" id="emS_cancel_0" onclick="handleEmStep(event,'cancel',0)"><input type="checkbox" id="emCk_cancel_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Abrir KPI 4B y ver el breakdown: ¿qué servicio y qué día concentra las cancelaciones?</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 4B →</button></label>
+                <label class="em-step" id="emS_cancel_1" onclick="handleEmStep(event,'cancel',1)"><input type="checkbox" id="emCk_cancel_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Si hay un día con muchas: reforzar el recordatorio de WhatsApp 24h antes a todos los pacientes de ese día</span></label>
+                <label class="em-step" id="emS_cancel_2" onclick="handleEmStep(event,'cancel',2)"><input type="checkbox" id="emCk_cancel_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Si hay un servicio con muchas: revisar precio, duración o expectativa del paciente con ese servicio</span></label>
+                <label class="em-step" id="emS_cancel_3" onclick="handleEmStep(event,'cancel',3)"><input type="checkbox" id="emCk_cancel_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Registrar el motivo de cada cancelación en la cita — el patrón se detecta mucho más rápido con datos</span><button class="em-goto" onclick="event.stopPropagation();showView('citas')">Ir a citas →</button></label>
+              </div>
+              <div class="em-card-footer">
+                <button class="em-done-btn" id="emDB_cancel" onclick="markEmDone('cancel',4)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('cancel',4)">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ DIMENSIÓN 2: Comercial ══ -->
+      <div class="em-dim" id="emDim_2">
+        <div class="em-dim-hdr d2" onclick="toggleEmDim(2)">
+          <span class="em-dim-label">🟨 Dimensión 2 — Gestión Comercial y Marketing</span>
+          <span class="em-dim-badge neutral" id="emDB_2">—</span>
+          <span class="em-dim-arr" id="emDA_2">▼</span>
+        </div>
+        <div class="em-dim-body" id="emDB_body_2">
+
+          <!-- KPI: Leads -->
+          <div class="em-card" id="emCard_leads">
+            <div class="em-card-hdr" onclick="toggleEmCard('leads')">
+              <div class="em-dot gris" id="emDot_leads"></div>
+              <span class="em-card-title">Leads mes &lt;40</span>
+              <span class="em-sev u">🟠 Urgente</span>
+              <span class="em-card-time">⏱ 30 min</span>
+              <span class="em-carr">▼</span>
+            </div>
+            <div class="em-card-body" id="emBody_leads">
+              <div class="em-symptom">💡 El marketing no está atrayendo suficiente interés — la inversión en pauta no genera leads. Sin leads nuevos, la agenda crece solo con pacientes existentes y la clínica no escala.</div>
+              <div class="em-prog-meta" id="emPM_leads">0 de 4 pasos completados</div>
+              <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_leads" style="width:0%"></div></div>
+              <div class="em-steps">
+                <label class="em-step" id="emS_leads_0" onclick="handleEmStep(event,'leads',0)"><input type="checkbox" id="emCk_leads_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Verificar que la pauta en redes está activa y corriendo correctamente</span></label>
+                <label class="em-step" id="emS_leads_1" onclick="handleEmStep(event,'leads',1)"><input type="checkbox" id="emCk_leads_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Publicar una historia con oferta, testimonio real o demostración ese mismo día</span></label>
+                <label class="em-step" id="emS_leads_2" onclick="handleEmStep(event,'leads',2)"><input type="checkbox" id="emCk_leads_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Revisar si el contenido de la semana habló del dolor/problema del paciente — no solo del servicio</span></label>
+                <label class="em-step" id="emS_leads_3" onclick="handleEmStep(event,'leads',3)"><input type="checkbox" id="emCk_leads_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Pedir a 3–5 pacientes satisfechos que compartan el perfil de Instagram o refieran a alguien</span></label>
+              </div>
+              <div class="em-card-footer">
+                <button class="em-done-btn" id="emDB_leads" onclick="markEmDone('leads',4)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('leads',4)">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI: Conversión -->
+          <div class="em-card" id="emCard_conv">
+            <div class="em-card-hdr" onclick="toggleEmCard('conv')">
+              <div class="em-dot gris" id="emDot_conv"></div>
+              <span class="em-card-title">Conversión &lt;25%</span>
+              <span class="em-sev c">🔴 Crítico</span>
+              <span class="em-card-time">⏱ 45 min</span>
+              <span class="em-carr">▼</span>
+            </div>
+            <div class="em-card-body" id="emBody_conv">
+              <div class="em-symptom">💡 Fugas en el embudo — los leads entran pero no agendan. El problema está en la velocidad de respuesta, el argumento de venta o el precio mal gestionado.</div>
+              <div class="em-prog-meta" id="emPM_conv">0 de 4 pasos completados</div>
+              <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_conv" style="width:0%"></div></div>
+              <div class="em-steps">
+                <label class="em-step" id="emS_conv_0" onclick="handleEmStep(event,'conv',0)"><input type="checkbox" id="emCk_conv_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Auditar las últimas 10 conversaciones de WhatsApp: identificar en qué momento exacto se cae el lead</span></label>
+                <label class="em-step" id="emS_conv_1" onclick="handleEmStep(event,'conv',1)"><input type="checkbox" id="emCk_conv_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Medir el tiempo de respuesta — si supera 30 minutos, el lead ya buscó otra opción</span></label>
+                <label class="em-step" id="emS_conv_2" onclick="handleEmStep(event,'conv',2)"><input type="checkbox" id="emCk_conv_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Regla de oro: nunca enviar el precio sin preguntar primero el caso clínico del paciente</span></label>
+                <label class="em-step" id="emS_conv_3" onclick="handleEmStep(event,'conv',3)"><input type="checkbox" id="emCk_conv_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Practicar el guión de cierre: pregunta → empatía → valor → precio → cierre (en ese orden)</span></label>
+              </div>
+              <div class="em-card-footer">
+                <button class="em-done-btn" id="emDB_conv" onclick="markEmDone('conv',4)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('conv',4)">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ DIMENSIÓN 3: Financiera ══ -->
+      <div class="em-dim" id="emDim_3">
+        <div class="em-dim-hdr d3" onclick="toggleEmDim(3)">
+          <span class="em-dim-label">🟥 Dimensión 3 — Resultados Financieros</span>
+          <span class="em-dim-badge neutral" id="emDB_3">—</span>
+          <span class="em-dim-arr" id="emDA_3">▼</span>
+        </div>
+        <div class="em-dim-body" id="emDB_body_3">
+
+          <!-- KPI: Ventas semana -->
+          <div class="em-card" id="emCard_ventas_sem">
+            <div class="em-card-hdr" onclick="toggleEmCard('ventas_sem')">
+              <div class="em-dot gris" id="emDot_ventas_sem"></div>
+              <span class="em-card-title">Ventas semana &lt;84% meta<br><small style="font-weight:400;font-size:.75em;color:var(--muted)">&lt;<span class="kpi-ref" data-ref="meta_ventas_semana">$2.566.250</span></small></span>
+              <span class="em-sev u">🟠 Urgente</span>
+              <span class="em-card-time">⏱ 20 min</span>
+              <span class="em-carr">▼</span>
+            </div>
+            <div class="em-card-body" id="emBody_ventas_sem">
+              <div class="em-symptom">💡 Semana financieramente débil — aún hay tiempo de corregir antes de que cierre el mes. Actuar esta semana evita que el problema se acumule.</div>
+              <div class="em-prog-meta" id="emPM_ventas_sem">0 de 3 pasos completados</div>
+              <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_ventas_sem" style="width:0%"></div></div>
+              <div class="em-steps">
+                <label class="em-step" id="emS_ventas_sem_0" onclick="handleEmStep(event,'ventas_sem',0)"><input type="checkbox" id="emCk_ventas_sem_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Revisar si hay citas sin cobro registrado en el módulo de Finanzas</span><button class="em-goto" onclick="event.stopPropagation();showView('finanzas')">Ver Finanzas →</button></label>
+                <label class="em-step" id="emS_ventas_sem_1" onclick="handleEmStep(event,'ventas_sem',1)"><input type="checkbox" id="emCk_ventas_sem_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Ofrecer combo o paquete a pacientes que ya están en tratamiento activo</span></label>
+                <label class="em-step" id="emS_ventas_sem_2" onclick="handleEmStep(event,'ventas_sem',2)"><input type="checkbox" id="emCk_ventas_sem_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Recontactar 3–5 pacientes inactivos con mensaje personalizado de WhatsApp</span><button class="em-goto" onclick="event.stopPropagation();showView('recordatorios')">Recordatorios →</button></label>
+              </div>
+              <div class="em-card-footer">
+                <button class="em-done-btn" id="emDB_ventas_sem" onclick="markEmDone('ventas_sem',3)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('ventas_sem',3)">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI: Ventas mes -->
+          <div class="em-card" id="emCard_ventas_mes">
+            <div class="em-card-hdr" onclick="toggleEmCard('ventas_mes')">
+              <div class="em-dot gris" id="emDot_ventas_mes"></div>
+              <span class="em-card-title">Ventas mes &lt;80% meta<br><small style="font-weight:400;font-size:.75em;color:var(--muted)">&lt;<span class="kpi-ref" data-ref="meta_ventas_mes">$10.265.000</span></small></span>
+              <span class="em-sev c">🔴 Crítico</span>
+              <span class="em-card-time">⏱ 30 min</span>
+              <span class="em-carr">▼</span>
+            </div>
+            <div class="em-card-body" id="emBody_ventas_mes">
+              <div class="em-symptom">💡 El mes está comprometido — ya no alcanza con citas normales. Se necesita una acción extraordinaria para recuperar el gap antes del cierre.</div>
+              <div class="em-prog-meta" id="emPM_ventas_mes">0 de 4 pasos completados</div>
+              <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_ventas_mes" style="width:0%"></div></div>
+              <div class="em-steps">
+                <label class="em-step" id="emS_ventas_mes_0" onclick="handleEmStep(event,'ventas_mes',0)"><input type="checkbox" id="emCk_ventas_mes_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Activar promoción de cierre de mes con fecha límite visible — la urgencia real convierte</span></label>
+                <label class="em-step" id="emS_ventas_mes_1" onclick="handleEmStep(event,'ventas_mes',1)"><input type="checkbox" id="emCk_ventas_mes_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Ofrecer paquetes con descuento por pago adelantado a pacientes activos</span></label>
+                <label class="em-step" id="emS_ventas_mes_2" onclick="handleEmStep(event,'ventas_mes',2)"><input type="checkbox" id="emCk_ventas_mes_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Revisar la proyección a fin de mes en Finanzas y calcular el gap exacto que hay que cerrar</span><button class="em-goto" onclick="event.stopPropagation();showView('finanzas')">Ver proyección →</button></label>
+                <label class="em-step" id="emS_ventas_mes_3" onclick="handleEmStep(event,'ventas_mes',3)"><input type="checkbox" id="emCk_ventas_mes_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Evaluar si se pueden agregar eventos corporativos o grupales para compensar el gap</span></label>
+              </div>
+              <div class="em-card-footer">
+                <button class="em-done-btn" id="emDB_ventas_mes" onclick="markEmDone('ventas_mes',4)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('ventas_mes',4)">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ DIMENSIÓN 4: Calidad ══ -->
+      <div class="em-dim" id="emDim_4">
+        <div class="em-dim-hdr d4" onclick="toggleEmDim(4)">
+          <span class="em-dim-label">🟪 Dimensión 4 — Calidad y Retención</span>
+          <span class="em-dim-badge neutral" id="emDB_4">—</span>
+          <span class="em-dim-arr" id="emDA_4">▼</span>
+        </div>
+        <div class="em-dim-body" id="emDB_body_4">
+
+          <!-- KPI: NPS -->
+          <div class="em-card" id="emCard_nps">
+            <div class="em-card-hdr" onclick="toggleEmCard('nps')">
+              <div class="em-dot gris" id="emDot_nps"></div>
+              <span class="em-card-title">NPS &lt;70<br><small style="font-weight:400;font-size:.75em;color:var(--muted)">escala calculada del formulario</small></span>
+              <span class="em-sev c">🔴 Crítico</span>
+              <span class="em-card-time">⏱ 48 h</span>
+              <span class="em-carr">▼</span>
+            </div>
+            <div class="em-card-body" id="emBody_nps">
+              <div class="em-symptom">💡 Pacientes insatisfechos — el boca a boca está fallando. Un detractor recuperado se convierte en promotor; uno ignorado habla mal con 10 personas.</div>
+              <div class="em-prog-meta" id="emPM_nps">0 de 4 pasos completados</div>
+              <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_nps" style="width:0%"></div></div>
+              <div class="em-steps">
+                <label class="em-step" id="emS_nps_0" onclick="handleEmStep(event,'nps',0)"><input type="checkbox" id="emCk_nps_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Cargar encuestas del formulario y ver quiénes dieron nota 1–3 (detractores)</span><button class="em-goto" onclick="event.stopPropagation();showView('finanzas')">Cargar encuestas →</button></label>
+                <label class="em-step" id="emS_nps_1" onclick="handleEmStep(event,'nps',1)"><input type="checkbox" id="emCk_nps_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Llamar a TODOS los detractores en menos de 48h — no para discutir, sino para escuchar activamente</span></label>
+                <label class="em-step" id="emS_nps_2" onclick="handleEmStep(event,'nps',2)"><input type="checkbox" id="emCk_nps_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Reunión de equipo: ¿hay un patrón en las quejas? ¿Es el mismo servicio o el mismo día de la semana?</span></label>
+                <label class="em-step" id="emS_nps_3" onclick="handleEmStep(event,'nps',3)"><input type="checkbox" id="emCk_nps_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Ofrecer sesión de compensación al detractor como gesto de calidad — sin presionar a cambiar su nota</span></label>
+              </div>
+              <div class="em-card-footer">
+                <button class="em-done-btn" id="emDB_nps" onclick="markEmDone('nps',4)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('nps',4)">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI: Encuestas -->
+          <div class="em-card" id="emCard_enc">
+            <div class="em-card-hdr" onclick="toggleEmCard('enc')">
+              <div class="em-dot gris" id="emDot_enc"></div>
+              <span class="em-card-title">Encuestas realizadas &lt;50%</span>
+              <span class="em-sev m">🔵 Monitorear</span>
+              <span class="em-card-time">⏱ 10 min</span>
+              <span class="em-carr">▼</span>
+            </div>
+            <div class="em-card-body" id="emBody_enc">
+              <div class="em-symptom">💡 Sin datos confiables — el NPS que ves está sesgado hacia los pacientes más motivados. Meta mínima: 7 de cada 10 pacientes deben contestar.</div>
+              <div class="em-prog-meta" id="emPM_enc">0 de 4 pasos completados</div>
+              <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_enc" style="width:0%"></div></div>
+              <div class="em-steps">
+                <label class="em-step" id="emS_enc_0" onclick="handleEmStep(event,'enc',0)"><input type="checkbox" id="emCk_enc_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Cambiar el momento de envío: mandar el link justo cuando el paciente sale, no al día siguiente</span></label>
+                <label class="em-step" id="emS_enc_1" onclick="handleEmStep(event,'enc',1)"><input type="checkbox" id="emCk_enc_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Enviar mensaje personalizado por WhatsApp ese mismo día con el link de la encuesta</span></label>
+                <label class="em-step" id="emS_enc_2" onclick="handleEmStep(event,'enc',2)"><input type="checkbox" id="emCk_enc_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Recordatorio al tercer día si no respondió — solo una vez, no más</span></label>
+                <label class="em-step" id="emS_enc_3" onclick="handleEmStep(event,'enc',3)"><input type="checkbox" id="emCk_enc_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Agregar el link de la encuesta en la firma de WhatsApp de Jessica para máxima exposición</span></label>
+              </div>
+              <div class="em-card-footer">
+                <button class="em-done-btn" id="emDB_enc" onclick="markEmDone('enc',4)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('enc',4)">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI: BD actualizada -->
+          <div class="em-card" id="emCard_bd">
+            <div class="em-card-hdr" onclick="toggleEmCard('bd')">
+              <div class="em-dot gris" id="emDot_bd"></div>
+              <span class="em-card-title">BD actualizada &lt;90%<br><small style="font-weight:400;font-size:.75em;color:var(--muted)">teléfono + email</small></span>
+              <span class="em-sev u">🟠 Urgente</span>
+              <span class="em-card-time">⏱ 15 min</span>
+              <span class="em-carr">▼</span>
+            </div>
+            <div class="em-card-body" id="emBody_bd">
+              <div class="em-symptom">💡 Pacientes "fantasma" — sin datos completos no hay campañas de re-enganche ni recordatorios automáticos. Cada paciente sin ficha es una oportunidad perdida.</div>
+              <div class="em-prog-meta" id="emPM_bd">0 de 4 pasos completados</div>
+              <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_bd" style="width:0%"></div></div>
+              <div class="em-steps">
+                <label class="em-step" id="emS_bd_0" onclick="handleEmStep(event,'bd',0)"><input type="checkbox" id="emCk_bd_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Abrir KPI 8 y ver el breakdown: ¿qué falta más, teléfono o email?</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 8 →</button></label>
+                <label class="em-step" id="emS_bd_1" onclick="handleEmStep(event,'bd',1)"><input type="checkbox" id="emCk_bd_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Regla de oro: ningún paciente sale de la clínica sin ficha completa — implementar desde hoy</span></label>
+                <label class="em-step" id="emS_bd_2" onclick="handleEmStep(event,'bd',2)"><input type="checkbox" id="emCk_bd_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Auxiliar revisa y completa los datos faltantes antes del cierre del día</span><button class="em-goto" onclick="event.stopPropagation();showView('pacientes')">Ver pacientes →</button></label>
+                <label class="em-step" id="emS_bd_3" onclick="handleEmStep(event,'bd',3)"><input type="checkbox" id="emCk_bd_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Llamar a los pacientes del mes sin email para completar el registro telefónicamente</span></label>
+              </div>
+              <div class="em-card-footer">
+                <button class="em-done-btn" id="emDB_bd" onclick="markEmDone('bd',4)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('bd',4)">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
 
       <!-- RUTINA -->
       <div class="gk-section-title">📅 Rutina de medición</div>
@@ -7987,6 +8355,178 @@ function _kpiCardGuia(icon, label, valor, meta, unidad, altoEsMejor, metaTxt, ev
   </div>`;
 }
 
+// ══ MANUAL DE EMERGENCIA — funciones ══
+function renderEmergencia() {
+  const d = window._emKPIData;
+  if (!d) return;
+
+  const now  = new Date();
+  const hora = now.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
+
+  function kpiSt(val, meta, altoEsMejor) {
+    if (isNaN(val) || !meta || meta <= 0) return -1;
+    const ok   = altoEsMejor ? val >= meta   : val <= meta;
+    const warn = altoEsMejor ? val >= meta * 0.8 : val <= meta * 1.25;
+    return ok ? 0 : warn ? 1 : 2;
+  }
+
+  const st = {
+    sesiones:   kpiSt(d.sessEval,   d.sessMeta,             true),
+    mixfull:    d.totalMix > 0 ? kpiSt(d.fullPct, 30,       false) : -1,
+    cancel:     kpiSt(d.tasaCancel, d.cancelMeta,            false),
+    leads:      kpiSt(d.leadsShow,  40,                      true),
+    conv:       d.tasaConv !== null ? kpiSt(d.tasaConv, 25,  true) : -1,
+    ventas_sem: kpiSt(d.ventasSem,  d.ventasSemMeta * 0.84,  true),
+    ventas_mes: kpiSt(d.ventasMes,  d.ventasMesMeta * 0.80,  true),
+    nps:        kpiSt(d.nps,        d.npsMeta,               true),
+    enc:        kpiSt(d.encuestas,  d.encMeta,               true),
+    bd:         kpiSt(d.bd,         90,                      true),
+  };
+
+  const dotCls = s => s === 2 ? 'rojo' : s === 1 ? 'amarillo' : s === 0 ? 'verde' : 'gris';
+
+  for (const [kpi, status] of Object.entries(st)) {
+    const dot  = document.getElementById('emDot_' + kpi);
+    if (dot)  dot.className = 'em-dot ' + dotCls(status);
+    const card = document.getElementById('emCard_' + kpi);
+    if (card) {
+      if (status === 2) card.classList.add('alerta');
+      else              card.classList.remove('alerta');
+    }
+  }
+
+  const dims = { 1:['sesiones','mixfull','cancel'], 2:['leads','conv'], 3:['ventas_sem','ventas_mes'], 4:['nps','enc','bd'] };
+  let totalRojos = 0;
+
+  for (const [dim, kpis] of Object.entries(dims)) {
+    const rojos     = kpis.filter(k => st[k] === 2).length;
+    const amarillos = kpis.filter(k => st[k] === 1).length;
+    totalRojos += rojos;
+
+    const badge = document.getElementById('emDB_' + dim);
+    if (badge) {
+      if (rojos > 0) {
+        badge.textContent = rojos + ' alerta' + (rojos > 1 ? 's' : '');
+        badge.className = 'em-dim-badge has-red';
+        const dimEl  = document.getElementById('emDim_' + dim);
+        const bodyEl = document.getElementById('emDB_body_' + dim);
+        if (dimEl && bodyEl && !dimEl.classList.contains('open')) {
+          dimEl.classList.add('open');
+          bodyEl.style.display = 'block';
+        }
+      } else if (kpis.some(k => st[k] === 0)) {
+        badge.textContent = '✓ OK';
+        badge.className = 'em-dim-badge all-ok';
+      } else {
+        badge.textContent = '—';
+        badge.className = 'em-dim-badge neutral';
+      }
+    }
+  }
+
+  const rojoC    = Object.values(st).filter(s => s === 2).length;
+  const amarilloC = Object.values(st).filter(s => s === 1).length;
+  const verdeC   = Object.values(st).filter(s => s === 0).length;
+
+  const bar = document.getElementById('emStatusBar');
+  if (bar) {
+    bar.innerHTML =
+      (rojoC    > 0 ? `<span class="em-pill rojo">🔴 ${rojoC} en rojo</span>` : '') +
+      (amarilloC > 0 ? `<span class="em-pill amarillo">🟡 ${amarilloC} en alerta</span>` : '') +
+      (verdeC   > 0 ? `<span class="em-pill verde">🟢 ${verdeC} en meta</span>` : '') +
+      (rojoC === 0 && amarilloC === 0 && verdeC === 0 ? '<span class="em-pill gris">Sin datos suficientes</span>' : '') +
+      `<span class="em-status-ts">Actualizado ${hora}</span>`;
+  }
+
+  const crisis = document.getElementById('emCrisisBanner');
+  if (crisis) crisis.style.display = totalRojos >= 3 ? 'block' : 'none';
+
+  loadAllEmSteps();
+}
+
+function toggleEmDim(n) {
+  const dimEl  = document.getElementById('emDim_' + n);
+  const bodyEl = document.getElementById('emDB_body_' + n);
+  if (!dimEl || !bodyEl) return;
+  const open = dimEl.classList.toggle('open');
+  bodyEl.style.display = open ? 'block' : 'none';
+}
+
+function toggleEmCard(id) {
+  const card = document.getElementById('emCard_' + id);
+  const body = document.getElementById('emBody_' + id);
+  if (!card || !body) return;
+  const open = card.classList.toggle('open');
+  body.style.display = open ? 'block' : 'none';
+  if (!open) card.classList.remove('alerta');
+}
+
+function handleEmStep(event, kpi, idx) {
+  event.preventDefault();
+  const ck = document.getElementById('emCk_' + kpi + '_' + idx);
+  if (!ck) return;
+  ck.checked = !ck.checked;
+  _persistEmStep(kpi, idx, ck.checked);
+}
+
+function _persistEmStep(kpi, idx, checked) {
+  const key = 'em_steps_' + kpi;
+  let state = [];
+  try { state = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  state[idx] = checked;
+  localStorage.setItem(key, JSON.stringify(state));
+  _updateEmProgress(kpi);
+}
+
+function _updateEmProgress(kpi) {
+  const checks = [];
+  for (let i = 0; i < 6; i++) {
+    const ck = document.getElementById('emCk_' + kpi + '_' + i);
+    if (!ck) break;
+    checks.push(ck.checked);
+    const row = document.getElementById('emS_' + kpi + '_' + i);
+    if (row) row.classList.toggle('done', ck.checked);
+  }
+  const total = checks.length, done = checks.filter(Boolean).length;
+  const fill = document.getElementById('emPF_' + kpi);
+  if (fill) fill.style.width = (total > 0 ? Math.round(done / total * 100) : 0) + '%';
+  const meta = document.getElementById('emPM_' + kpi);
+  if (meta) meta.textContent = done + ' de ' + total + ' pasos completados';
+  const btn  = document.getElementById('emDB_' + kpi);
+  if (btn)  btn.classList.toggle('done-ok', done === total && total > 0);
+}
+
+function loadAllEmSteps() {
+  ['sesiones','mixfull','cancel','leads','conv','ventas_sem','ventas_mes','nps','enc','bd'].forEach(kpi => {
+    let state = [];
+    try { state = JSON.parse(localStorage.getItem('em_steps_' + kpi) || '[]'); } catch(e) {}
+    state.forEach((checked, idx) => {
+      const ck = document.getElementById('emCk_' + kpi + '_' + idx);
+      if (ck) ck.checked = !!checked;
+    });
+    _updateEmProgress(kpi);
+  });
+}
+
+function markEmDone(kpi, total) {
+  const state = Array(total).fill(true);
+  localStorage.setItem('em_steps_' + kpi, JSON.stringify(state));
+  for (let i = 0; i < total; i++) {
+    const ck = document.getElementById('emCk_' + kpi + '_' + i);
+    if (ck) ck.checked = true;
+  }
+  _updateEmProgress(kpi);
+}
+
+function resetEmSteps(kpi, total) {
+  localStorage.removeItem('em_steps_' + kpi);
+  for (let i = 0; i < total; i++) {
+    const ck = document.getElementById('emCk_' + kpi + '_' + i);
+    if (ck) ck.checked = false;
+  }
+  _updateEmProgress(kpi);
+}
+
 function renderKPIGuia() {
   const el = document.getElementById('kpiGuiaLiveData');
   if (!el) return;
@@ -8152,10 +8692,27 @@ function renderKPIGuia() {
     </div>
   </div>`;
 
+  // Exportar datos para el Manual de Emergencia
+  window._emKPIData = {
+    sessEval:      _sessEvalG,        sessMeta:      META_SESIONES_SEMANA,
+    fullPct:       fullPct,           totalMix:      totalMix,
+    tasaCancel:    tasaCancel,        cancelMeta:    META_CANCELACION_PCT,
+    leadsShow:     leadsShow || 0,
+    tasaConv:      tasaConv,
+    ventasSem:     _ventasG,          ventasSemMeta: META_VENTAS_SEMANA,
+    ventasMes:     ventasMes,         ventasMesMeta: META_VENTAS_MES,
+    nps:           isNaN(nps)       ? 0 : nps,
+    npsMeta:       META_NPS,
+    encuestas:     isNaN(encuestas) ? 0 : encuestas,
+    encMeta:       META_ENCUESTAS,
+    bd:            isNaN(bd)        ? 0 : bd,
+  };
+
   el.innerHTML = html;
   applyKPIRefSpans();
   _renderCancelBreakdown();
   _renderBDBreakdown();
+  renderEmergencia();
 }
 
 function _renderCancelBreakdown() {
