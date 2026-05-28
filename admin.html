@@ -3160,6 +3160,7 @@ async function doLogin() {
       document.getElementById('adminApp').style.display   = 'block';
       allData = d;
       await loadAdminKV();
+      reloadMetas();
       initDashboard();
     } else {
       _loginAttempts++;
@@ -3228,6 +3229,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('adminApp').style.display   = 'block';
         allData = d;
         await loadAdminKV();
+        reloadMetas();
         initDashboard();
         return;
       }
@@ -7256,7 +7258,7 @@ const KPI_CONFIG_DEFAULTS = {
 
 function getKPIConfig() {
   try {
-    const stored = localStorage.getItem('kpiConfig');
+    const stored = kvGet('kpiConfig');
     return stored ? {...KPI_CONFIG_DEFAULTS, ...JSON.parse(stored)} : {...KPI_CONFIG_DEFAULTS};
   } catch(e) { return {...KPI_CONFIG_DEFAULTS}; }
 }
@@ -7828,7 +7830,7 @@ function guardarKPIConfig() {
     precio_express:       get('precio_express')       ?? prev.precio_express,
     duracion_express:     get('duracion_express')     ?? prev.duracion_express,
   };
-  localStorage.setItem('kpiConfig', JSON.stringify(updated));
+  kvSet('kpiConfig', JSON.stringify(updated));
   reloadMetas();
   applyKPIRefSpans();
   renderKPITablero();
