@@ -99,6 +99,7 @@ function doGet(e) {
   if (p.action === 'getCodigos')     return js(getCodigos());
   if (p.action === 'crearEvento')    return js(crearEvento(p));
   if (p.action === 'eliminarEvento') return js(eliminarEvento(p));
+  if (p.action === 'getEncuestaStats') return js(getEncuestaStats_());
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -1611,5 +1612,57 @@ function buildEvalPrompt(d) {
     '[1 párrafo corto y motivador invitándolo a agendar su plan de fisioterapia. Menciona que ya identificaste exactamente qué trabajar y que los resultados se ven rápido con un plan personalizado. Cálido y sin presión.]\n\n' +
 
     'REGLAS GLOBALES: Reporte técnico máx 500 palabras. Reporte paciente máx 300 palabras. Tono técnico: preciso y profesional. Tono paciente: cercano, claro, motivador.';
+}
+
+// =============================================================
+//  ENCUESTA DE SATISFACCIÓN — NPS y % respuestas desde Google Forms
+// =============================================================
+function getEncuestaStats_() {
+  try {
+    var FORM_ID = '1UxoEq1x4GXaG9ghBQJO_C85p3ZPU3T7zeKhy0Ij-UA4';
+    var form = FormApp.openById(FORM_ID);
+    var responses = form.getResponses();
+    var now = new Date();
+    var year = now.getFullYear(), month = now.getMonth();
+
+    var mesRes = responses.filter(function(r) {
+      var d = r.getTimestamp();
+      return d.getFullYear() === year && d.getMonth() === month;
+    });
+
+    // Busca la primera pregunta de escala (la del 1-5)
+    var items = form.getItems();
+    var npsIdx = -1;
+    for (var i = 0; i < items.length; i++) {
+      var t = items[i].getType();
+      if (t === FormApp.ItemType.LINEAR_SCALE || t === FormApp.ItemType.SCALE) {
+        npsIdx = i; break;
+      }
+    }
+
+    // Escala 1-5: 5=Promotor, 4=Pasivo, 1-3=Detractor
+    var promotores = 0, pasivos = 0, detractores = 0;
+    if (npsIdx >= 0) {
+      mesRes.forEach(function(r) {
+        var ir = r.getItemResponses();
+        if (ir[npsIdx]) {
+          var score = parseInt(ir[npsIdx].getResponse(), 10);
+          if (score === 5)      promotores++;
+          else if (score === 4) pasivos++;
+          else if (score >= 1)  detractores++;
+        }
+      });
+    }
+
+    var total = mesRes.length;
+    return {
+      ok: true,
+      totalMes:    total,
+      promotores:  promotores,
+      pasivos:     pasivos,
+      detractores: detractores,
+      nps: total > 0 ? Math.round((promotores / total - detractores / total) * 100) : null
+    };
+  } catch(e) { return { ok: false, error: e.toString() }; }
 }
 
