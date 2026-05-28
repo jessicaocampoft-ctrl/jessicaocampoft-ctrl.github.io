@@ -2191,6 +2191,9 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
         <p style="margin-top:12px;font-size:.85rem;color:var(--muted)"><strong>Regla de oro:</strong> los KPIs no son para juzgar a nadie, son para tomar mejores decisiones. Si los reportas con honestidad, todos ganamos.</p>
       </div>
 
+      <!-- Dashboard live conectado desde Finanzas -->
+      <div id="kpiGuiaLiveData"></div>
+
       <!-- Las 4 dimensiones -->
       <div class="gk-section-title">🎯 Las 4 dimensiones del negocio</div>
       <p style="font-size:.9rem;color:var(--muted);margin-bottom:14px">Un buen tablero mide pocas cosas pero correctas. Estas son las 4 áreas que vigilamos al mismo tiempo:</p>
@@ -3367,6 +3370,7 @@ function showView(v) {
   if (v === 'paquetes')       renderPaquetes();
   if (v === 'empresas')       renderEmpresas();
   if (v === 'codigos')        renderCodigos();
+  if (v === 'guiakpis')       renderKPIGuia();
   if (v === 'dashboard')      actualizarContadorLeads();
 }
 
@@ -7545,6 +7549,127 @@ function renderKPITablero() {
     });
     html += `</div></div>`;
   }
+
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── KPI GUIA — LIVE DASHBOARD ──
+// ══════════════════════════════════════════════════════════════
+function _kpiCardGuia(icon, label, valor, meta, unidad, altoEsMejor, metaTxt) {
+  const numVal  = parseFloat(String(valor).replace(/[^0-9.]/g, ''));
+  const numMeta = parseFloat(String(meta));
+  let color = 'var(--muted)', semaforo = '', bg = 'var(--s2)';
+  if (!isNaN(numVal) && !isNaN(numMeta) && numMeta > 0) {
+    const ok   = altoEsMejor ? numVal >= numMeta : numVal <= numMeta;
+    const warn = altoEsMejor ? numVal >= numMeta * 0.8 : numVal <= numMeta * 1.25;
+    color    = ok ? 'var(--ok)' : warn ? '#f59e0b' : '#ef4444';
+    bg       = ok ? 'rgba(16,185,129,.06)' : warn ? 'rgba(245,158,11,.06)' : 'rgba(239,68,68,.06)';
+    semaforo = ok ? '🟢' : warn ? '🟡' : '🔴';
+  }
+  return `<div style="padding:14px 16px;background:${bg};border-radius:12px;border:1px solid ${color}33;border-left:3px solid ${color}">
+    <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+      <span>${icon} ${label}</span><span style="font-size:.85rem">${semaforo}</span>
+    </div>
+    <div style="font-family:var(--font-h);font-size:1.15rem;font-weight:700;color:${color}">${valor}${unidad || ''}</div>
+    <div style="font-size:.68rem;color:var(--muted);margin-top:4px">Meta: ${metaTxt || (meta + (unidad || ''))}</div>
+  </div>`;
+}
+
+function renderKPIGuia() {
+  const el = document.getElementById('kpiGuiaLiveData');
+  if (!el) return;
+
+  const now = new Date();
+  const m = now.getMonth() + 1, y = now.getFullYear();
+  const citas = citasReales();
+
+  // Semana actual (lunes–domingo)
+  const diaSemana   = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  const lunesSem    = new Date(now); lunesSem.setDate(now.getDate() - diaSemana);
+  const domingoSem  = new Date(lunesSem); domingoSem.setDate(lunesSem.getDate() + 6);
+  const toStr = d => d.toISOString().split('T')[0];
+
+  // KPI 1 — Volumen sesiones semana
+  const citasSemana = citas.filter(c => {
+    const f = normDate(c.fecha);
+    return c.estado !== 'No asistió' && f >= toStr(lunesSem) && f <= toStr(domingoSem);
+  });
+  const sessSemana = citasSemana.length;
+
+  // KPI 2 — Mix Full este mes
+  const mixMap = {};
+  citas.filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
+    .forEach(c => { const s = c.servicio || 'Sin tipo'; mixMap[s] = (mixMap[s]||0)+1; });
+  const totalMix = Object.values(mixMap).reduce((s,v) => s+v, 0);
+  const fullCnt  = Object.entries(mixMap).find(([s]) => s.toLowerCase().includes('full'))?.[1] || 0;
+  const fullPct  = totalMix > 0 ? Math.round(fullCnt / totalMix * 100) : 0;
+
+  // KPI 3 — Leads mes
+  const leadsMes  = getLeadsMes();
+  const manual    = getKPIManual();
+  const leadsShow = leadsMes > 0 ? leadsMes : (manual.leads || 0);
+
+  // KPI 4 — Tasa conversión
+  const citasMesTotal = citas.filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; }).length;
+  let tasaConv = null;
+  if (leadsMes > 0)         tasaConv = Math.round((citasMesTotal / leadsMes) * 100);
+  else if (manual.leads > 0) tasaConv = Math.round((manual.convertidos / manual.leads) * 100);
+
+  // KPI 5 — Ventas mes
+  const ventasMes = calcCobradoMes();
+
+  // KPI 6 — Encuestas (manual)
+  const encuestas = manual.encuestas || 0;
+
+  // KPI 7 — NPS (manual)
+  const nps = manual.nps || 0;
+
+  // KPI 8 — BD actualizada (manual)
+  const bd = manual.bd || 0;
+
+  // Extra — Cancelaciones mes
+  const todasCitasMes    = (allData.citas || []).filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
+  const canceladasMes    = todasCitasMes.filter(c => (c.estado||'').toLowerCase().includes('cancel')).length;
+  const tasaCancel       = todasCitasMes.length > 0 ? Math.round((canceladasMes / todasCitasMes.length) * 100) : 0;
+
+  // Extra — Retención 60 días
+  const hace60 = new Date(now); hace60.setDate(now.getDate() - VENTANA_RETENCION);
+  const cuentaPac = {};
+  citas.filter(c => new Date(normDate(c.fecha) + 'T12:00:00') >= hace60)
+    .forEach(c => { if (!c.nombre) return; const p = c.nombre.trim().toLowerCase(); cuentaPac[p] = (cuentaPac[p]||0)+1; });
+  const pacs60     = Object.keys(cuentaPac).length;
+  const recompra60 = Object.values(cuentaPac).filter(n => n >= 2).length;
+  const tasaRet    = pacs60 > 0 ? Math.round((recompra60 / pacs60) * 100) : 0;
+
+  const hora = now.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
+
+  let html = `<div style="background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px 20px 16px;margin-bottom:24px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <div>
+        <div style="font-family:var(--font-h);font-size:1.05rem;font-weight:700">📡 Estado actual de tus indicadores</div>
+        <div style="font-size:.73rem;color:var(--muted);margin-top:3px">Conectado en vivo desde el módulo de Finanzas · ${hora}</div>
+      </div>
+      <button onclick="showView('finanzas')" style="font-size:.73rem;padding:6px 14px;background:rgba(27,191,176,.1);border:1px solid rgba(27,191,176,.3);color:var(--primary);border-radius:8px;cursor:pointer;font-family:var(--font-b);white-space:nowrap">Ver finanzas →</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px">`;
+
+  html += _kpiCardGuia('📅', 'Sesiones esta semana',    sessSemana,                          META_SESIONES_SEMANA, ' ses.',  true,  `≥${META_SESIONES_SEMANA} sesiones`);
+  html += _kpiCardGuia('🔄', 'Mix Full este mes',       fullPct + '%',                       30,                   '%',     false, '≤30% Full');
+  html += _kpiCardGuia('📣', 'Leads este mes',          leadsShow || '—',                    40,                   '',      true,  '40–50 leads');
+  html += _kpiCardGuia('🎯', 'Tasa de conversión',      tasaConv !== null ? tasaConv+'%':'—', 25,                   '%',     true,  '25–35%');
+  html += _kpiCardGuia('💰', 'Ventas mes actual',       fmtPeso(ventasMes),                  META_VENTAS_MES,      '',      true,  fmtPeso(META_VENTAS_MES));
+  html += _kpiCardGuia('📋', 'Encuestas realizadas',    encuestas + '%',                     META_ENCUESTAS,       '%',     true,  `>${META_ENCUESTAS}%`);
+  html += _kpiCardGuia('⭐', 'NPS último mes',          nps,                                 META_NPS,             '',      true,  `>${META_NPS}`);
+  html += _kpiCardGuia('🗄️', 'BD actualizada',         bd + '%',                            100,                  '%',     true,  '100%');
+  html += _kpiCardGuia('❌', 'Cancelaciones mes',       tasaCancel + '%',                    META_CANCELACION_PCT, '%',     false, `<${META_CANCELACION_PCT}%`);
+  html += _kpiCardGuia('🔁', 'Retención 60 días',       tasaRet + '%',                       META_RETENCION_PCT,   '%',     true,  `>${META_RETENCION_PCT}%`);
+
+  html += `</div>
+    <div style="margin-top:12px;padding:10px 14px;background:rgba(27,191,176,.06);border:1px solid rgba(27,191,176,.15);border-radius:8px;font-size:.75rem;color:var(--muted)">
+      💡 <strong>NPS, Encuestas y BD actualizada</strong> se ingresan manualmente en el Tablero de KPIs dentro de Finanzas. Los demás se calculan solos.
+    </div>
+  </div>`;
 
   el.innerHTML = html;
 }
