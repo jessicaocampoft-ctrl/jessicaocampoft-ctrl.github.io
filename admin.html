@@ -2402,19 +2402,25 @@ Por día:      Nro. canceladas por día de la semana / período</div>
       <div class="gk-kpi-card" onclick="toggleKPICard(this)">
         <div class="gk-kpi-header">
           <div class="gk-kpi-left">
-            <div class="gk-kpi-name">KPI 5 — Ventas Brutas</div>
-            <div class="gk-kpi-summary">El dinero total que entra por servicios y contratos corporativos, <strong>antes de descontar gastos</strong>.</div>
+            <div class="gk-kpi-name">KPI 5 — Valor de Ventas Brutas (Semanal y Mensual)</div>
+            <div class="gk-kpi-summary">El dinero total recaudado por servicios y paquetes, <strong>antes de descontar gastos</strong>.</div>
           </div>
-          <div class="gk-kpi-meta">Meta: $10.265.000/mes</div>
+          <div class="gk-kpi-meta">Meta: <span class="kpi-ref" data-ref="meta_ventas_mes">$10.265.000</span>/mes</div>
           <div class="gk-kpi-toggle">▼</div>
         </div>
         <div class="gk-kpi-body">
+          <h5>Utilidad</h5>
+          <p>Mide el dinero total recaudado por la prestación de servicios y venta de paquetes.</p>
+          <h5>Importancia</h5>
+          <p>Es el indicador definitivo de <strong>supervivencia y crecimiento</strong>. Sin ventas suficientes no hay clínica, sin importar cuántos pacientes atendiste.</p>
           <h5>OJO con la palabra "brutas"</h5>
           <p>Ventas brutas NO es lo que te queda. Es lo que <strong>facturas</strong>. Lo que te queda después de pagar gastos es la <strong>utilidad</strong>.</p>
-          <h5>Metas</h5>
-          <div class="gk-formula">Semanal: $2.566.250  (meta mensual ÷ 4)
-Mensual: $10.265.000
-         = costos $8.622.600 + utilidad 20% $1.642.400</div>
+          <h5>Fórmula</h5>
+          <div class="gk-formula">Ventas Brutas = Ingresos por Servicios Fisioterapéuticos
+              + Ingresos por Contratos Corporativos</div>
+          <h5>Explicación — metas</h5>
+          <div class="gk-ejemplo">📅 <strong>Meta Semanal Obligatoria: <span class="kpi-ref" data-ref="meta_ventas_semana">$2.566.250</span></strong> — para mantener el ritmo.
+🗓️ <strong>Meta Mensual Total: <span class="kpi-ref" data-ref="meta_ventas_mes">$10.265.000</span></strong> — para cubrir costos, imprevistos y asegurar tu 20% de utilidad.</div>
           <h5>Cómo se lee</h5>
           <div class="gk-semaforo">
             <div class="gk-sem-item verde">🟢 ≥100% — Meta cumplida</div>
@@ -8025,6 +8031,7 @@ function applyKPIRefSpans() {
     meta_leads_max:    String(cfg.meta_leads_max),
     meta_conv_min:     String(cfg.meta_conv_min),
     meta_conv_max:     String(cfg.meta_conv_max),
+    meta_ventas_semana: '$' + Math.round(cfg.meta_ventas_mes / 4).toLocaleString('es-CO'),
   };
   document.querySelectorAll('.kpi-ref[data-ref]').forEach(el => {
     const v = map[el.dataset.ref];
