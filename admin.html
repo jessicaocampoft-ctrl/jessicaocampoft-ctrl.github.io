@@ -7940,7 +7940,7 @@ function renderKPIGuia() {
   const _ventasG   = citasSemana.reduce((s,c) => s + parsePrecio(c.precio), 0)
                    + eventosSemanaG.reduce((s,e) => s + parsePrecio(e.cobro), 0);
   const _revOkG    = _ventasG >= META_VENTAS_SEMANA * 0.84;
-  const _sessLabelG = _nEvG > 0 ? `${_nCitasG}c+${_nEvG}ev` : `${sessSemana}`;
+  const _sessLabelG = _nEvG > 0 ? `${_nCitasG} citas + ${_nEvG} evento${_nEvG>1?'s':''}` : `${sessSemana}`;
   const _sessEvalG  = (_nEvG > 0 && _revOkG) ? META_SESIONES_SEMANA : sessSemana;
 
   // KPI 2 — Mix Full este mes
