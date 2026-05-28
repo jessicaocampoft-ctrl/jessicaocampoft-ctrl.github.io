@@ -2934,6 +2934,37 @@ Mensual: $10.265.000
   </div>
 </div>
 
+<!-- ── MODAL MOTIVO CANCELACIÓN ── -->
+<div class="modal-bg" id="modalCancelar" onclick="if(event.target===this)closeModal('modalCancelar')" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1300;align-items:center;justify-content:center">
+  <div class="modal" style="max-width:420px;width:100%">
+    <div class="modal-title">🚫 Cancelar cita</div>
+    <p id="modalCancelarNombre" style="font-size:.88rem;color:var(--muted);margin-bottom:16px"></p>
+    <div style="font-size:.8rem;font-family:var(--font-m);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Motivo de cancelación</div>
+    <div style="display:flex;flex-direction:column;gap:8px" id="motivoOpciones">
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border-radius:10px;cursor:pointer;border:2px solid transparent" id="mOpt_prueba">
+        <input type="radio" name="motivoCancel" value="Prueba" style="accent-color:var(--primary)">
+        <span>🧪 <strong>Prueba / Test</strong> <span style="font-size:.75rem;color:var(--muted)">— no afecta los KPIs</span></span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border-radius:10px;cursor:pointer;border:2px solid transparent" id="mOpt_paciente">
+        <input type="radio" name="motivoCancel" value="Canceló el paciente" style="accent-color:var(--primary)">
+        <span>👤 <strong>Canceló el paciente</strong></span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border-radius:10px;cursor:pointer;border:2px solid transparent" id="mOpt_reagendo">
+        <input type="radio" name="motivoCancel" value="Reagendó" style="accent-color:var(--primary)">
+        <span>🔄 <strong>Reagendó</strong> <span style="font-size:.75rem;color:var(--muted)">— la clínica la movió de fecha</span></span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border-radius:10px;cursor:pointer;border:2px solid transparent" id="mOpt_nocontacto">
+        <input type="radio" name="motivoCancel" value="No contactó" style="accent-color:var(--primary)">
+        <span>❌ <strong>No contactó / No asistió</strong></span>
+      </label>
+    </div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn btn-ghost" onclick="closeModal('modalCancelar')">Volver</button>
+      <button class="btn btn-danger" id="btnConfirmarCancelar" onclick="confirmarCancelacion()">Confirmar cancelación</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL EDITAR EVENTO ── -->
 <div class="modal-bg" id="modalEditarEvento" onclick="if(event.target===this)cerrarModalEditarEvento()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;align-items:center;justify-content:center">
   <div class="modal" style="max-width:480px;width:100%">
@@ -4401,21 +4432,67 @@ function row(label, val, full=false) {
   return `<div style="${span}"><div style="font-size:.75rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">${label}</div><div style="font-size:.9rem">${val}</div></div>`;
 }
 
-// ── Cancelar cita (con confirmación) ──
-async function cancelarCita(id, nombre) {
-  if (!confirm(`¿Cancelar la cita de ${nombre}?\nEsto la marcará como Cancelada y eliminará el evento del calendario.`)) return;
+// ── Cancelar cita — muestra modal con motivo ──
+let _cancelPendingId = null;
+
+function cancelarCita(id, nombre) {
+  _cancelPendingId = id;
+  document.getElementById('modalCancelarNombre').textContent = `Cita de: ${nombre}`;
+  document.querySelectorAll('input[name="motivoCancel"]').forEach(r => r.checked = false);
+  // Resaltar opción seleccionada al hacer click
+  document.querySelectorAll('#motivoOpciones label').forEach(lbl => {
+    lbl.style.borderColor = 'transparent';
+    const inp = lbl.querySelector('input');
+    inp.onchange = () => {
+      document.querySelectorAll('#motivoOpciones label').forEach(l => l.style.borderColor = 'transparent');
+      lbl.style.borderColor = 'var(--primary)';
+    };
+  });
+  openModal('modalCancelar');
+}
+
+async function confirmarCancelacion() {
+  const id = _cancelPendingId;
+  if (!id) return;
+  const sel = document.querySelector('input[name="motivoCancel"]:checked');
+  if (!sel) { toast('Selecciona un motivo de cancelación', 'err'); return; }
+  const motivo = sel.value;
+
+  const btn = document.getElementById('btnConfirmarCancelar');
+  btn.disabled = true; btn.textContent = 'Cancelando...';
+
   try {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=cancelBooking&token=${encodeURIComponent(TOKEN)}&id=${id}`);
     const d = await r.json();
     if (d.ok) {
       const cita = allData.citas.find(c => c.id === id);
-      if (cita) cita.estado = 'Cancelada';
-      toast('Cita cancelada. El horario ya está disponible.', 'ok');
+      if (cita) { cita.estado = 'Cancelada'; cita.motivoCancelacion = motivo; }
+      saveCancelMotivo(id, motivo);
+      const esPrueba = motivo === 'Prueba';
+      toast(esPrueba ? '🧪 Cita cancelada (prueba — no afecta KPIs)' : `Cita cancelada: ${motivo}`, 'ok');
+      closeModal('modalCancelar');
       closeModal('modalDetalle');
       initDashboard();
       renderAgenda();
     } else toast('Error al cancelar: ' + (d.error||''), 'err');
   } catch(e) { toast('Error de conexión', 'err'); }
+
+  btn.disabled = false; btn.textContent = 'Confirmar cancelación';
+  _cancelPendingId = null;
+}
+
+function getCancelMotivos() {
+  try { return JSON.parse(kvGet('cancelMotivos') || '{}'); } catch { return {}; }
+}
+
+function saveCancelMotivo(id, motivo) {
+  const map = getCancelMotivos();
+  map[id] = motivo;
+  kvSet('cancelMotivos', JSON.stringify(map));
+}
+
+function getCancelMotivo(id) {
+  return getCancelMotivos()[id] || null;
 }
 
 // ── Abrir modal de edición con datos actuales ──
@@ -7561,11 +7638,15 @@ function renderKPITablero() {
 
   // ───── KPI: Tasa de cancelación (mes actual) ─────
   // IMPORTANTE: usa allData.citas (no citasReales) para contar canceladas reales
+  // Las marcadas como "Prueba" se excluyen de la tasa de cancelación
+  const _motivosMes = getCancelMotivos();
   const todasCitasMes = (allData.citas || []).filter(c => {
     const [cy,cm] = normDate(c.fecha).split('-');
     return +cm===m && +cy===y;
   });
-  const canceladasMes = todasCitasMes.filter(c => (c.estado||'').toLowerCase().includes('cancel')).length;
+  const canceladasMes = todasCitasMes.filter(c =>
+    (c.estado||'').toLowerCase().includes('cancel') && _motivosMes[c.id] !== 'Prueba'
+  ).length;
   const tasaCancel = todasCitasMes.length > 0 ? Math.round((canceladasMes / todasCitasMes.length) * 100) : 0;
 
   // ───── KPI: CAC (Costo de Adquisición de Cliente) ─────
@@ -7736,9 +7817,12 @@ function renderKPIGuia() {
   // KPI 8 — BD actualizada (manual)
   const bd = manual.bd || 0;
 
-  // Extra — Cancelaciones mes
+  // Extra — Cancelaciones mes (excluye pruebas)
+  const _motivosGuia     = getCancelMotivos();
   const todasCitasMes    = (allData.citas || []).filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
-  const canceladasMes    = todasCitasMes.filter(c => (c.estado||'').toLowerCase().includes('cancel')).length;
+  const canceladasMes    = todasCitasMes.filter(c =>
+    (c.estado||'').toLowerCase().includes('cancel') && _motivosGuia[c.id] !== 'Prueba'
+  ).length;
   const tasaCancel       = todasCitasMes.length > 0 ? Math.round((canceladasMes / todasCitasMes.length) * 100) : 0;
 
   // Extra — Retención 60 días
@@ -7845,47 +7929,64 @@ function _renderCancelBreakdown() {
   const domingoSem = new Date(lunesSem); domingoSem.setDate(lunesSem.getDate() + 6);
   const toStr = d => d.toISOString().split('T')[0];
 
-  const cancelMes = (allData.citas || []).filter(c => {
+  const motivos = getCancelMotivos();
+
+  // Excluir pruebas del análisis real
+  const cancelMesAll = (allData.citas || []).filter(c => {
     const [cy,cm] = normDate(c.fecha).split('-');
     return +cm===m && +cy===y && (c.estado||'').toLowerCase().includes('cancel');
   });
+  const cancelMesPruebas = cancelMesAll.filter(c => motivos[c.id] === 'Prueba');
+  const cancelMes        = cancelMesAll.filter(c => motivos[c.id] !== 'Prueba');
+
   const cancelSem = (allData.citas || []).filter(c => {
     const f = normDate(c.fecha);
-    return f >= toStr(lunesSem) && f <= toStr(domingoSem) && (c.estado||'').toLowerCase().includes('cancel');
+    return f >= toStr(lunesSem) && f <= toStr(domingoSem)
+      && (c.estado||'').toLowerCase().includes('cancel')
+      && motivos[c.id] !== 'Prueba';
   });
 
-  // Breakdown por servicio (mes)
-  const srvMap = {}, diaMap = {};
+  // Breakdown por servicio y día (solo cancelaciones reales)
+  const srvMap = {}, diaMap = {}, motivoMap = {};
   cancelMes.forEach(c => {
     const s = c.servicio || 'Sin tipo';
     srvMap[s] = (srvMap[s]||0) + 1;
     const d = new Date(normDate(c.fecha) + 'T12:00:00');
-    const dia = DIAS[d.getDay()];
-    diaMap[dia] = (diaMap[dia]||0) + 1;
+    diaMap[DIAS[d.getDay()]] = (diaMap[DIAS[d.getDay()]]||0) + 1;
+    const mot = motivos[c.id] || 'Sin registrar';
+    motivoMap[mot] = (motivoMap[mot]||0) + 1;
   });
 
-  const topServ = Object.entries(srvMap).sort((a,b)=>b[1]-a[1]);
-  const topDia  = Object.entries(diaMap).sort((a,b)=>b[1]-a[1]);
-  const total   = (allData.citas||[]).filter(c=>{ const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; }).length;
-  const pct     = total > 0 ? Math.round((cancelMes.length/total)*100) : 0;
-  const color   = pct < 10 ? 'var(--ok)' : pct <= 20 ? '#f59e0b' : '#ef4444';
+  const topServ  = Object.entries(srvMap).sort((a,b)=>b[1]-a[1]);
+  const topDia   = Object.entries(diaMap).sort((a,b)=>b[1]-a[1]);
+  const topMotiv = Object.entries(motivoMap).sort((a,b)=>b[1]-a[1]);
+  const total    = (allData.citas||[]).filter(c=>{ const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; }).length;
+  const pct      = total > 0 ? Math.round((cancelMes.length/total)*100) : 0;
+  const color    = pct < 10 ? 'var(--ok)' : pct <= 20 ? '#f59e0b' : '#ef4444';
 
-  if (!cancelMes.length) {
+  if (!cancelMesAll.length) {
     el.innerHTML = `<div style="font-size:.8rem;color:var(--ok)">🟢 Sin cancelaciones registradas este mes.</div>`;
     return;
   }
 
   let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
     <div style="background:var(--s2);border-radius:8px;padding:10px 12px">
-      <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;font-family:var(--font-m)">ESTA SEMANA</div>
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;font-family:var(--font-m)">ESTA SEMANA (reales)</div>
       <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:700;color:${cancelSem.length>0?'#f59e0b':'var(--ok)'}">${cancelSem.length}</div>
       <div style="font-size:.7rem;color:var(--muted)">cancelaciones</div>
     </div>
     <div style="background:var(--s2);border-radius:8px;padding:10px 12px">
-      <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;font-family:var(--font-m)">ESTE MES</div>
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;font-family:var(--font-m)">ESTE MES (reales)</div>
       <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:700;color:${color}">${cancelMes.length} <span style="font-size:.8rem;font-weight:400">(${pct}%)</span></div>
-      <div style="font-size:.7rem;color:var(--muted)">del total de citas</div>
+      <div style="font-size:.7rem;color:var(--muted)">del total${cancelMesPruebas.length ? ` · <span style="color:#6366f1">${cancelMesPruebas.length} de prueba excluidas</span>` : ''}</div>
     </div>`;
+
+  if (topMotiv.length) {
+    html += `<div style="background:var(--s2);border-radius:8px;padding:10px 12px">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:6px;font-family:var(--font-m)">POR MOTIVO</div>
+      ${topMotiv.map(([m,n])=>`<div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px"><span>${m}</span><strong>${n}</strong></div>`).join('')}
+    </div>`;
+  }
 
   if (topServ.length) {
     html += `<div style="background:var(--s2);border-radius:8px;padding:10px 12px">
@@ -7895,9 +7996,11 @@ function _renderCancelBreakdown() {
   }
 
   if (topDia.length) {
-    html += `<div style="background:var(--s2);border-radius:8px;padding:10px 12px">
+    html += `<div style="background:var(--s2);border-radius:8px;padding:10px 12px;grid-column:1/-1">
       <div style="font-size:.7rem;color:var(--muted);margin-bottom:6px;font-family:var(--font-m)">DÍA QUE MÁS CANCELA</div>
-      ${topDia.slice(0,3).map(([d,n])=>`<div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px"><span>${d}</span><strong>${n}</strong></div>`).join('')}
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${topDia.map(([d,n])=>`<div style="background:var(--s1);border-radius:6px;padding:5px 10px;font-size:.78rem"><span style="color:var(--muted)">${d}</span> <strong>${n}</strong></div>`).join('')}
+      </div>
     </div>`;
   }
 
