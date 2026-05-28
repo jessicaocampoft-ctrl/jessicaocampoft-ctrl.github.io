@@ -99,7 +99,8 @@ function doGet(e) {
   if (p.action === 'getCodigos')     return js(getCodigos());
   if (p.action === 'crearEvento')    return js(crearEvento(p));
   if (p.action === 'eliminarEvento') return js(eliminarEvento(p));
-  if (p.action === 'getEncuestaStats') return js(getEncuestaStats_());
+  if (p.action === 'getEncuestaStats')    return js(getEncuestaStats_());
+  if (p.action === 'autoMarcarAtendidas') return js(autoMarcarAtendidas());
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -846,7 +847,51 @@ function sendReminders() {
 function setupTriggers() {
   ScriptApp.getProjectTriggers().forEach(function(t) { ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('sendReminders').timeBased().everyDays(1).atHour(7).inTimezone('America/Bogota').create();
-  Logger.log('Trigger activado: sendReminders cada dia a las 7am hora Colombia.');
+  ScriptApp.newTrigger('autoMarcarAtendidas').timeBased().everyDays(1).atHour(22).inTimezone('America/Bogota').create();
+  Logger.log('Triggers activados: sendReminders 7am y autoMarcarAtendidas 10pm hora Colombia.');
+}
+
+// -------------------------------------------------------------
+//  AUTO MARCAR ATENDIDAS — trigger diario a las 10pm
+// -------------------------------------------------------------
+function autoMarcarAtendidas() {
+  var ss    = getOrCreateSheet();
+  var sheet = ss.getSheetByName('Citas');
+  var rows  = sheet.getDataRange().getValues();
+  var ahora = new Date();
+  var hoy   = fmtDate(ahora);
+  var count = 0;
+
+  for (var i = 1; i < rows.length; i++) {
+    var r      = rows[i];
+    var estado = ('' + (r[10] || '')).trim();
+    // Solo aplica a citas Confirmadas o Pendientes — no tocar Canceladas, Atendidas, No asistió
+    if (estado !== 'Confirmada' && estado !== 'Pendiente') continue;
+
+    var fecha = (r[7] instanceof Date) ? fmtDate(r[7]) : ('' + r[7]).split('T')[0];
+    var hora  = st(r[8]);
+
+    // Citas de días anteriores → marcar como Atendida directamente
+    if (fecha < hoy) {
+      sheet.getRange(i + 1, 11).setValue('Atendida');
+      count++;
+      continue;
+    }
+
+    // Citas de hoy → marcar solo si la hora ya pasó (+ 30 min de margen)
+    if (fecha === hoy) {
+      var parts    = hora.split(':');
+      var citaFin  = new Date();
+      citaFin.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10) + 30, 0, 0);
+      if (ahora > citaFin) {
+        sheet.getRange(i + 1, 11).setValue('Atendida');
+        count++;
+      }
+    }
+  }
+
+  Logger.log('autoMarcarAtendidas: ' + count + ' citas marcadas como Atendida.');
+  return { ok: true, count: count };
 }
 
 // -------------------------------------------------------------
