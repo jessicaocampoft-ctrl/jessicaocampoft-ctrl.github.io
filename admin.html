@@ -7941,7 +7941,10 @@ function renderKPIGuia() {
         <div style="font-family:var(--font-h);font-size:1.05rem;font-weight:700">📡 Estado actual de tus indicadores</div>
         <div style="font-size:.73rem;color:var(--muted);margin-top:3px">Conectado en vivo desde el módulo de Finanzas · ${hora}</div>
       </div>
-      <button onclick="showView('finanzas')" style="font-size:.73rem;padding:6px 14px;background:rgba(27,191,176,.1);border:1px solid rgba(27,191,176,.3);color:var(--primary);border-radius:8px;cursor:pointer;font-family:var(--font-b);white-space:nowrap">Ver finanzas →</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="loadEncuestaStats()" id="btnCargarEncuestaGuia" style="font-size:.73rem;padding:6px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);white-space:nowrap">🔄 Cargar encuestas</button>
+        <button onclick="showView('finanzas')" style="font-size:.73rem;padding:6px 14px;background:rgba(27,191,176,.1);border:1px solid rgba(27,191,176,.3);color:var(--primary);border-radius:8px;cursor:pointer;font-family:var(--font-b);white-space:nowrap">Ver finanzas →</button>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px">`;
 
@@ -8115,8 +8118,9 @@ function getEncuestaStats() {
 }
 
 async function loadEncuestaStats() {
-  const btn = document.getElementById('btnCargarEncuesta');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Cargando...'; }
+  const btn  = document.getElementById('btnCargarEncuesta');
+  const btn2 = document.getElementById('btnCargarEncuestaGuia');
+  [btn, btn2].forEach(b => { if (b) { b.disabled = true; b.textContent = '⏳ Cargando...'; } });
   try {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=getEncuestaStats&token=${encodeURIComponent(TOKEN)}`);
     const d = await r.json();
@@ -8148,7 +8152,7 @@ async function loadEncuestaStats() {
       toast('Error al leer el formulario: ' + (d.error || 'verifica el GAS'), 'err');
     }
   } catch(e) { toast('Error de conexión al cargar encuestas', 'err'); }
-  if (btn) { btn.disabled = false; btn.textContent = '🔄 Cargar desde formulario'; }
+  [btn, btn2].forEach(b => { if (b) { b.disabled = false; b.textContent = b.id === 'btnCargarEncuestaGuia' ? '🔄 Cargar encuestas' : '🔄 Cargar desde formulario'; } });
 }
 
 function _renderEncuestaStatsUI(stats) {
