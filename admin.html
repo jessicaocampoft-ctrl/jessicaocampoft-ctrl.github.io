@@ -2198,6 +2198,37 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
       <!-- Dashboard live conectado desde Finanzas -->
       <div id="kpiGuiaLiveData"></div>
 
+      <!-- Contador de Leads en Indicadores de Gestión -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title" style="margin-bottom:14px">📩 Contador de Leads</div>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px">Cada vez que llega un mensaje con <strong>intención real de compra</strong> → suma +1. Solo cuentan preguntas de precios, horarios o agendamiento.</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+          <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
+            <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700;color:var(--primary)" id="leadsHoyGuia">0</div>
+            <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Hoy</div>
+          </div>
+          <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
+            <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700" id="leadsSemGuia">0</div>
+            <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Esta semana</div>
+          </div>
+          <div style="padding:14px;background:var(--s2);border-radius:10px;text-align:center">
+            <div style="font-family:var(--font-h);font-size:1.8rem;font-weight:700" id="leadsMesGuia">0</div>
+            <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Este mes</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button onclick="registrarLead('WhatsApp');setTimeout(actualizarContadorLeads,300)" style="flex:1;min-width:140px;padding:12px;background:#25d366;color:white;border:none;border-radius:10px;font-family:var(--font-b);font-size:.88rem;font-weight:600;cursor:pointer">
+            ➕ Lead WhatsApp
+          </button>
+          <button onclick="registrarLead('Instagram');setTimeout(actualizarContadorLeads,300)" style="flex:1;min-width:140px;padding:12px;background:linear-gradient(45deg,#833ab4,#e1306c,#fd1d1d);color:white;border:none;border-radius:10px;font-family:var(--font-b);font-size:.88rem;font-weight:600;cursor:pointer">
+            ➕ Lead Instagram
+          </button>
+          <button onclick="deshacerUltimoLead();setTimeout(actualizarContadorLeads,300)" style="padding:12px 16px;background:var(--s2);color:var(--text);border:1px solid var(--border);border-radius:10px;font-family:var(--font-b);font-size:.85rem;cursor:pointer">
+            ↩️ Deshacer
+          </button>
+        </div>
+      </div>
+
       <!-- Las 4 dimensiones -->
       <div class="gk-section-title">🎯 Las 4 dimensiones del negocio</div>
       <p style="font-size:.9rem;color:var(--muted);margin-bottom:14px">Un buen tablero mide pocas cosas pero correctas. Estas son las 4 áreas que vigilamos al mismo tiempo:</p>
@@ -3513,7 +3544,7 @@ function showView(v) {
   if (v === 'paquetes')       renderPaquetes();
   if (v === 'empresas')       renderEmpresas();
   if (v === 'codigos')        renderCodigos();
-  if (v === 'guiakpis')       renderKPIGuia();
+  if (v === 'guiakpis')       { renderKPIGuia(); actualizarContadorLeads(); }
   if (v === 'dashboard')      actualizarContadorLeads();
 }
 
@@ -7599,6 +7630,13 @@ function actualizarContadorLeads() {
   if (elDashHoy) elDashHoy.textContent = hoy;
   if (elDashSem) elDashSem.textContent = sem;
   if (elDashMes) elDashMes.textContent = mes;
+  // Widget en Indicadores de Gestión
+  const elGHoy = document.getElementById('leadsHoyGuia');
+  const elGSem = document.getElementById('leadsSemGuia');
+  const elGMes = document.getElementById('leadsMesGuia');
+  if (elGHoy) elGHoy.textContent = hoy;
+  if (elGSem) elGSem.textContent = sem;
+  if (elGMes) elGMes.textContent = mes;
 }
 
 function guardarKPIManual() {
