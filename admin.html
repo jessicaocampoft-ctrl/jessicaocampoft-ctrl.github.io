@@ -2467,34 +2467,40 @@ Por día:      Nro. canceladas por día de la semana / período</div>
       <div class="gk-kpi-card" onclick="toggleKPICard(this)">
         <div class="gk-kpi-header">
           <div class="gk-kpi-left">
-            <div class="gk-kpi-name">KPI 7 — NPS (Net Promoter Score)</div>
-            <div class="gk-kpi-summary">Mide la <strong>lealtad</strong> de los pacientes: qué tan probable es que te recomienden con otros.</div>
+            <div class="gk-kpi-name">KPI 7 — Net Promoter Score (NPS)</div>
+            <div class="gk-kpi-summary">Mide la lealtad de tus pacientes y la probabilidad de que te recomienden con otros deportistas o médicos.</div>
           </div>
-          <div class="gk-kpi-meta">Meta: &gt;65</div>
+          <div class="gk-kpi-meta">Meta: &gt;<span class="kpi-ref" data-ref="meta_nps">90</span>%</div>
           <div class="gk-kpi-toggle">▼</div>
         </div>
         <div class="gk-kpi-body">
-          <h5>La única pregunta del NPS</h5>
-          <div class="gk-ejemplo"><strong>"En una escala de 0 a 10, ¿qué tan probable es que recomiendes a la Fisio Jessica Ocampo a un familiar o amigo?"</strong></div>
+          <h5>Utilidad</h5>
+          <p>Mide la lealtad de tus pacientes y la probabilidad de que te recomienden con otros deportistas o médicos cirujanos.</p>
+          <h5>Importancia</h5>
+          <p>Un NPS alto <strong>disminuye tu necesidad de gastar en pauta</strong>, porque el "boca a boca" llena la agenda. Es el indicador más rentable del negocio.</p>
+          <h5>Fórmula — la única pregunta</h5>
+          <div class="gk-ejemplo"><em>"En una escala de 0 a 10, ¿qué tan probable es que recomiendes a la clínica de la Fisio Jessica Ocampo?"</em></div>
           <h5>Cómo se clasifican las respuestas</h5>
-          <div class="gk-formula">9 o 10  →  PROMOTORES  (te aman, recomiendan)
-7 u 8   →  PASIVOS     (satisfechos, no entusiasmados)
-0 a 6   →  DETRACTORES (mala experiencia)</div>
-          <h5>Fórmula</h5>
-          <div class="gk-formula">NPS = % Promotores − % Detractores</div>
-          <h5>Ejemplo</h5>
-          <div class="gk-ejemplo">50 respuestas: 35 dieron 9-10, 10 dieron 7-8, 5 dieron 0-6.
-• Promotores:   70%
-• Pasivos:      20% (NO suman)
-• Detractores:  10%
-<strong>NPS = 70 − 10 = 60</strong> → 🟢 Excelente</div>
+          <div class="gk-formula">Notas 9 y 10  →  PROMOTORES   — Aman tu servicio
+Notas 7 y 8   →  PASIVOS      — Les da igual
+Notas 0 a 6   →  DETRACTORES  — Tuvieron una mala experiencia</div>
+          <h5>Fórmula de cálculo</h5>
+          <div class="gk-formula">NPS = % de Promotores − % de Detractores</div>
+          <h5>Explicación</h5>
+          <p>Al buscar un NPS mayor al <strong><span class="kpi-ref" data-ref="meta_nps">90</span>%</strong>, necesitas que casi la totalidad de tus pacientes califiquen con 9 o 10. Si un paciente te evalúa con 7, <strong>financieramente cuenta como cero</strong>, lo que te obliga a llamarlo para entender qué falló en su experiencia clínica.</p>
           <h5>Lo más importante de entender</h5>
-          <p>Los <strong>Pasivos (7-8) NO suman al NPS</strong>. Solo se restan detractores de promotores. Un 7 cuenta como cero — alguien que pone 7 está satisfecho pero no trae nuevos pacientes.</p>
+          <p>Los <strong>Pasivos (7-8) NO suman al NPS</strong>. Un 7 cuenta como cero — ese paciente está satisfecho pero no trae nuevos pacientes ni recomienda.</p>
+          <h5>Ejemplo</h5>
+          <div class="gk-ejemplo">50 respuestas: 45 dieron 9-10, 4 dieron 7-8, 1 dio 0-6.
+• Promotores:   90%
+• Pasivos:       8% (NO suman)
+• Detractores:   2%
+<strong>NPS = 90 − 2 = 88</strong> → 🟡 Muy cerca de la meta</div>
           <h5>Cómo se lee</h5>
           <div class="gk-semaforo">
-            <div class="gk-sem-item verde">🟢 &gt;65 — World-class</div>
-            <div class="gk-sem-item amarillo">🟡 30–64 — Bueno, hay espacio</div>
-            <div class="gk-sem-item rojo">🔴 &lt;30 — Crítico</div>
+            <div class="gk-sem-item verde">🟢 ≥<span class="kpi-ref" data-ref="meta_nps">90</span> — Excelente, el boca a boca trabaja por ti</div>
+            <div class="gk-sem-item amarillo">🟡 70–89 — Bueno, pero aún hay detractores o pasivos</div>
+            <div class="gk-sem-item rojo">🔴 &lt;70 — Crítico, revisar experiencia del paciente</div>
           </div>
           <h5>Acción inmediata con detractores</h5>
           <p>Si alguien califica 6 o menos: <strong>llamarlo en menos de 48 horas</strong>. No para discutir, para escuchar. Un detractor recuperado se vuelve promotor; uno ignorado habla mal con 10 personas más.</p>
@@ -7384,7 +7390,7 @@ const KPI_CONFIG_DEFAULTS = {
   meta_leads_max:       50,
   meta_conv_min:        25,
   meta_conv_max:        35,
-  meta_nps:             65,
+  meta_nps:             90,
   meta_encuestas:       70,
   meta_cancelacion:     10,
   meta_retencion:       60,
