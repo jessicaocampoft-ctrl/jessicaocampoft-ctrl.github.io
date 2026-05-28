@@ -11491,6 +11491,14 @@ function _comisVentasCruzadas(citas, year, month, descKw) {
   ).map(p => ({ nombre: p.nombre, servicio: p.servicios.find(s => s.toLowerCase().includes(descKw)) || p.servicios[0] }));
 }
 
+function _comisCruzadaAsign(mes, nombre) {
+  return kvGet('comis_cruzada_' + mes + '_' + nombre.toLowerCase().trim()) || 'fisio';
+}
+function setCruzadaAsign(mes, nombre, persona) {
+  kvSet('comis_cruzada_' + mes + '_' + nombre.toLowerCase().trim(), persona);
+  renderComisiones();
+}
+
 function _comisManualReact(year, month) {
   try { return JSON.parse(kvGet('comis_react_'+year+'-'+String(month).padStart(2,'0')) || '[]'); } catch(e) { return []; }
 }
@@ -11555,8 +11563,12 @@ function renderComisiones() {
   const bonoRev  = reventas.reduce((s,r) => s+r.comision, 0);
 
   // ── VENTA CRUZADA ──
-  const cruzadas = _comisVentasCruzadas(citas, year, month, cfg.serv_descarga);
-  const bonoCruz = cruzadas.length * cfg.bono_cruzada;
+  const cruzadas = _comisVentasCruzadas(citas, year, month, cfg.serv_descarga).map(c => ({
+    ...c, asign: _comisCruzadaAsign(mes, c.nombre)
+  }));
+  const bonoCruzFisio = cruzadas.filter(c => c.asign === 'fisio').length * cfg.bono_cruzada;
+  const bonoCruzAux   = cruzadas.filter(c => c.asign === 'auxiliar').length * cfg.bono_cruzada;
+  const bonoCruz = bonoCruzFisio; // compatibilidad (se suma a fisio)
 
   // ── CREADOR DE CONTENIDO ──
   const leadsActual = (() => { const lm=getLeadsMes(), km=getKPIManual(); return lm>0?lm:(km.leads||0); })();
@@ -11573,8 +11585,8 @@ function renderComisiones() {
   const equipoOk  = npsActual !== null && npsActual >= cfg.equipo_nps_meta;
 
   // ── TOTALES ──
-  const totalAux   = bonoAg + bonoReact + bonoContAux;
-  const totalFisio = bonoRev + bonoCruz;
+  const totalAux   = bonoAg + bonoReact + bonoContAux + bonoCruzAux;
+  const totalFisio = bonoRev + bonoCruzFisio;
   const totalVideo = bonoContVideo;
   const totalGen   = totalAux + totalFisio + totalVideo;
 
@@ -11617,6 +11629,8 @@ function renderComisiones() {
       <div class="co-bono-row"><span class="co-bono-label">${totalReact} reactivado${totalReact!==1?'s':''} × ${fmtPeso(cfg.bono_react)}</span><span class="co-bono-amount">${fmtPeso(bonoReact)}</span></div>
       <div class="co-breakdown">${reactH}</div>
       <div class="co-manual-row"><input class="co-manual-inp" id="coManualReactInp" type="text" placeholder="Agregar reactivación manual..." onkeydown="if(event.key==='Enter')addManualReactivacion()"><button onclick="addManualReactivacion()" style="padding:7px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.8rem;white-space:nowrap">+ Agregar</button></div></div>
+    ${bonoCruzAux > 0 ? `<div class="co-bono"><div class="co-bono-title">➕ Bono Venta Cruzada asignada</div>
+      <div class="co-bono-row"><span class="co-bono-label">${cruzadas.filter(c=>c.asign==='auxiliar').length} venta${cruzadas.filter(c=>c.asign==='auxiliar').length!==1?'s':''} asignada${cruzadas.filter(c=>c.asign==='auxiliar').length!==1?'s':''} a Auxiliar × ${fmtPeso(cfg.bono_cruzada)}</span><span class="co-bono-amount">${fmtPeso(bonoCruzAux)}</span></div></div>` : ''}
     ${bonoContAux > 0 ? `<div class="co-bono"><div class="co-bono-title">🎬 Parte del Bono Contenido (${cfg.contenido_split_aux}%)</div>
       <div class="co-bono-row"><span class="co-bono-label">${cfg.contenido_split_aux}% de ${fmtPeso(cfg.bono_contenido)} por meta de leads cumplida</span><span class="co-bono-amount">${fmtPeso(bonoContAux)}</span></div></div>` : ''}
     <div class="co-footer">${btnAux}<span style="font-size:.75rem;color:var(--muted)">Total: ${fmtPeso(totalAux)}</span></div>
@@ -11624,7 +11638,16 @@ function renderComisiones() {
 
   // ── HTML FISIO ──
   const revH  = reventas.map(r => `<div class="co-bd-item"><span>${r.nombre} — <em style="font-size:.78rem">${r.servicio}</em></span><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(r.comision)} <span style="color:var(--muted)">(${cfg.pct_reventa}% de ${fmtPeso(r.precio)})</span></span></div>`).join('') || '<div class="co-empty">No se detectaron reventas este mes</div>';
-  const cruzH = cruzadas.map(c => `<div class="co-bd-item"><span>${c.nombre} — <em style="font-size:.78rem">${c.servicio}</em></span><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(cfg.bono_cruzada)}</span></div>`).join('') || '<div class="co-empty">No se detectaron ventas cruzadas este mes</div>';
+  const selStyle = `background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.73rem;padding:3px 6px;outline:none;cursor:pointer`;
+  const cruzH = cruzadas.map(c => `
+    <div class="co-bd-item">
+      <span>${c.nombre} — <em style="font-size:.78rem">${c.servicio}</em></span>
+      <select style="${selStyle}" onchange="setCruzadaAsign('${mes}','${c.nombre.replace(/'/g,"\\'")}',this.value)">
+        <option value="fisio"    ${c.asign==='fisio'    ?'selected':''}>Fisio de Apoyo</option>
+        <option value="auxiliar" ${c.asign==='auxiliar' ?'selected':''}>Auxiliar</option>
+      </select>
+      <span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(cfg.bono_cruzada)}</span>
+    </div>`).join('') || '<div class="co-empty">No se detectaron ventas cruzadas este mes</div>';
 
   const btnFisio = pagoFisio
     ? `<button class="co-pay-btn pagado" onclick="desmarcarComisionPagada('fisio')">✓ Pagada el ${pagoFisio}</button>`
@@ -11639,8 +11662,8 @@ function renderComisiones() {
       <div class="co-bono-row"><span class="co-bono-label">${reventas.length} venta${reventas.length!==1?'s':''} · Total vendido: ${fmtPeso(reventas.reduce((s,r)=>s+r.precio,0))}</span><span class="co-bono-amount">${fmtPeso(bonoRev)}</span></div>
       <div class="co-breakdown">${revH}<div style="font-size:.7rem;color:var(--muted);margin-top:8px;border-top:1px solid var(--border);padding-top:6px">Servicios: ${cfg.serv_mant.map(s=>`<em>${s}</em>`).join(', ')}</div></div></div>
     <div class="co-bono"><div class="co-bono-title">➕ Bono Venta Cruzada</div>
-      <div class="co-bono-row"><span class="co-bono-label">${cruzadas.length} paciente${cruzadas.length!==1?'s':''} × ${fmtPeso(cfg.bono_cruzada)}</span><span class="co-bono-amount">${fmtPeso(bonoCruz)}</span></div>
-      <div class="co-breakdown">${cruzH}<div style="font-size:.7rem;color:var(--muted);margin-top:8px;border-top:1px solid var(--border);padding-top:6px">Paciente que compra <em>${cfg.serv_descarga}</em> + otro servicio clínico en el mismo mes.</div></div></div>
+      <div class="co-bono-row"><span class="co-bono-label">${cruzadas.filter(c=>c.asign==='fisio').length} asignada${cruzadas.filter(c=>c.asign==='fisio').length!==1?'s':''} a Fisio × ${fmtPeso(cfg.bono_cruzada)}</span><span class="co-bono-amount">${fmtPeso(bonoCruzFisio)}</span></div>
+      <div class="co-breakdown">${cruzH}<div style="font-size:.7rem;color:var(--muted);margin-top:8px;border-top:1px solid var(--border);padding-top:6px">Elige a quién se le acredita cada venta cruzada con el selector.</div></div></div>
     <div class="co-footer">${btnFisio}<span style="font-size:.75rem;color:var(--muted)">Total: ${fmtPeso(totalFisio)}</span></div>
   </div>`;
 
