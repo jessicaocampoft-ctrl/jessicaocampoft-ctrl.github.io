@@ -2093,7 +2093,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
               ↩️ Deshacer
             </button>
             <button onclick="resetLeadsHoy()" style="padding:14px 18px;background:rgba(239,68,68,.08);color:#ef4444;border:1px solid rgba(239,68,68,.25);border-radius:10px;font-family:var(--font-b);font-size:.85rem;cursor:pointer" title="Borrar todos los leads de hoy">
-              🗑️ Borrar hoy
+              🗑️ Borrar todo
             </button>
           </div>
           <div id="leadFeedback" style="margin-top:12px;font-size:.85rem;text-align:center;min-height:20px;color:var(--primary);font-weight:600"></div>
@@ -2235,7 +2235,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             ↩️ Deshacer
           </button>
           <button onclick="resetLeadsHoy()" style="padding:12px 16px;background:rgba(239,68,68,.08);color:#ef4444;border:1px solid rgba(239,68,68,.25);border-radius:10px;font-family:var(--font-b);font-size:.85rem;cursor:pointer" title="Borrar todos los leads de hoy">
-            🗑️ Borrar hoy
+            🗑️ Borrar todo
           </button>
         </div>
       </div>
@@ -7682,14 +7682,12 @@ function deshacerUltimoLead() {
 }
 
 function resetLeadsHoy() {
-  const hoy = new Date().toISOString().slice(0,10);
-  const n   = getLeadsHoy();
-  if (n === 0) { toast('No hay leads de hoy para borrar', 'err'); return; }
-  if (!confirm(`¿Borrar los ${n} leads registrados hoy? Esto no se puede deshacer.`)) return;
-  const leads = getLeads().filter(l => l.fecha !== hoy);
-  saveLeads(leads);
+  const total = getLeads().length;
+  if (total === 0) { toast('No hay leads registrados', 'err'); return; }
+  if (!confirm(`¿Borrar todos los ${total} leads registrados? Esto no se puede deshacer.`)) return;
+  saveLeads([]);
   actualizarContadorLeads();
-  toast('Leads de hoy borrados', 'ok');
+  toast('Todos los leads borrados', 'ok');
 }
 
 function actualizarContadorLeads() {
