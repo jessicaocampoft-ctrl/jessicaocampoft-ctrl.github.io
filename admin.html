@@ -2327,14 +2327,20 @@ Full:         $73.333/h  ⚠️ PEOR</div>
         <div class="gk-kpi-header">
           <div class="gk-kpi-left">
             <div class="gk-kpi-name">KPI 4 — Tasa de Conversión de Prospectos</div>
-            <div class="gk-kpi-summary">De los leads que entran, qué porcentaje termina agendando cita pagada. <strong>El indicador más revelador del embudo comercial.</strong></div>
+            <div class="gk-kpi-summary">Mide la efectividad para transformar mensajes en citas pagadas. <strong>El indicador más revelador del embudo comercial.</strong></div>
           </div>
-          <div class="gk-kpi-meta">Meta: 25–35%</div>
+          <div class="gk-kpi-meta">Meta: <span class="kpi-ref" data-ref="meta_conv_min">25</span>–<span class="kpi-ref" data-ref="meta_conv_max">35</span>%</div>
           <div class="gk-kpi-toggle">▼</div>
         </div>
         <div class="gk-kpi-body">
+          <h5>Utilidad</h5>
+          <p>Mide la efectividad de tu auxiliar administrativa o de ti misma para transformar esos mensajes en citas pagadas.</p>
+          <h5>Importancia</h5>
+          <p>Si generas 100 leads pero solo se agendan 2 personas, el problema <strong>no son las redes</strong>, sino el proceso de ventas por WhatsApp (demora en responder, falta de empatía o mala explicación del valor).</p>
           <h5>Fórmula</h5>
-          <div class="gk-formula">Tasa = (Citas agendadas ÷ Total leads) × 100</div>
+          <div class="gk-formula">Tasa de conversión = (Nro. Citas Agendadas y Pagadas ÷ Nro. Total Leads Recibidos) × 100</div>
+          <h5>Explicación</h5>
+          <p>En el sector salud, una tasa de conversión saludable vía WhatsApp es del <strong><span class="kpi-ref" data-ref="meta_conv_min">25</span>% al <span class="kpi-ref" data-ref="meta_conv_max">35</span>%</strong>. Si entran 40 mensajes por pauta a la semana, al menos 10 deben terminar agendados.</p>
           <h5>Ejemplo</h5>
           <div class="gk-ejemplo">Esta semana entraron <strong>40 leads</strong>. De esos, <strong>12 agendaron cita</strong>.
 Tasa = 12 ÷ 40 × 100 = <strong>30%</strong> → 🟢 Sano</div>
@@ -2351,7 +2357,8 @@ Tasa = 12 ÷ 40 × 100 = <strong>30%</strong> → 🟢 Sano</div>
       </div>
 
       <!-- DIMENSIÓN 3 -->
-      <div class="gk-section-title">🟥 Dimensión 3: Financiera</div>
+      <div class="gk-section-title">🟥 Dimensión 3: Resultados Financieros (Sostenibilidad)</div>
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:14px">El dinero manda. Esta dimensión asegura que los esfuerzos físicos se traduzcan en el cumplimiento de tus metas financieras.</p>
 
       <div class="gk-kpi-card" onclick="toggleKPICard(this)">
         <div class="gk-kpi-header">
@@ -7754,6 +7761,8 @@ function renderKPIGuia() {
           ${inp('meta_ventas_mes', 'Ventas brutas/mes ($)', cfg.meta_ventas_mes)}
           ${inp('meta_leads_min', 'Leads/mes mínimo', cfg.meta_leads_min)}
           ${inp('meta_leads_max', 'Leads/mes máximo', cfg.meta_leads_max)}
+          ${inp('meta_conv_min', 'Conversión mínima (%)', cfg.meta_conv_min)}
+          ${inp('meta_conv_max', 'Conversión máxima (%)', cfg.meta_conv_max)}
           ${inp('meta_nps', 'Meta NPS', cfg.meta_nps)}
           ${inp('meta_encuestas', 'Meta encuestas (%)', cfg.meta_encuestas)}
         </div>
@@ -7798,6 +7807,8 @@ function applyKPIRefSpans() {
     meta_ventas_mes:   fmt(cfg.meta_ventas_mes),
     meta_leads_min:    String(cfg.meta_leads_min),
     meta_leads_max:    String(cfg.meta_leads_max),
+    meta_conv_min:     String(cfg.meta_conv_min),
+    meta_conv_max:     String(cfg.meta_conv_max),
   };
   document.querySelectorAll('.kpi-ref[data-ref]').forEach(el => {
     const v = map[el.dataset.ref];
@@ -7818,8 +7829,8 @@ function guardarKPIConfig() {
     meta_leads_max:       get('meta_leads_max')       ?? prev.meta_leads_max,
     meta_nps:             get('meta_nps')             ?? prev.meta_nps,
     meta_encuestas:       get('meta_encuestas')       ?? prev.meta_encuestas,
-    meta_conv_min:        prev.meta_conv_min,
-    meta_conv_max:        prev.meta_conv_max,
+    meta_conv_min:        get('meta_conv_min')       ?? prev.meta_conv_min,
+    meta_conv_max:        get('meta_conv_max')       ?? prev.meta_conv_max,
     meta_cancelacion:     prev.meta_cancelacion,
     meta_retencion:       prev.meta_retencion,
     inv_mkt_total:        get('inv_mkt_total')        ?? prev.inv_mkt_total,
