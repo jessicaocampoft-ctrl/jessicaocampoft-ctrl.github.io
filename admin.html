@@ -7643,7 +7643,7 @@ function renderKPITablero() {
     const f = normDate(c.fecha);
     return c.estado !== 'No asistió' && f >= toStr(lunesSem) && f <= toStr(domingoSem);
   });
-  const sessSemana = citasSemana.length;
+  const sessSemana = citasSemana.length + eventosSemana.length;
 
   // Ventas semana (citas + eventos — citasReales no incluye eventos)
   const eventosSemana = (allData.eventos || []).filter(e => {
@@ -7881,7 +7881,11 @@ function renderKPIGuia() {
     const f = normDate(c.fecha);
     return c.estado !== 'No asistió' && f >= toStr(lunesSem) && f <= toStr(domingoSem);
   });
-  const sessSemana = citasSemana.length;
+  const eventosSemanaG = (allData.eventos || []).filter(e => {
+    const f = normDate(e.fecha);
+    return f >= toStr(lunesSem) && f <= toStr(domingoSem);
+  });
+  const sessSemana = citasSemana.length + eventosSemanaG.length;
 
   // KPI 2 — Mix Full este mes
   const mixMap = {};
