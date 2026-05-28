@@ -7643,13 +7643,15 @@ function renderKPITablero() {
     const f = normDate(c.fecha);
     return c.estado !== 'No asistió' && f >= toStr(lunesSem) && f <= toStr(domingoSem);
   });
-  const sessSemana = citasSemana.length + eventosSemana.length;
-
-  // Ventas semana (citas + eventos — citasReales no incluye eventos)
   const eventosSemana = (allData.eventos || []).filter(e => {
     const f = normDate(e.fecha);
     return f >= toStr(lunesSem) && f <= toStr(domingoSem);
   });
+  const nCitasSem   = citasSemana.length;
+  const nEventosSem = eventosSemana.length;
+  const sessSemana  = nCitasSem + nEventosSem;
+
+  // Ventas semana (citas + eventos)
   const ventasSemana = citasSemana.reduce((s,c) => s + parsePrecio(c.precio), 0)
                      + eventosSemana.reduce((s,e) => s + parsePrecio(e.cobro), 0);
 
@@ -7672,8 +7674,8 @@ function renderKPITablero() {
   // Respaldo: si no hay leads en el contador automático, usa el campo manual
   const tasa = leadsMes > 0 ? tasaConv : (manual.leads > 0 ? Math.round((manual.convertidos / manual.leads) * 100) : null);
 
-  function kpiCard(icon, label, valor, meta, unidad='', altoEsMejor=true, meta2txt='') {
-    const numVal = parseFloat(String(valor).replace(/[^0-9.]/g,''));
+  function kpiCard(icon, label, valor, meta, unidad='', altoEsMejor=true, meta2txt='', evalVal=undefined) {
+    const numVal  = parseFloat(String(evalVal !== undefined ? evalVal : valor).replace(/[^0-9.]/g,''));
     const numMeta = parseFloat(String(meta));
     let color = 'var(--muted)', estado = '';
     if (!isNaN(numVal) && !isNaN(numMeta) && numMeta > 0) {
@@ -7691,8 +7693,17 @@ function renderKPITablero() {
     </div>`;
   }
 
+  // Tarjeta sesiones con lógica de compensación por eventos
+  const _revenueOk    = ventasSemana >= META_VENTAS_SEMANA * 0.84;
+  const _sessLabel    = nEventosSem > 0 ? `${nCitasSem} citas + ${nEventosSem} evento${nEventosSem>1?'s':''}` : `${sessSemana}`;
+  const _sessMetaTxt  = nEventosSem > 0 && _revenueOk
+    ? `≥${META_SESIONES_SEMANA} ses. · ✓ ingresos compensan`
+    : `${META_SESIONES_SEMANA} sesiones`;
+  // Si hay eventos y los ingresos están bien, no mostrar rojo
+  const _sessEvalVal  = (nEventosSem > 0 && _revenueOk) ? META_SESIONES_SEMANA : sessSemana;
+
   let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px">`;
-  html += kpiCard('📅','Sesiones esta semana', sessSemana, META_SESIONES_SEMANA, ' sesiones', true, `${META_SESIONES_SEMANA} sesiones`);
+  html += kpiCard('📅','Sesiones esta semana', _sessLabel, META_SESIONES_SEMANA, '', true, _sessMetaTxt, _sessEvalVal);
   html += kpiCard('💰','Ventas esta semana', fmtPeso(ventasSemana), META_VENTAS_SEMANA, '', true, fmtPeso(META_VENTAS_SEMANA));
   html += kpiCard('💰','Ventas mes actual', fmtPeso(ventasMes), META_VENTAS_MES, '', true, fmtPeso(META_VENTAS_MES));
   html += kpiCard('📣','Leads recibidos (mes)', leadsMes > 0 ? leadsMes : (manual.leads||'—'), 0, '', true, 'Contador del dashboard');
@@ -7842,8 +7853,8 @@ function renderKPITablero() {
 // ══════════════════════════════════════════════════════════════
 // ── KPI GUIA — LIVE DASHBOARD ──
 // ══════════════════════════════════════════════════════════════
-function _kpiCardGuia(icon, label, valor, meta, unidad, altoEsMejor, metaTxt) {
-  const numVal  = parseFloat(String(valor).replace(/[^0-9.]/g, ''));
+function _kpiCardGuia(icon, label, valor, meta, unidad, altoEsMejor, metaTxt, evalVal) {
+  const numVal  = parseFloat(String(evalVal !== undefined ? evalVal : valor).replace(/[^0-9.]/g, ''));
   const numMeta = parseFloat(String(meta));
   let color = 'var(--muted)', semaforo = '', bg = 'var(--s2)';
   if (!isNaN(numVal) && !isNaN(numMeta) && numMeta > 0) {
@@ -7881,11 +7892,18 @@ function renderKPIGuia() {
     const f = normDate(c.fecha);
     return c.estado !== 'No asistió' && f >= toStr(lunesSem) && f <= toStr(domingoSem);
   });
-  const eventosSemanaG = (allData.eventos || []).filter(e => {
+  const eventosSemanaG  = (allData.eventos || []).filter(e => {
     const f = normDate(e.fecha);
     return f >= toStr(lunesSem) && f <= toStr(domingoSem);
   });
-  const sessSemana = citasSemana.length + eventosSemanaG.length;
+  const _nCitasG   = citasSemana.length;
+  const _nEvG      = eventosSemanaG.length;
+  const sessSemana = _nCitasG + _nEvG;
+  const _ventasG   = citasSemana.reduce((s,c) => s + parsePrecio(c.precio), 0)
+                   + eventosSemanaG.reduce((s,e) => s + parsePrecio(e.cobro), 0);
+  const _revOkG    = _ventasG >= META_VENTAS_SEMANA * 0.84;
+  const _sessLabelG = _nEvG > 0 ? `${_nCitasG}c+${_nEvG}ev` : `${sessSemana}`;
+  const _sessEvalG  = (_nEvG > 0 && _revOkG) ? META_SESIONES_SEMANA : sessSemana;
 
   // KPI 2 — Mix Full este mes
   const mixMap = {};
@@ -7952,7 +7970,9 @@ function renderKPIGuia() {
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px">`;
 
-  html += _kpiCardGuia('📅', 'Sesiones esta semana',    sessSemana,                          META_SESIONES_SEMANA, ' ses.',  true,  `≥${META_SESIONES_SEMANA} sesiones`);
+  html += _kpiCardGuia('📅', 'Sesiones esta semana', _sessLabelG, META_SESIONES_SEMANA, '', true,
+    _nEvG > 0 && _revOkG ? `≥${META_SESIONES_SEMANA} ses. · ✓ ingresos compensan` : `≥${META_SESIONES_SEMANA} sesiones`,
+    _sessEvalG);
   html += _kpiCardGuia('🔄', 'Mix Full este mes',       fullPct + '%',                       30,                   '%',     false, '≤30% Full');
   html += _kpiCardGuia('📣', 'Leads este mes',          leadsShow || '—',                    40,                   '',      true,  '40–50 leads');
   html += _kpiCardGuia('🎯', 'Tasa de conversión',      tasaConv !== null ? tasaConv+'%':'—', 25,                   '%',     true,  '25–35%');
