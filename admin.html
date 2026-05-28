@@ -2438,17 +2438,29 @@ Por día:      Nro. canceladas por día de la semana / período</div>
       <div class="gk-kpi-card" onclick="toggleKPICard(this)">
         <div class="gk-kpi-header">
           <div class="gk-kpi-left">
-            <div class="gk-kpi-name">KPI 6 — Tasa de Encuestas Realizadas</div>
-            <div class="gk-kpi-summary">De los pacientes atendidos, qué porcentaje contestó la encuesta de satisfacción.</div>
+            <div class="gk-kpi-name">KPI 6 — Tasa de Encuestas de Satisfacción Realizadas</div>
+            <div class="gk-kpi-summary">De los pacientes atendidos, qué porcentaje recibió y contestó la encuesta. <strong>Sin esto el NPS no vale nada.</strong></div>
           </div>
-          <div class="gk-kpi-meta">Meta: &gt;70%</div>
+          <div class="gk-kpi-meta">Meta: &gt;<span class="kpi-ref" data-ref="meta_encuestas">70</span>%</div>
           <div class="gk-kpi-toggle">▼</div>
         </div>
         <div class="gk-kpi-body">
+          <h5>Utilidad</h5>
+          <p>Mide el control administrativo sobre la voz del paciente. No puedes evaluar la calidad si solo encuestas al 5% de las personas.</p>
+          <h5>Importancia</h5>
+          <p>Garantiza que la auxiliar administrativa esté haciendo el <strong>seguimiento post-servicio</strong>. Si la tasa es baja, no es que los pacientes estén satisfechos — es que nadie les está preguntando.</p>
+          <h5>Fórmula</h5>
+          <div class="gk-formula">Encuestas realizadas = (Nro. Encuestas Contestadas ÷ Nro. Pacientes Dados de Alta o Atendidos) × 100</div>
+          <h5>Explicación</h5>
+          <p>Tu meta de control debe ser mayor al <strong><span class="kpi-ref" data-ref="meta_encuestas">70</span>%</strong>. Al final de la semana, si atendieron 20 personas, al menos <strong>14 deben haber recibido y contestado</strong> el link de evaluación.</p>
           <h5>Por qué es un KPI "previo" al NPS</h5>
           <p>El NPS te dice qué tan satisfechos están. Pero si solo el 10% contesta, ese NPS <strong>está sesgado</strong>. Para que el NPS sea confiable, al menos <strong>7 de cada 10 pacientes</strong> deben responder.</p>
           <h5>Cuándo enviarla</h5>
-          <p>El mismo día de la consulta o al día siguiente. Si no responden, recordar al tercer día.</p>
+          <div class="gk-semaforo">
+            <div class="gk-sem-item verde">🟢 El mismo día de la consulta o al día siguiente</div>
+            <div class="gk-sem-item amarillo">🟡 Si no responden: recordar al tercer día</div>
+            <div class="gk-sem-item rojo">🔴 Después del quinto día: el paciente ya olvidó la experiencia</div>
+          </div>
         </div>
       </div>
 
