@@ -654,6 +654,46 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 .em-done-btn.done-ok{background:rgba(16,185,129,.1);border-color:#22c55e;color:#16a34a}
 .em-reset-btn{font-size:.69rem;padding:5px 10px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-family:var(--font-b);transition:all .15s}
 .em-reset-btn:hover{border-color:#ef4444;color:#ef4444}
+/* ── COMISIONES ── */
+.co-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;margin-top:4px}
+.co-card{background:var(--s1);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.co-card-hdr{padding:20px 24px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.co-card-title{font-family:var(--font-h);font-size:1.2rem;font-weight:600}
+.co-card-role{font-size:.75rem;color:var(--muted);margin-top:2px}
+.co-total{font-family:var(--font-h);font-size:1.55rem;font-weight:700;color:var(--primary)}
+.co-bono{padding:16px 24px 0}
+.co-bono-title{font-family:var(--font-m);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px}
+.co-bono-row{display:flex;justify-content:space-between;align-items:center;padding:9px 13px;background:var(--s2);border-radius:8px;font-size:.84rem;margin-bottom:6px;gap:10px}
+.co-bono-label{color:var(--text);flex:1}
+.co-bono-amount{font-family:var(--font-m);font-weight:700;color:var(--primary);white-space:nowrap}
+.co-breakdown{margin:0 0 14px;padding:10px 13px;background:var(--s2);border-radius:8px;font-size:.8rem;line-height:1.7}
+.co-bd-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);gap:8px}
+.co-bd-item:last-child{border-bottom:none}
+.co-week{display:grid;grid-template-columns:10px 1fr auto auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:.79rem}
+.co-week:last-child{border-bottom:none}
+.co-wdot{width:8px;height:8px;border-radius:50%}
+.co-wdot.ok{background:#22c55e}
+.co-wdot.no{background:#ef4444}
+.co-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.co-pay-btn{padding:8px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.83rem;font-weight:600;transition:all .15s}
+.co-pay-btn:hover{background:var(--primary-h)}
+.co-pay-btn.pagado{background:rgba(16,185,129,.1);color:#16a34a;border:1px solid #22c55e;cursor:default;font-weight:600}
+.co-cfg-btn{font-size:.73rem;padding:5px 12px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-family:var(--font-b);transition:all .15s}
+.co-cfg-btn:hover{border-color:var(--primary);color:var(--primary)}
+.co-cfg-panel{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
+.co-cfg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:10px 0 16px}
+.co-inp-label{font-size:.7rem;color:var(--muted);display:block;margin-bottom:3px;font-family:var(--font-m)}
+.co-inp{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.82rem;padding:7px 9px;outline:none;box-sizing:border-box;transition:border-color .15s}
+.co-inp:focus{border-color:var(--primary)}
+.co-sep{height:1px;background:var(--border);margin:14px 0}
+.co-manual-row{display:flex;gap:8px;margin-top:10px}
+.co-manual-inp{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.84rem;padding:8px 12px;outline:none;transition:border-color .15s}
+.co-manual-inp:focus{border-color:var(--primary)}
+.co-empty{font-size:.81rem;color:var(--muted);font-style:italic;padding:6px 2px}
+.co-resumen{background:linear-gradient(135deg,rgba(27,191,176,.07),rgba(99,102,241,.04));border:1px solid var(--border);border-radius:14px;padding:18px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.co-res-item{text-align:center}
+.co-res-label{font-size:.7rem;color:var(--muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.04em}
+.co-res-val{font-family:var(--font-h);font-size:1.35rem;font-weight:700;color:var(--primary);margin-top:2px}
 .gk-rutina{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:16px}
 .gk-rutina-grupo{margin-bottom:18px}
 .gk-rutina-grupo:last-child{margin-bottom:0}
@@ -828,6 +868,11 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
     <button class="sb-link" id="sb-guiakpis" onclick="showView('guiakpis')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       Indicadores de Gestión
+    </button>
+
+    <button class="sb-link" id="sb-comisiones" onclick="showView('comisiones')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Comisiones
     </button>
 
     <button class="sb-link" id="sb-recordatorios" onclick="showView('recordatorios')" style="justify-content:space-between">
@@ -3405,6 +3450,62 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
       </div>
     </section>
 
+    <!-- ══ COMISIONES ══ -->
+    <section id="vComisiones" style="display:none">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Plan de <em>Comisiones</em></h1>
+          <p class="page-sub">Bonos calculados automáticamente desde citas y eventos del mes</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <select id="comisMes" onchange="renderComisiones()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:8px 12px;outline:none;cursor:pointer"></select>
+          <button onclick="renderComisiones()" style="padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.84rem">↺ Recalcular</button>
+        </div>
+      </div>
+
+      <!-- Resumen -->
+      <div class="co-resumen">
+        <div class="co-res-item"><div class="co-res-label">Total a pagar</div><div class="co-res-val" id="coTotalGeneral">—</div></div>
+        <div class="co-res-item"><div class="co-res-label">Auxiliar administrativa</div><div class="co-res-val" id="coTotalAux">—</div></div>
+        <div class="co-res-item"><div class="co-res-label">Fisio de apoyo</div><div class="co-res-val" id="coTotalFisio">—</div></div>
+        <div class="co-res-item"><div class="co-res-label">Semanas llenas</div><div class="co-res-val" id="coSemanasRes">—</div></div>
+      </div>
+
+      <!-- Configuración -->
+      <div style="margin-bottom:16px">
+        <button class="co-cfg-btn" onclick="toggleComisConfig()">⚙️ Configurar montos y servicios</button>
+      </div>
+      <div class="co-cfg-panel" id="coConfigPanel" style="display:none">
+        <div style="font-family:var(--font-h);font-size:1.05rem;font-weight:600;margin-bottom:4px">Configuración de bonos</div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">Se guarda en todos los dispositivos automáticamente.</p>
+
+        <div style="font-size:.72rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Auxiliar Administrativa</div>
+        <div class="co-cfg-grid">
+          <div><label class="co-inp-label">Bono agenda llena (mes completo)</label><input class="co-inp" id="cfg_bono_agenda" type="number" placeholder="80000"></div>
+          <div><label class="co-inp-label">Semanas meta (de 4 o 5)</label><input class="co-inp" id="cfg_semanas_meta" type="number" placeholder="4"></div>
+          <div><label class="co-inp-label">Sesiones/semana = "llena"</label><input class="co-inp" id="cfg_ses_llena" type="number" placeholder="23"></div>
+          <div><label class="co-inp-label">Bono por reactivación (por paciente)</label><input class="co-inp" id="cfg_bono_react" type="number" placeholder="15000"></div>
+        </div>
+
+        <div class="co-sep"></div>
+        <div style="font-size:.72rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Fisioterapeuta de Apoyo</div>
+        <div class="co-cfg-grid">
+          <div><label class="co-inp-label">Comisión reventa (%)</label><input class="co-inp" id="cfg_pct_reventa" type="number" placeholder="5"></div>
+          <div><label class="co-inp-label">Bono venta cruzada (por paciente)</label><input class="co-inp" id="cfg_bono_cruzada" type="number" placeholder="20000"></div>
+          <div><label class="co-inp-label">Servicios de mantenimiento (separados por coma)</label><input class="co-inp" id="cfg_serv_mant" type="text" placeholder="Plan Activo,Plan Pro,Longevidad,Combo"></div>
+          <div><label class="co-inp-label">Palabra clave descarga muscular</label><input class="co-inp" id="cfg_serv_descarga" type="text" placeholder="Descarga"></div>
+        </div>
+
+        <button onclick="saveComisConfig()" style="padding:8px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.83rem">Guardar configuración</button>
+        <span id="coConfigMsg" style="font-size:.75rem;color:var(--ok);margin-left:10px;display:none">✓ Guardado</span>
+      </div>
+
+      <!-- Tarjetas -->
+      <div class="co-grid" id="coCards">
+        <div style="color:var(--muted);font-size:.9rem;padding:40px 0;text-align:center;grid-column:1/-1">Cargando comisiones...</div>
+      </div>
+    </section>
+
   </main>
 </div>
 
@@ -3941,7 +4042,7 @@ function openEvalExpress() {
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
-  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','seguimiento','empresas','pasaporte'].forEach(id => {
+  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','seguimiento','empresas','pasaporte','comisiones'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -3980,6 +4081,7 @@ function showView(v) {
   if (v === 'empresas')       renderEmpresas();
   if (v === 'codigos')        renderCodigos();
   if (v === 'guiakpis')       { renderKPIGuia(); actualizarContadorLeads(); loadRutinaChecks(); }
+  if (v === 'comisiones')     renderComisiones();
   if (v === 'dashboard')      actualizarContadorLeads();
 }
 
@@ -11205,6 +11307,258 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(actualizarContadorLeads, 500);
   setTimeout(restoreHelpBanners, 300);
 });
+
+// ══════════════════════════════════════════
+//  MÓDULO DE COMISIONES
+// ══════════════════════════════════════════
+
+function _comisGetConfig() {
+  let cfg = {};
+  try { cfg = JSON.parse(kvGet('comisiones_config') || '{}'); } catch(e) {}
+  return {
+    bono_agenda:  parseInt(cfg.bono_agenda  || '80000', 10),
+    semanas_meta: parseInt(cfg.semanas_meta || '4',     10),
+    ses_llena:    parseInt(cfg.ses_llena    || '23',    10),
+    bono_react:   parseInt(cfg.bono_react   || '15000', 10),
+    pct_reventa:  parseInt(cfg.pct_reventa  || '5',     10),
+    bono_cruzada: parseInt(cfg.bono_cruzada || '20000', 10),
+    serv_mant:    (cfg.serv_mant     || 'plan activo,plan pro,longevidad,combo bienvenida,combo').split(',').map(s => s.trim().toLowerCase()).filter(Boolean),
+    serv_descarga:(cfg.serv_descarga || 'descarga').toLowerCase().trim(),
+  };
+}
+
+function saveComisConfig() {
+  const g = id => (document.getElementById(id)||{}).value || '';
+  kvSet('comisiones_config', JSON.stringify({
+    bono_agenda: g('cfg_bono_agenda'), semanas_meta: g('cfg_semanas_meta'),
+    ses_llena: g('cfg_ses_llena'),     bono_react: g('cfg_bono_react'),
+    pct_reventa: g('cfg_pct_reventa'), bono_cruzada: g('cfg_bono_cruzada'),
+    serv_mant: g('cfg_serv_mant'),     serv_descarga: g('cfg_serv_descarga'),
+  }));
+  const msg = document.getElementById('coConfigMsg');
+  if (msg) { msg.style.display='inline'; setTimeout(()=>msg.style.display='none',2000); }
+  renderComisiones();
+}
+
+function toggleComisConfig() {
+  const p = document.getElementById('coConfigPanel');
+  if (!p) return;
+  const open = p.style.display === 'none';
+  p.style.display = open ? 'block' : 'none';
+  if (!open) return;
+  const cfg = _comisGetConfig();
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  set('cfg_bono_agenda', cfg.bono_agenda);   set('cfg_semanas_meta', cfg.semanas_meta);
+  set('cfg_ses_llena', cfg.ses_llena);       set('cfg_bono_react', cfg.bono_react);
+  set('cfg_pct_reventa', cfg.pct_reventa);   set('cfg_bono_cruzada', cfg.bono_cruzada);
+  set('cfg_serv_mant', cfg.serv_mant.join(', ')); set('cfg_serv_descarga', cfg.serv_descarga);
+}
+
+function _initComisMesSel() {
+  const sel = document.getElementById('comisMes');
+  if (!sel || sel.options.length > 0) return;
+  const now = new Date();
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const opt = document.createElement('option');
+    opt.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    opt.textContent = meses[d.getMonth()] + ' ' + d.getFullYear();
+    sel.appendChild(opt);
+  }
+}
+
+function _comisMesVal() {
+  const sel = document.getElementById('comisMes');
+  return sel ? sel.value : '';
+}
+
+function _comisSemanasLlenas(citas, eventos, year, month, metaSes) {
+  const toS = d => d.toISOString().split('T')[0];
+  const mS = new Date(year, month-1, 1), mE = new Date(year, month, 0);
+  let cur = new Date(mS);
+  const dow = cur.getDay();
+  cur.setDate(cur.getDate() - (dow === 0 ? 6 : dow - 1));
+  const weeks = [];
+  while (cur <= mE) {
+    const ws = new Date(cur), we = new Date(cur);
+    we.setDate(cur.getDate() + 6);
+    const sesC = citas.filter(c => { if ((c.estado||'').includes('Cancel') || c.estado==='No asistió') return false; const f=normDate(c.fecha); return f>=toS(ws)&&f<=toS(we); }).length;
+    const sesE = (eventos||[]).filter(e => { const f=normDate(e.fecha); return f>=toS(ws)&&f<=toS(we); }).length;
+    weeks.push({ start: toS(ws), end: toS(we), sesiones: sesC+sesE, llena: (sesC+sesE) >= metaSes });
+    cur.setDate(cur.getDate() + 7);
+  }
+  return weeks;
+}
+
+function _comisReactivaciones(citas, year, month) {
+  const toS = d => d.toISOString().split('T')[0];
+  const mS = new Date(year, month-1, 1);
+  const msStr = toS(mS), meStr = toS(new Date(year, month, 0));
+  const byP = {};
+  citas.forEach(c => {
+    if ((c.estado||'').includes('Cancel') || c.estado==='No asistió') return;
+    const key = (c.nombre||'').toLowerCase().trim();
+    if (!key) return;
+    if (!byP[key]) byP[key] = { nombre: c.nombre, citas: [] };
+    byP[key].citas.push(c);
+  });
+  const result = [];
+  for (const p of Object.values(byP)) {
+    const thisMon = p.citas.filter(c => { const f=normDate(c.fecha); return f>=msStr&&f<=meStr; });
+    if (!thisMon.length) continue;
+    const before = p.citas.filter(c => normDate(c.fecha) < msStr);
+    if (!before.length) continue;
+    const lastB = before.reduce((a,b) => normDate(a.fecha)>normDate(b.fecha)?a:b);
+    const dias  = Math.round((mS - new Date(normDate(lastB.fecha)+'T12:00')) / 86400000);
+    if (dias >= 90) result.push({ nombre: p.nombre, lastFecha: normDate(lastB.fecha), dias });
+  }
+  return result;
+}
+
+function _comisReventas(citas, year, month, mantKws, pct) {
+  const toS = d => d.toISOString().split('T')[0];
+  const msStr = toS(new Date(year, month-1, 1)), meStr = toS(new Date(year, month, 0));
+  const ventas = citas.filter(c => {
+    if ((c.estado||'').includes('Cancel') || c.estado==='No asistió') return false;
+    const f = normDate(c.fecha);
+    return f>=msStr && f<=meStr && mantKws.some(kw => (c.servicio||'').toLowerCase().includes(kw));
+  });
+  return ventas.map(c => {
+    const pn = (c.nombre||'').toLowerCase().trim();
+    const hadPrior = citas.some(o => (o.nombre||'').toLowerCase().trim()===pn && !(o.estado||'').includes('Cancel') && o.estado!=='No asistió' && normDate(o.fecha)<msStr);
+    if (!hadPrior) return null;
+    const precio = parsePrecio(c.precio);
+    return { nombre: c.nombre, servicio: c.servicio, precio, comision: Math.round(precio * pct / 100), fecha: normDate(c.fecha) };
+  }).filter(Boolean);
+}
+
+function _comisVentasCruzadas(citas, year, month, descKw) {
+  const toS = d => d.toISOString().split('T')[0];
+  const msStr = toS(new Date(year, month-1, 1)), meStr = toS(new Date(year, month, 0));
+  const mes = citas.filter(c => { if ((c.estado||'').includes('Cancel')||c.estado==='No asistió') return false; const f=normDate(c.fecha); return f>=msStr&&f<=meStr; });
+  const byP = {};
+  mes.forEach(c => { const key=(c.nombre||'').toLowerCase().trim(); if(!key) return; if(!byP[key]) byP[key]={nombre:c.nombre,servicios:[]}; byP[key].servicios.push(c.servicio||''); });
+  return Object.values(byP).filter(p =>
+    p.servicios.some(s => s.toLowerCase().includes(descKw)) &&
+    p.servicios.some(s => !s.toLowerCase().includes(descKw))
+  ).map(p => ({ nombre: p.nombre, servicio: p.servicios.find(s => s.toLowerCase().includes(descKw)) || p.servicios[0] }));
+}
+
+function _comisManualReact(year, month) {
+  try { return JSON.parse(kvGet('comis_react_'+year+'-'+String(month).padStart(2,'0')) || '[]'); } catch(e) { return []; }
+}
+function _comisSetManualReact(year, month, list) {
+  kvSet('comis_react_'+year+'-'+String(month).padStart(2,'0'), JSON.stringify(list));
+}
+
+function addManualReactivacion() {
+  const inp = document.getElementById('coManualReactInp');
+  if (!inp || !inp.value.trim()) return;
+  const nombre = inp.value.trim(); inp.value = '';
+  const [y, m] = _comisMesVal().split('-').map(Number);
+  const list = _comisManualReact(y, m);
+  if (!list.find(n => n.toLowerCase() === nombre.toLowerCase())) { list.push(nombre); _comisSetManualReact(y, m, list); }
+  renderComisiones();
+}
+
+function removeManualReactivacion(nombre) {
+  const [y, m] = _comisMesVal().split('-').map(Number);
+  _comisSetManualReact(y, m, _comisManualReact(y,m).filter(n => n.toLowerCase() !== nombre.toLowerCase()));
+  renderComisiones();
+}
+
+function marcarComisionPagada(persona) {
+  const now = new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'});
+  kvSet('comis_pago_'+persona+'_'+_comisMesVal(), now);
+  renderComisiones();
+}
+function desmarcarComisionPagada(persona) {
+  kvRemove('comis_pago_'+persona+'_'+_comisMesVal());
+  renderComisiones();
+}
+
+function renderComisiones() {
+  _initComisMesSel();
+  const mes = _comisMesVal();
+  if (!mes) return;
+  const [year, month] = mes.split('-').map(Number);
+  const cfg = _comisGetConfig();
+  const citas = citasReales();
+  const mLabels = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  const semanas  = _comisSemanasLlenas(citas, allData.eventos||[], year, month, cfg.ses_llena);
+  const sLlenas  = semanas.filter(s => s.llena).length;
+  const sTotal   = semanas.length;
+  const bonoAg   = sTotal > 0 ? (sLlenas >= sTotal ? cfg.bono_agenda : Math.round(cfg.bono_agenda * sLlenas / sTotal)) : 0;
+
+  const reactAuto = _comisReactivaciones(citas, year, month);
+  const reactMan  = _comisManualReact(year, month);
+  const reactManN = reactMan.filter(n => !reactAuto.find(r => r.nombre.toLowerCase() === n.toLowerCase()));
+  const totalReact = reactAuto.length + reactManN.length;
+  const bonoReact  = totalReact * cfg.bono_react;
+
+  const reventas  = _comisReventas(citas, year, month, cfg.serv_mant, cfg.pct_reventa);
+  const bonoRev   = reventas.reduce((s,r) => s+r.comision, 0);
+
+  const cruzadas  = _comisVentasCruzadas(citas, year, month, cfg.serv_descarga);
+  const bonoCruz  = cruzadas.length * cfg.bono_cruzada;
+
+  const totalAux   = bonoAg + bonoReact;
+  const totalFisio = bonoRev + bonoCruz;
+  const totalGen   = totalAux + totalFisio;
+
+  const pagoAux   = kvGet('comis_pago_auxiliar_' + mes);
+  const pagoFisio = kvGet('comis_pago_fisio_' + mes);
+
+  const setEl = (id, v) => { const el=document.getElementById(id); if(el) el.innerHTML=v; };
+  setEl('coTotalGeneral', fmtPeso(totalGen));
+  setEl('coTotalAux',     fmtPeso(totalAux));
+  setEl('coTotalFisio',   fmtPeso(totalFisio));
+  setEl('coSemanasRes',   sLlenas + '/' + sTotal);
+
+  const fmtRng = (s,e) => { const ds=new Date(s+'T12:00'),de=new Date(e+'T12:00'); return ds.getDate()+' '+mLabels[ds.getMonth()]+' – '+de.getDate()+' '+mLabels[de.getMonth()]; };
+
+  const semanasH = semanas.map(s => `<div class="co-week"><div class="co-wdot ${s.llena?'ok':'no'}"></div><span>${fmtRng(s.start,s.end)}</span><span style="font-family:var(--font-m);color:${s.llena?'var(--ok)':'var(--muted)'}">${s.sesiones} ses.</span><span style="font-size:.72rem;color:${s.llena?'var(--ok)':'#ef4444'}">${s.llena?'✓ llena':'falta'}</span></div>`).join('');
+
+  const reactH = [
+    ...reactAuto.map(r => `<div class="co-bd-item"><span>${r.nombre} <span style="font-size:.72rem;color:var(--muted)">(${r.dias}d inactivo)</span></span><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(cfg.bono_react)}</span></div>`),
+    ...reactManN.map(n  => `<div class="co-bd-item"><span>${n} <span style="font-size:.72rem;color:var(--primary)">(manual)</span></span><button onclick="removeManualReactivacion('${n.replace(/'/g,"\\'")}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:.85rem;padding:0 4px">✕</button><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(cfg.bono_react)}</span></div>`)
+  ].join('') || '<div class="co-empty">No se detectaron reactivaciones este mes</div>';
+
+  const revH = reventas.map(r => `<div class="co-bd-item"><span>${r.nombre} — <em style="font-size:.78rem">${r.servicio}</em></span><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(r.comision)} <span style="color:var(--muted)">(${cfg.pct_reventa}% de ${fmtPeso(r.precio)})</span></span></div>`).join('') || '<div class="co-empty">No se detectaron reventas de mantenimiento este mes</div>';
+
+  const cruzH = cruzadas.map(c => `<div class="co-bd-item"><span>${c.nombre} — <em style="font-size:.78rem">${c.servicio}</em></span><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(cfg.bono_cruzada)}</span></div>`).join('') || '<div class="co-empty">No se detectaron ventas cruzadas este mes</div>';
+
+  const btnAux   = pagoAux   ? `<button class="co-pay-btn pagado" onclick="desmarcarComisionPagada('auxiliar')">✓ Pagada el ${pagoAux}</button>`   : `<button class="co-pay-btn" onclick="marcarComisionPagada('auxiliar')">Marcar como pagada</button>`;
+  const btnFisio = pagoFisio ? `<button class="co-pay-btn pagado" onclick="desmarcarComisionPagada('fisio')">✓ Pagada el ${pagoFisio}</button>` : `<button class="co-pay-btn" onclick="marcarComisionPagada('fisio')">Marcar como pagada</button>`;
+
+  const htmlAux = `<div class="co-card">
+    <div class="co-card-hdr"><div><div class="co-card-title">Auxiliar Administrativa</div><div class="co-card-role">Bonos de conversión y agenda</div></div><div class="co-total">${fmtPeso(totalAux)}</div></div>
+    <div class="co-bono"><div class="co-bono-title">📅 Bono Agenda Llena</div>
+      <div class="co-bono-row"><span class="co-bono-label">${sLlenas} de ${sTotal} semanas llenas (≥${cfg.ses_llena} sesiones)</span><span class="co-bono-amount">${fmtPeso(bonoAg)}</span></div>
+      <div class="co-breakdown">${semanasH}</div></div>
+    <div class="co-bono"><div class="co-bono-title">🔁 Bono Recuperación de Pacientes</div>
+      <div class="co-bono-row"><span class="co-bono-label">${totalReact} paciente${totalReact!==1?'s':''} reactivado${totalReact!==1?'s':''} × ${fmtPeso(cfg.bono_react)}</span><span class="co-bono-amount">${fmtPeso(bonoReact)}</span></div>
+      <div class="co-breakdown">${reactH}</div>
+      <div class="co-manual-row"><input class="co-manual-inp" id="coManualReactInp" type="text" placeholder="Agregar reactivación manual..." onkeydown="if(event.key==='Enter')addManualReactivacion()"><button onclick="addManualReactivacion()" style="padding:7px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.8rem;white-space:nowrap">+ Agregar</button></div></div>
+    <div class="co-footer">${btnAux}<span style="font-size:.75rem;color:var(--muted)">Total: ${fmtPeso(totalAux)}</span></div>
+  </div>`;
+
+  const htmlFisio = `<div class="co-card">
+    <div class="co-card-hdr"><div><div class="co-card-title">Fisioterapeuta de Apoyo</div><div class="co-card-role">Bonos de upselling y venta cruzada</div></div><div class="co-total">${fmtPeso(totalFisio)}</div></div>
+    <div class="co-bono"><div class="co-bono-title">🔄 Bono Reventa — ${cfg.pct_reventa}% comisión</div>
+      <div class="co-bono-row"><span class="co-bono-label">${reventas.length} venta${reventas.length!==1?'s':''} de mantenimiento/paquete</span><span class="co-bono-amount">${fmtPeso(bonoRev)}</span></div>
+      <div class="co-breakdown">${revH}<div style="font-size:.7rem;color:var(--muted);margin-top:8px;border-top:1px solid var(--border);padding-top:6px">Servicios que cuentan: ${cfg.serv_mant.map(s=>`<em>${s}</em>`).join(', ')}</div></div></div>
+    <div class="co-bono"><div class="co-bono-title">➕ Bono Venta Cruzada</div>
+      <div class="co-bono-row"><span class="co-bono-label">${cruzadas.length} paciente${cruzadas.length!==1?'s':''} con servicio cruzado × ${fmtPeso(cfg.bono_cruzada)}</span><span class="co-bono-amount">${fmtPeso(bonoCruz)}</span></div>
+      <div class="co-breakdown">${cruzH}<div style="font-size:.7rem;color:var(--muted);margin-top:8px;border-top:1px solid var(--border);padding-top:6px">Cuenta cuando un paciente compra <em>${cfg.serv_descarga}</em> además de otro servicio clínico en el mismo mes.</div></div></div>
+    <div class="co-footer">${btnFisio}<span style="font-size:.75rem;color:var(--muted)">Total: ${fmtPeso(totalFisio)}</span></div>
+  </div>`;
+
+  const cards = document.getElementById('coCards');
+  if (cards) cards.innerHTML = htmlAux + htmlFisio;
+}
 </script>
 </body>
 </html>
