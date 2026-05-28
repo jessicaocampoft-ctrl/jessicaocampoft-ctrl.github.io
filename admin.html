@@ -2356,6 +2356,45 @@ Tasa = 12 ÷ 40 × 100 = <strong>30%</strong> → 🟢 Sano</div>
         </div>
       </div>
 
+      <div class="gk-kpi-card" onclick="toggleKPICard(this); _renderCancelBreakdown()">
+        <div class="gk-kpi-header">
+          <div class="gk-kpi-left">
+            <div class="gk-kpi-name">KPI 4B — Análisis de Cancelaciones</div>
+            <div class="gk-kpi-summary">Cuántas citas se pierden por semana y mes, <strong>qué servicio cancela más y qué día de la semana</strong> concentra más cancelaciones.</div>
+          </div>
+          <div class="gk-kpi-meta">Meta: &lt;10%/mes</div>
+          <div class="gk-kpi-toggle">▼</div>
+        </div>
+        <div class="gk-kpi-body">
+          <h5>Utilidad</h5>
+          <p>Saber cuántas citas se pierden por semana y mes, qué tipo de servicio cancela más y qué día de la semana tiene más cancelaciones.</p>
+          <h5>Importancia</h5>
+          <p>Una cancelación no solo es ingreso perdido — también es <strong>tiempo bloqueado que no se pudo reasignar</strong>. Identificar el patrón permite anticiparse y tomar acción antes de que se vuelva hábito.</p>
+          <h5>Fórmula</h5>
+          <div class="gk-formula">Tasa de cancelación = (Nro. citas canceladas ÷ Nro. total citas del período) × 100
+
+Por servicio: Nro. canceladas de cada tipo / período
+Por día:      Nro. canceladas por día de la semana / período</div>
+          <h5>Cómo se lee</h5>
+          <div class="gk-semaforo">
+            <div class="gk-sem-item verde">🟢 &lt;10% — Normal, dentro del margen</div>
+            <div class="gk-sem-item amarillo">🟡 10–20% — Vigilar, algo está fallando</div>
+            <div class="gk-sem-item rojo">🔴 &gt;20% — Crítico, patrón de cancelación</div>
+          </div>
+          <h5>Explicación</h5>
+          <p>Si un <strong>servicio específico cancela más</strong>, revisa si hay problema de precio, tiempo de sesión o expectativa del paciente. Si un <strong>día específico concentra cancelaciones</strong>, refuerza el recordatorio automático 24h antes de esas citas.</p>
+          <h5>Acción inmediata</h5>
+          <div class="gk-ejemplo">• Enviar recordatorio por WhatsApp 24h antes de la cita
+• Confirmar asistencia el día anterior (respuesta de 1 a 2 palabras)
+• Si cancela, ofrecer reagendar en el mismo mensaje
+• Registrar el motivo de cancelación para detectar patrones</div>
+          <h5>Dato en vivo</h5>
+          <div id="kpiCancelBreakdown" style="margin-top:6px">
+            <span style="font-size:.8rem;color:var(--muted)">Cargando datos...</span>
+          </div>
+        </div>
+      </div>
+
       <!-- DIMENSIÓN 3 -->
       <div class="gk-section-title">🟥 Dimensión 3: Resultados Financieros (Sostenibilidad)</div>
       <p style="font-size:.9rem;color:var(--muted);margin-bottom:14px">El dinero manda. Esta dimensión asegura que los esfuerzos físicos se traduzcan en el cumplimiento de tus metas financieras.</p>
@@ -7790,6 +7829,80 @@ function renderKPIGuia() {
 
   el.innerHTML = html;
   applyKPIRefSpans();
+  _renderCancelBreakdown();
+}
+
+function _renderCancelBreakdown() {
+  const el = document.getElementById('kpiCancelBreakdown');
+  if (!el) return;
+
+  const now = new Date();
+  const m = now.getMonth() + 1, y = now.getFullYear();
+  const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  const diaSemana  = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  const lunesSem   = new Date(now); lunesSem.setDate(now.getDate() - diaSemana);
+  const domingoSem = new Date(lunesSem); domingoSem.setDate(lunesSem.getDate() + 6);
+  const toStr = d => d.toISOString().split('T')[0];
+
+  const cancelMes = (allData.citas || []).filter(c => {
+    const [cy,cm] = normDate(c.fecha).split('-');
+    return +cm===m && +cy===y && (c.estado||'').toLowerCase().includes('cancel');
+  });
+  const cancelSem = (allData.citas || []).filter(c => {
+    const f = normDate(c.fecha);
+    return f >= toStr(lunesSem) && f <= toStr(domingoSem) && (c.estado||'').toLowerCase().includes('cancel');
+  });
+
+  // Breakdown por servicio (mes)
+  const srvMap = {}, diaMap = {};
+  cancelMes.forEach(c => {
+    const s = c.servicio || 'Sin tipo';
+    srvMap[s] = (srvMap[s]||0) + 1;
+    const d = new Date(normDate(c.fecha) + 'T12:00:00');
+    const dia = DIAS[d.getDay()];
+    diaMap[dia] = (diaMap[dia]||0) + 1;
+  });
+
+  const topServ = Object.entries(srvMap).sort((a,b)=>b[1]-a[1]);
+  const topDia  = Object.entries(diaMap).sort((a,b)=>b[1]-a[1]);
+  const total   = (allData.citas||[]).filter(c=>{ const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; }).length;
+  const pct     = total > 0 ? Math.round((cancelMes.length/total)*100) : 0;
+  const color   = pct < 10 ? 'var(--ok)' : pct <= 20 ? '#f59e0b' : '#ef4444';
+
+  if (!cancelMes.length) {
+    el.innerHTML = `<div style="font-size:.8rem;color:var(--ok)">🟢 Sin cancelaciones registradas este mes.</div>`;
+    return;
+  }
+
+  let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+    <div style="background:var(--s2);border-radius:8px;padding:10px 12px">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;font-family:var(--font-m)">ESTA SEMANA</div>
+      <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:700;color:${cancelSem.length>0?'#f59e0b':'var(--ok)'}">${cancelSem.length}</div>
+      <div style="font-size:.7rem;color:var(--muted)">cancelaciones</div>
+    </div>
+    <div style="background:var(--s2);border-radius:8px;padding:10px 12px">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;font-family:var(--font-m)">ESTE MES</div>
+      <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:700;color:${color}">${cancelMes.length} <span style="font-size:.8rem;font-weight:400">(${pct}%)</span></div>
+      <div style="font-size:.7rem;color:var(--muted)">del total de citas</div>
+    </div>`;
+
+  if (topServ.length) {
+    html += `<div style="background:var(--s2);border-radius:8px;padding:10px 12px">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:6px;font-family:var(--font-m)">SERVICIO QUE MÁS CANCELA</div>
+      ${topServ.slice(0,3).map(([s,n])=>`<div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px"><span>${s}</span><strong>${n}</strong></div>`).join('')}
+    </div>`;
+  }
+
+  if (topDia.length) {
+    html += `<div style="background:var(--s2);border-radius:8px;padding:10px 12px">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:6px;font-family:var(--font-m)">DÍA QUE MÁS CANCELA</div>
+      ${topDia.slice(0,3).map(([d,n])=>`<div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px"><span>${d}</span><strong>${n}</strong></div>`).join('')}
+    </div>`;
+  }
+
+  html += `</div>`;
+  el.innerHTML = html;
 }
 
 function applyKPIRefSpans() {
