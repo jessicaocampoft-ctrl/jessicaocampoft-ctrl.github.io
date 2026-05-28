@@ -2380,7 +2380,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
       <!-- DIMENSIÓN 1 -->
       <div class="gk-section-title">🟦 Dimensión 1: Eficiencia Operativa</div>
 
-      <div class="gk-kpi-card" onclick="toggleKPICard(this)">
+      <div class="gk-kpi-card" id="gkKpi1" onclick="toggleKPICard(this)">
         <div class="gk-kpi-header">
           <div class="gk-kpi-left">
             <div class="gk-kpi-name">KPI 1 — Volumen de Pacientes Atendidos</div>
@@ -8460,7 +8460,7 @@ function renderKPITablero() {
 // ══════════════════════════════════════════════════════════════
 // ── KPI GUIA — LIVE DASHBOARD ──
 // ══════════════════════════════════════════════════════════════
-function _kpiCardGuia(icon, label, valor, meta, unidad, altoEsMejor, metaTxt, evalVal) {
+function _kpiCardGuia(icon, label, valor, meta, unidad, altoEsMejor, metaTxt, evalVal, targetId) {
   const numVal  = parseFloat(String(evalVal !== undefined ? evalVal : valor).replace(/[^0-9.]/g, ''));
   const numMeta = parseFloat(String(meta));
   let color = 'var(--muted)', semaforo = '', bg = 'var(--s2)';
@@ -8471,13 +8471,30 @@ function _kpiCardGuia(icon, label, valor, meta, unidad, altoEsMejor, metaTxt, ev
     bg       = ok ? 'rgba(16,185,129,.06)' : warn ? 'rgba(245,158,11,.06)' : 'rgba(239,68,68,.06)';
     semaforo = ok ? '🟢' : warn ? '🟡' : '🔴';
   }
-  return `<div style="padding:14px 16px;background:${bg};border-radius:12px;border:1px solid ${color}33;border-left:3px solid ${color}">
+  const baseStyle = `padding:14px 16px;background:${bg};border-radius:12px;border:1px solid ${color}33;border-left:3px solid ${color}`;
+  const attrs = targetId
+    ? `onclick="scrollToKPICard('${targetId}')" title="Ver explicación completa ↓" style="${baseStyle};cursor:pointer;transition:box-shadow .15s" onmouseenter="this.style.boxShadow='0 0 0 2px ${color}66'" onmouseleave="this.style.boxShadow='none'"`
+    : `style="${baseStyle}"`;
+  return `<div ${attrs}>
     <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
       <span>${icon} ${label}</span><span style="font-size:.85rem">${semaforo}</span>
     </div>
     <div style="font-family:var(--font-h);font-size:1.15rem;font-weight:700;color:${color}">${valor}${unidad || ''}</div>
-    <div style="font-size:.68rem;color:var(--muted);margin-top:4px">Meta: ${metaTxt || (meta + (unidad || ''))}</div>
+    <div style="font-size:.68rem;color:var(--muted);margin-top:4px">Meta: ${metaTxt || (meta + (unidad || ''))}${targetId ? ' <span style="opacity:.4">· clic ↓</span>' : ''}</div>
   </div>`;
+}
+
+function scrollToKPICard(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!el.classList.contains('open')) {
+    el.classList.add('open');
+    const body = el.querySelector('.gk-kpi-body');
+    if (body) body.style.display = 'block';
+    if (id === 'gkKpi4b') _renderCancelBreakdown();
+    if (id === 'gkKpi8')  _renderBDBreakdown();
+  }
+  setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
 }
 
 // ══ MANUAL DE EMERGENCIA — funciones ══
@@ -8751,17 +8768,17 @@ function renderKPIGuia() {
 
   html += _kpiCardGuia('📅', 'Sesiones esta semana', _sessLabelG, META_SESIONES_SEMANA, '', true,
     _nEvG > 0 && _revOkG ? `≥${META_SESIONES_SEMANA} ses. · ✓ ingresos compensan` : `≥${META_SESIONES_SEMANA} sesiones`,
-    _sessEvalG);
-  html += _kpiCardGuia('🔄', 'Mix Full este mes', totalMix > 0 ? fullPct : '—', 30, totalMix > 0 ? '%' : '', false, totalMix > 0 ? '≤30% Full' : 'Sin sesiones aún', totalMix > 0 ? fullPct : 0);
-  html += _kpiCardGuia('📣', 'Leads este mes',          leadsShow || '—',                    40,                   '',      true,  '40–50 leads');
-  html += _kpiCardGuia('🎯', 'Tasa de conversión',      tasaConv !== null ? tasaConv+'%':'—', 25,                   '%',     true,  '25–35%');
-  html += _kpiCardGuia('💰', 'Ventas mes actual',       fmtPeso(ventasMes),                  META_VENTAS_MES,      '',      true,  fmtPeso(META_VENTAS_MES));
-  html += _kpiCardGuia('📋', 'Encuestas realizadas',    encuestas + '%',                     META_ENCUESTAS,       '%',     true,  `>${META_ENCUESTAS}%`);
-  html += _kpiCardGuia('⭐', 'NPS último mes',          nps,                                 META_NPS,             '',      true,  `>${META_NPS}`);
+    _sessEvalG, 'gkKpi1');
+  html += _kpiCardGuia('🔄', 'Mix Full este mes', totalMix > 0 ? fullPct : '—', 30, totalMix > 0 ? '%' : '', false, totalMix > 0 ? '≤30% Full' : 'Sin sesiones aún', totalMix > 0 ? fullPct : 0, 'gkKpi2');
+  html += _kpiCardGuia('📣', 'Leads este mes',          leadsShow || '—',                    40,                   '',      true,  '40–50 leads',           undefined, 'gkKpi3');
+  html += _kpiCardGuia('🎯', 'Tasa de conversión',      tasaConv !== null ? tasaConv+'%':'—', 25,                   '%',     true,  '25–35%',                undefined, 'gkKpi4');
+  html += _kpiCardGuia('💰', 'Ventas mes actual',       fmtPeso(ventasMes),                  META_VENTAS_MES,      '',      true,  fmtPeso(META_VENTAS_MES),undefined, 'gkKpi5');
+  html += _kpiCardGuia('📋', 'Encuestas realizadas',    encuestas + '%',                     META_ENCUESTAS,       '%',     true,  `>${META_ENCUESTAS}%`,   undefined, 'gkKpi6');
+  html += _kpiCardGuia('⭐', 'NPS último mes',          nps,                                 META_NPS,             '',      true,  `>${META_NPS}`,          undefined, 'gkKpi7');
   const _bdLabel = _bdGuia ? `${_bdGuia.completos}/${_bdGuia.total}` : '—';
-  html += _kpiCardGuia('🗄️', `BD actualizada (${_bdLabel} pac.)`, bd + '%', 100, '%', true, '100%');
-  html += _kpiCardGuia('❌', 'Cancelaciones mes',       tasaCancel + '%',                    META_CANCELACION_PCT, '%',     false, `<${META_CANCELACION_PCT}%`);
-  html += _kpiCardGuia('🔁', 'Retención 60 días',       tasaRet + '%',                       META_RETENCION_PCT,   '%',     true,  `>${META_RETENCION_PCT}%`);
+  html += _kpiCardGuia('🗄️', `BD actualizada (${_bdLabel} pac.)`, bd + '%', 100, '%', true, '100%',              undefined, 'gkKpi8');
+  html += _kpiCardGuia('❌', 'Cancelaciones mes',       tasaCancel + '%',                    META_CANCELACION_PCT, '%',     false, `<${META_CANCELACION_PCT}%`,undefined,'gkKpi4b');
+  html += _kpiCardGuia('🔁', 'Retención 60 días',       tasaRet + '%',                       META_RETENCION_PCT,   '%',     true,  `>${META_RETENCION_PCT}%`,undefined, 'gkKpi1');
 
   const cfg = getKPIConfig();
   const fmtRef = v => v >= 1000 ? '$' + v.toLocaleString('es-CO') : String(v);
