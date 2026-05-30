@@ -8682,7 +8682,10 @@ function _buildReporteMes() {
                             .reduce((s,c) => s+parsePrecio(c.precio), 0);
   const egresosAll = getEgresos().filter(e => e.fecha && e.fecha.startsWith(mesStr));
   const egresosMes = egresosAll.reduce((s,e) => s+(e.monto||0), 0);
-  const utilidadMes = ventasCobradas - egresosMes;
+  // Usar estructura de costos como base de gastos reales (más preciso que los egresos registrados)
+  // Si hay egresos registrados y son mayores, usar esos; si no, usar el subtotal de la estructura
+  const gastosBase = egresosMes > 0 ? Math.max(egresosMes, calc.subtotal) : calc.subtotal;
+  const utilidadMes = ventasCobradas - gastosBase;
   const margenPct = ventasCobradas > 0 ? Math.round((utilidadMes/ventasCobradas)*100) : 0;
 
   // Egresos por categoría
@@ -8949,8 +8952,10 @@ function _buildReporteMes() {
       ${_rFila('Utilidad objetivo ('+costos.pct_utilidad+'%)', fmtPeso(calc.utilidad),'var(--ok)')}
       ${_rFila('Total necesario (meta)', fmtPeso(calc.total), 'var(--primary)', true)}
       <div style="height:1px;background:var(--border);margin:8px 0"></div>
-      ${_rFila('Egresos registrados este mes', fmtPeso(egresosMes), '#ef4444')}
-      ${_rFila('Utilidad real (cobrado − egresos)', fmtPeso(utilidadMes), utilidadMes>=0?'var(--ok)':'#ef4444', true)}
+      ${_rFila('Costos estructura (subtotal)', fmtPeso(calc.subtotal), '#ef4444')}
+      ${egresosMes > 0 ? _rFila('Egresos registrados en Finanzas', fmtPeso(egresosMes), egresosMes > calc.subtotal ? '#ef4444' : '#f59e0b') : `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(0,0,0,.04)"><span style="font-size:.84rem;color:var(--muted)">Egresos registrados en Finanzas</span><span style="font-size:.78rem;color:var(--muted);font-style:italic">$0 — usando estructura de costos</span></div>`}
+      ${_rFila('Gastos considerados', fmtPeso(gastosBase), '#ef4444', true)}
+      ${_rFila('Utilidad real (cobrado − gastos)', fmtPeso(utilidadMes), utilidadMes>=0?'var(--ok)':'#ef4444', true)}
       ${_rFila('Margen de utilidad real', margenPct+'%', margenPct>=costos.pct_utilidad?'var(--ok)':'#f59e0b')}
     </div>
   </div>`;
