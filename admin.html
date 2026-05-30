@@ -765,6 +765,36 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 </div>
 
 <!-- ══════════════════════════════════════════
+     MODAL REPORTE FIN DE MES
+══════════════════════════════════════════ -->
+<div id="modalReporteMes" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto" onclick="if(event.target===this)cerrarReporteMes()">
+  <div style="background:var(--s1);border:1px solid var(--border);border-radius:20px;max-width:680px;width:100%;box-shadow:0 12px 60px rgba(0,0,0,.25);margin:auto">
+    <!-- Header -->
+    <div style="padding:22px 24px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <div style="font-family:var(--font-h);font-size:1.35rem;font-weight:600" id="reporteMesTitulo">Reporte de cierre — Mayo 2025</div>
+        <div style="font-size:.8rem;color:var(--muted);margin-top:3px">Resumen automático de indicadores de gestión</div>
+      </div>
+      <button onclick="cerrarReporteMes()" style="background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;line-height:1;padding:4px">&times;</button>
+    </div>
+    <!-- Contenido -->
+    <div id="reporteMesBody" style="padding:22px 24px;max-height:70vh;overflow-y:auto"></div>
+    <!-- Footer acciones -->
+    <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn btn-ghost" onclick="copiarReporteMes()" id="btnCopiarReporte">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copiar texto
+      </button>
+      <button class="btn btn-ghost" onclick="imprimirReporteMes()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir
+      </button>
+      <button class="btn btn-teal" onclick="cerrarReporteMes()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      LOGIN
 ══════════════════════════════════════════ -->
 <div id="loginScreen">
@@ -2301,9 +2331,15 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 
     <!-- ── GUÍA KPIs ── -->
     <section id="vGuiakpis" style="display:none">
-      <div class="page-header">
-        <h1 class="page-title">📊 <em>Indicadores</em> de Gestión</h1>
-        <p class="page-sub">Manual de uso para gestión diaria — léelo con calma, vuelve cuando lo necesites</p>
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title">📊 <em>Indicadores</em> de Gestión</h1>
+          <p class="page-sub">Manual de uso para gestión diaria — léelo con calma, vuelve cuando lo necesites</p>
+        </div>
+        <button class="btn btn-teal" onclick="abrirReporteMes()" style="white-space:nowrap;padding:10px 18px;font-size:.88rem;gap:8px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Reporte fin de mes
+        </button>
       </div>
 
       <!-- Introducción -->
@@ -8455,6 +8491,333 @@ function renderKPITablero() {
   }
 
   el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── REPORTE FIN DE MES ──
+// ══════════════════════════════════════════════════════════════
+function abrirReporteMes() {
+  const modal = document.getElementById('modalReporteMes');
+  modal.style.display = 'flex';
+  document.getElementById('reporteMesBody').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Calculando...</div>';
+  setTimeout(() => {
+    const html = _buildReporteMes();
+    document.getElementById('reporteMesBody').innerHTML = html;
+  }, 80);
+}
+
+function cerrarReporteMes() {
+  document.getElementById('modalReporteMes').style.display = 'none';
+}
+
+function _buildReporteMes() {
+  const now  = new Date();
+  const m    = now.getMonth() + 1;
+  const y    = now.getFullYear();
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const nomMes = MESES[m - 1];
+
+  document.getElementById('reporteMesTitulo').textContent = `Reporte de cierre — ${nomMes.charAt(0).toUpperCase() + nomMes.slice(1)} ${y}`;
+
+  const citas = citasReales();
+  const manual = getKPIManual();
+
+  // ── Sesiones del mes ──
+  const citasMes = citas.filter(c => {
+    const [cy, cm] = normDate(c.fecha).split('-');
+    return +cm === m && +cy === y && c.estado !== 'No asistió';
+  });
+  const eventosMes = (allData.eventos || []).filter(e => {
+    const [cy, cm] = normDate(e.fecha).split('-');
+    return +cm === m && +cy === y;
+  });
+  const totalSesiones = citasMes.length + eventosMes.length;
+  const metaSesionesMes = META_SESIONES_SEMANA * 4;
+
+  // ── Ventas ──
+  const ventasMes = calcCobradoMes();
+  const egresosMes = (() => {
+    const mesStr = `${y}-${String(m).padStart(2,'0')}`;
+    return getEgresos().filter(e => e.fecha && e.fecha.startsWith(mesStr)).reduce((s,e) => s+(e.monto||0), 0);
+  })();
+  const utilidadMes = ventasMes - egresosMes;
+
+  // ── Leads y conversión ──
+  const leadsMes = getLeadsMes() || manual.leads || 0;
+  const citasNuevasMes = citasMes.length;
+  const tasaConv = leadsMes > 0 ? Math.round((citasNuevasMes / leadsMes) * 100) : null;
+
+  // ── Cancelaciones ──
+  const motivosMes = getCancelMotivos();
+  const todasMes = (allData.citas || []).filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
+  const canceladasMes = todasMes.filter(c => (c.estado||'').toLowerCase().includes('cancel') && motivosMes[c.id] !== 'Prueba').length;
+  const tasaCancel = todasMes.length > 0 ? Math.round((canceladasMes / todasMes.length) * 100) : 0;
+
+  // ── Retención 60 días ──
+  const hace60 = new Date(now); hace60.setDate(now.getDate() - VENTANA_RETENCION);
+  const conteoPac = {};
+  citas.filter(c => new Date(normDate(c.fecha)+'T12:00:00') >= hace60)
+    .forEach(c => { if (c.nombre) conteoPac[c.nombre.trim().toLowerCase()] = (conteoPac[c.nombre.trim().toLowerCase()]||0)+1; });
+  const pac60 = Object.keys(conteoPac).length;
+  const pacRecompra = Object.values(conteoPac).filter(n => n >= 2).length;
+  const tasaRet = pac60 > 0 ? Math.round((pacRecompra / pac60) * 100) : 0;
+
+  // ── NPS y encuestas ──
+  const encStats = getEncuestaStats();
+  const npsVal   = encStats.nps      !== undefined ? encStats.nps      : (manual.nps      || 0);
+  const encPct   = encStats.encuestas !== undefined ? encStats.encuestas : (manual.encuestas || 0);
+
+  // ── BD actualizada ──
+  const bdAuto = calcBDActualizada();
+  const bdPct  = bdAuto ? bdAuto.pct : (manual.bd || 0);
+
+  // ── CAC ──
+  const mesStr2 = `${y}-${String(m).padStart(2,'0')}`;
+  const ventanaAtras = new Date(now); ventanaAtras.setDate(now.getDate() - VENTANA_NUEVO_DIAS);
+  const pacientesMesSet = new Set();
+  citasMes.forEach(c => { if (c.nombre) pacientesMesSet.add(c.nombre.trim().toLowerCase()); });
+  let nuevosCount = 0;
+  pacientesMesSet.forEach(pac => {
+    const prev = allData.citas.filter(c => {
+      if (!c.nombre || c.nombre.trim().toLowerCase() !== pac) return false;
+      const f = new Date(normDate(c.fecha)+'T12:00:00');
+      return f >= ventanaAtras && f < new Date(y, m-1, 1);
+    });
+    if (prev.length === 0) nuevosCount++;
+  });
+  const egresosMkt = getEgresos().filter(e => {
+    if (!e.fecha || !e.fecha.startsWith(mesStr2)) return false;
+    return CATEGORIAS_MARKETING.some(cat => (e.concepto||'').toLowerCase().includes(cat.toLowerCase()));
+  }).reduce((s,e) => s+(e.monto||0), 0);
+  const cac = nuevosCount > 0 ? Math.round(egresosMkt / nuevosCount) : 0;
+
+  // ── Mix servicios ──
+  const mixMap = {};
+  citasMes.forEach(c => { const s = c.servicio||'Sin tipo'; mixMap[s]=(mixMap[s]||0)+1; });
+  const mixArr = Object.entries(mixMap).sort((a,b) => b[1]-a[1]);
+
+  // ══ Helpers de evaluación ══
+  const sem = (val, meta, alto=true) => {
+    if (meta === 0 || isNaN(val)) return '⬜';
+    const ok   = alto ? val >= meta : val <= meta;
+    const warn = alto ? val >= meta * 0.8 : val <= meta * 1.2;
+    return ok ? '🟢' : warn ? '🟡' : '🔴';
+  };
+  const pct = (v, m2) => m2 > 0 ? Math.round(v/m2*100) : 0;
+
+  // ══ Construir HTML ══
+  const s = (icon, label, valTxt, semaforo, sub) =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--s2);border-radius:10px;border-left:3px solid ${semaforo==='🟢'?'var(--ok)':semaforo==='🟡'?'#f59e0b':semaforo==='🔴'?'#ef4444':'var(--border)'}">
+      <span style="font-size:1.1rem">${semaforo||'⬜'}</span>
+      <div style="flex:1">
+        <div style="font-size:.75rem;color:var(--muted);font-family:var(--font-m)">${icon} ${label}</div>
+        <div style="font-family:var(--font-h);font-size:1.1rem;font-weight:700">${valTxt}</div>
+        ${sub ? `<div style="font-size:.72rem;color:var(--muted);margin-top:2px">${sub}</div>` : ''}
+      </div>
+    </div>`;
+
+  // ── Alertas y recomendaciones ──
+  const alertas = [];
+  const mejoras = [];
+
+  // Sesiones
+  const semSes = sem(totalSesiones, metaSesionesMes);
+  if (semSes === '🔴' || semSes === '🟡') {
+    const falta = metaSesionesMes - totalSesiones;
+    alertas.push({ icon:'📅', txt:`Sesiones del mes: ${totalSesiones}/${metaSesionesMes} (faltan ${falta})`, nivel: semSes });
+    mejoras.push(`<strong>Aumentar agenda:</strong> Activa horarios adicionales o abre sábados. Con ${falta} sesión${falta===1?'':'es'} extra llegas a la meta mensual.`);
+  }
+
+  // Ventas
+  const semVen = sem(ventasMes, META_VENTAS_MES);
+  if (semVen === '🔴' || semVen === '🟡') {
+    const fallaMes = META_VENTAS_MES - ventasMes;
+    alertas.push({ icon:'💰', txt:`Ventas del mes: ${fmtPeso(ventasMes)} / meta ${fmtPeso(META_VENTAS_MES)} (faltan ${fmtPeso(fallaMes)})`, nivel: semVen });
+    mejoras.push(`<strong>Impulsar ingresos:</strong> Enfoca el mix hacia Descarga Express y Readaptación (mayor ingreso/hora). Ofrece paquetes prepagados para garantizar ocupación del mes siguiente.`);
+  }
+
+  // Mix rentabilidad
+  const fullCnt    = mixArr.find(([s2]) => s2.toLowerCase().includes('full'))?.[1]  || 0;
+  const expressCnt = mixArr.find(([s2]) => s2.toLowerCase().includes('express'))?.[1] || 0;
+  if (fullCnt > expressCnt && fullCnt > 0) {
+    alertas.push({ icon:'⚠️', txt:`Mix: Descargas Full (${fullCnt}) > Express (${expressCnt}) — menos rentable por hora`, nivel:'🟡' });
+    mejoras.push(`<strong>Optimizar mix de servicios:</strong> La Descarga Express genera ~$90.000/h vs ~$73.333/h de la Full. Comunica los beneficios de la Express y priorízala en la agenda.`);
+  }
+
+  // Conversión
+  if (tasaConv !== null) {
+    const semConv = sem(tasaConv, 25);
+    if (semConv === '🔴' || semConv === '🟡') {
+      alertas.push({ icon:'🎯', txt:`Tasa conversión: ${tasaConv}% (meta ≥25%) — ${leadsMes} leads, ${citasNuevasMes} agendaron`, nivel: semConv });
+      mejoras.push(`<strong>Mejorar conversión de leads:</strong> Responde en menos de 1 hora. Envía el link de agendamiento directo con los primeros 2–3 mensajes. Registra el motivo cuando no convierten.`);
+    }
+  }
+
+  // Cancelaciones
+  const semCancel = sem(tasaCancel, META_CANCELACION_PCT, false);
+  if (semCancel === '🔴' || semCancel === '🟡') {
+    alertas.push({ icon:'❌', txt:`Tasa cancelación: ${tasaCancel}% (meta <${META_CANCELACION_PCT}%)`, nivel: semCancel });
+    mejoras.push(`<strong>Reducir cancelaciones:</strong> Envía recordatorio automático 24h antes. Implementa política de reagendamiento mínimo con 4h de anticipación. Revisa el KPI 4B para ver qué día y servicio concentra más cancelaciones.`);
+  }
+
+  // Retención
+  const semRet = sem(tasaRet, META_RETENCION_PCT);
+  if (semRet === '🔴' || semRet === '🟡') {
+    alertas.push({ icon:'🔁', txt:`Retención 60 días: ${tasaRet}% (meta ≥${META_RETENCION_PCT}%)`, nivel: semRet });
+    mejoras.push(`<strong>Mejorar retención:</strong> Llama a pacientes que llevan más de 3 semanas sin agendar. Ofrece paquetes con descuento para comprometer 4–6 sesiones. Activa el módulo de seguimiento de Descarga Muscular.`);
+  }
+
+  // NPS
+  const semNPS = sem(npsVal, META_NPS);
+  if (semNPS === '🔴' || semNPS === '🟡') {
+    alertas.push({ icon:'⭐', txt:`NPS: ${npsVal} (meta ≥${META_NPS})`, nivel: semNPS });
+    mejoras.push(`<strong>Mejorar satisfacción:</strong> Revisa comentarios negativos del formulario. El NPS bajo suele correlacionar con tiempos de espera o comunicación post-sesión. Implementa un seguimiento por WhatsApp 48h después de cada sesión.`);
+  }
+
+  // Encuestas
+  const semEnc = sem(encPct, META_ENCUESTAS);
+  if (semEnc === '🔴' || semEnc === '🟡') {
+    alertas.push({ icon:'📋', txt:`Encuestas respondidas: ${encPct}% (meta ≥${META_ENCUESTAS}%)`, nivel: semEnc });
+    mejoras.push(`<strong>Aumentar tasa de encuestas:</strong> Envía el link del formulario al terminar la sesión, en persona. Un mensaje personalizado ("¿Cómo te fue hoy?") tiene mucho mejor respuesta que un link genérico.`);
+  }
+
+  // BD
+  if (bdPct < 100) {
+    const faltaBD = bdAuto ? `${bdAuto.total - bdAuto.completos} pacientes sin datos completos` : `${100 - bdPct}% incompletos`;
+    alertas.push({ icon:'🗄️', txt:`BD actualizada: ${bdPct}% (${faltaBD})`, nivel: bdPct >= 80 ? '🟡' : '🔴' });
+    mejoras.push(`<strong>Completar base de datos:</strong> En cada primera sesión de mes, confirma teléfono y email del paciente. Una BD completa permite enviar recordatorios automáticos y reducir no-shows.`);
+  }
+
+  const hayAlertas = alertas.length > 0;
+
+  let html = '';
+
+  // ── Resumen financiero ──
+  html += `<div style="background:var(--s2);border-radius:14px;padding:18px 20px;margin-bottom:20px">
+    <div style="font-family:var(--font-m);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Resumen financiero — ${nomMes} ${y}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
+      <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700;color:var(--primary)">${fmtPeso(ventasMes)}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Ingresos cobrados</div>
+        <div style="font-size:.7rem;margin-top:3px;color:${pct(ventasMes,META_VENTAS_MES)>=100?'var(--ok)':pct(ventasMes,META_VENTAS_MES)>=80?'#f59e0b':'#ef4444'};font-family:var(--font-m);font-weight:600">${pct(ventasMes,META_VENTAS_MES)}% de la meta</div>
+      </div>
+      <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700;color:#ef4444">${fmtPeso(egresosMes)}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Egresos del mes</div>
+      </div>
+      <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700;color:${utilidadMes>=0?'var(--ok)':'#ef4444'}">${fmtPeso(utilidadMes)}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Utilidad neta</div>
+      </div>
+      <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700">${totalSesiones}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Sesiones atendidas</div>
+        <div style="font-size:.7rem;margin-top:3px;color:${totalSesiones>=metaSesionesMes?'var(--ok)':totalSesiones>=metaSesionesMes*.8?'#f59e0b':'#ef4444'};font-family:var(--font-m);font-weight:600">Meta: ${metaSesionesMes}</div>
+      </div>
+    </div>
+  </div>`;
+
+  // ── KPIs semáforo ──
+  html += `<div style="font-family:var(--font-m);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Indicadores del mes</div>`;
+  html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-bottom:20px">`;
+  html += s('📅', 'Sesiones atendidas', `${totalSesiones} / meta ${metaSesionesMes}`, sem(totalSesiones, metaSesionesMes), `Meta semanal: ${META_SESIONES_SEMANA} sesiones`);
+  html += s('💰', 'Ventas del mes', fmtPeso(ventasMes), sem(ventasMes, META_VENTAS_MES), `Meta: ${fmtPeso(META_VENTAS_MES)}`);
+  html += s('🎯', 'Tasa de conversión', tasaConv !== null ? `${tasaConv}%` : '— (sin datos de leads)', tasaConv !== null ? sem(tasaConv, 25) : '⬜', `${leadsMes} leads · ${citasNuevasMes} agendaron · Meta ≥25%`);
+  html += s('❌', 'Tasa de cancelación', `${tasaCancel}%`, sem(tasaCancel, META_CANCELACION_PCT, false), `${canceladasMes} canceladas / ${todasMes.length} total · Meta <${META_CANCELACION_PCT}%`);
+  html += s('🔁', 'Retención 60 días', `${tasaRet}%`, sem(tasaRet, META_RETENCION_PCT), `${pacRecompra}/${pac60} pacientes con ≥2 sesiones · Meta ≥${META_RETENCION_PCT}%`);
+  html += s('⭐', 'NPS', `${npsVal}`, sem(npsVal, META_NPS), `${encPct}% encuestas respondidas · Meta NPS ≥${META_NPS}`);
+  html += s('🗄️', 'BD actualizada', `${bdPct}%`, bdPct>=100?'🟢':bdPct>=80?'🟡':'🔴', bdAuto ? `${bdAuto.completos}/${bdAuto.total} con tel+email` : 'Meta 100%');
+  if (cac > 0) html += s('💸', 'CAC (costo adq. cliente)', fmtPeso(cac), sem(cac, META_CAC_MAX, false), `${nuevosCount} paciente${nuevosCount===1?'':'s'} nuevo${nuevosCount===1?'':'s'} · Meta <${fmtPeso(META_CAC_MAX)}`);
+  html += `</div>`;
+
+  // ── Mix de servicios ──
+  if (mixArr.length > 0) {
+    const totalSesM = mixArr.reduce((s2,[,n]) => s2+n, 0);
+    html += `<div style="font-family:var(--font-m);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Mix de servicios</div>`;
+    html += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">`;
+    const SC = ['var(--primary)','#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6'];
+    mixArr.forEach(([serv, cnt], i) => {
+      const p = Math.round(cnt/totalSesM*100);
+      html += `<span style="padding:6px 12px;background:var(--s2);border-radius:99px;font-size:.82rem;border:1px solid ${SC[i%6]}44;color:${SC[i%6]};font-weight:600">${serv}: ${cnt} (${p}%)</span>`;
+    });
+    html += `</div>`;
+  }
+
+  // ── Alertas ──
+  if (hayAlertas) {
+    html += `<div style="background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:16px 18px;margin-bottom:18px">
+      <div style="font-family:var(--font-m);font-size:.72rem;color:#d97706;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">⚠️ Puntos de atención este mes</div>
+      <div style="display:flex;flex-direction:column;gap:6px">`;
+    alertas.forEach(a => {
+      html += `<div style="display:flex;align-items:flex-start;gap:8px;font-size:.84rem">${a.nivel} ${a.txt}</div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // ── Recomendaciones de mejora ──
+  if (mejoras.length > 0) {
+    html += `<div style="background:rgba(27,191,176,.06);border:1px solid rgba(27,191,176,.2);border-radius:12px;padding:16px 18px;margin-bottom:4px">
+      <div style="font-family:var(--font-m);font-size:.72rem;color:var(--primary);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">💡 Qué mejorar el próximo mes</div>
+      <div style="display:flex;flex-direction:column;gap:10px">`;
+    mejoras.forEach((m2, i) => {
+      html += `<div style="display:flex;gap:10px;align-items:flex-start">
+        <span style="font-family:var(--font-m);font-size:.72rem;background:var(--primary);color:#0D0D0D;border-radius:99px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-weight:700">${i+1}</span>
+        <div style="font-size:.84rem;line-height:1.5">${m2}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  } else {
+    html += `<div style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.25);border-radius:12px;padding:16px 18px;text-align:center">
+      <div style="font-size:1.4rem;margin-bottom:6px">🎉</div>
+      <div style="font-family:var(--font-h);font-size:1.1rem;font-weight:600;color:var(--ok)">¡Todos los indicadores en verde!</div>
+      <div style="font-size:.84rem;color:var(--muted);margin-top:4px">Excelente mes. Mantén la consistencia y revisa si puedes subir las metas para el próximo.</div>
+    </div>`;
+  }
+
+  return html;
+}
+
+function copiarReporteMes() {
+  const now  = new Date();
+  const m    = now.getMonth() + 1;
+  const y    = now.getFullYear();
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const nomMes = MESES[m - 1].charAt(0).toUpperCase() + MESES[m - 1].slice(1);
+
+  const el = document.getElementById('reporteMesBody');
+  // Construir texto plano desde el HTML
+  let txt = `REPORTE DE CIERRE — ${nomMes} ${y}\n${'═'.repeat(40)}\n\n`;
+  txt += el.innerText.replace(/\n{3,}/g, '\n\n');
+
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('btnCopiarReporte');
+    const orig = btn.innerHTML;
+    btn.textContent = '✓ Copiado';
+    btn.style.color = 'var(--ok)';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 2000);
+  }).catch(() => toast('No se pudo copiar', 'err'));
+}
+
+function imprimirReporteMes() {
+  const body = document.getElementById('reporteMesBody').innerHTML;
+  const titulo = document.getElementById('reporteMesTitulo').textContent;
+  const w = window.open('', '_blank', 'width=700,height=900');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${titulo}</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'DM Sans',sans-serif;color:#1A1A2E;background:#fff;padding:40px;font-size:14px}
+      h1{font-family:'Cormorant Garamond',serif;font-size:1.6rem;margin-bottom:6px}
+      @media print{body{padding:20px}}
+    </style>
+  </head><body>
+    <h1>${titulo}</h1>
+    <p style="color:#6B7280;font-size:.85rem;margin-bottom:28px">Reporte automático de indicadores de gestión</p>
+    ${body}
+    <p style="margin-top:28px;font-size:.75rem;color:#6B7280">Generado el ${new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'})}</p>
+  </body></html>`);
+  w.document.close();
+  setTimeout(() => w.print(), 500);
 }
 
 // ══════════════════════════════════════════════════════════════
