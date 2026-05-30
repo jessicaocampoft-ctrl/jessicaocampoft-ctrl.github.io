@@ -8031,9 +8031,48 @@ function renderEgresosList() {
 // ══════════════════════════════════════════════════════════════
 
 // Valores por defecto — se sobreescriben con lo guardado en localStorage
+const COSTOS_DEFAULTS = {
+  // Costos Fijos
+  honorarios_fisio:  4000000,
+  seguridad_social:   500000,
+  auxiliar_admin:     500000,
+  // Costos Operativos
+  suscripcion_ia:      80000,
+  suscripcion_capcut:  12000,
+  asesorias_ap:       790000,
+  // Costos Variables
+  redes_contenido:    150000,
+  pautas_redes:       100000,
+  mantenimiento:      200000,
+  insumos:            100000,
+  // Porcentajes adicionales
+  pct_imprevistos: 5,
+  pct_utilidad:   20,
+};
+
+function getCostosEstructura() {
+  try {
+    const s = kvGet('costosEstructura');
+    return s ? {...COSTOS_DEFAULTS, ...JSON.parse(s)} : {...COSTOS_DEFAULTS};
+  } catch(e) { return {...COSTOS_DEFAULTS}; }
+}
+
+function saveCostosEstructura(obj) {
+  kvSet('costosEstructura', JSON.stringify(obj));
+}
+
+function calcTotalCostos(c) {
+  const subtotal = c.honorarios_fisio + c.seguridad_social + c.auxiliar_admin
+    + c.suscripcion_ia + c.suscripcion_capcut + c.asesorias_ap
+    + c.redes_contenido + c.pautas_redes + c.mantenimiento + c.insumos;
+  const imprevistos = Math.round(subtotal * (c.pct_imprevistos / 100));
+  const utilidad    = Math.round(subtotal * (c.pct_utilidad    / 100));
+  return { subtotal, imprevistos, utilidad, total: subtotal + imprevistos + utilidad };
+}
+
 const KPI_CONFIG_DEFAULTS = {
   meta_sesiones_semana: 24,
-  meta_ventas_mes:      10265000,
+  meta_ventas_mes:      8040000,
   meta_leads_min:       40,
   meta_leads_max:       50,
   meta_conv_min:        25,
@@ -8059,9 +8098,14 @@ function getKPIConfig() {
 }
 
 const _cfg0 = getKPIConfig();
+// Si hay estructura de costos guardada, su total tiene precedencia sobre kpiConfig
+const _costosInit = getCostosEstructura();
+const _calcInit   = calcTotalCostos(_costosInit);
+// Solo aplica si el usuario tiene costos guardados (distinto al default puro)
+const _metaFromCostos = kvGet('costosEstructura') ? _calcInit.total : _cfg0.meta_ventas_mes;
 let META_SESIONES_SEMANA = _cfg0.meta_sesiones_semana;
-let META_VENTAS_SEMANA   = Math.round(_cfg0.meta_ventas_mes / 4);
-let META_VENTAS_MES      = _cfg0.meta_ventas_mes;
+let META_VENTAS_SEMANA   = Math.round(_metaFromCostos / 4);
+let META_VENTAS_MES      = _metaFromCostos;
 let META_NPS             = _cfg0.meta_nps;
 let META_ENCUESTAS       = _cfg0.meta_encuestas;
 let META_CANCELACION_PCT = _cfg0.meta_cancelacion;
@@ -8510,6 +8554,55 @@ function cerrarReporteMes() {
   document.getElementById('modalReporteMes').style.display = 'none';
 }
 
+function _toggleEditCostos() {
+  const panel   = document.getElementById('costosEditorPanel');
+  const compact = document.getElementById('costosVistaCompacta');
+  const btn     = document.getElementById('btnEditCostos');
+  const open    = panel.style.display === 'none';
+  panel.style.display   = open ? 'block' : 'none';
+  compact.style.display = open ? 'none'  : 'block';
+  btn.textContent       = open ? '✕ Cerrar editor' : '✏️ Editar valores';
+}
+
+function _leerCamposCostos() {
+  const c = {...COSTOS_DEFAULTS};
+  document.querySelectorAll('#costosEditorPanel [data-costo]').forEach(inp => {
+    c[inp.dataset.costo] = parseFloat(inp.value) || 0;
+  });
+  return c;
+}
+
+function _recalcCostos() {
+  const c    = _leerCamposCostos();
+  const calc = calcTotalCostos(c);
+  const el   = id => document.getElementById(id);
+  if (el('crSubtotal'))   el('crSubtotal').textContent   = fmtPeso(calc.subtotal);
+  if (el('crImprevistos'))el('crImprevistos').textContent = fmtPeso(calc.imprevistos);
+  if (el('crUtilidad'))   el('crUtilidad').textContent   = fmtPeso(calc.utilidad);
+  if (el('crTotal'))      el('crTotal').textContent      = fmtPeso(calc.total);
+}
+
+function _guardarCostos() {
+  const c    = _leerCamposCostos();
+  const calc = calcTotalCostos(c);
+  saveCostosEstructura(c);
+
+  // Actualizar la meta de ventas en kpiConfig y en las variables globales
+  const cfg = getKPIConfig();
+  cfg.meta_ventas_mes = calc.total;
+  kvSet('kpiConfig', JSON.stringify(cfg));
+  META_VENTAS_MES    = calc.total;
+  META_VENTAS_SEMANA = Math.round(calc.total / 4);
+
+  toast('Estructura de costos guardada — meta actualizada a ' + fmtPeso(calc.total), 'ok');
+
+  // Refrescar todo el reporte
+  document.getElementById('reporteMesBody').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Actualizando...</div>';
+  setTimeout(() => {
+    document.getElementById('reporteMesBody').innerHTML = _buildReporteMes();
+  }, 60);
+}
+
 function _buildReporteMes() {
   const now  = new Date();
   const m    = now.getMonth() + 1;
@@ -8690,29 +8783,116 @@ function _buildReporteMes() {
 
   const hayAlertas = alertas.length > 0;
 
+  // ── Estructura de costos (editable) ──
+  const costos = getCostosEstructura();
+  const calc   = calcTotalCostos(costos);
+
+  const fci = (key, val) =>
+    `<input data-costo="${key}" type="number" value="${val}" min="0" step="1000"
+      style="width:100%;background:var(--s1);border:1px solid var(--border);border-radius:6px;
+             color:var(--text);font-family:var(--font-b);font-size:.82rem;padding:5px 8px;outline:none;
+             text-align:right;box-sizing:border-box"
+      oninput="_recalcCostos()">`;
+
+  const filaC = (label, key, val) =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.04)">
+      <span style="font-size:.82rem;color:var(--text);flex:1">${label}</span>
+      <div style="width:130px;flex-shrink:0">${fci(key, val)}</div>
+    </div>`;
+
   let html = '';
 
-  // ── Resumen financiero ──
   html += `<div style="background:var(--s2);border-radius:14px;padding:18px 20px;margin-bottom:20px">
-    <div style="font-family:var(--font-m);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Resumen financiero — ${nomMes} ${y}</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
-      <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
-        <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700;color:var(--primary)">${fmtPeso(ventasMes)}</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Ingresos cobrados</div>
-        <div style="font-size:.7rem;margin-top:3px;color:${pct(ventasMes,META_VENTAS_MES)>=100?'var(--ok)':pct(ventasMes,META_VENTAS_MES)>=80?'#f59e0b':'#ef4444'};font-family:var(--font-m);font-weight:600">${pct(ventasMes,META_VENTAS_MES)}% de la meta</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <span style="font-family:var(--font-m);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Estructura de costos</span>
+      <button onclick="_toggleEditCostos()" id="btnEditCostos"
+        style="font-size:.72rem;padding:4px 12px;background:transparent;border:1px solid var(--border);
+               color:var(--muted);border-radius:6px;cursor:pointer;font-family:var(--font-b)">
+        ✏️ Editar valores
+      </button>
+    </div>
+
+    <!-- Vista compacta (sólo lectura) -->
+    <div id="costosVistaCompacta">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px">
+        <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700;color:var(--primary)">${fmtPeso(ventasMes)}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Ingresos cobrados</div>
+          <div style="font-size:.7rem;margin-top:3px;color:${pct(ventasMes,META_VENTAS_MES)>=100?'var(--ok)':pct(ventasMes,META_VENTAS_MES)>=80?'#f59e0b':'#ef4444'};font-family:var(--font-m);font-weight:600">${pct(ventasMes,META_VENTAS_MES)}% de la meta</div>
+        </div>
+        <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700;color:#ef4444">${fmtPeso(egresosMes)}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Egresos registrados</div>
+        </div>
+        <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700;color:${utilidadMes>=0?'var(--ok)':'#ef4444'}">${fmtPeso(utilidadMes)}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Utilidad neta</div>
+        </div>
+        <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700">${totalSesiones}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Sesiones atendidas</div>
+          <div style="font-size:.7rem;margin-top:3px;color:${totalSesiones>=metaSesionesMes?'var(--ok)':totalSesiones>=metaSesionesMes*.8?'#f59e0b':'#ef4444'};font-family:var(--font-m);font-weight:600">Meta: ${metaSesionesMes}</div>
+        </div>
       </div>
-      <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
-        <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700;color:#ef4444">${fmtPeso(egresosMes)}</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Egresos del mes</div>
+      <div style="padding:10px 14px;background:var(--s1);border-radius:10px;border:1px solid rgba(27,191,176,.25);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-m)">META DE VENTAS (estructura de costos)</div>
+          <div style="font-family:var(--font-h);font-size:1.3rem;font-weight:700;color:var(--primary)" id="costosTotalDisplay">${fmtPeso(calc.total)}</div>
+        </div>
+        <div style="font-size:.78rem;color:var(--muted);text-align:right;line-height:1.5">
+          Subtotal: ${fmtPeso(calc.subtotal)}<br>
+          + Imprevistos ${costos.pct_imprevistos}%: ${fmtPeso(calc.imprevistos)}<br>
+          + Utilidad ${costos.pct_utilidad}%: ${fmtPeso(calc.utilidad)}
+        </div>
       </div>
-      <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
-        <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700;color:${utilidadMes>=0?'var(--ok)':'#ef4444'}">${fmtPeso(utilidadMes)}</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Utilidad neta</div>
+    </div>
+
+    <!-- Editor de costos (oculto por defecto) -->
+    <div id="costosEditorPanel" style="display:none;margin-top:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;font-weight:700">Costos Fijos</div>
+          ${filaC('Honorarios Fisio',        'honorarios_fisio',  costos.honorarios_fisio)}
+          ${filaC('Seguridad Social',         'seguridad_social',  costos.seguridad_social)}
+          ${filaC('Auxiliar Administrativa',  'auxiliar_admin',    costos.auxiliar_admin)}
+
+          <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 8px;font-weight:700">Costos Operativos</div>
+          ${filaC('Suscripción IA',           'suscripcion_ia',    costos.suscripcion_ia)}
+          ${filaC('Suscripción CapCut',        'suscripcion_capcut',costos.suscripcion_capcut)}
+          ${filaC('Asesorías AP / Mes',        'asesorias_ap',      costos.asesorias_ap)}
+        </div>
+        <div>
+          <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;font-weight:700">Costos Variables</div>
+          ${filaC('Redes Sociales Contenido',  'redes_contenido',   costos.redes_contenido)}
+          ${filaC('Pautas Redes',              'pautas_redes',      costos.pautas_redes)}
+          ${filaC('Mantenimiento y compras',   'mantenimiento',     costos.mantenimiento)}
+          ${filaC('Insumos',                   'insumos',           costos.insumos)}
+
+          <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 8px;font-weight:700">Porcentajes</div>
+          ${filaC('Fondo Imprevistos (%)',      'pct_imprevistos',   costos.pct_imprevistos)}
+          ${filaC('Utilidad Deseada (%)',       'pct_utilidad',      costos.pct_utilidad)}
+        </div>
       </div>
-      <div style="text-align:center;padding:10px 8px;background:var(--s1);border-radius:10px;border:1px solid var(--border)">
-        <div style="font-family:var(--font-h);font-size:1.5rem;font-weight:700">${totalSesiones}</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Sesiones atendidas</div>
-        <div style="font-size:.7rem;margin-top:3px;color:${totalSesiones>=metaSesionesMes?'var(--ok)':totalSesiones>=metaSesionesMes*.8?'#f59e0b':'#ef4444'};font-family:var(--font-m);font-weight:600">Meta: ${metaSesionesMes}</div>
+
+      <!-- Totales en tiempo real -->
+      <div id="costosResumenVivo" style="margin-top:14px;padding:12px 16px;background:var(--s1);border-radius:10px;border:2px solid var(--border)">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center">
+          <div><div style="font-size:.68rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">Subtotal</div><div style="font-family:var(--font-h);font-size:1rem;font-weight:700" id="crSubtotal">${fmtPeso(calc.subtotal)}</div></div>
+          <div><div style="font-size:.68rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">Imprevistos</div><div style="font-family:var(--font-h);font-size:1rem;font-weight:700;color:#f59e0b" id="crImprevistos">${fmtPeso(calc.imprevistos)}</div></div>
+          <div><div style="font-size:.68rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">Utilidad</div><div style="font-family:var(--font-h);font-size:1rem;font-weight:700;color:var(--ok)" id="crUtilidad">${fmtPeso(calc.utilidad)}</div></div>
+          <div style="border-left:2px solid var(--border)"><div style="font-size:.68rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">META TOTAL</div><div style="font-family:var(--font-h);font-size:1.1rem;font-weight:700;color:var(--primary)" id="crTotal">${fmtPeso(calc.total)}</div></div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
+        <button onclick="_toggleEditCostos()"
+          style="font-size:.8rem;padding:7px 16px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-family:var(--font-b)">
+          Cancelar
+        </button>
+        <button onclick="_guardarCostos()"
+          style="font-size:.8rem;padding:7px 20px;background:var(--primary);color:#0D0D0D;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-weight:600">
+          Guardar y actualizar meta
+        </button>
       </div>
     </div>
   </div>`;
