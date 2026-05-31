@@ -171,6 +171,35 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 .stat-card.clickable{cursor:pointer}
 .stat-card.clickable:hover{border-color:var(--primary);box-shadow:0 0 20px var(--glow);transform:translateY(-1px)}
 
+/* ── SCHEDULE MODE TABS ── */
+.nc-schedule-tab{
+  flex:1;padding:8px 10px;border:none;border-radius:7px;background:transparent;
+  font-family:var(--font-b);font-size:.82rem;font-weight:500;color:var(--muted);
+  cursor:pointer;transition:var(--tr);white-space:nowrap;
+}
+.nc-schedule-tab:hover{color:var(--text)}
+.nc-schedule-tab.active{background:var(--s1);color:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,.1);font-weight:600}
+
+/* ── MULTI-DATE CHIP ── */
+.multi-date-chip{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+  background:rgba(27,191,176,.1);border:1px solid rgba(27,191,176,.3);
+  border-radius:99px;font-size:.78rem;color:var(--primary);font-family:var(--font-m);
+}
+.multi-date-chip button{
+  background:none;border:none;cursor:pointer;color:var(--primary);
+  font-size:.9rem;line-height:1;padding:0 1px;opacity:.6;
+}
+.multi-date-chip button:hover{opacity:1}
+
+/* ── RECURRENCE PREVIEW ── */
+.rec-preview-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 10px;background:var(--s1);border-radius:6px;
+  font-size:.78rem;border:1px solid var(--border);
+}
+.rec-preview-item:first-child{border-color:rgba(27,191,176,.4);color:var(--primary);font-weight:600}
+
 /* ── HEADER ── */
 .page-header{margin-bottom:32px}
 .page-title{font-family:var(--font-h);font-size:1.9rem;font-weight:600;line-height:1.2}
@@ -1565,14 +1594,79 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
               ⚠️ Este servicio solo está disponible de forma presencial (en consultorio).
             </div>
           </div>
-          <div class="field">
-            <label>Fecha *</label>
-            <input type="date" id="ncDate" onchange="checkTimeConflict()">
+          <!-- ── SELECTOR DE MODO DE AGENDAMIENTO ── -->
+          <div style="grid-column:1/-1">
+            <label style="font-size:.8rem;color:var(--muted);font-family:var(--font-m);margin-bottom:8px;display:block">Tipo de agendamiento</label>
+            <div style="display:flex;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px;margin-bottom:16px">
+              <button type="button" class="nc-schedule-tab active" id="schedTab-unica" onclick="switchScheduleMode('unica')">📅 Cita única</button>
+              <button type="button" class="nc-schedule-tab" id="schedTab-multiple" onclick="switchScheduleMode('multiple')">📆 Varias fechas</button>
+              <button type="button" class="nc-schedule-tab" id="schedTab-recurrente" onclick="switchScheduleMode('recurrente')">🔁 Recurrente</button>
+            </div>
           </div>
-          <div class="field">
-            <label>Hora *</label>
-            <input type="time" id="ncTime" class="nc-input" style="width:100%" oninput="checkTimeConflict()" onchange="checkTimeConflict()">
-            <div id="ncConflictWarn" style="display:none;margin-top:6px;padding:8px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:8px;font-size:.82rem;color:#991b1b"></div>
+
+          <!-- MODO: CITA ÚNICA -->
+          <div id="schedPanel-unica" class="sched-panel" style="grid-column:1/-1">
+            <div class="form-grid">
+              <div class="field">
+                <label>Fecha *</label>
+                <input type="date" id="ncDate" onchange="checkTimeConflict()">
+              </div>
+              <div class="field">
+                <label>Hora *</label>
+                <input type="time" id="ncTime" class="nc-input" style="width:100%" oninput="checkTimeConflict()" onchange="checkTimeConflict()">
+                <div id="ncConflictWarn" style="display:none;margin-top:6px;padding:8px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:8px;font-size:.82rem;color:#991b1b"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODO: VARIAS FECHAS ESPECÍFICAS -->
+          <div id="schedPanel-multiple" class="sched-panel" style="display:none;grid-column:1/-1">
+            <div style="background:var(--s2);border-radius:10px;padding:14px 16px">
+              <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px">
+                <div class="field" style="flex:1;min-width:130px;margin:0">
+                  <label>Fecha</label>
+                  <input type="date" id="multiDate">
+                </div>
+                <div class="field" style="width:120px;margin:0">
+                  <label>Hora</label>
+                  <input type="time" id="multiTime">
+                </div>
+                <button type="button" onclick="_addMultiDate()" class="btn btn-teal" style="padding:9px 16px;height:fit-content">+ Agregar</button>
+              </div>
+              <div id="multiDateChips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:28px"></div>
+              <div id="multiDateCount" style="font-size:.75rem;color:var(--muted);margin-top:8px"></div>
+            </div>
+          </div>
+
+          <!-- MODO: RECURRENTE -->
+          <div id="schedPanel-recurrente" class="sched-panel" style="display:none;grid-column:1/-1">
+            <div style="background:var(--s2);border-radius:10px;padding:14px 16px">
+              <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+                <div class="field" style="margin:0">
+                  <label>Fecha de inicio *</label>
+                  <input type="date" id="recFechaInicio" oninput="_updateRecPreview()">
+                </div>
+                <div class="field" style="margin:0">
+                  <label>Hora *</label>
+                  <input type="time" id="recHora" oninput="_updateRecPreview()">
+                </div>
+                <div class="field" style="margin:0">
+                  <label>Frecuencia</label>
+                  <select id="recFrecuencia" onchange="_updateRecPreview()">
+                    <option value="7">Cada semana</option>
+                    <option value="14">Cada 2 semanas</option>
+                    <option value="30">Cada mes (aprox.)</option>
+                  </select>
+                </div>
+                <div class="field" style="margin:0">
+                  <label>Número de sesiones</label>
+                  <input type="number" id="recCantidad" min="2" max="52" value="4" oninput="_updateRecPreview()"
+                    style="background:var(--s1);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:9px 11px;outline:none;width:100%">
+                </div>
+              </div>
+              <!-- Vista previa fechas -->
+              <div id="recPreview" style="margin-top:4px"></div>
+            </div>
           </div>
           <div class="field">
             <label>Precio (para registro)</label>
@@ -1702,28 +1796,17 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
           <input type="text" id="ncParaQuien" placeholder="Ej: tu esposo, tu mamá, tu hijo... (dejar en blanco si es para quien llama)" style="margin-top:6px;background:transparent;border:none;border-bottom:1px solid rgba(251,191,36,.3);border-radius:0;padding:4px 0;width:100%;outline:none;font-family:var(--font-b);font-size:.88rem;color:var(--text)">
           <div style="font-size:.72rem;color:#a16207;margin-top:5px">Si pones algo aquí, el mensaje de seguimiento dirá "¿Cómo le fue a tu esposo?" en lugar de "¿Cómo te fue?"</div>
         </div>
-        <!-- ── CITAS RECURRENTES ── -->
-        <div style="margin-top:14px;padding:12px 14px;background:rgba(27,191,176,.05);border:1px solid var(--border);border-radius:10px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <input type="checkbox" id="ncRecurring" onchange="toggleRecurringPanel()" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer">
-            <label for="ncRecurring" style="font-size:.88rem;cursor:pointer">Agendar como cita recurrente (repetir cada semana)</label>
-          </div>
-          <div id="recurringPanel" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-              <label style="font-size:.82rem;color:var(--muted)">Total de sesiones:</label>
-              <input type="number" id="ncSessions" min="2" max="20" value="4" style="width:70px;background:var(--s1);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:6px 8px;outline:none">
-              <span style="font-size:.82rem;color:var(--muted)">sesiones · 1 por semana</span>
-            </div>
-            <p style="font-size:.75rem;color:var(--muted);margin-top:6px">Se crearán todas las citas automáticamente en la misma hora, día de semana y servicio.</p>
-          </div>
-        </div>
+        <!-- ── Mantener ncRecurring y ncSessions ocultos para compatibilidad ── -->
+        <input type="hidden" id="ncRecurring" value="false">
+        <input type="hidden" id="ncSessions" value="1">
 
-        <div style="margin-top:20px;display:flex;gap:10px">
-          <button class="btn btn-teal" onclick="submitAdminBooking()" id="ncSubmitBtn">
+        <div style="margin-top:20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-teal" onclick="submitAdminBookingMulti()" id="ncSubmitBtn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 8v4l3 3"/></svg>
-            Crear cita
+            <span id="ncSubmitLabel">Crear cita</span>
           </button>
           <button class="btn btn-ghost" onclick="clearNuevaCita()">Limpiar</button>
+          <span id="ncSubmitHint" style="font-size:.75rem;color:var(--muted)"></span>
         </div>
 
         </div><!-- /formCita -->
@@ -4509,8 +4592,208 @@ function getAbonoNota() {
 
 // ── CITAS RECURRENTES ──
 function toggleRecurringPanel() {
-  document.getElementById('recurringPanel').style.display =
-    document.getElementById('ncRecurring').checked ? 'block' : 'none';
+  // Mantenida por compatibilidad — el nuevo sistema usa switchScheduleMode
+}
+
+// ══════════════════════════════════════════════════
+// ── SISTEMA DE AGENDAMIENTO MÚLTIPLE ──
+// ══════════════════════════════════════════════════
+let _scheduleMode = 'unica';   // 'unica' | 'multiple' | 'recurrente'
+let _multiDates   = [];        // [{date, time}, ...]
+
+function switchScheduleMode(mode) {
+  _scheduleMode = mode;
+  ['unica','multiple','recurrente'].forEach(m => {
+    const tab   = document.getElementById('schedTab-' + m);
+    const panel = document.getElementById('schedPanel-' + m);
+    if (tab)   tab.classList.toggle('active', m === mode);
+    if (panel) panel.style.display = m === mode ? '' : 'none';
+  });
+  _updateSubmitLabel();
+}
+
+function _updateSubmitLabel() {
+  const lbl  = document.getElementById('ncSubmitLabel');
+  const hint = document.getElementById('ncSubmitHint');
+  if (_scheduleMode === 'unica') {
+    lbl.textContent  = 'Crear cita';
+    hint.textContent = '';
+  } else if (_scheduleMode === 'multiple') {
+    const n = _multiDates.length;
+    lbl.textContent  = n > 0 ? `Crear ${n} cita${n>1?'s':''}` : 'Crear citas';
+    hint.textContent = n > 0 ? `Se crearán ${n} cita${n>1?'s':''}` : 'Agrega fechas arriba';
+  } else {
+    const n = parseInt(document.getElementById('recCantidad')?.value) || 0;
+    lbl.textContent  = n > 0 ? `Crear ${n} cita${n>1?'s':''}` : 'Crear citas';
+    hint.textContent = n > 0 ? `Se crearán ${n} citas recurrentes` : '';
+  }
+}
+
+function _addMultiDate() {
+  const date = document.getElementById('multiDate').value;
+  const time = document.getElementById('multiTime').value;
+  if (!date) { toast('Selecciona una fecha', 'err'); return; }
+  if (!time) { toast('Selecciona una hora', 'err'); return; }
+  if (_multiDates.find(d => d.date === date && d.time === time)) {
+    toast('Esa fecha y hora ya está en la lista', 'warn'); return;
+  }
+  _multiDates.push({ date, time });
+  _multiDates.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  _renderMultiChips();
+  _updateSubmitLabel();
+}
+
+function _removeMultiDate(idx) {
+  _multiDates.splice(idx, 1);
+  _renderMultiChips();
+  _updateSubmitLabel();
+}
+
+function _renderMultiChips() {
+  const DIAS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const wrap  = document.getElementById('multiDateChips');
+  const count = document.getElementById('multiDateCount');
+  if (!wrap) return;
+  wrap.innerHTML = _multiDates.map((d, i) => {
+    const wd   = DIAS[new Date(d.date + 'T12:00:00').getDay()];
+    const [y,m,day] = d.date.split('-');
+    return `<span class="multi-date-chip">
+      ${wd} ${day}/${m}/${y} ${d.time}
+      <button type="button" onclick="_removeMultiDate(${i})" title="Quitar">×</button>
+    </span>`;
+  }).join('');
+  count.textContent = _multiDates.length > 0
+    ? `${_multiDates.length} fecha${_multiDates.length > 1 ? 's' : ''} seleccionada${_multiDates.length > 1 ? 's' : ''}`
+    : '';
+}
+
+function _calcRecDates() {
+  const start  = document.getElementById('recFechaInicio')?.value;
+  const time   = document.getElementById('recHora')?.value;
+  const days   = parseInt(document.getElementById('recFrecuencia')?.value) || 7;
+  const qty    = Math.min(parseInt(document.getElementById('recCantidad')?.value) || 4, 52);
+  if (!start || !time || qty < 1) return [];
+  const dates = [];
+  const cur   = new Date(start + 'T12:00:00');
+  for (let i = 0; i < qty; i++) {
+    dates.push({ date: cur.toISOString().split('T')[0], time });
+    cur.setDate(cur.getDate() + days);
+  }
+  return dates;
+}
+
+function _updateRecPreview() {
+  _updateSubmitLabel();
+  const dates  = _calcRecDates();
+  const wrap   = document.getElementById('recPreview');
+  if (!wrap) return;
+  if (!dates.length) { wrap.innerHTML = ''; return; }
+
+  const DIAS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  wrap.innerHTML = `
+    <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">
+      Vista previa — ${dates.length} sesiones
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto">
+      ${dates.map((d, i) => {
+        const dt  = new Date(d.date + 'T12:00:00');
+        const dia = DIAS[dt.getDay()];
+        const mes = MESES[dt.getMonth()];
+        return `<div class="rec-preview-item">
+          <span>${i === 0 ? '▶ ' : ''}${dia} ${dt.getDate()} ${mes} ${dt.getFullYear()}</span>
+          <span style="font-family:var(--font-m);color:var(--muted)">${d.time}${i===0?' (inicio)':''}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+async function submitAdminBookingMulti() {
+  if (_submittingBooking) return;
+
+  const name = document.getElementById('ncName').value.trim();
+  const serv = document.getElementById('ncService').value;
+  const mod  = document.getElementById('ncMod').value;
+  if (!name || !serv) { toast('Completa los campos obligatorios (*)','err'); return; }
+
+  // Reunir fechas según modo
+  let fechas = [];
+  if (_scheduleMode === 'unica') {
+    const date = document.getElementById('ncDate').value;
+    const time = document.getElementById('ncTime').value;
+    if (!date || !time) { toast('Selecciona fecha y hora', 'err'); return; }
+    fechas = [{ date, time }];
+  } else if (_scheduleMode === 'multiple') {
+    if (_multiDates.length === 0) { toast('Agrega al menos una fecha', 'err'); return; }
+    fechas = [..._multiDates];
+  } else {
+    fechas = _calcRecDates();
+    if (fechas.length === 0) { toast('Configura la recurrencia', 'err'); return; }
+  }
+
+  _submittingBooking = true;
+  const btn = document.getElementById('ncSubmitBtn');
+  const origLabel = document.getElementById('ncSubmitLabel').textContent;
+  btn.disabled = true;
+
+  // Datos base de la cita
+  const phone = document.getElementById('ncPhone').value.trim();
+  const gymSel = document.getElementById('ncConvenio').value;
+  let gimnasioData = {};
+  if (gymSel) {
+    const descValor = parseFloat(document.getElementById('ncConvDescValor').value) || 0;
+    const descTipo  = document.getElementById('ncConvDescTipo').value;
+    const comValor  = parseFloat(document.getElementById('ncConvComValor').value)  || 0;
+    const comTipo   = document.getElementById('ncConvComTipo').value;
+    const precioNormal = parsePrecioNum(document.getElementById('ncPrice').value);
+    const descuento  = descTipo==='pct' ? precioNormal*descValor/100 : descValor;
+    const clientePaga = precioNormal - descuento;
+    const comision   = comTipo==='pct' ? clientePaga*comValor/100 : comValor;
+    const ingresoReal = clientePaga - comision;
+    const costoReal   = costosReales[serv] || 0;
+    const utilidad    = ingresoReal - costoReal;
+    const margen      = ingresoReal>0 ? Math.round((utilidad/ingresoReal)*100) : 0;
+    gimnasioData = { gimnasio:gymSel, descuentoCliente:fmtPeso(descuento), comisionGym:fmtPeso(comision), ingresoReal:fmtPeso(ingresoReal), margenPct:margen+'%' };
+  }
+
+  const baseData = {
+    name, phone,
+    email:     document.getElementById('ncEmail').value.trim(),
+    service:   serv, modality: mod,
+    priceP:    getPrecioFinal() || 'A convenir',
+    priceD:    getPrecioFinal() || 'A convenir',
+    address:   document.getElementById('ncAddress').value.trim(),
+    notes:     document.getElementById('ncNotes').value.trim(),
+    notaAdmin: (() => { const p=(document.getElementById('ncParaQuien').value||'').trim(); const ab=getAbonoNota(); return [p?'[PARA: '+p+']':'',ab].filter(Boolean).join(' '); })(),
+    canal:     document.getElementById('nuevaCitaCanal').value || 'Directo',
+    ...gimnasioData
+  };
+
+  let creadas = 0, errores = 0;
+  for (let i = 0; i < fechas.length; i++) {
+    document.getElementById('ncSubmitLabel').textContent = `Creando ${i+1}/${fechas.length}...`;
+    const data = { ...baseData, date: fechas[i].date, time: fechas[i].time };
+    try {
+      const r = await fetch(`${APPS_SCRIPT_URL}?action=adminBook&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(data))}`);
+      const d = await r.json();
+      if (d.ok) creadas++; else errores++;
+    } catch(e) { errores++; }
+  }
+
+  _submittingBooking = false;
+  btn.disabled = false;
+  document.getElementById('ncSubmitLabel').textContent = origLabel;
+
+  if (errores > 0) {
+    toast(`${creadas} cita${creadas!==1?'s':''} creada${creadas!==1?'s':''} · ${errores} error${errores!==1?'es':''}`, 'warn');
+  } else {
+    toast(`✓ ${creadas} cita${creadas!==1?'s':''} creada${creadas!==1?'s':''} correctamente`, 'ok');
+    logChange('Nueva cita', `${name} · ${serv} · ${creadas} sesión${creadas!==1?'es':''}`);
+    allData = await (await fetch(`${APPS_SCRIPT_URL}?action=getCitas&token=${encodeURIComponent(TOKEN)}`)).json();
+    renderAgenda(); initDashboard();
+    if (_scheduleMode !== 'unica') { _multiDates = []; _renderMultiChips(); }
+    clearNuevaCita();
+  }
 }
 
 // ── BÚSQUEDA GLOBAL ──
@@ -6252,8 +6535,18 @@ function clearNuevaCita() {
   if (dd) dd.style.display='none';
   quitarDescuento();
   document.getElementById('descuentoPanel').style.display = 'none';
-  const rc = document.getElementById('ncRecurring');
-  if (rc) { rc.checked = false; document.getElementById('recurringPanel').style.display = 'none'; }
+  // Reset modo de agendamiento
+  _multiDates = [];
+  _renderMultiChips();
+  switchScheduleMode('unica');
+  const recPrev = document.getElementById('recPreview');
+  if (recPrev) recPrev.innerHTML = '';
+  const rFecha = document.getElementById('recFechaInicio');
+  const rHora  = document.getElementById('recHora');
+  const rCant  = document.getElementById('recCantidad');
+  if (rFecha) rFecha.value = '';
+  if (rHora)  rHora.value  = '';
+  if (rCant)  rCant.value  = '4';
 }
 
 // ── INDICADOR DUPLICADO BASE DE DATOS ──
