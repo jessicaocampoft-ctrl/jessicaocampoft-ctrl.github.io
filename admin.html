@@ -8686,10 +8686,10 @@ function _buildReporteMes() {
                    + eventosMes.reduce((s,e) => s+parsePrecio(e.cobro), 0);
   const ventasPendientes = citasMes.filter(c => !isPagada(c.id))
                             .reduce((s,c) => s+parsePrecio(c.precio), 0);
+  const costos = getCostosEstructura();
+  const calc   = calcTotalCostos(costos);
   const egresosAll = getEgresos().filter(e => e.fecha && e.fecha.startsWith(mesStr));
   const egresosMes = egresosAll.reduce((s,e) => s+(e.monto||0), 0);
-  // Usar estructura de costos como base de gastos reales (más preciso que los egresos registrados)
-  // Si hay egresos registrados y son mayores, usar esos; si no, usar el subtotal de la estructura
   const gastosBase = egresosMes > 0 ? Math.max(egresosMes, calc.subtotal) : calc.subtotal;
   const utilidadMes = ventasCobradas - gastosBase;
   const margenPct = ventasCobradas > 0 ? Math.round((utilidadMes/ventasCobradas)*100) : 0;
@@ -8820,10 +8820,6 @@ function _buildReporteMes() {
     CATEGORIAS_MARKETING.some(cat=>(e.concepto||'').toLowerCase().includes(cat.toLowerCase()))
   ).reduce((s,e)=>s+(e.monto||0), 0);
   const cac = pacNuevos>0 ? Math.round(egresosMkt/pacNuevos) : 0;
-
-  // ── Estructura de costos ──
-  const costos = getCostosEstructura();
-  const calc   = calcTotalCostos(costos);
 
   // ══ Helpers ══
   const pct = (v,m2) => m2>0 ? Math.round(v/m2*100) : 0;
