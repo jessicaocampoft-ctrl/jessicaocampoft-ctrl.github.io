@@ -783,11 +783,17 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
     <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
       <button class="btn btn-ghost" onclick="copiarReporteMes()" id="btnCopiarReporte">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        Copiar texto
+        Copiar reporte
       </button>
       <button class="btn btn-ghost" onclick="imprimirReporteMes()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Imprimir
+      </button>
+      <button class="btn" id="btnBriefClaude"
+        onclick="copiarBriefClaude()"
+        style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;gap:6px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l3 3"/><circle cx="19" cy="5" r="3" fill="currentColor" stroke="none"/></svg>
+        Brief para Claude
       </button>
       <button class="btn btn-teal" onclick="cerrarReporteMes()">Cerrar</button>
     </div>
@@ -9349,6 +9355,273 @@ function imprimirReporteMes() {
   </body></html>`);
   w.document.close();
   setTimeout(() => w.print(), 500);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── BRIEF PARA CLAUDE ──
+// ══════════════════════════════════════════════════════════════
+function copiarBriefClaude() {
+  const now   = new Date();
+  const m     = now.getMonth() + 1;
+  const y     = now.getFullYear();
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const nomMes = MESES[m-1].charAt(0).toUpperCase() + MESES[m-1].slice(1);
+  const mesStr = `${y}-${String(m).padStart(2,'0')}`;
+  const sep  = n => '─'.repeat(n);
+
+  const citas      = citasReales();
+  const todasCitas = allData.citas || [];
+  const eventosAll = allData.eventos || [];
+  const manual     = getKPIManual();
+  const costos     = getCostosEstructura();
+  const calc       = calcTotalCostos(costos);
+
+  // ── Sesiones ──
+  const citasMes = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m&&+cy===y&&c.estado!=='No asistió'; });
+  const eventosMes = eventosAll.filter(e => { const [cy,cm]=normDate(e.fecha).split('-'); return +cm===m&&+cy===y; });
+  const noShowsMes = todasCitas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m&&+cy===y&&c.estado==='No asistió'; });
+  const todasMes   = todasCitas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m&&+cy===y; });
+  const totalSesiones = citasMes.length + eventosMes.length;
+  const metaSesionesMes = META_SESIONES_SEMANA * 4;
+
+  // ── Financiero ──
+  const ventasCobradas  = calcCobradoMes();
+  const ventasFact      = citasMes.reduce((s,c)=>s+parsePrecio(c.precio),0) + eventosMes.reduce((s,e)=>s+parsePrecio(e.cobro),0);
+  const ventasPendientes= citasMes.filter(c=>!isPagada(c.id)).reduce((s,c)=>s+parsePrecio(c.precio),0);
+  const egresosAll      = getEgresos().filter(e=>e.fecha&&e.fecha.startsWith(mesStr));
+  const egresosMes      = egresosAll.reduce((s,e)=>s+(e.monto||0),0);
+  const gastosBase      = egresosMes>0 ? Math.max(egresosMes,calc.subtotal) : calc.subtotal;
+  const utilidadMes     = ventasCobradas - gastosBase;
+  const margenPct       = ventasCobradas>0 ? Math.round((utilidadMes/ventasCobradas)*100) : 0;
+  const pctMeta         = calc.total>0 ? Math.round((ventasCobradas/calc.total)*100) : 0;
+
+  // ── Mix servicios ──
+  const mixMap = {}, mixIng = {};
+  citasMes.forEach(c=>{ const sv=c.servicio||'Sin tipo'; mixMap[sv]=(mixMap[sv]||0)+1; mixIng[sv]=(mixIng[sv]||0)+parsePrecio(c.precio); });
+  const mixArr = Object.entries(mixMap).sort((a,b)=>b[1]-a[1]);
+  const fullCnt    = mixArr.find(([s])=>s.toLowerCase().includes('full'))?.[1] || 0;
+  const expressCnt = mixArr.find(([s])=>s.toLowerCase().includes('express'))?.[1] || 0;
+
+  // ── Cancelaciones ──
+  const motivosMes    = getCancelMotivos();
+  const canceladasMes = todasMes.filter(c=>(c.estado||'').toLowerCase().includes('cancel')&&motivosMes[c.id]!=='Prueba');
+  const tasaCancel    = todasMes.length>0 ? Math.round((canceladasMes.length/todasMes.length)*100) : 0;
+  const noShowRate    = todasMes.length>0 ? Math.round((noShowsMes.length/todasMes.length)*100) : 0;
+
+  // ── Pacientes ──
+  const ventanaAtras = new Date(now); ventanaAtras.setDate(now.getDate()-VENTANA_NUEVO_DIAS);
+  const pacMesMap = {};
+  citasMes.forEach(c=>{ if(c.nombre) pacMesMap[c.nombre.trim().toLowerCase()]=(pacMesMap[c.nombre.trim().toLowerCase()]||0)+1; });
+  const pacUnicosMes = Object.keys(pacMesMap).length;
+  let pacNuevos=0, pacRecurrentes=0;
+  Object.keys(pacMesMap).forEach(pac=>{
+    const prev=todasCitas.filter(c=>c.nombre&&c.nombre.trim().toLowerCase()===pac&&new Date(normDate(c.fecha)+'T12:00:00')>=ventanaAtras&&new Date(normDate(c.fecha)+'T12:00:00')<new Date(y,m-1,1));
+    if(prev.length===0) pacNuevos++; else pacRecurrentes++;
+  });
+  const hace60=new Date(now); hace60.setDate(now.getDate()-VENTANA_RETENCION);
+  const cont60={};
+  citas.filter(c=>new Date(normDate(c.fecha)+'T12:00:00')>=hace60).forEach(c=>{ if(c.nombre) cont60[c.nombre.trim().toLowerCase()]=(cont60[c.nombre.trim().toLowerCase()]||0)+1; });
+  const pac60=Object.keys(cont60).length, pacRecompra=Object.values(cont60).filter(n=>n>=2).length;
+  const tasaRet=pac60>0?Math.round((pacRecompra/pac60)*100):0;
+
+  // ── Leads y marketing ──
+  const leadsMes   = getLeadsMes() || manual.leads || 0;
+  const tasaConv   = leadsMes>0 ? Math.round((citasMes.length/leadsMes)*100) : null;
+  const egresosMkt = egresosAll.filter(e=>CATEGORIAS_MARKETING.some(cat=>(e.concepto||'').toLowerCase().includes(cat.toLowerCase()))).reduce((s,e)=>s+(e.monto||0),0);
+  const cac        = pacNuevos>0 ? Math.round(egresosMkt/pacNuevos) : 0;
+  const canalMap={}, canalIng={};
+  citasMes.forEach(c=>{ const canal=c.canal||'Directo'; canalMap[canal]=(canalMap[canal]||0)+1; canalIng[canal]=(canalIng[canal]||0)+parsePrecio(c.precio); });
+
+  // ── Calidad ──
+  const encStats=getEncuestaStats();
+  const npsVal  = encStats.nps!==undefined?encStats.nps:(manual.nps||0);
+  const encPct  = encStats.encuestas!==undefined?encStats.encuestas:(manual.encuestas||0);
+  const bdAuto  = calcBDActualizada();
+  const bdPct   = bdAuto?bdAuto.pct:(manual.bd||0);
+
+  // ── Semanas ──
+  const semanas=[0,0,0,0,0];
+  citasMes.forEach(c=>{ const d=new Date(normDate(c.fecha)+'T12:00:00'); const s=Math.min(Math.floor((d.getDate()-1)/7),4); semanas[s]++; });
+  eventosMes.forEach(e=>{ const d=new Date(normDate(e.fecha)+'T12:00:00'); const s=Math.min(Math.floor((d.getDate()-1)/7),4); semanas[s]++; });
+
+  // ── Días pico ──
+  const diasNom=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const porDia=[0,0,0,0,0,0,0];
+  citasMes.forEach(c=>{ const d=new Date(normDate(c.fecha)+'T12:00:00'); porDia[d.getDay()]++; });
+  const diaPico = diasNom[porDia.indexOf(Math.max(...porDia))];
+  const diaBajo = diasNom[[1,2,3,4,5,6,0].reduce((best,d)=>porDia[d]<porDia[best]?d:best, 1)];
+
+  // ════════════ CONSTRUIR TEXTO ════════════
+  let t = '';
+  const line = (l='') => t += l + '\n';
+  const h1   = txt => { line(); line(`${'═'.repeat(60)}`); line(`  ${txt}`); line(`${'═'.repeat(60)}`); };
+  const h2   = txt => { line(); line('── ' + txt.toUpperCase() + ' ' + sep(Math.max(0,50-txt.length-4))); };
+  const row  = (label, val) => line(`  ${label.padEnd(38,'.')} ${val}`);
+
+  line(`BRIEF DE NEGOCIO — ${nomMes} ${y}`);
+  line(`Generado el ${now.toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'})} desde el admin de Jessica Ocampo Fisioterapeuta`);
+  line(sep(60));
+  line();
+  line(`CONTEXTO DEL NEGOCIO`);
+  line(`Clínica de fisioterapia especializada en Descarga Muscular (Full y Express),`);
+  line(`Readaptación Deportiva y servicios corporativos. Modalidades: presencial y domicilio.`);
+  line(`Objetivo: ${fmtPeso(calc.total)}/mes para cubrir costos, imprevistos y 20% de utilidad.`);
+
+  h1(`1. RESULTADOS FINANCIEROS`);
+  row('Ingresos facturados', fmtPeso(ventasFact));
+  row('Ingresos cobrados', fmtPeso(ventasCobradas));
+  row('Pendiente de cobro', fmtPeso(ventasPendientes));
+  row('Meta de ventas del mes', fmtPeso(calc.total));
+  row('Cumplimiento de meta', pctMeta + '%');
+  line();
+  row('Costos fijos + operativos (estructura)', fmtPeso(calc.subtotal));
+  row('Egresos registrados en sistema', fmtPeso(egresosMes));
+  row('Base de gastos usada para cálculo', fmtPeso(gastosBase));
+  row('Utilidad neta real', fmtPeso(utilidadMes));
+  row('Margen de utilidad real', margenPct + '%');
+  row('Margen objetivo', costos.pct_utilidad + '%');
+  line();
+  line(`  ESTRUCTURA DE COSTOS MENSUAL:`);
+  row('  Honorarios Fisio', fmtPeso(costos.honorarios_fisio));
+  row('  Seguridad Social', fmtPeso(costos.seguridad_social));
+  row('  Auxiliar Administrativa', fmtPeso(costos.auxiliar_admin));
+  row('  Suscripción IA', fmtPeso(costos.suscripcion_ia));
+  row('  Suscripción CapCut', fmtPeso(costos.suscripcion_capcut));
+  row('  Asesorías AP / Mes', fmtPeso(costos.asesorias_ap));
+  row('  Redes Sociales Contenido', fmtPeso(costos.redes_contenido));
+  row('  Pautas Redes', fmtPeso(costos.pautas_redes));
+  row('  Mantenimiento y compras', fmtPeso(costos.mantenimiento));
+  row('  Insumos', fmtPeso(costos.insumos));
+  row('  Subtotal', fmtPeso(calc.subtotal));
+  row('  + Fondo imprevistos ' + costos.pct_imprevistos + '%', fmtPeso(calc.imprevistos));
+  row('  + Utilidad deseada ' + costos.pct_utilidad + '%', fmtPeso(calc.utilidad));
+  row('  TOTAL NECESARIO', fmtPeso(calc.total));
+
+  h1(`2. SESIONES Y PRODUCTIVIDAD`);
+  row('Total sesiones atendidas', totalSesiones + ' / meta ' + metaSesionesMes);
+  row('Cumplimiento meta sesiones', Math.round(totalSesiones/metaSesionesMes*100) + '%');
+  row('Citas individuales', citasMes.length + '');
+  row('Eventos / corporativos', eventosMes.length + '');
+  line();
+  line('  Por semana:');
+  semanas.forEach((n,i) => { if(n>0||i<4) row(`    Semana ${i+1}`, n + ' sesiones'); });
+  line();
+  line('  Mix de servicios:');
+  const totalSesM = mixArr.reduce((s,[,n])=>s+n,0);
+  mixArr.forEach(([serv,cnt]) => {
+    const p = Math.round(cnt/totalSesM*100);
+    const ing = mixIng[serv]||0;
+    row(`    ${serv}`, `${cnt} sesiones (${p}%) — ${fmtPeso(ing)} — prom. ${fmtPeso(Math.round(ing/cnt))}/sesión`);
+  });
+  if (fullCnt>0&&expressCnt>0) {
+    line();
+    line(`  ALERTA RENTABILIDAD: Full (${fullCnt}) vs Express (${expressCnt}).`);
+    line(`  La Express genera más ingreso por hora que la Full.`);
+  }
+  line();
+  row('Día más ocupado', diaPico);
+  row('Día menos ocupado', diaBajo);
+
+  h1(`3. CANCELACIONES Y NO-SHOWS`);
+  row('Total citas programadas', todasMes.length + '');
+  row('Cancelaciones', canceladasMes.length + ' (' + tasaCancel + '%) — meta <' + META_CANCELACION_PCT + '%');
+  row('No-shows (no asistió)', noShowsMes.length + ' (' + noShowRate + '%)');
+  row('Citas efectivamente atendidas', (todasMes.length-canceladasMes.length-noShowsMes.length) + '');
+  const ingPromedio = citasMes.length>0 ? Math.round(ventasFact/citasMes.length) : 0;
+  row('Ingreso estimado perdido (cancel+noshow)', fmtPeso((canceladasMes.length+noShowsMes.length)*ingPromedio));
+  if (Object.keys({}).length>0||canceladasMes.length>0) {
+    const cancelPorServ={};
+    canceladasMes.forEach(c=>{ const sv=c.servicio||'Sin tipo'; cancelPorServ[sv]=(cancelPorServ[sv]||0)+1; });
+    if(Object.keys(cancelPorServ).length>0) {
+      line();
+      line('  Cancelaciones por servicio:');
+      Object.entries(cancelPorServ).sort((a,b)=>b[1]-a[1]).forEach(([sv,n])=>row(`    ${sv}`,n+''));
+    }
+  }
+
+  h1(`4. ANÁLISIS DE PACIENTES`);
+  row('Pacientes únicos atendidos', pacUnicosMes + '');
+  row('Pacientes nuevos (sin visita en 6 meses)', pacNuevos + '');
+  row('Pacientes recurrentes', pacRecurrentes + '');
+  row('Tasa de retención 60 días', tasaRet + '% — meta ≥' + META_RETENCION_PCT + '%');
+  row('Pacientes con ≥2 sesiones en 60 días', pacRecompra + ' de ' + pac60);
+  line();
+  const topPac = Object.entries(pacMesMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  if (topPac.length>0) {
+    line('  Top pacientes por sesiones:');
+    topPac.forEach(([nom,n],i)=>row(`    ${i+1}. ${nom}`, n+' sesión'+(n===1?'':'es')));
+  }
+
+  h1(`5. MARKETING Y CAPTACIÓN`);
+  row('Leads recibidos en el mes', leadsMes>0?leadsMes+'':'Sin registro');
+  row('Tasa de conversión', tasaConv!==null?tasaConv+'% — meta ≥25%':'Sin datos de leads');
+  row('Pacientes nuevos captados', pacNuevos + '');
+  row('Inversión en marketing', fmtPeso(egresosMkt));
+  row('CAC (costo adquisición cliente)', cac>0?fmtPeso(cac)+' — meta <'+fmtPeso(META_CAC_MAX):'Sin datos');
+  if (Object.keys(canalIng).length>0) {
+    line();
+    line('  Ingresos por canal de captación:');
+    const totalCanalIng=Object.values(canalIng).reduce((s,v)=>s+v,0);
+    Object.entries(canalIng).sort((a,b)=>b[1]-a[1]).forEach(([canal,ing])=>{
+      const pp=totalCanalIng>0?Math.round(ing/totalCanalIng*100):0;
+      row(`    ${canal}`, `${fmtPeso(ing)} (${pp}%) — ${canalMap[canal]} sesiones`);
+    });
+  }
+
+  h1(`6. CALIDAD Y SATISFACCIÓN`);
+  row('NPS (Net Promoter Score)', npsVal + ' — meta ≥' + META_NPS);
+  if (encStats.promotores!==undefined) {
+    row('  Promotores', encStats.promotores+'');
+    row('  Pasivos', encStats.pasivos+'');
+    row('  Detractores', encStats.detractores+'');
+  }
+  row('% Pacientes que respondieron encuesta', encPct + '% — meta ≥' + META_ENCUESTAS + '%');
+  row('BD actualizada (tel+email completos)', bdPct + '%' + (bdAuto?` — ${bdAuto.completos}/${bdAuto.total} pacientes`:''));
+
+  h1(`7. SEMÁFORO DE INDICADORES`);
+  const sem2 = (v,meta,alto=true) => {
+    if(!meta||isNaN(v)) return '⬜ Sin datos';
+    const ok=alto?v>=meta:v<=meta, warn=alto?v>=meta*.8:v<=meta*1.2;
+    return ok?'🟢 En meta':warn?'🟡 Cerca de meta':'🔴 Bajo meta';
+  };
+  row('Sesiones del mes', totalSesiones+'/'+metaSesionesMes+' — '+sem2(totalSesiones,metaSesionesMes));
+  row('Ventas cobradas', fmtPeso(ventasCobradas)+' — '+sem2(ventasCobradas,calc.total));
+  row('Margen de utilidad', margenPct+'% — '+sem2(margenPct,costos.pct_utilidad));
+  row('Tasa de conversión', (tasaConv!==null?tasaConv+'%':'—')+' — '+sem2(tasaConv||0,25));
+  row('Tasa de cancelación', tasaCancel+'% — '+sem2(tasaCancel,META_CANCELACION_PCT,false));
+  row('Retención 60 días', tasaRet+'% — '+sem2(tasaRet,META_RETENCION_PCT));
+  row('NPS', npsVal+' — '+sem2(npsVal,META_NPS));
+  row('Encuestas respondidas', encPct+'% — '+sem2(encPct,META_ENCUESTAS));
+  row('BD actualizada', bdPct+'% — '+sem2(bdPct,100));
+  row('CAC', cac>0?fmtPeso(cac):'—'+' — '+sem2(cac||0,META_CAC_MAX,false));
+
+  line();
+  line(sep(60));
+  line();
+  line(`PREGUNTA PARA CLAUDE:`);
+  line();
+  line(`Soy fisioterapeuta independiente en Colombia. Acabo de cerrar ${nomMes} ${y}.`);
+  line(`Te comparto el reporte completo de mi clínica arriba.`);
+  line();
+  line(`Con base en estos datos reales:`);
+  line(`1. ¿Qué estrategias concretas de ventas me recomiendas para el próximo mes?`);
+  line(`2. ¿Qué servicio debería priorizar y por qué?`);
+  line(`3. ¿Cómo puedo mejorar la retención y reducir cancelaciones?`);
+  line(`4. ¿Qué acciones de marketing tienen más sentido con mi presupuesto actual?`);
+  line(`5. ¿Qué otras oportunidades ves que no estoy aprovechando?`);
+  line();
+  line(`Sé específica, usa los números reales del reporte y dame acciones concretas que pueda`);
+  line(`implementar esta semana.`);
+  line(sep(60));
+
+  navigator.clipboard.writeText(t).then(() => {
+    const btn = document.getElementById('btnBriefClaude');
+    const orig = btn.innerHTML;
+    btn.textContent = '✓ ¡Listo! Ya puedes pegarlo en Claude';
+    btn.style.background = 'var(--ok)';
+    btn.style.color = '#fff';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background=''; btn.style.color=''; }, 3000);
+  }).catch(() => toast('No se pudo copiar — intenta de nuevo', 'err'));
 }
 
 // ══════════════════════════════════════════════════════════════
