@@ -1349,6 +1349,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
           <option value="">Todas las modalidades</option>
           <option value="Presencial">Presencial</option>
           <option value="Domicilio">Domicilio</option>
+          <option value="Virtual">Virtual</option>
         </select>
         <select id="fService" onchange="renderAgenda()">
           <option value="">Todos los servicios</option>
@@ -1558,6 +1559,7 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
             <select id="ncMod" onchange="toggleNcAddress(); autoFillPrice(); checkDomicilioWarn()">
               <option value="Presencial">Presencial</option>
               <option value="Domicilio">Domicilio</option>
+              <option value="Virtual">Virtual</option>
             </select>
             <div id="ncDomicilioWarn" style="display:none;margin-top:6px;padding:7px 11px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.3);border-radius:8px;font-size:.80rem;color:#d97706">
               ⚠️ Este servicio solo está disponible de forma presencial (en consultorio).
@@ -3870,6 +3872,7 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
         <select id="editModalidad" class="nc-input" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.9rem;padding:10px 12px;outline:none">
           <option>Presencial</option>
           <option>Domicilio</option>
+          <option>Virtual</option>
         </select>
       </div>
       <div>
@@ -5106,7 +5109,7 @@ function renderAgenda(keepPage = false) {
         <button class="btn btn-ghost btn-sm" style="margin-top:3px;font-size:.7rem;padding:2px 7px" onclick="verHistorial('${encodeURIComponent(c.nombre)}')">📋 Historial</button>
       </td>
       <td style="font-size:.82rem">${c.servicio}${sesionBadge(c.nombre, c.servicio)}</td>
-      <td><span class="chip ${c.modalidad==='Domicilio'?'chip-info':'chip-ok'}" style="font-size:.7rem">${c.modalidad}</span></td>
+      <td><span class="chip ${c.modalidad==='Domicilio'?'chip-info':c.modalidad==='Virtual'?'chip-warn':'chip-ok'}" style="font-size:.7rem">${c.modalidad}</span></td>
       <td style="font-family:var(--font-m);color:var(--primary);font-size:.82rem">${c.precio}<br>${pagoBadge(c.id)}</td>
       <td>
         <select class="btn btn-ghost btn-sm" onchange="changeStatus('${c.id}',this.value)" style="cursor:pointer">
