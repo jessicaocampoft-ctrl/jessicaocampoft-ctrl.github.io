@@ -218,7 +218,7 @@ function createBooking(d, isAdmin) {
     d.name, phoneClean, d.email,
     d.service, d.modality,
     d.date, d.time, price,
-    'Confirmada',
+    start < new Date() ? 'Atendida' : 'Confirmada',
     d.address || '', d.notes || '', d.notaAdmin || ''
   ]);
   // Forzar columna Telefono como texto para evitar #ERROR! en Sheets
