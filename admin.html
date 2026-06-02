@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://script.google.com https://places.googleapis.com;">
 <script>if(localStorage.getItem('adminDarkMode')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
 <title>Admin — Jessica Ocampo Fisioterapeuta</title>
 <link rel="icon" href="Logo/4.png">
@@ -4440,6 +4442,15 @@ async function _flushKV() {
 
 let TOKEN  = sessionStorage.getItem('adminToken') || '';
 let allData = {citas: [], bloqueos: [], eventos: []};
+
+// Escapa HTML para prevenir XSS en innerHTML
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
 let _submittingBooking = false;
 let _submittingPatient = false;
 let _loginTime = null;
@@ -4514,8 +4525,8 @@ function _resetActivity() { _lastActivity = Date.now(); }
 );
 setInterval(() => {
   if (TOKEN && Date.now() - _lastActivity > _INACTIVITY_MS) {
-    alert('Sesión cerrada por inactividad (30 min).');
-    logout();
+    toast('Sesión cerrada por inactividad (30 min).', 'warn');
+    setTimeout(logout, 1500);
   }
 }, 60_000);
 
@@ -4526,8 +4537,8 @@ document.addEventListener('visibilitychange', async () => {
   try {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=ping&token=${encodeURIComponent(TOKEN)}`).then(x => x.json());
     if (!r.ok) {
-      alert('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
-      logout();
+      toast('Sesión expirada. Volviendo al login...', 'warn');
+      setTimeout(logout, 1500);
     }
   } catch(e) {}
 });
@@ -4666,7 +4677,9 @@ async function cambiarPassword() {
 
 // ── EVAL EXPRESS ──
 function openEvalExpress() {
-  window.open('evaluacion-express.html?token=' + encodeURIComponent(TOKEN), '_blank');
+  // Token via sessionStorage, nunca en la URL (evita historial/logs)
+  sessionStorage.setItem('evalToken', TOKEN);
+  window.open('evaluacion-express.html', '_blank');
 }
 
 // ── SIDEBAR / NAV ──
@@ -5507,9 +5520,13 @@ function toast(msg, type='ok') {
 async function reload() {
   try {
     const r = await fetch(APPS_SCRIPT_URL + '?action=adminData&token=' + encodeURIComponent(TOKEN));
+    if (!r.ok) { toast('Error del servidor (' + r.status + '). Recarga la página.', 'err'); return; }
     const d = await r.json();
     if (d.ok) allData = d;
-  } catch(e) {}
+    else if (d.error === 'Sin permiso') { toast('Sesión expirada. Volviendo al login...', 'warn'); setTimeout(logout, 1500); }
+  } catch(e) {
+    toast('Sin conexión. Verifica tu internet.', 'err');
+  }
 }
 
 // ── HELPERS FINANCIEROS ──
@@ -5618,15 +5635,15 @@ function initDashboard() {
   } else {
     tlHoy.innerHTML = citasHoy.map(c => `
       <div class="tl-item">
-        <div class="tl-time">${c.hora}</div>
+        <div class="tl-time">${esc(c.hora)}</div>
         <div class="tl-body">
-          <div class="tl-name">${c.nombre} ${chipState(c.estado)}</div>
-          <div class="tl-serv">${c.servicio} · ${c.modalidad} · ${c.precio}</div>
+          <div class="tl-name">${esc(c.nombre)} ${chipState(c.estado)}</div>
+          <div class="tl-serv">${esc(c.servicio)} · ${esc(c.modalidad)} · ${esc(c.precio)}</div>
           <div class="tl-actions">
             ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp',c.precio,c.modalidad)}
-            <button type="button" class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="verDetalle('${esc(c.id)}')">Ver</button>
             ${pagoBadge(c.id)}
-            <button type="button" class="btn btn-ghost btn-sm" onclick="changeStatus('${c.id}','Atendida')">✓ Atendida</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="changeStatus('${esc(c.id)}','Atendida')">✓ Atendida</button>
           </div>
         </div>
       </div>`).join('');
@@ -5648,13 +5665,13 @@ function initDashboard() {
       const waUrl = waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,c.precio,c.modalidad);
       return `
       <div class="tl-item">
-        <div class="tl-time" style="min-width:80px">${fmtDate(c.fecha)}<br><small style="color:var(--muted)">${c.hora}</small></div>
+        <div class="tl-time" style="min-width:80px">${esc(fmtDate(c.fecha))}<br><small style="color:var(--muted)">${esc(c.hora)}</small></div>
         <div class="tl-body">
-          <div class="tl-name">${c.nombre}</div>
-          <div class="tl-serv">${c.servicio} · ${c.modalidad}</div>
+          <div class="tl-name">${esc(c.nombre)}</div>
+          <div class="tl-serv">${esc(c.servicio)} · ${esc(c.modalidad)}</div>
           <div class="tl-actions">
             ${waUrl ? `<a href="${waUrl}" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>` : ''}
-            <button type="button" class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="verDetalle('${esc(c.id)}')">Ver</button>
           </div>
         </div>
       </div>`;
@@ -5689,7 +5706,7 @@ function _verCobrosPendientes() {
     html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--s2);border-radius:8px;gap:8px;flex-wrap:wrap">
       <div>
         <div style="font-size:.84rem;font-weight:600">${c.nombre}</div>
-        <div style="font-size:.72rem;color:var(--muted)">${fmtDate(c.fecha)} · ${c.hora} · ${c.servicio}</div>
+        <div style="font-size:.72rem;color:var(--muted)">${esc(fmtDate(c.fecha))} · ${esc(c.hora)} · ${esc(c.servicio)}</div>
       </div>
       <span style="font-family:var(--font-m);font-size:.88rem;font-weight:700;color:#f59e0b">${c.precio}</span>
     </div>`;
@@ -5786,35 +5803,35 @@ function renderAgenda(keepPage = false) {
 
   tbody.innerHTML = pageCitas.map(c => {
     if (c._esEvento) {
-      const durStr = c.duracion ? ` · ${c.duracion}` : '';
+      const durStr = c.duracion ? ` · ${esc(c.duracion)}` : '';
       return `<tr class="evt-row">
-        <td><span style="font-family:var(--font-m);font-size:.8rem">${fmtDate(c.fecha)}</span><br><small style="color:var(--muted)">${c.horaInicio}–${c.horaFin}</small></td>
+        <td><span style="font-family:var(--font-m);font-size:.8rem">${esc(fmtDate(c.fecha))}</span><br><small style="color:var(--muted)">${esc(c.horaInicio)}–${esc(c.horaFin)}</small></td>
         <td>
           <span class="chip chip-evento" style="font-size:.7rem;margin-bottom:4px;display:inline-block">⚡ Evento</span><br>
-          <strong>${c.titulo}</strong>${c.notas ? `<br><small style="color:var(--muted)">${c.notas}</small>` : ''}
+          <strong>${esc(c.titulo)}</strong>${c.notas ? `<br><small style="color:var(--muted)">${esc(c.notas)}</small>` : ''}
         </td>
-        <td style="font-size:.82rem">${c.tipo}${durStr}</td>
+        <td style="font-size:.82rem">${esc(c.tipo)}${durStr}</td>
         <td>—</td>
-        <td style="font-family:var(--font-m);color:#7c3aed;font-size:.82rem">${c.cobro}</td>
+        <td style="font-family:var(--font-m);color:#7c3aed;font-size:.82rem">${esc(c.cobro)}</td>
         <td>—</td>
         <td>
-          <button class="btn btn-teal btn-sm" onclick="abrirEditarEvento('${c.id}')" title="Editar evento">✏️ Editar</button>
-          <button class="btn btn-err btn-sm" onclick="eliminarEvento('${c.id}')" title="Eliminar evento">🗑️ Eliminar</button>
+          <button class="btn btn-teal btn-sm" onclick="abrirEditarEvento('${esc(c.id)}')" title="Editar evento">✏️ Editar</button>
+          <button class="btn btn-err btn-sm" onclick="eliminarEvento('${esc(c.id)}')" title="Eliminar evento">🗑️ Eliminar</button>
         </td>
       </tr>`;
     }
     return `<tr>
-      <td><span style="font-family:var(--font-m);font-size:.8rem">${fmtDate(c.fecha)}</span><br><small style="color:var(--muted)">${c.hora}</small></td>
+      <td><span style="font-family:var(--font-m);font-size:.8rem">${esc(fmtDate(c.fecha))}</span><br><small style="color:var(--muted)">${esc(c.hora)}</small></td>
       <td>
-        <strong>${c.nombre}</strong><br>
-        <small style="color:var(--muted)">${c.telefono||''}</small><br>
+        <strong>${esc(c.nombre)}</strong><br>
+        <small style="color:var(--muted)">${esc(c.telefono||'')}</small><br>
         <button class="btn btn-ghost btn-sm" style="margin-top:3px;font-size:.7rem;padding:2px 7px" onclick="verHistorial('${encodeURIComponent(c.nombre)}')">📋 Historial</button>
       </td>
-      <td style="font-size:.82rem">${c.servicio}${sesionBadge(c.nombre, c.servicio)}</td>
-      <td><span class="chip ${c.modalidad==='Domicilio'?'chip-info':c.modalidad==='Virtual'?'chip-warn':'chip-ok'}" style="font-size:.7rem">${c.modalidad}</span></td>
-      <td style="font-family:var(--font-m);color:var(--primary);font-size:.82rem">${c.precio}<br>${pagoBadge(c.id)}</td>
+      <td style="font-size:.82rem">${esc(c.servicio)}${sesionBadge(c.nombre, c.servicio)}</td>
+      <td><span class="chip ${c.modalidad==='Domicilio'?'chip-info':c.modalidad==='Virtual'?'chip-warn':'chip-ok'}" style="font-size:.7rem">${esc(c.modalidad)}</span></td>
+      <td style="font-family:var(--font-m);color:var(--primary);font-size:.82rem">${esc(c.precio)}<br>${pagoBadge(c.id)}</td>
       <td>
-        <select class="btn btn-ghost btn-sm" onchange="changeStatus('${c.id}',this.value)" style="cursor:pointer">
+        <select class="btn btn-ghost btn-sm" onchange="changeStatus('${esc(c.id)}',this.value)" style="cursor:pointer">
           <option ${c.estado==='Confirmada'?'selected':''}>Confirmada</option>
           <option ${c.estado==='Pendiente'?'selected':''}>Pendiente</option>
           <option ${c.estado==='Atendida'?'selected':''}>Atendida</option>
@@ -5824,13 +5841,13 @@ function renderAgenda(keepPage = false) {
       </td>
       <td>
         <div style="display:flex;gap:4px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="verDetalle('${c.id}')">Ver</button>
-          ${(()=>{const u=waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,c.precio,c.modalidad);const s=wasWaSent(c.id,'conf');return u?`<a href="${u}" target="_blank" class="btn btn-wa btn-sm" title="${s?'Ya enviado':'Confirmación'}" onclick="markWaSent('${c.id}','conf');this.textContent=this.textContent.includes('✓')?this.textContent:'Conf.✓'" style="${s?'opacity:.5':''}">${s?'Conf.✓':'Conf.'}</a>`:'';})()}
-          ${(()=>{const u=waLinkRec(c.telefono,c.nombre,c.fecha,c.hora,c.servicio);const s=wasWaSent(c.id,'rec');return u?`<a href="${u}" target="_blank" class="btn btn-wa-rec btn-sm" title="${s?'Ya enviado':'Recordatorio'}" onclick="markWaSent('${c.id}','rec');this.textContent=this.textContent.includes('✓')?this.textContent:'Rec.✓'" style="${s?'opacity:.5':''}">${s?'Rec.✓':'Rec.'}</a>`:'';})()}
-          ${(()=>{const u=waLinkSeg(c.telefono,c.nombre,c.servicio,c.notaAdmin);const s=wasWaSent(c.id,'seg');return u?`<a href="${u}" target="_blank" class="btn btn-wa-seg btn-sm" title="${s?'Ya enviado':'Seguimiento'}" onclick="markWaSent('${c.id}','seg');this.textContent=this.textContent.includes('✓')?this.textContent:'Seg.✓'" style="${s?'opacity:.5':''}">${s?'Seg.✓':'Seg.'}</a>`:'';})()}
+          <button class="btn btn-ghost btn-sm" onclick="verDetalle('${esc(c.id)}')">Ver</button>
+          ${(()=>{const u=waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,c.precio,c.modalidad);const s=wasWaSent(c.id,'conf');return u?`<a href="${u}" target="_blank" class="btn btn-wa btn-sm" title="${s?'Ya enviado':'Confirmación'}" onclick="markWaSent('${esc(c.id)}','conf');this.textContent=this.textContent.includes('✓')?this.textContent:'Conf.✓'" style="${s?'opacity:.5':''}">${s?'Conf.✓':'Conf.'}</a>`:'';})()}
+          ${(()=>{const u=waLinkRec(c.telefono,c.nombre,c.fecha,c.hora,c.servicio);const s=wasWaSent(c.id,'rec');return u?`<a href="${u}" target="_blank" class="btn btn-wa-rec btn-sm" title="${s?'Ya enviado':'Recordatorio'}" onclick="markWaSent('${esc(c.id)}','rec');this.textContent=this.textContent.includes('✓')?this.textContent:'Rec.✓'" style="${s?'opacity:.5':''}">${s?'Rec.✓':'Rec.'}</a>`:'';})()}
+          ${(()=>{const u=waLinkSeg(c.telefono,c.nombre,c.servicio,c.notaAdmin);const s=wasWaSent(c.id,'seg');return u?`<a href="${u}" target="_blank" class="btn btn-wa-seg btn-sm" title="${s?'Ya enviado':'Seguimiento'}" onclick="markWaSent('${esc(c.id)}','seg');this.textContent=this.textContent.includes('✓')?this.textContent:'Seg.✓'" style="${s?'opacity:.5':''}">${s?'Seg.✓':'Seg.'}</a>`:'';})()}
           ${waBtnPasaporte(c.telefono,c.nombre)}
-          ${c.estado!=='Cancelada'?`<button class="btn btn-edit btn-sm" onclick="editarCita('${c.id}')" title="Editar">✏️</button>`:''}
-          ${c.estado!=='Cancelada'?`<button class="btn btn-danger btn-sm" onclick="cancelarCita('${c.id}','${c.nombre.replace(/'/g,"\\'")}')" title="Cancelar">🚫</button>`:''}
+          ${c.estado!=='Cancelada'?`<button class="btn btn-edit btn-sm" onclick="editarCita('${esc(c.id)}')" title="Editar">✏️</button>`:''}
+          ${c.estado!=='Cancelada'?`<button class="btn btn-danger btn-sm" onclick="cancelarCita('${esc(c.id)}','${esc(c.nombre)}')" title="Cancelar">🚫</button>`:''}
         </div>
       </td>
     </tr>`;
@@ -5969,13 +5986,13 @@ function verDetalle(id) {
   document.getElementById('modalDetalleContent').innerHTML = `
     <div style="display:grid;gap:12px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        ${row('Paciente', c.nombre)} ${row('Teléfono', c.telefono||'—')}
-        ${row('Email', c.email||'—')} ${row('Servicio', c.servicio)}
-        ${row('Fecha', fmtDate(c.fecha) + ' · ' + c.hora)} ${row('Modalidad', c.modalidad)}
-        ${row('Valor', c.precio)} ${row('Estado', chipState(c.estado))}
-        ${c.direccion ? row('Dirección', c.direccion) : ''}
-        ${c.notas ? row('Notas del paciente', c.notas, true) : ''}
-        ${row('ID cita', c.id)}
+        ${row('Paciente', esc(c.nombre))} ${row('Teléfono', esc(c.telefono||'—'))}
+        ${row('Email', esc(c.email||'—'))} ${row('Servicio', esc(c.servicio))}
+        ${row('Fecha', esc(fmtDate(c.fecha) + ' · ' + c.hora))} ${row('Modalidad', esc(c.modalidad))}
+        ${row('Valor', esc(c.precio))} ${row('Estado', chipState(c.estado))}
+        ${c.direccion ? row('Dirección', esc(c.direccion)) : ''}
+        ${c.notas ? row('Notas del paciente', esc(c.notas), true) : ''}
+        ${row('ID cita', esc(c.id))}
       </div>
       <!-- Nota interna editable -->
       <div style="margin-top:10px;padding:10px 12px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);border-radius:8px">
@@ -5993,25 +6010,25 @@ function verDetalle(id) {
         const prev = allData.citas.filter(x => x.nombre===c.nombre && x.id!==c.id).sort((a,b)=>(normDate(b.fecha)+b.hora).localeCompare(normDate(a.fecha)+a.hora)).slice(0,3);
         if (!prev.length) return '';
         return `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
-          <div style="font-size:.75rem;color:var(--muted);font-family:var(--font-m);margin-bottom:8px">CITAS ANTERIORES DE ${c.nombre.split(' ')[0].toUpperCase()}</div>
+          <div style="font-size:.75rem;color:var(--muted);font-family:var(--font-m);margin-bottom:8px">CITAS ANTERIORES DE ${esc(c.nombre.split(' ')[0].toUpperCase())}</div>
           ${prev.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(27,191,176,.07);font-size:.82rem">
-            <span style="font-family:var(--font-m);color:var(--primary);font-size:.75rem">${fmtDate(p.fecha)} ${p.hora}</span>
-            <span style="flex:1;margin:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.servicio}</span>
+            <span style="font-family:var(--font-m);color:var(--primary);font-size:.75rem">${esc(fmtDate(p.fecha))} ${esc(p.hora)}</span>
+            <span style="flex:1;margin:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.servicio)}</span>
             ${chipState(p.estado)}
           </div>`).join('')}
         </div>`;
       })()}
       <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
         ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp confirmación',c.precio,c.modalidad)}
-        <button class="btn btn-ghost btn-sm" onclick="(function(){ const p=(document.getElementById('notaParaQuienInput').value||'').trim(); const o=(document.getElementById('notaAdminInput').value||'').trim(); const nota=p?'[PARA: '+p+']'+(o?' '+o:''):o; seguimientoWA('${c.telefono||''}','${c.nombre.replace(/'/g,"\\'")}','${c.servicio.replace(/'/g,"\\'")}',nota); })()">💬 Seguimiento</button>
+        <button class="btn btn-ghost btn-sm" onclick="(function(){ const p=(document.getElementById('notaParaQuienInput').value||'').trim(); const o=(document.getElementById('notaAdminInput').value||'').trim(); const nota=p?'[PARA: '+p+']'+(o?' '+o:''):o; seguimientoWA('${esc(c.telefono||'')}','${esc(c.nombre)}','${esc(c.servicio)}',nota); })()">💬 Seguimiento</button>
         ${waBtnPasaporte(c.telefono,c.nombre)}
         ${c.email ? `<a href="mailto:${c.email}" class="btn btn-ghost btn-sm">📧 Email</a>` : ''}
       </div>
       ${!esCancelada ? `
       <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:12px;margin-top:10px">
-        <button class="btn btn-edit btn-sm" onclick="editarCita('${c.id}')">✏️ Editar cita</button>
-        <button class="btn btn-ghost btn-sm" onclick="toggleReagendar('${c.id}')">📅 Reagendar</button>
-        <button class="btn btn-danger btn-sm" onclick="cancelarCita('${c.id}','${c.nombre.replace(/'/g,"\\'")}')">🚫 Cancelar cita</button>
+        <button class="btn btn-edit btn-sm" onclick="editarCita('${esc(c.id)}')">✏️ Editar cita</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleReagendar('${esc(c.id)}')">📅 Reagendar</button>
+        <button class="btn btn-danger btn-sm" onclick="cancelarCita('${esc(c.id)}','${esc(c.nombre)}')">🚫 Cancelar cita</button>
       </div>
       <div id="reagendarPanel_${c.id}" style="display:none;margin-top:10px;background:rgba(27,191,176,.05);border:1px solid var(--border);border-radius:10px;padding:14px">
         <div style="font-size:.78rem;color:var(--muted);font-family:var(--font-m);margin-bottom:10px">NUEVA FECHA Y HORA</div>
@@ -6034,7 +6051,8 @@ function verDetalle(id) {
 
 function row(label, val, full=false) {
   const span = full ? 'grid-column:1/-1' : '';
-  return `<div style="${span}"><div style="font-size:.75rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">${label}</div><div style="font-size:.9rem">${val}</div></div>`;
+  // val puede ser HTML seguro (chipState) o texto plano — siempre escapa texto plano antes de llamar
+  return `<div style="${span}"><div style="font-size:.75rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">${esc(label)}</div><div style="font-size:.9rem">${val}</div></div>`;
 }
 
 // ── Cancelar cita — muestra modal con motivo ──
@@ -6226,7 +6244,7 @@ function renderBloqueos() {
     <div class="block-item">
       <div class="block-info">
         <div class="block-date">${fmtDate(b.fecha)} · ${b.inicio} — ${b.fin}</div>
-        <div class="block-reason">${b.motivo||'Sin motivo'}</div>
+        <div class="block-reason">${esc(b.motivo||'Sin motivo')}</div>
       </div>
       <button class="btn btn-err btn-sm" onclick="doUnblock('${b.bid||''}','${b.fecha}','${b.inicio}')">Eliminar</button>
     </div>`).join('');
@@ -6911,7 +6929,7 @@ function searchPatient(q) {
     <div onclick="fillPatient(${JSON.stringify(p).replace(/"/g,'&quot;')})"
       style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:.15s"
       onmouseenter="this.style.background='#f0faf9'" onmouseleave="this.style.background=''">
-      <div style="font-weight:600;font-size:.88rem">${p.nombre}</div>
+      <div style="font-weight:600;font-size:.88rem">${esc(p.nombre)}</div>
       <div style="font-size:.78rem;color:#6B7280">${p.telefono||'Sin teléfono'} · ${p.email||'Sin email'} · ${p.sesiones} cita(s)</div>
     </div>`).join('');
   dd.style.display = 'block';
@@ -7126,12 +7144,12 @@ function renderPacientes() {
       ? `<br><span style="font-size:.7rem;color:${_dias>30?'var(--warn)':'var(--muted)'}">hace ${_dias} días</span>`
       : '');
     return `<tr>
-      <td><div style="display:flex;align-items:center;gap:10px"><div class="pac-badge">${initials}</div><strong>${p.nombre}</strong></div></td>
-      <td style="font-family:var(--font-m);font-size:.82rem">${p.telefono||'—'}</td>
-      <td style="font-size:.82rem;color:var(--muted)">${p.email||'—'}</td>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="pac-badge">${esc(initials)}</div><strong>${esc(p.nombre)}</strong></div></td>
+      <td style="font-family:var(--font-m);font-size:.82rem">${esc(p.telefono||'—')}</td>
+      <td style="font-size:.82rem;color:var(--muted)">${esc(p.email||'—')}</td>
       <td><span class="chip chip-ok">${p.sesiones}</span></td>
       <td style="font-size:.82rem">${_ultimaHtml}</td>
-      <td style="font-size:.82rem;color:var(--muted)">${topServ[0]}</td>
+      <td style="font-size:.82rem;color:var(--muted)">${esc(topServ[0])}</td>
       <td>
         <div style="display:flex;gap:5px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="verHistorialPac(${idx})">Historial</button>
@@ -7173,11 +7191,11 @@ function _renderHistorial(nombre, citas) {
     ${citas.map(c => `
     <div style="padding:12px;background:var(--s2);border-radius:8px;margin-bottom:8px;border:1px solid var(--border)">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-family:var(--font-m);font-size:.82rem;color:var(--primary)">${fmtDate(c.fecha)} · ${c.hora}</span>
+        <span style="font-family:var(--font-m);font-size:.82rem;color:var(--primary)">${esc(fmtDate(c.fecha))} · ${esc(c.hora)}</span>
         ${chipState(c.estado)}
       </div>
-      <div style="font-size:.88rem;margin-top:4px">${c.servicio} · ${c.modalidad} · ${c.precio}</div>
-      ${c.notas ? `<div style="font-size:.8rem;color:var(--muted);margin-top:4px">${c.notas}</div>` : ''}
+      <div style="font-size:.88rem;margin-top:4px">${esc(c.servicio)} · ${esc(c.modalidad)} · ${esc(c.precio)}</div>
+      ${c.notas ? `<div style="font-size:.8rem;color:var(--muted);margin-top:4px">${esc(c.notas)}</div>` : ''}
     </div>`).join('')}`;
   openModal('modalHistorial');
 }
@@ -13057,7 +13075,7 @@ function updateBonosBadge() {
     if (pendientes.length > 0) {
       bonoPendingLista.innerHTML = pendientes.map(c => `
         <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.6);border:1px solid rgba(217,119,6,.25);border-radius:8px;padding:8px 12px">
-          <span style="font-family:var(--font-m);font-size:.8rem;font-weight:700;color:#7c3aed;background:rgba(139,92,246,.1);padding:2px 8px;border-radius:6px;white-space:nowrap">${c.codigo}</span>
+          <span style="font-family:var(--font-m);font-size:.8rem;font-weight:700;color:#7c3aed;background:rgba(139,92,246,.1);padding:2px 8px;border-radius:6px;white-space:nowrap">${esc(c.codigo)}</span>
           <div style="flex:1;font-size:.85rem">
             <strong style="color:#92400e">${c.referidoPor || '—'}</strong>
             <span style="color:var(--muted)"> tiene bono pendiente — refirió a <strong>${c.paciente || '?'}</strong></span>
@@ -13125,8 +13143,8 @@ function renderCodigos() {
 
     return `<tr>
       <td><span style="font-family:var(--font-m);font-size:.88rem;font-weight:700;padding:3px 8px;border-radius:6px;${chipColor}">${c.codigo}</span></td>
-      <td><strong style="font-size:.88rem">${c.paciente||'—'}</strong>${c.telefono?`<br><small style="color:var(--muted)">${c.telefono}</small>`:''}</td>
-      <td style="font-size:.85rem">${c.referidoPor||'—'}</td>
+      <td><strong style="font-size:.88rem">${esc(c.paciente||'—')}</strong>${c.telefono?`<br><small style="color:var(--muted)">${c.telefono}</small>`:''}</td>
+      <td style="font-size:.85rem">${esc(c.referidoPor||'—')}</td>
       <td style="font-family:var(--font-m);font-size:.78rem;color:var(--muted)">${c.fecha||''}</td>
       <td>${estadoChip}</td>
       <td>${vinculo}</td>
