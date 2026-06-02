@@ -5247,7 +5247,7 @@ async function submitAdminBookingMulti() {
   } else {
     toast(`✓ ${creadas} cita${creadas!==1?'s':''} creada${creadas!==1?'s':''} correctamente`, 'ok');
     logChange('Nueva cita', `${name} · ${serv} · ${creadas} sesión${creadas!==1?'es':''}`);
-    allData = await (await fetch(`${APPS_SCRIPT_URL}?action=getCitas&token=${encodeURIComponent(TOKEN)}`)).json();
+    await reload();
     renderAgenda(); initDashboard();
     if (_scheduleMode !== 'unica') { _multiDates = []; _renderMultiChips(); }
     clearNuevaCita();
@@ -6868,39 +6868,42 @@ async function submitAdminBooking() {
 }
 
 // ── BUSCADOR PACIENTE ──
+function _normStr(s) {
+  return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+}
+
 function searchPatient(q) {
   const dd = document.getElementById('pacDropdown');
   if (!q || q.length < 2) { dd.style.display='none'; return; }
 
-  // Construir mapa de pacientes únicos desde allData.citas (excluir registros)
+  // Clave única por persona: nombre_normalizado|teléfono (evita colisiones entre distintos pacientes)
   const map = {};
-  allData.citas.filter(c => c.estado !== 'Registro').forEach(c => {
+  (allData.citas || []).filter(c => c.estado !== 'Cancelada').forEach(c => {
     const phone = (c.telefono||'').replace(/\D/g,'').slice(-10);
-    const key = phone || (c.nombre||'').toLowerCase();
+    const key   = _normStr(c.nombre) + '|' + phone;
     if (!map[key]) map[key] = {nombre:c.nombre, telefono:c.telefono, email:c.email, sesiones:0, ultimaDir:c.direccion||''};
-    map[key].sesiones++;
+    if (!esRegistroServ(c.servicio)) map[key].sesiones++;
     if (c.direccion) map[key].ultimaDir = c.direccion;
   });
 
   // Añadir pacientes de la hoja Pacientes que no estén ya en el mapa
   (allData.pacientes || []).forEach(p => {
     const phone = (p.telefono||'').replace(/\D/g,'').slice(-10);
-    const key = phone || (p.nombre||'').toLowerCase();
+    const key   = _normStr(p.nombre) + '|' + phone;
     if (!map[key]) {
       map[key] = {nombre: p.nombre, telefono: p.telefono, email: p.email, sesiones: 0, ultimaDir: ''};
     } else {
-      // Si ya existe por citas, actualizar email si faltaba
       if (p.email && !map[key].email) map[key].email = p.email;
     }
   });
 
-  const term = q.toLowerCase();
-  const termDigits = term.replace(/\D/g,'');
+  const term      = _normStr(q);
+  const termDigits = q.replace(/\D/g,'');
   const matches = Object.values(map).filter(p => {
-    const nameMatch  = (p.nombre||'').toLowerCase().includes(term);
-    const phoneMatch = termDigits.length > 0 && (p.telefono||'').replace(/\D/g,'').includes(termDigits);
+    const nameMatch  = _normStr(p.nombre).includes(term);
+    const phoneMatch = termDigits.length >= 4 && (p.telefono||'').replace(/\D/g,'').includes(termDigits);
     return nameMatch || phoneMatch;
-  }).slice(0, 8);
+  }).slice(0, 10);
 
   if (!matches.length) { dd.style.display='none'; return; }
 
