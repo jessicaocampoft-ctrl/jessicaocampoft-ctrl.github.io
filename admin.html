@@ -4442,6 +4442,7 @@ async function _flushKV() {
 
 let TOKEN  = sessionStorage.getItem('adminToken') || '';
 let allData = {citas: [], bloqueos: [], eventos: []};
+let _kpiViewMonth = null; // {m, y} o null = mes actual
 
 // Escapa HTML para prevenir XSS en innerHTML
 function esc(s) {
@@ -8603,15 +8604,17 @@ function calcIngresoPaquetesMes(m, y) {
     .filter(p => { if (!p.fechaCompra) return false; const [py,pm] = p.fechaCompra.split('-'); return +pm===m && +py===y; })
     .reduce((s,p) => s + parsePrecio(p.precio), 0);
 }
-function calcCobradoMes() {
+function calcCobradoMes(mesParam, anyoParam) {
   const now = new Date();
-  const m = now.getMonth()+1, y = now.getFullYear();
+  const m = mesParam  || now.getMonth()+1;
+  const y = anyoParam || now.getFullYear();
   const todayStr = today();
+  const esPasado = y < now.getFullYear() || (y === now.getFullYear() && m < now.getMonth()+1);
   const citasTotal = citasReales()
-    .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y && normDate(c.fecha) <= todayStr; })
+    .filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y && (esPasado || normDate(c.fecha) <= todayStr); })
     .reduce((s,c) => s + parsePrecio(c.precio), 0);
   const eventosTotal = (allData.eventos || [])
-    .filter(e => { const [cy,cm]=normDate(e.fecha).split('-'); return +cm===m && +cy===y && normDate(e.fecha) <= todayStr; })
+    .filter(e => { const [cy,cm]=normDate(e.fecha).split('-'); return +cm===m && +cy===y && (esPasado || normDate(e.fecha) <= todayStr); })
     .reduce((s,e) => s + parsePrecio(e.cobro), 0);
   return citasTotal + calcIngresoPaquetesMes(m, y) + eventosTotal;
 }
@@ -9079,9 +9082,10 @@ const VENTANA_NUEVO_DIAS   = 180;
 const VENTANA_RETENCION    = 60;
 const CATEGORIAS_MARKETING = ['Pautas Redes', 'Redes Sociales Contenido'];
 
-function calcBDActualizada() {
+function calcBDActualizada(mesParam, anyoParam) {
   const now = new Date();
-  const m = now.getMonth() + 1, y = now.getFullYear();
+  const m = mesParam  || now.getMonth() + 1;
+  const y = anyoParam || now.getFullYear();
 
   // Pacientes únicos atendidos este mes (no cancelados)
   const pacMap = {};
@@ -9188,13 +9192,21 @@ function getLeadsSemana() {
   return getLeads().filter(l => new Date(l.fecha) >= lunes).length;
 }
 
-function getLeadsMes() {
+function getLeadsMes(mesParam, anyoParam) {
   const ahora = new Date();
-  const y = ahora.getFullYear(), m = ahora.getMonth() + 1;
+  const y = anyoParam || ahora.getFullYear();
+  const m = mesParam  || ahora.getMonth() + 1;
   return getLeads().filter(l => {
     const [ly, lm] = l.fecha.split('-');
     return +ly === y && +lm === m;
   }).length;
+}
+
+function changeKPIMonth(m, y) {
+  const now = new Date();
+  const esActual = m === now.getMonth()+1 && y === now.getFullYear();
+  _kpiViewMonth = esActual ? null : {m, y};
+  renderKPIGuia();
 }
 
 function registrarLead(canal) {
@@ -10795,32 +10807,48 @@ function renderKPIGuia() {
   if (!el) return;
 
   const now = new Date();
-  const m = now.getMonth() + 1, y = now.getFullYear();
+  const m = _kpiViewMonth ? _kpiViewMonth.m : now.getMonth() + 1;
+  const y = _kpiViewMonth ? _kpiViewMonth.y : now.getFullYear();
+  const esMesActual = m === now.getMonth()+1 && y === now.getFullYear();
   const citas = citasReales();
 
-  // Semana actual (lunes–domingo)
-  const diaSemana   = now.getDay() === 0 ? 6 : now.getDay() - 1;
-  const lunesSem    = new Date(now); lunesSem.setDate(now.getDate() - diaSemana);
-  const domingoSem  = new Date(lunesSem); domingoSem.setDate(lunesSem.getDate() + 6);
   const toStr = d => d.toISOString().split('T')[0];
 
-  // KPI 1 — Volumen sesiones semana
-  const citasSemana = citas.filter(c => {
-    const f = normDate(c.fecha);
-    return c.estado !== 'No asistió' && f >= toStr(lunesSem) && f <= toStr(domingoSem);
-  });
-  const eventosSemanaG  = (allData.eventos || []).filter(e => {
-    const f = normDate(e.fecha);
-    return f >= toStr(lunesSem) && f <= toStr(domingoSem);
-  });
-  const _nCitasG   = citasSemana.length;
-  const _nEvG      = eventosSemanaG.length;
-  const sessSemana = _nCitasG + _nEvG;
-  const _ventasG   = citasSemana.reduce((s,c) => s + parsePrecio(c.precio), 0)
-                   + eventosSemanaG.reduce((s,e) => s + parsePrecio(e.cobro), 0);
-  const _revOkG    = _ventasG >= META_VENTAS_SEMANA * 0.84;
-  const _sessLabelG = _nEvG > 0 ? `${_nCitasG} citas + ${_nEvG} evento${_nEvG>1?'s':''}` : `${sessSemana}`;
-  const _sessEvalG  = (_nEvG > 0 && _revOkG) ? META_SESIONES_SEMANA : sessSemana;
+  // KPI 1 — Sesiones: semana actual (mes actual) o total del mes (meses pasados)
+  let _sessLabelG, _sessEvalG, _nEvG = 0;
+  if (esMesActual) {
+    const diaSemana  = now.getDay() === 0 ? 6 : now.getDay() - 1;
+    const lunesSem   = new Date(now); lunesSem.setDate(now.getDate() - diaSemana);
+    const domingoSem = new Date(lunesSem); domingoSem.setDate(lunesSem.getDate() + 6);
+    const citasSemana = citas.filter(c => {
+      const f = normDate(c.fecha);
+      return c.estado !== 'No asistió' && f >= toStr(lunesSem) && f <= toStr(domingoSem);
+    });
+    const eventosSemanaG = (allData.eventos || []).filter(e => {
+      const f = normDate(e.fecha);
+      return f >= toStr(lunesSem) && f <= toStr(domingoSem);
+    });
+    const _nCitasG = citasSemana.length;
+    _nEvG = eventosSemanaG.length;
+    const sessSemana = _nCitasG + _nEvG;
+    const _ventasG   = citasSemana.reduce((s,c) => s + parsePrecio(c.precio), 0)
+                     + eventosSemanaG.reduce((s,e) => s + parsePrecio(e.cobro), 0);
+    const _revOkG    = _ventasG >= META_VENTAS_SEMANA * 0.84;
+    _sessLabelG = _nEvG > 0 ? `${_nCitasG} citas + ${_nEvG} evento${_nEvG>1?'s':''}` : `${sessSemana}`;
+    _sessEvalG  = (_nEvG > 0 && _revOkG) ? META_SESIONES_SEMANA : sessSemana;
+  } else {
+    const citasMesG = citas.filter(c => {
+      const [cy,cm] = normDate(c.fecha).split('-');
+      return +cm===m && +cy===y && c.estado !== 'No asistió';
+    });
+    const eventosMesG = (allData.eventos || []).filter(e => {
+      const [cy,cm] = normDate(e.fecha).split('-'); return +cm===m && +cy===y;
+    });
+    _nEvG = eventosMesG.length;
+    const totalSessMes = citasMesG.length + _nEvG;
+    _sessLabelG = _nEvG > 0 ? `${citasMesG.length} citas + ${_nEvG} eventos` : `${totalSessMes}`;
+    _sessEvalG  = Math.round(totalSessMes / 4); // promedio semanal para comparar con meta
+  }
 
   // KPI 2 — Mix Full este mes
   const mixMap = {};
@@ -10831,75 +10859,102 @@ function renderKPIGuia() {
   const fullPct  = totalMix > 0 ? Math.round(fullCnt / totalMix * 100) : 0;
 
   // KPI 3 — Leads mes
-  const leadsMes  = getLeadsMes();
+  const leadsMes  = getLeadsMes(m, y);
   const manual    = getKPIManual();
-  const leadsShow = leadsMes > 0 ? leadsMes : (manual.leads || 0);
+  const leadsShow = leadsMes > 0 ? leadsMes : (esMesActual ? (manual.leads || 0) : 0);
 
   // KPI 4 — Tasa conversión
   const citasMesTotal = citas.filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; }).length;
   let tasaConv = null;
-  if (leadsMes > 0)         tasaConv = Math.round((citasMesTotal / leadsMes) * 100);
-  else if (manual.leads > 0) tasaConv = Math.round((manual.convertidos / manual.leads) * 100);
+  if (leadsMes > 0)                    tasaConv = Math.round((citasMesTotal / leadsMes) * 100);
+  else if (esMesActual && manual.leads > 0) tasaConv = Math.round((manual.convertidos / manual.leads) * 100);
 
   // KPI 5 — Ventas mes
-  const ventasMes = calcCobradoMes();
+  const ventasMes = calcCobradoMes(m, y);
 
-  // KPI 6 — Encuestas (auto desde formulario, fallback manual)
+  // KPI 6 — Encuestas (solo disponible para mes actual desde formulario)
   const _encStatsG = getEncuestaStats();
-  const encuestas  = _encStatsG.encuestas !== undefined ? _encStatsG.encuestas : (manual.encuestas || 0);
+  const encuestas  = esMesActual && _encStatsG.encuestas !== undefined ? _encStatsG.encuestas : (esMesActual ? (manual.encuestas || 0) : null);
 
-  // KPI 7 — NPS (auto desde formulario, fallback manual)
-  const nps = _encStatsG.nps !== undefined ? _encStatsG.nps : (manual.nps || 0);
+  // KPI 7 — NPS (solo disponible para mes actual desde formulario)
+  const nps = esMesActual && _encStatsG.nps !== undefined ? _encStatsG.nps : (esMesActual ? (manual.nps || 0) : null);
 
   // KPI 8 — BD actualizada (automático desde datos del sistema)
-  const _bdGuia = calcBDActualizada();
-  const bd      = _bdGuia ? _bdGuia.pct : (manual.bd || 0);
+  const _bdGuia = calcBDActualizada(m, y);
+  const bd      = _bdGuia ? _bdGuia.pct : (esMesActual ? (manual.bd || 0) : 0);
 
   // Extra — Cancelaciones mes (excluye pruebas)
-  const _motivosGuia     = getCancelMotivos();
-  const todasCitasMes    = (allData.citas || []).filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
-  const canceladasMes    = todasCitasMes.filter(c =>
+  const _motivosGuia  = getCancelMotivos();
+  const todasCitasMes = (allData.citas || []).filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
+  const canceladasMes = todasCitasMes.filter(c =>
     (c.estado||'').toLowerCase().includes('cancel') && _motivosGuia[c.id] !== 'Prueba'
   ).length;
-  const tasaCancel       = todasCitasMes.length > 0 ? Math.round((canceladasMes / todasCitasMes.length) * 100) : 0;
+  const tasaCancel = todasCitasMes.length > 0 ? Math.round((canceladasMes / todasCitasMes.length) * 100) : 0;
 
-  // Extra — Retención 60 días
-  const hace60 = new Date(now); hace60.setDate(now.getDate() - VENTANA_RETENCION);
+  // Extra — Retención 60 días (ventana relativa al fin del mes seleccionado)
+  const refDate = esMesActual ? now : new Date(y, m, 0); // último día del mes seleccionado
+  const hace60  = new Date(refDate); hace60.setDate(refDate.getDate() - VENTANA_RETENCION);
   const cuentaPac = {};
-  citas.filter(c => new Date(normDate(c.fecha) + 'T12:00:00') >= hace60)
-    .forEach(c => { if (!c.nombre) return; const p = c.nombre.trim().toLowerCase(); cuentaPac[p] = (cuentaPac[p]||0)+1; });
+  citas.filter(c => {
+    const fd = new Date(normDate(c.fecha) + 'T12:00:00');
+    return fd >= hace60 && fd <= refDate;
+  }).forEach(c => { if (!c.nombre) return; const p = c.nombre.trim().toLowerCase(); cuentaPac[p] = (cuentaPac[p]||0)+1; });
   const pacs60     = Object.keys(cuentaPac).length;
   const recompra60 = Object.values(cuentaPac).filter(n => n >= 2).length;
   const tasaRet    = pacs60 > 0 ? Math.round((recompra60 / pacs60) * 100) : 0;
 
+  // Selector de mes
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  let opcionesSelect = '';
+  for (let i = 0; i < 13; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const om = d.getMonth() + 1, oy = d.getFullYear();
+    const sel = (om === m && oy === y) ? 'selected' : '';
+    opcionesSelect += `<option value="${om}-${oy}" ${sel}>${MESES[om-1]} ${oy}</option>`;
+  }
+
   const hora = now.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
+  const subtitulo = esMesActual
+    ? `Conectado en vivo desde el módulo de Finanzas · ${hora}`
+    : `Mostrando datos históricos · ${MESES[m-1]} ${y}`;
 
   let html = `<div style="background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px 20px 16px;margin-bottom:24px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:16px">
       <div>
-        <div style="font-family:var(--font-h);font-size:1.05rem;font-weight:700">📡 Estado actual de tus indicadores</div>
-        <div style="font-size:.73rem;color:var(--muted);margin-top:3px">Conectado en vivo desde el módulo de Finanzas · ${hora}</div>
+        <div style="font-family:var(--font-h);font-size:1.05rem;font-weight:700">📡 ${esMesActual ? 'Estado actual de tus indicadores' : 'Indicadores de ' + MESES[m-1] + ' ' + y}</div>
+        <div style="font-size:.73rem;color:var(--muted);margin-top:3px">${subtitulo}</div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="loadEncuestaStats()" id="btnCargarEncuestaGuia" style="font-size:.73rem;padding:6px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);white-space:nowrap">🔄 Cargar encuestas</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select onchange="changeKPIMonth(+this.value.split('-')[0], +this.value.split('-')[1])"
+          style="font-size:.73rem;padding:6px 10px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);cursor:pointer;outline:none">
+          ${opcionesSelect}
+        </select>
+        ${esMesActual ? `<button onclick="loadEncuestaStats()" id="btnCargarEncuestaGuia" style="font-size:.73rem;padding:6px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);white-space:nowrap">🔄 Cargar encuestas</button>` : ''}
         <button onclick="showView('finanzas')" style="font-size:.73rem;padding:6px 14px;background:rgba(27,191,176,.1);border:1px solid rgba(27,191,176,.3);color:var(--primary);border-radius:8px;cursor:pointer;font-family:var(--font-b);white-space:nowrap">Ver finanzas →</button>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px">`;
 
-  html += _kpiCardGuia('📅', 'Sesiones esta semana', _sessLabelG, META_SESIONES_SEMANA, '', true,
-    _nEvG > 0 && _revOkG ? `≥${META_SESIONES_SEMANA} ses. · ✓ ingresos compensan` : `≥${META_SESIONES_SEMANA} sesiones`,
-    _sessEvalG, 'gkKpi1');
+  const _sess1Label = esMesActual ? 'Sesiones esta semana' : 'Sesiones del mes';
+  const _sess1Meta  = esMesActual
+    ? (_nEvG > 0 ? `≥${META_SESIONES_SEMANA} ses. · ✓ ingresos compensan` : `≥${META_SESIONES_SEMANA} sesiones`)
+    : `≥${META_SESIONES_SEMANA}/sem. (promedio)`;
+  html += _kpiCardGuia('📅', _sess1Label, _sessLabelG, META_SESIONES_SEMANA, '', true, _sess1Meta, _sessEvalG, 'gkKpi1');
   html += _kpiCardGuia('🔄', 'Mix Full este mes', totalMix > 0 ? fullPct : '—', 30, totalMix > 0 ? '%' : '', false, totalMix > 0 ? '≤30% Full' : 'Sin sesiones aún', totalMix > 0 ? fullPct : 0, 'gkKpi2');
-  html += _kpiCardGuia('📣', 'Leads este mes',          leadsShow || '—',                    40,                   '',      true,  '40–50 leads',           undefined, 'gkKpi3');
-  html += _kpiCardGuia('🎯', 'Tasa de conversión',      tasaConv !== null ? tasaConv+'%':'—', 25,                   '%',     true,  '25–35%',                undefined, 'gkKpi4');
-  html += _kpiCardGuia('💰', 'Ventas mes actual',       fmtPeso(ventasMes),                  META_VENTAS_MES,      '',      true,  fmtPeso(META_VENTAS_MES),undefined, 'gkKpi5');
-  html += _kpiCardGuia('📋', 'Encuestas realizadas',    encuestas + '%',                     META_ENCUESTAS,       '%',     true,  `>${META_ENCUESTAS}%`,   undefined, 'gkKpi6');
-  html += _kpiCardGuia('⭐', 'NPS último mes',          nps,                                 META_NPS,             '',      true,  `>${META_NPS}`,          undefined, 'gkKpi7');
+  html += _kpiCardGuia('📣', 'Leads este mes',          leadsShow || '—',                         40,              '',   true,  '40–50 leads',             undefined, 'gkKpi3');
+  html += _kpiCardGuia('🎯', 'Tasa de conversión',      tasaConv !== null ? tasaConv+'%' : '—',   25,              '%',  true,  '25–35%',                  undefined, 'gkKpi4');
+  html += _kpiCardGuia('💰', esMesActual ? 'Ventas mes actual' : 'Ventas del mes', fmtPeso(ventasMes), META_VENTAS_MES, '', true, fmtPeso(META_VENTAS_MES), undefined, 'gkKpi5');
+  html += _kpiCardGuia('📋', 'Encuestas realizadas',    encuestas !== null ? encuestas+'%' : '—', META_ENCUESTAS,  '%',  true,  `>${META_ENCUESTAS}%`,     undefined, 'gkKpi6');
+  html += _kpiCardGuia('⭐', 'NPS último mes',          nps !== null ? nps : '—',                 META_NPS,        '',   true,  `>${META_NPS}`,            undefined, 'gkKpi7');
   const _bdLabel = _bdGuia ? `${_bdGuia.completos}/${_bdGuia.total}` : '—';
   html += _kpiCardGuia('🗄️', `BD actualizada (${_bdLabel} pac.)`, bd + '%', 100, '%', true, '100%',              undefined, 'gkKpi8');
-  html += _kpiCardGuia('❌', 'Cancelaciones mes',       tasaCancel + '%',                    META_CANCELACION_PCT, '%',     false, `<${META_CANCELACION_PCT}%`,undefined,'gkKpi4b');
-  html += _kpiCardGuia('🔁', 'Retención 60 días',       tasaRet + '%',                       META_RETENCION_PCT,   '%',     true,  `>${META_RETENCION_PCT}%`,undefined, 'gkKpi1');
+  html += _kpiCardGuia('❌', 'Cancelaciones mes',       tasaCancel + '%',                         META_CANCELACION_PCT, '%', false, `<${META_CANCELACION_PCT}%`, undefined, 'gkKpi4b');
+  html += _kpiCardGuia('🔁', 'Retención 60 días',       tasaRet + '%',                            META_RETENCION_PCT,   '%', true,  `>${META_RETENCION_PCT}%`,   undefined, 'gkKpi1');
+  if (!esMesActual) {
+    html += `<div style="grid-column:1/-1;font-size:.72rem;color:var(--muted);padding:8px 10px;background:rgba(27,191,176,.06);border:1px solid rgba(27,191,176,.15);border-radius:8px">
+      ℹ️ <strong>NPS y Encuestas</strong> solo están disponibles para el mes actual (se cargan desde el formulario). Los demás indicadores se calculan desde las citas del sistema.
+    </div>`;
+  }
 
   const cfg = getKPIConfig();
   const fmtRef = v => v >= 1000 ? '$' + v.toLocaleString('es-CO') : String(v);
@@ -10983,7 +11038,8 @@ function _renderCancelBreakdown() {
   if (!el) return;
 
   const now = new Date();
-  const m = now.getMonth() + 1, y = now.getFullYear();
+  const m = _kpiViewMonth ? _kpiViewMonth.m : now.getMonth() + 1;
+  const y = _kpiViewMonth ? _kpiViewMonth.y : now.getFullYear();
   const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 
   const diaSemana  = now.getDay() === 0 ? 6 : now.getDay() - 1;
@@ -11176,7 +11232,10 @@ function resetRutina() {
 function _renderBDBreakdown() {
   const el = document.getElementById('kpiBDLiveBreakdown');
   if (!el) return;
-  const bd = calcBDActualizada();
+  const now = new Date();
+  const m = _kpiViewMonth ? _kpiViewMonth.m : now.getMonth() + 1;
+  const y = _kpiViewMonth ? _kpiViewMonth.y : now.getFullYear();
+  const bd = calcBDActualizada(m, y);
   if (!bd) { el.innerHTML = `<span style="font-size:.8rem;color:var(--muted)">Sin citas registradas este mes.</span>`; return; }
 
   const color = bd.pct === 100 ? 'var(--ok)' : bd.pct >= 90 ? '#f59e0b' : '#ef4444';
