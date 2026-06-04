@@ -8730,7 +8730,12 @@ async function enviarEmailUno(encNombre, semanas) {
 // ══════════════════════════════════════════════════════════════
 // ── META MENSUAL ──
 // ══════════════════════════════════════════════════════════════
-function getMeta() { return parseInt(kvGet('metaMensual')||'0', 10); }
+function getMeta() {
+  // kpiConfig es la fuente oficial; metaMensual solo como legado
+  const fromKpi = getKPIConfig().meta_ventas_mes;
+  if (fromKpi) return fromKpi;
+  return parseInt(kvGet('metaMensual')||'0', 10);
+}
 
 function actualizarMetaBarra(cobrado) {
   const meta = getMeta();
@@ -8767,6 +8772,9 @@ function guardarMeta() {
   const val = parseInt((document.getElementById('metaInput').value||'').replace(/\D/g,''), 10);
   if (!val || val < 100000) { toast('Ingresa una meta válida (mínimo $100.000)', 'err'); return; }
   kvSet('metaMensual', val);
+  const cfg = getKPIConfig(); cfg.meta_ventas_mes = val; kvSet('kpiConfig', JSON.stringify(cfg));
+  META_VENTAS_MES = val; META_VENTAS_SEMANA = Math.round(val / 4);
+  reloadMetas(); applyKPIRefSpans(); renderPresupuestoMetas();
   actualizarMetaBarra(calcCobradoMes());
   toast('Meta guardada: $' + val.toLocaleString('es-CO'));
 }
@@ -8788,6 +8796,9 @@ function guardarMetaFin() {
   const val = parseInt((document.getElementById('metaInputFin').value||'').replace(/\D/g,''), 10);
   if (!val || val < 100000) { toast('Ingresa una meta válida (mínimo $100.000)', 'err'); return; }
   kvSet('metaMensual', val);
+  const cfg = getKPIConfig(); cfg.meta_ventas_mes = val; kvSet('kpiConfig', JSON.stringify(cfg));
+  META_VENTAS_MES = val; META_VENTAS_SEMANA = Math.round(val / 4);
+  reloadMetas(); applyKPIRefSpans(); renderPresupuestoMetas();
   renderFinanzas();
   actualizarMetaBarra(calcCobradoMes());
   toast('Meta guardada: $' + val.toLocaleString('es-CO'));
@@ -11820,10 +11831,13 @@ function pmGuardarKPIs() {
   // Mantener precio_full apuntando a Completa
   cfg.precio_full           = cfg.sv_completa_p;
   kvSet('kpiConfig', JSON.stringify(cfg));
+  kvSet('metaMensual', cfg.meta_ventas_mes); // sync barra Finanzas
+  META_VENTAS_MES = cfg.meta_ventas_mes; META_VENTAS_SEMANA = Math.round(cfg.meta_ventas_mes / 4);
   // Actualizar autoFillPrice con los nuevos precios
   _syncPreciosToAutoFill(cfg);
   reloadMetas();
   applyKPIRefSpans();
+  actualizarMetaBarra(calcCobradoMes());
   toast('✅ Precios y metas guardados', 'ok');
   renderPresupuestoMetas();
 }
