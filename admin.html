@@ -3771,6 +3771,28 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
         <p class="page-sub">Agrega y gestiona pacientes directamente desde aquí</p>
       </div>
 
+      <!-- Reactivación de pacientes -->
+      <div class="card" style="margin-bottom:24px" id="cardReactivacion">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+          <div>
+            <div class="card-title" style="margin-bottom:0">🔔 Reactivación de pacientes</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:3px">Pacientes que no han vuelto — sin cita futura agendada</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <label style="font-size:.78rem;color:var(--muted)">Inactivos hace más de:</label>
+            <select id="reacDias" onchange="renderReactivacion()"
+              style="font-size:.8rem;padding:6px 10px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);cursor:pointer;outline:none">
+              <option value="30">30 días</option>
+              <option value="60">60 días</option>
+              <option value="90" selected>90 días</option>
+              <option value="180">6 meses</option>
+              <option value="365">1 año</option>
+            </select>
+          </div>
+        </div>
+        <div id="reactivacionResult" style="margin-top:16px"></div>
+      </div>
+
       <!-- Formulario agregar paciente -->
       <div class="card" style="margin-bottom:24px">
         <div class="card-title">Agregar paciente</div>
@@ -3862,28 +3884,6 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
             </tbody>
           </table>
         </div>
-      </div>
-
-      <!-- Reactivación de pacientes -->
-      <div class="card" style="margin-top:24px" id="cardReactivacion">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
-          <div>
-            <div class="card-title" style="margin-bottom:0">🔔 Reactivación de pacientes</div>
-            <div style="font-size:.75rem;color:var(--muted);margin-top:3px">Pacientes que no han vuelto — sin cita futura agendada</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <label style="font-size:.78rem;color:var(--muted)">Inactivos hace más de:</label>
-            <select id="reacDias" onchange="renderReactivacion()"
-              style="font-size:.8rem;padding:6px 10px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);cursor:pointer;outline:none">
-              <option value="30">30 días</option>
-              <option value="60">60 días</option>
-              <option value="90" selected>90 días</option>
-              <option value="180">6 meses</option>
-              <option value="365">1 año</option>
-            </select>
-          </div>
-        </div>
-        <div id="reactivacionResult" style="margin-top:16px"></div>
       </div>
 
       <!-- Historial de cambios -->
