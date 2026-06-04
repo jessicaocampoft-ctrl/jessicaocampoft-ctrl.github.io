@@ -1380,6 +1380,11 @@ tr:last-child td{ border-bottom: none; }
       Indicadores de Gestión
     </button>
 
+    <button class="sb-link" id="sb-presupuesto" data-tooltip="Presupuesto y Metas" onclick="showView('presupuesto')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
+      Presupuesto y Metas
+    </button>
+
     <button class="sb-link" id="sb-comisiones" data-tooltip="Comisiones" onclick="showView('comisiones')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       Comisiones
@@ -2864,6 +2869,15 @@ tr:last-child td{ border-bottom: none; }
         <div id="estructuraFinResult"></div>
       </div>
 
+    </section>
+
+    <!-- ── PRESUPUESTO Y METAS ── -->
+    <section id="vPresupuesto" style="display:none">
+      <div class="page-header">
+        <h1 class="page-title">⚙️ <em>Presupuesto</em> y Metas</h1>
+        <p class="page-sub">Edita los costos del negocio y las metas de KPIs — los cambios se aplican en todo el admin</p>
+      </div>
+      <div id="presupuestoBody"></div>
     </section>
 
     <!-- ── GUÍA KPIs ── -->
@@ -4708,7 +4722,7 @@ function openEvalExpress() {
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
-  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','seguimiento','empresas','pasaporte','comisiones'].forEach(id => {
+  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','presupuesto','seguimiento','empresas','pasaporte','comisiones'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -4756,6 +4770,7 @@ function showView(v) {
   if (v === 'empresas')       renderEmpresas();
   if (v === 'codigos')        renderCodigos();
   if (v === 'guiakpis')       { renderKPIGuia(); actualizarContadorLeads(); loadRutinaChecks(); }
+  if (v === 'presupuesto')    { renderPresupuestoMetas(); }
   if (v === 'comisiones')     renderComisiones();
   if (v === 'dashboard')      actualizarContadorLeads();
 }
@@ -4821,7 +4836,7 @@ const _MOB_MAP = {
   dashboard:'dashboard', agenda:'agenda', nueva:'nueva',
   pacientes:'pacientes', finanzas:'finanzas',
   basedatos:'pacientes', codigos:'pacientes', paquetes:'pacientes',
-  guiakpis:'finanzas', comisiones:'finanzas', recordatorios:'agenda',
+  guiakpis:'finanzas', comisiones:'finanzas', presupuesto:'finanzas', recordatorios:'agenda',
   seguimiento:'agenda', empresas:'pacientes', pasaporte:'pacientes',
   bloquear:'agenda', calendario:'agenda', tareas:'dashboard',
 };
@@ -11481,6 +11496,230 @@ function applyKPIRefSpans() {
     const v = map[el.dataset.ref];
     if (v !== undefined) el.textContent = v;
   });
+}
+
+function renderPresupuestoMetas() {
+  const el = document.getElementById('presupuestoBody');
+  if (!el) return;
+  const costos = getCostosEstructura();
+  const calc   = calcTotalCostos(costos);
+  const cfg    = getKPIConfig();
+
+  const fmtN = v => Number(v).toLocaleString('es-CO');
+
+  const inp = (id, label, val, note='', tipo='number') => `
+    <div>
+      <label style="font-size:.75rem;color:var(--muted);display:block;margin-bottom:4px;font-family:var(--font-m)">${label}${note?`<span style="font-size:.68rem;color:var(--primary);margin-left:5px">${note}</span>`:''}</label>
+      <input type="${tipo}" id="pm_${id}" value="${val}" oninput="pmRecalc()"
+        style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:9px 11px;outline:none;box-sizing:border-box"
+        onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+    </div>`;
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+      <!-- COLUMNA IZQUIERDA: COSTOS -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">💼 Costos Fijos</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${inp('honorarios_fisio',  'Honorarios Fisio',       costos.honorarios_fisio)}
+            ${inp('seguridad_social',  'Seguridad Social',       costos.seguridad_social)}
+            ${inp('asistente_fisio',   'Asistente Fisio',        costos.asistente_fisio)}
+            ${inp('auxiliar_admin',    'Auxiliar Administrativa', costos.auxiliar_admin)}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">🏢 Costos Operativos</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${inp('arriendo',           'Arriendo',            costos.arriendo)}
+            ${inp('servicios_publicos', 'Servicios públicos',  costos.servicios_publicos)}
+            ${inp('suscripcion_ia',     'Suscripción IA',      costos.suscripcion_ia)}
+            ${inp('suscripcion_capcut', 'Suscripción CapCut',  costos.suscripcion_capcut)}
+            ${inp('asesorias_ap',       'Asesorías AP x4/Mes', costos.asesorias_ap)}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">📣 Costos Variables</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${inp('redes_contenido',    'Redes Sociales Contenido',  costos.redes_contenido)}
+            ${inp('activacion_eventos', 'Activación marca-Eventos',  costos.activacion_eventos)}
+            ${inp('pautas_redes',       'Pautas Redes',              costos.pautas_redes)}
+            ${inp('mantenimiento',      'Mantenimiento y compras',   costos.mantenimiento)}
+            ${inp('insumos',            'Insumos',                   costos.insumos)}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">📊 Porcentajes adicionales</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${inp('pct_imprevistos', 'Fondo Imprevistos (%)', costos.pct_imprevistos)}
+            ${inp('pct_utilidad',    'Utilidad Deseada (%)',  costos.pct_utilidad)}
+          </div>
+        </div>
+
+        <!-- Resumen calculado -->
+        <div class="card" style="background:rgba(27,191,176,.05);border:1.5px solid rgba(27,191,176,.3)">
+          <div class="card-title" style="margin-bottom:12px">🧮 Resultado calculado</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="padding:10px 14px;background:var(--s2);border-radius:8px">
+              <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">SUBTOTAL COSTOS</div>
+              <div id="pm_res_subtotal" style="font-family:var(--font-h);font-size:1.1rem;font-weight:700">$${fmtN(calc.subtotal)}</div>
+            </div>
+            <div style="padding:10px 14px;background:var(--s2);border-radius:8px">
+              <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">IMPREVISTOS</div>
+              <div id="pm_res_imprevistos" style="font-family:var(--font-h);font-size:1.1rem;font-weight:700;color:#f59e0b">$${fmtN(calc.imprevistos)}</div>
+            </div>
+            <div style="padding:10px 14px;background:var(--s2);border-radius:8px">
+              <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:3px">UTILIDAD OBJETIVO</div>
+              <div id="pm_res_utilidad" style="font-family:var(--font-h);font-size:1.1rem;font-weight:700;color:var(--ok)">$${fmtN(calc.utilidad)}</div>
+            </div>
+            <div style="padding:10px 14px;background:var(--primary);border-radius:8px">
+              <div style="font-size:.7rem;color:rgba(0,0,0,.6);font-family:var(--font-m);margin-bottom:3px">META TOTAL / MES</div>
+              <div id="pm_res_total" style="font-family:var(--font-h);font-size:1.2rem;font-weight:700;color:#0D0D0D">$${fmtN(calc.total)}</div>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="pmGuardarCostos()"
+          style="padding:12px 24px;background:var(--primary);color:#0D0D0D;border:none;border-radius:10px;cursor:pointer;font-family:var(--font-b);font-size:.92rem;font-weight:700;width:100%">
+          💾 Guardar presupuesto y actualizar metas
+        </button>
+
+      </div>
+
+      <!-- COLUMNA DERECHA: METAS KPIs + PRECIOS -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">🎯 Metas operativas</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${inp('kpi_sesiones_semana', 'Sesiones por semana',    cfg.meta_sesiones_semana, '≥ N')}
+            ${inp('kpi_ventas_mes',      'Meta ventas / mes ($)',  cfg.meta_ventas_mes,      'auto desde costos')}
+            ${inp('kpi_leads_min',       'Leads mínimo / mes',     cfg.meta_leads_min)}
+            ${inp('kpi_leads_max',       'Leads máximo / mes',     cfg.meta_leads_max)}
+            ${inp('kpi_conv_min',        'Conversión mínima (%)',  cfg.meta_conv_min)}
+            ${inp('kpi_conv_max',        'Conversión máxima (%)',  cfg.meta_conv_max)}
+            ${inp('kpi_nps',             'Meta NPS',               cfg.meta_nps,             '≥ N')}
+            ${inp('kpi_encuestas',       'Meta encuestas (%)',     cfg.meta_encuestas,       '≥ N%')}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">💰 Precios de servicios</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${inp('kpi_precio_full',      'Precio Descarga Full ($)',    cfg.precio_full)}
+            ${inp('kpi_duracion_full',    'Duración Full (min)',         cfg.duracion_full)}
+            ${inp('kpi_precio_express',   'Precio Descarga Express ($)', cfg.precio_express)}
+            ${inp('kpi_duracion_express', 'Duración Express (min)',      cfg.duracion_express)}
+          </div>
+          <div style="margin-top:12px;padding:10px 14px;background:rgba(27,191,176,.06);border-radius:8px;font-size:.75rem;color:var(--muted)">
+            💡 Ticket promedio estimado (30% Full + 70% Express):
+            <strong id="pm_ticket_avg" style="color:var(--primary)">$${fmtN(Math.round(cfg.precio_full*0.3 + cfg.precio_express*0.7))}</strong>
+            · Sesiones necesarias/mes:
+            <strong id="pm_sess_calc" style="color:var(--primary)">${Math.ceil(calc.total / Math.round(cfg.precio_full*0.3 + cfg.precio_express*0.7))}</strong>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">📈 Inversión en marketing</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${inp('kpi_inv_mkt_total',     'Total marketing/mes ($)',     cfg.inv_mkt_total)}
+            ${inp('kpi_inv_mkt_pauta',     'Pauta en redes ($)',          cfg.inv_mkt_pauta)}
+            ${inp('kpi_inv_mkt_contenido', 'Creación de contenido ($)',   cfg.inv_mkt_contenido)}
+          </div>
+        </div>
+
+        <button onclick="pmGuardarKPIs()"
+          style="padding:12px 24px;background:#6366f1;color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:var(--font-b);font-size:.92rem;font-weight:700;width:100%">
+          💾 Guardar metas de KPIs
+        </button>
+
+      </div>
+    </div>`;
+}
+
+function pmRecalc() {
+  const g = id => parseFloat(document.getElementById('pm_' + id)?.value) || 0;
+  const c = {
+    honorarios_fisio: g('honorarios_fisio'), seguridad_social: g('seguridad_social'),
+    asistente_fisio: g('asistente_fisio'),   auxiliar_admin: g('auxiliar_admin'),
+    arriendo: g('arriendo'),                 servicios_publicos: g('servicios_publicos'),
+    suscripcion_ia: g('suscripcion_ia'),     suscripcion_capcut: g('suscripcion_capcut'),
+    asesorias_ap: g('asesorias_ap'),         redes_contenido: g('redes_contenido'),
+    activacion_eventos: g('activacion_eventos'), pautas_redes: g('pautas_redes'),
+    mantenimiento: g('mantenimiento'),       insumos: g('insumos'),
+    pct_imprevistos: g('pct_imprevistos'),   pct_utilidad: g('pct_utilidad'),
+  };
+  const calc  = calcTotalCostos(c);
+  const fmtN  = v => Number(v).toLocaleString('es-CO');
+  const set   = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('pm_res_subtotal',    '$' + fmtN(calc.subtotal));
+  set('pm_res_imprevistos', '$' + fmtN(calc.imprevistos));
+  set('pm_res_utilidad',    '$' + fmtN(calc.utilidad));
+  set('pm_res_total',       '$' + fmtN(calc.total));
+  // Actualizar ticket promedio
+  const pFull = g('kpi_precio_full') || 110000;
+  const pExpr = g('kpi_precio_express') || 75000;
+  const ticket = Math.round(pFull * 0.3 + pExpr * 0.7);
+  const ta = document.getElementById('pm_ticket_avg');
+  const sc = document.getElementById('pm_sess_calc');
+  if (ta) ta.textContent = '$' + fmtN(ticket);
+  if (sc && ticket > 0) sc.textContent = Math.ceil(calc.total / ticket);
+}
+
+function pmGuardarCostos() {
+  const g = id => parseFloat(document.getElementById('pm_' + id)?.value) || 0;
+  const costos = {
+    honorarios_fisio: g('honorarios_fisio'), seguridad_social: g('seguridad_social'),
+    asistente_fisio: g('asistente_fisio'),   auxiliar_admin: g('auxiliar_admin'),
+    arriendo: g('arriendo'),                 servicios_publicos: g('servicios_publicos'),
+    suscripcion_ia: g('suscripcion_ia'),     suscripcion_capcut: g('suscripcion_capcut'),
+    asesorias_ap: g('asesorias_ap'),         redes_contenido: g('redes_contenido'),
+    activacion_eventos: g('activacion_eventos'), pautas_redes: g('pautas_redes'),
+    mantenimiento: g('mantenimiento'),       insumos: g('insumos'),
+    pct_imprevistos: g('pct_imprevistos'),   pct_utilidad: g('pct_utilidad'),
+  };
+  const calc = calcTotalCostos(costos);
+  saveCostosEstructura(costos);
+  // Actualizar meta de ventas en kpiConfig y globales
+  const cfg = getKPIConfig();
+  cfg.meta_ventas_mes = calc.total;
+  kvSet('kpiConfig', JSON.stringify(cfg));
+  META_VENTAS_MES    = calc.total;
+  META_VENTAS_SEMANA = Math.round(calc.total / 4);
+  reloadMetas();
+  applyKPIRefSpans();
+  toast('✅ Presupuesto guardado — meta actualizada a $' + Number(calc.total).toLocaleString('es-CO'), 'ok');
+  renderPresupuestoMetas();
+}
+
+function pmGuardarKPIs() {
+  const g   = id => parseInt(document.getElementById('pm_' + id)?.value) || 0;
+  const cfg = getKPIConfig();
+  cfg.meta_sesiones_semana = g('kpi_sesiones_semana') || cfg.meta_sesiones_semana;
+  cfg.meta_ventas_mes      = g('kpi_ventas_mes')      || cfg.meta_ventas_mes;
+  cfg.meta_leads_min       = g('kpi_leads_min')       || cfg.meta_leads_min;
+  cfg.meta_leads_max       = g('kpi_leads_max')       || cfg.meta_leads_max;
+  cfg.meta_conv_min        = g('kpi_conv_min')        || cfg.meta_conv_min;
+  cfg.meta_conv_max        = g('kpi_conv_max')        || cfg.meta_conv_max;
+  cfg.meta_nps             = g('kpi_nps')             || cfg.meta_nps;
+  cfg.meta_encuestas       = g('kpi_encuestas')       || cfg.meta_encuestas;
+  cfg.precio_full          = g('kpi_precio_full')     || cfg.precio_full;
+  cfg.duracion_full        = g('kpi_duracion_full')   || cfg.duracion_full;
+  cfg.precio_express       = g('kpi_precio_express')  || cfg.precio_express;
+  cfg.duracion_express     = g('kpi_duracion_express')|| cfg.duracion_express;
+  cfg.inv_mkt_total        = g('kpi_inv_mkt_total')   || cfg.inv_mkt_total;
+  cfg.inv_mkt_pauta        = g('kpi_inv_mkt_pauta')   || cfg.inv_mkt_pauta;
+  cfg.inv_mkt_contenido    = g('kpi_inv_mkt_contenido')|| cfg.inv_mkt_contenido;
+  kvSet('kpiConfig', JSON.stringify(cfg));
+  reloadMetas();
+  applyKPIRefSpans();
+  toast('✅ Metas de KPIs guardadas', 'ok');
+  renderPresupuestoMetas();
 }
 
 function guardarKPIConfig() {
