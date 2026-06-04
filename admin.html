@@ -6590,6 +6590,17 @@ function autoFillPrice() {
   const mod  = document.getElementById('ncMod').value;
   if (!serv) return;
 
+  // Si el usuario guardó precios desde Presupuesto y Metas, usar esos
+  if (window._preciosOverride && window._preciosOverride[serv]) {
+    const precio = window._preciosOverride[serv][mod] || window._preciosOverride[serv]['Presencial'];
+    if (precio) document.getElementById('ncPrice').value = precio;
+    checkDomicilioWarn();
+    updateSesionesInfo();
+    calcConvenio();
+    if (document.getElementById('ncAbonoCheck').checked) calcAbono();
+    return;
+  }
+
   const precios = {
     'Descarga Muscular — Cuello y Espalda': { Presencial:'$75.000',  Domicilio:'$90.000' },
     'Descarga Muscular — Piernas':          { Presencial:'$75.000',  Domicilio:'$90.000' },
@@ -9345,6 +9356,8 @@ function reloadMetas() {
   META_ENCUESTAS       = cfg.meta_encuestas;
   META_CANCELACION_PCT = cfg.meta_cancelacion;
   META_RETENCION_PCT   = cfg.meta_retencion;
+  // Sincronizar precios de servicios si ya fueron guardados
+  if (cfg.sv_cuello_p) _syncPreciosToAutoFill(cfg);
 }
 
 function getKPIManual() {
@@ -11507,6 +11520,17 @@ function renderPresupuestoMetas() {
 
   const fmtN = v => Number(v).toLocaleString('es-CO');
 
+  const inpDoble = (idP, idD, label, valP, valD) => `
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="font-size:.78rem;color:var(--text)">${label}</div>
+      <input type="number" id="pm_${idP}" value="${valP}" placeholder="Presencial" oninput="pmRecalc()"
+        style="background:var(--s2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-b);font-size:.82rem;padding:7px 9px;outline:none;width:100%;box-sizing:border-box"
+        onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'" title="Precio presencial">
+      <input type="number" id="pm_${idD}" value="${valD}" placeholder="Domicilio" oninput="pmRecalc()"
+        style="background:var(--s2);border:1px solid rgba(99,102,241,.3);border-radius:7px;color:var(--text);font-family:var(--font-b);font-size:.82rem;padding:7px 9px;outline:none;width:100%;box-sizing:border-box"
+        onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='rgba(99,102,241,.3)'" title="Precio domicilio">
+    </div>`;
+
   const inp = (id, label, val, note='', tipo='number') => `
     <div>
       <label style="font-size:.75rem;color:var(--muted);display:block;margin-bottom:4px;font-family:var(--font-m)">${label}${note?`<span style="font-size:.68rem;color:var(--primary);margin-left:5px">${note}</span>`:''}</label>
@@ -11609,18 +11633,44 @@ function renderPresupuestoMetas() {
         </div>
 
         <div class="card">
-          <div class="card-title" style="margin-bottom:14px">💰 Precios de servicios</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            ${inp('kpi_precio_full',      'Precio Descarga Full ($)',    cfg.precio_full)}
-            ${inp('kpi_duracion_full',    'Duración Full (min)',         cfg.duracion_full)}
-            ${inp('kpi_precio_express',   'Precio Descarga Express ($)', cfg.precio_express)}
-            ${inp('kpi_duracion_express', 'Duración Express (min)',      cfg.duracion_express)}
+          <div class="card-title" style="margin-bottom:4px">💰 Precios de servicios</div>
+          <div style="font-size:.74rem;color:var(--muted);margin-bottom:14px">Presencial · Domicilio — se usan para autocompletar al agendar</div>
+
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:6px">
+            <div></div>
+            <div style="font-size:.68rem;color:var(--muted);text-align:center;font-family:var(--font-m)">PRESENCIAL</div>
+            <div style="font-size:.68rem;color:#6366f1;text-align:center;font-family:var(--font-m)">DOMICILIO</div>
           </div>
-          <div style="margin-top:12px;padding:10px 14px;background:rgba(27,191,176,.06);border-radius:8px;font-size:.75rem;color:var(--muted)">
-            💡 Ticket promedio estimado (30% Full + 70% Express):
-            <strong id="pm_ticket_avg" style="color:var(--primary)">$${fmtN(Math.round(cfg.precio_full*0.3 + cfg.precio_express*0.7))}</strong>
+          <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Descargas musculares</div>
+          ${inpDoble('sv_cuello_p','sv_cuello_d','Cuello y Espalda',cfg.sv_cuello_p||75000,cfg.sv_cuello_d||90000)}
+          ${inpDoble('sv_piernas_p','sv_piernas_d','Piernas',cfg.sv_piernas_p||75000,cfg.sv_piernas_d||90000)}
+          ${inpDoble('sv_completa_p','sv_completa_d','Completa (Full)',cfg.sv_completa_p||110000,cfg.sv_completa_d||125000)}
+
+          <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 8px">Sesiones individuales</div>
+          ${inpDoble('sv_valoracion_p','sv_valoracion_d','Valoración Funcional',cfg.sv_valoracion_p||80000,cfg.sv_valoracion_d||95000)}
+          ${inpDoble('sv_readap_p','sv_readap_d','Readaptación Funcional',cfg.sv_readap_p||70000,cfg.sv_readap_d||85000)}
+          ${inpDoble('sv_express_p','sv_express_d','Descarga Express',cfg.precio_express||75000,cfg.sv_express_d||90000)}
+
+          <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 8px">Combos y sesiones especiales</div>
+          ${inpDoble('sv_diag_p','sv_diag_d','Combo Diagnóstico Pro',cfg.sv_diag_p||160000,cfg.sv_diag_d||185000)}
+          ${inpDoble('sv_bienvenida_p','sv_bienvenida_d','Combo Bienvenida',cfg.sv_bienvenida_p||120000,cfg.sv_bienvenida_d||120000)}
+          ${inpDoble('sv_mini_p','sv_mini_d','Mini-sesión Familiar 20min',cfg.sv_mini_p||40000,cfg.sv_mini_d||40000)}
+
+          <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 8px">Paquetes Readaptación</div>
+          ${inpDoble('sv_pkInicio_p','sv_pkInicio_d','Paquete Inicio (6 ses)',cfg.sv_pkInicio_p||378000,cfg.sv_pkInicio_d||469000)}
+          ${inpDoble('sv_pkAvance_p','sv_pkAvance_d','Paquete Avance (8 ses)',cfg.sv_pkAvance_p||476000,cfg.sv_pkAvance_d||598000)}
+          ${inpDoble('sv_pkTotal_p','sv_pkTotal_d','Paquete Total (10 ses)',cfg.sv_pkTotal_p||560000,cfg.sv_pkTotal_d||722000)}
+          ${inpDoble('sv_pkRecup_p','sv_pkRecup_d','Paquete Recuperación Full',cfg.sv_pkRecup_p||264000,cfg.sv_pkRecup_d||264000)}
+
+          <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 8px">Planes mensuales</div>
+          ${inpDoble('sv_planActivo_p','sv_planActivo_d','Plan Activo (2 ses)',cfg.sv_planActivo_p||135000,cfg.sv_planActivo_d||165000)}
+          ${inpDoble('sv_planPro_p','sv_planPro_d','Plan Pro (3 ses)',cfg.sv_planPro_p||230000,cfg.sv_planPro_d||275000)}
+
+          <div style="margin-top:14px;padding:10px 14px;background:rgba(27,191,176,.06);border-radius:8px;font-size:.75rem;color:var(--muted)">
+            💡 Ticket promedio individual (sesiones sueltas):
+            <strong id="pm_ticket_avg" style="color:var(--primary)">calculando...</strong>
             · Sesiones necesarias/mes:
-            <strong id="pm_sess_calc" style="color:var(--primary)">${Math.ceil(calc.total / Math.round(cfg.precio_full*0.3 + cfg.precio_express*0.7))}</strong>
+            <strong id="pm_sess_calc" style="color:var(--primary)">—</strong>
           </div>
         </div>
 
@@ -11662,9 +11712,12 @@ function pmRecalc() {
   set('pm_res_utilidad',    '$' + fmtN(calc.utilidad));
   set('pm_res_total',       '$' + fmtN(calc.total));
   // Actualizar ticket promedio
-  const pFull = g('kpi_precio_full') || 110000;
-  const pExpr = g('kpi_precio_express') || 75000;
-  const ticket = Math.round(pFull * 0.3 + pExpr * 0.7);
+  // Ticket promedio = promedio de los 6 servicios individuales (presencial)
+  const indivPrecios = [
+    g('sv_cuello_p') || 75000, g('sv_piernas_p') || 75000, g('sv_completa_p') || 110000,
+    g('sv_valoracion_p') || 80000, g('sv_readap_p') || 70000, g('sv_express_p') || 75000,
+  ];
+  const ticket = Math.round(indivPrecios.reduce((s,v) => s+v, 0) / indivPrecios.length);
   const ta = document.getElementById('pm_ticket_avg');
   const sc = document.getElementById('pm_sess_calc');
   if (ta) ta.textContent = '$' + fmtN(ticket);
@@ -11700,26 +11753,79 @@ function pmGuardarCostos() {
 function pmGuardarKPIs() {
   const g   = id => parseInt(document.getElementById('pm_' + id)?.value) || 0;
   const cfg = getKPIConfig();
-  cfg.meta_sesiones_semana = g('kpi_sesiones_semana') || cfg.meta_sesiones_semana;
-  cfg.meta_ventas_mes      = g('kpi_ventas_mes')      || cfg.meta_ventas_mes;
-  cfg.meta_leads_min       = g('kpi_leads_min')       || cfg.meta_leads_min;
-  cfg.meta_leads_max       = g('kpi_leads_max')       || cfg.meta_leads_max;
-  cfg.meta_conv_min        = g('kpi_conv_min')        || cfg.meta_conv_min;
-  cfg.meta_conv_max        = g('kpi_conv_max')        || cfg.meta_conv_max;
-  cfg.meta_nps             = g('kpi_nps')             || cfg.meta_nps;
-  cfg.meta_encuestas       = g('kpi_encuestas')       || cfg.meta_encuestas;
-  cfg.precio_full          = g('kpi_precio_full')     || cfg.precio_full;
-  cfg.duracion_full        = g('kpi_duracion_full')   || cfg.duracion_full;
-  cfg.precio_express       = g('kpi_precio_express')  || cfg.precio_express;
-  cfg.duracion_express     = g('kpi_duracion_express')|| cfg.duracion_express;
-  cfg.inv_mkt_total        = g('kpi_inv_mkt_total')   || cfg.inv_mkt_total;
-  cfg.inv_mkt_pauta        = g('kpi_inv_mkt_pauta')   || cfg.inv_mkt_pauta;
-  cfg.inv_mkt_contenido    = g('kpi_inv_mkt_contenido')|| cfg.inv_mkt_contenido;
+  // Metas operativas
+  cfg.meta_sesiones_semana  = g('kpi_sesiones_semana')  || cfg.meta_sesiones_semana;
+  cfg.meta_ventas_mes       = g('kpi_ventas_mes')       || cfg.meta_ventas_mes;
+  cfg.meta_leads_min        = g('kpi_leads_min')        || cfg.meta_leads_min;
+  cfg.meta_leads_max        = g('kpi_leads_max')        || cfg.meta_leads_max;
+  cfg.meta_conv_min         = g('kpi_conv_min')         || cfg.meta_conv_min;
+  cfg.meta_conv_max         = g('kpi_conv_max')         || cfg.meta_conv_max;
+  cfg.meta_nps              = g('kpi_nps')              || cfg.meta_nps;
+  cfg.meta_encuestas        = g('kpi_encuestas')        || cfg.meta_encuestas;
+  // Marketing
+  cfg.inv_mkt_total         = g('kpi_inv_mkt_total')    || cfg.inv_mkt_total;
+  cfg.inv_mkt_pauta         = g('kpi_inv_mkt_pauta')    || cfg.inv_mkt_pauta;
+  cfg.inv_mkt_contenido     = g('kpi_inv_mkt_contenido')|| cfg.inv_mkt_contenido;
+  // Precios servicios (presencial y domicilio)
+  cfg.sv_cuello_p           = g('sv_cuello_p')    || 75000;
+  cfg.sv_cuello_d           = g('sv_cuello_d')    || 90000;
+  cfg.sv_piernas_p          = g('sv_piernas_p')   || 75000;
+  cfg.sv_piernas_d          = g('sv_piernas_d')   || 90000;
+  cfg.sv_completa_p         = g('sv_completa_p')  || 110000;
+  cfg.sv_completa_d         = g('sv_completa_d')  || 125000;
+  cfg.sv_valoracion_p       = g('sv_valoracion_p')|| 80000;
+  cfg.sv_valoracion_d       = g('sv_valoracion_d')|| 95000;
+  cfg.sv_readap_p           = g('sv_readap_p')    || 70000;
+  cfg.sv_readap_d           = g('sv_readap_d')    || 85000;
+  cfg.precio_express        = g('sv_express_p')   || 75000;
+  cfg.sv_express_d          = g('sv_express_d')   || 90000;
+  cfg.sv_diag_p             = g('sv_diag_p')      || 160000;
+  cfg.sv_diag_d             = g('sv_diag_d')      || 185000;
+  cfg.sv_bienvenida_p       = g('sv_bienvenida_p')|| 120000;
+  cfg.sv_bienvenida_d       = g('sv_bienvenida_d')|| 120000;
+  cfg.sv_mini_p             = g('sv_mini_p')      || 40000;
+  cfg.sv_mini_d             = g('sv_mini_d')      || 40000;
+  cfg.sv_pkInicio_p         = g('sv_pkInicio_p')  || 378000;
+  cfg.sv_pkInicio_d         = g('sv_pkInicio_d')  || 469000;
+  cfg.sv_pkAvance_p         = g('sv_pkAvance_p')  || 476000;
+  cfg.sv_pkAvance_d         = g('sv_pkAvance_d')  || 598000;
+  cfg.sv_pkTotal_p          = g('sv_pkTotal_p')   || 560000;
+  cfg.sv_pkTotal_d          = g('sv_pkTotal_d')   || 722000;
+  cfg.sv_pkRecup_p          = g('sv_pkRecup_p')   || 264000;
+  cfg.sv_pkRecup_d          = g('sv_pkRecup_d')   || 264000;
+  cfg.sv_planActivo_p       = g('sv_planActivo_p')|| 135000;
+  cfg.sv_planActivo_d       = g('sv_planActivo_d')|| 165000;
+  cfg.sv_planPro_p          = g('sv_planPro_p')   || 230000;
+  cfg.sv_planPro_d          = g('sv_planPro_d')   || 275000;
+  // Mantener precio_full apuntando a Completa
+  cfg.precio_full           = cfg.sv_completa_p;
   kvSet('kpiConfig', JSON.stringify(cfg));
+  // Actualizar autoFillPrice con los nuevos precios
+  _syncPreciosToAutoFill(cfg);
   reloadMetas();
   applyKPIRefSpans();
-  toast('✅ Metas de KPIs guardadas', 'ok');
+  toast('✅ Precios y metas guardados', 'ok');
   renderPresupuestoMetas();
+}
+
+function _syncPreciosToAutoFill(cfg) {
+  // Sobreescribe los precios en autoFillPrice leyendo desde kpiConfig guardado
+  window._preciosOverride = {
+    'Descarga Muscular — Cuello y Espalda': { Presencial: '$'+Number(cfg.sv_cuello_p||75000).toLocaleString('es-CO'),    Domicilio: '$'+Number(cfg.sv_cuello_d||90000).toLocaleString('es-CO') },
+    'Descarga Muscular — Piernas':          { Presencial: '$'+Number(cfg.sv_piernas_p||75000).toLocaleString('es-CO'),   Domicilio: '$'+Number(cfg.sv_piernas_d||90000).toLocaleString('es-CO') },
+    'Descarga Muscular Completa':           { Presencial: '$'+Number(cfg.sv_completa_p||110000).toLocaleString('es-CO'), Domicilio: '$'+Number(cfg.sv_completa_d||125000).toLocaleString('es-CO') },
+    'Valoración Funcional':                 { Presencial: '$'+Number(cfg.sv_valoracion_p||80000).toLocaleString('es-CO'),Domicilio: '$'+Number(cfg.sv_valoracion_d||95000).toLocaleString('es-CO') },
+    'Readaptación Funcional':               { Presencial: '$'+Number(cfg.sv_readap_p||70000).toLocaleString('es-CO'),   Domicilio: '$'+Number(cfg.sv_readap_d||85000).toLocaleString('es-CO') },
+    'Combo Diagnóstico Pro':                { Presencial: '$'+Number(cfg.sv_diag_p||160000).toLocaleString('es-CO'),    Domicilio: '$'+Number(cfg.sv_diag_d||185000).toLocaleString('es-CO') },
+    'Combo Bienvenida':                     { Presencial: '$'+Number(cfg.sv_bienvenida_p||120000).toLocaleString('es-CO'),Domicilio:'$'+Number(cfg.sv_bienvenida_d||120000).toLocaleString('es-CO') },
+    'Mini-sesión Familiar 20 min':          { Presencial: '$'+Number(cfg.sv_mini_p||40000).toLocaleString('es-CO'),     Domicilio: '$'+Number(cfg.sv_mini_d||40000).toLocaleString('es-CO') },
+    'Paquete Recuperación Full':            { Presencial: '$'+Number(cfg.sv_pkRecup_p||264000).toLocaleString('es-CO'), Domicilio: '$'+Number(cfg.sv_pkRecup_d||264000).toLocaleString('es-CO') },
+    'Paquete Readaptación Inicio':          { Presencial: '$'+Number(cfg.sv_pkInicio_p||378000).toLocaleString('es-CO'),Domicilio: '$'+Number(cfg.sv_pkInicio_d||469000).toLocaleString('es-CO') },
+    'Paquete Readaptación Avance':          { Presencial: '$'+Number(cfg.sv_pkAvance_p||476000).toLocaleString('es-CO'),Domicilio: '$'+Number(cfg.sv_pkAvance_d||598000).toLocaleString('es-CO') },
+    'Paquete Readaptación Total':           { Presencial: '$'+Number(cfg.sv_pkTotal_p||560000).toLocaleString('es-CO'), Domicilio: '$'+Number(cfg.sv_pkTotal_d||722000).toLocaleString('es-CO') },
+    'Plan Activo':                          { Presencial: '$'+Number(cfg.sv_planActivo_p||135000).toLocaleString('es-CO'),Domicilio:'$'+Number(cfg.sv_planActivo_d||165000).toLocaleString('es-CO') },
+    'Plan Pro':                             { Presencial: '$'+Number(cfg.sv_planPro_p||230000).toLocaleString('es-CO'), Domicilio: '$'+Number(cfg.sv_planPro_d||275000).toLocaleString('es-CO') },
+  };
 }
 
 function guardarKPIConfig() {
