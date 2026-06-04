@@ -3864,6 +3864,28 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
         </div>
       </div>
 
+      <!-- Reactivación de pacientes -->
+      <div class="card" style="margin-top:24px" id="cardReactivacion">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+          <div>
+            <div class="card-title" style="margin-bottom:0">🔔 Reactivación de pacientes</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:3px">Pacientes que no han vuelto — sin cita futura agendada</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <label style="font-size:.78rem;color:var(--muted)">Inactivos hace más de:</label>
+            <select id="reacDias" onchange="renderReactivacion()"
+              style="font-size:.8rem;padding:6px 10px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);cursor:pointer;outline:none">
+              <option value="30">30 días</option>
+              <option value="60">60 días</option>
+              <option value="90" selected>90 días</option>
+              <option value="180">6 meses</option>
+              <option value="365">1 año</option>
+            </select>
+          </div>
+        </div>
+        <div id="reactivacionResult" style="margin-top:16px"></div>
+      </div>
+
       <!-- Historial de cambios -->
       <div class="card" style="margin-top:24px">
         <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none" onclick="toggleChangeLog()">
@@ -4725,7 +4747,7 @@ function showView(v) {
   if (v === 'pacientes')      renderPacientes();
   if (v === 'calendario')     renderCalendar();
   if (v === 'recordatorios')  cargarRecordatorios();
-  if (v === 'basedatos')      { renderBasedatos(); initFormDB(); renderChangeLog(); }
+  if (v === 'basedatos')      { renderBasedatos(); initFormDB(); renderChangeLog(); renderReactivacion(); }
   if (v === 'finanzas')       { renderFinanzas(); actualizarContadorLeads(); _renderEncuestaStatsUI(getEncuestaStats()); }
   if (v === 'seguimiento')    renderSeguimiento();
   if (v === 'tareas')         renderTareas();
@@ -7365,6 +7387,103 @@ function renderBasedatos() {
       '</div></td>' +
     '</tr>';
   }).join('');
+}
+
+function renderReactivacion() {
+  const el = document.getElementById('reactivacionResult');
+  if (!el) return;
+
+  const dias   = parseInt(document.getElementById('reacDias')?.value || '90', 10);
+  const hoy    = today(); // "YYYY-MM-DD"
+  const limite = new Date(); limite.setDate(limite.getDate() - dias);
+  const limiteStr = limite.toISOString().split('T')[0];
+
+  // Agrupar citas por paciente (clave por teléfono o nombre)
+  const map = {};
+  (allData.citas || []).forEach(c => {
+    if (!c.nombre) return;
+    const phone = (c.telefono || '').replace(/\D/g, '').slice(-10);
+    const key   = phone.length >= 10 ? 'p:' + phone : 'n:' + c.nombre.toLowerCase().trim();
+    if (!map[key]) map[key] = { nombre: c.nombre, telefono: phone, ultimaPasada: '', proximaFutura: '' };
+    const fd = normDate(c.fecha);
+    if (fd && fd <= hoy) {
+      if (!map[key].ultimaPasada || fd > map[key].ultimaPasada) map[key].ultimaPasada = fd;
+    }
+    if (fd && fd > hoy) {
+      if (!map[key].proximaFutura || fd < map[key].proximaFutura) map[key].proximaFutura = fd;
+    }
+  });
+
+  // Enriquecer con hoja Pacientes (teléfono puede estar ahí)
+  (allData.pacientes || []).forEach(p => {
+    const phone = (p.telefono || '').replace(/\D/g, '').slice(-10);
+    const key   = phone.length >= 10 ? 'p:' + phone : 'n:' + (p.nombre||'').toLowerCase().trim();
+    if (map[key] && phone) map[key].telefono = phone;
+  });
+
+  // Filtrar: tuvieron cita pasada, esa cita fue hace más de `dias` días, y NO tienen cita futura
+  const inactivos = Object.values(map).filter(p =>
+    p.ultimaPasada && p.ultimaPasada < limiteStr && !p.proximaFutura
+  ).sort((a, b) => a.ultimaPasada.localeCompare(b.ultimaPasada)); // más antiguos primero
+
+  if (!inactivos.length) {
+    el.innerHTML = `<div style="padding:18px;text-align:center;color:var(--ok);font-size:.9rem">🟢 ¡Bien! Todos tus pacientes estuvieron activos en los últimos ${dias} días o tienen cita agendada.</div>`;
+    return;
+  }
+
+  // Calcular días de inactividad
+  const diffDias = fecha => {
+    const d = new Date(hoy + 'T12:00:00') - new Date(fecha + 'T12:00:00');
+    return Math.floor(d / 86400000);
+  };
+
+  const chipColor = d => d >= 365 ? '#ef4444' : d >= 180 ? '#f59e0b' : 'var(--primary)';
+
+  // Mensaje WhatsApp de reactivación
+  const waReac = (tel, nombre) => {
+    if (!tel || tel.length < 7) return null;
+    const phone = tel.length <= 10 ? '57' + tel : tel;
+    const primero = nombre.split(' ')[0];
+    const msg = `Hola ${primero}! 👋\nTe escribimos desde la clínica — hace tiempo no nos visitás y nos encantaría verte de nuevo.\n\n¿Cómo te has sentido? Si quieres retomar tus sesiones, estamos disponibles para agendarte 🙌\n\nEscríbenos cuando quieras 😊`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  };
+
+  let html = `
+    <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <div style="font-size:.82rem;color:var(--muted)">${inactivos.length} paciente${inactivos.length>1?'s':''} inactivo${inactivos.length>1?'s':''}</div>
+      <div style="font-size:.75rem;padding:3px 10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:20px;color:#dc2626">${inactivos.filter(p=>diffDias(p.ultimaPasada)>=365).length} sin venir hace 1+ año</div>
+      <div style="font-size:.75rem;padding:3px 10px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:20px;color:#b45309">${inactivos.filter(p=>diffDias(p.ultimaPasada)>=180&&diffDias(p.ultimaPasada)<365).length} entre 6m–1 año</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">`;
+
+  inactivos.forEach(p => {
+    const d     = diffDias(p.ultimaPasada);
+    const color = chipColor(d);
+    const waUrl = waReac(p.telefono, p.nombre);
+    const dLabel = d >= 365
+      ? `${Math.floor(d/365)} año${Math.floor(d/365)>1?'s':''} ${d%365>0?Math.floor((d%365)/30)+'m':''}`
+      : d >= 30 ? `${Math.floor(d/30)} mes${Math.floor(d/30)>1?'es':''}` : `${d} días`;
+    html += `
+      <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border-radius:10px;border-left:3px solid ${color}">
+        <div>
+          <div style="font-size:.88rem;font-weight:600">${p.nombre}</div>
+          <div style="font-size:.73rem;color:var(--muted);margin-top:2px">
+            Última visita: ${fmtDate(p.ultimaPasada)}
+            ${p.telefono ? ` · 📞 ${p.telefono}` : ''}
+          </div>
+        </div>
+        <div style="font-size:.75rem;font-family:var(--font-m);color:${color};white-space:nowrap;text-align:right">
+          Inactivo hace<br><strong>${dLabel}</strong>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          ${waUrl ? `<a href="${waUrl}" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>` : '<span style="font-size:.72rem;color:var(--muted)">Sin tel.</span>'}
+          <button class="btn btn-teal btn-sm" onclick="agendarDesdePaciente('${encodeURIComponent(p.nombre)}','${p.telefono}','')">Agendar</button>
+        </div>
+      </div>`;
+  });
+
+  html += `</div>`;
+  el.innerHTML = html;
 }
 
 function dbEditarPac(idx) {
