@@ -4094,7 +4094,7 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
           <div><label class="co-inp-label">Bono agenda llena (mes completo)</label><input class="co-inp" id="cfg_bono_agenda" type="number" placeholder="80000"></div>
           <div><label class="co-inp-label">Semanas meta (de 4 o 5)</label><input class="co-inp" id="cfg_semanas_meta" type="number" placeholder="4"></div>
           <div><label class="co-inp-label">Sesiones/semana = "llena"</label><input class="co-inp" id="cfg_ses_llena" type="number" placeholder="23"></div>
-          <div><label class="co-inp-label">Bono por reactivación (por paciente)</label><input class="co-inp" id="cfg_bono_react" type="number" placeholder="15000"></div>
+          <div><label class="co-inp-label">Bono por reactivación (por paciente)</label><div style="display:flex;gap:6px;align-items:center"><input class="co-inp" id="cfg_bono_react" type="number" placeholder="15000" style="flex:1;min-width:0"><select class="co-inp" id="cfg_bono_react_tipo" style="width:110px;padding:6px 8px"><option value="fijo">$ Fijo</option><option value="pct">% servicio</option></select></div></div>
         </div>
 
         <div class="co-sep"></div>
@@ -14169,6 +14169,7 @@ function _comisGetConfig() {
     semanas_meta:          parseInt(cfg.semanas_meta          || '4',     10),
     ses_llena:             parseInt(cfg.ses_llena             || '23',    10),
     bono_react:            parseInt(cfg.bono_react            || '15000', 10),
+    bono_react_tipo:       cfg.bono_react_tipo || 'fijo',
     pct_reventa:           parseInt(cfg.pct_reventa           || '5',     10),
     bono_cruzada:          parseInt(cfg.bono_cruzada          || '20000', 10),
     serv_mant:             (cfg.serv_mant     || 'plan activo,plan pro,longevidad,combo bienvenida,combo').split(',').map(s => s.trim().toLowerCase()).filter(Boolean),
@@ -14188,6 +14189,7 @@ function saveComisConfig() {
     semanas_meta:         g('cfg_semanas_meta'),
     ses_llena:            g('cfg_ses_llena'),
     bono_react:           g('cfg_bono_react'),
+    bono_react_tipo:      g('cfg_bono_react_tipo') || 'fijo',
     pct_reventa:          g('cfg_pct_reventa'),
     bono_cruzada:         g('cfg_bono_cruzada'),
     serv_mant:            g('cfg_serv_mant'),
@@ -14215,6 +14217,7 @@ function toggleComisConfig() {
   set('cfg_semanas_meta',         cfg.semanas_meta);
   set('cfg_ses_llena',            cfg.ses_llena);
   set('cfg_bono_react',           cfg.bono_react);
+  set('cfg_bono_react_tipo',      cfg.bono_react_tipo);
   set('cfg_pct_reventa',          cfg.pct_reventa);
   set('cfg_bono_cruzada',         cfg.bono_cruzada);
   set('cfg_serv_mant',            cfg.serv_mant.join(', '));
@@ -14283,7 +14286,11 @@ function _comisReactivaciones(citas, year, month) {
     if (!before.length) continue;
     const lastB = before.reduce((a,b) => normDate(a.fecha)>normDate(b.fecha)?a:b);
     const dias  = Math.round((mS - new Date(normDate(lastB.fecha)+'T12:00')) / 86400000);
-    if (dias >= 90) result.push({ nombre: p.nombre, lastFecha: normDate(lastB.fecha), dias });
+    if (dias >= 90) {
+      const firstSes = [...thisMon].sort((a,b) => normDate(a.fecha).localeCompare(normDate(b.fecha)))[0];
+      const precio = parseInt((firstSes?.precio||'0').toString().replace(/\D/g,''), 10) || 0;
+      result.push({ nombre: p.nombre, lastFecha: normDate(lastB.fecha), dias, precio });
+    }
   }
   return result;
 }
@@ -14382,7 +14389,12 @@ function renderComisiones() {
   const reactMan   = _comisManualReact(year, month);
   const reactManN  = reactMan.filter(n => !reactAuto.find(r => r.nombre.toLowerCase() === n.toLowerCase()));
   const totalReact = reactAuto.length + reactManN.length;
-  const bonoReact  = totalReact * cfg.bono_react;
+  const calcBonoReactItem = (precio) => cfg.bono_react_tipo === 'pct'
+    ? Math.round((parseInt((precio||'0').toString().replace(/\D/g,''),10)||0) * cfg.bono_react / 100)
+    : cfg.bono_react;
+  const bonoReact = reactAuto.reduce((s,r) => s + calcBonoReactItem(r.precio), 0)
+    + reactManN.length * (cfg.bono_react_tipo === 'fijo' ? cfg.bono_react : 0);
+  const labelBonoReact = cfg.bono_react_tipo === 'pct' ? cfg.bono_react + '% del servicio' : fmtPeso(cfg.bono_react);
 
   // ── REVENTAS ──
   const reventas = _comisReventas(citas, year, month, cfg.serv_mant, cfg.pct_reventa);
@@ -14435,8 +14447,8 @@ function renderComisiones() {
   const semanasH = semanas.map(s => `<div class="co-week"><div class="co-wdot ${s.llena?'ok':'no'}"></div><span>${fmtRng(s.start,s.end)}</span><span style="font-family:var(--font-m);color:${s.llena?'var(--ok)':'var(--muted)'}">${s.sesiones} ses.</span><span style="font-size:.72rem;color:${s.llena?'var(--ok)':'#ef4444'}">${s.llena?'✓ llena':'falta'}</span></div>`).join('');
 
   const reactH = [
-    ...reactAuto.map(r => `<div class="co-bd-item"><span>${r.nombre} <span style="font-size:.72rem;color:var(--muted)">(${r.dias}d inactivo)</span></span><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(cfg.bono_react)}</span></div>`),
-    ...reactManN.map(n  => `<div class="co-bd-item"><span>${n} <span style="font-size:.72rem;color:var(--primary)">(manual)</span></span><button onclick="removeManualReactivacion('${n.replace(/'/g,"\\'")}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:.85rem;padding:0 4px">✕</button><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(cfg.bono_react)}</span></div>`)
+    ...reactAuto.map(r => { const b = calcBonoReactItem(r.precio); return `<div class="co-bd-item"><span>${r.nombre} <span style="font-size:.72rem;color:var(--muted)">(${r.dias}d inactivo)</span></span><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${fmtPeso(b)}${cfg.bono_react_tipo==='pct'?` <span style="color:var(--muted)">(${cfg.bono_react}%)</span>`:''}</span></div>`; }),
+    ...reactManN.map(n  => { const b = cfg.bono_react_tipo === 'fijo' ? cfg.bono_react : 0; return `<div class="co-bd-item"><span>${n} <span style="font-size:.72rem;color:var(--primary)">(manual)</span></span><button onclick="removeManualReactivacion('${n.replace(/'/g,"\\'")}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:.85rem;padding:0 4px">✕</button><span style="font-family:var(--font-m);font-size:.78rem;color:var(--ok)">${b ? fmtPeso(b) : '—'}</span></div>`; })
   ].join('') || '<div class="co-empty">No se detectaron reactivaciones este mes</div>';
 
   const btnAux = pagoAux
@@ -14452,7 +14464,7 @@ function renderComisiones() {
       <div class="co-bono-row"><span class="co-bono-label">${sLlenas} de ${sTotal} semanas ≥${cfg.ses_llena} ses. · ${totalSes} sesiones totales</span><span class="co-bono-amount">${fmtPeso(bonoAg)}</span></div>
       <div class="co-breakdown">${semanasH}</div></div>
     <div class="co-bono"><div class="co-bono-title">🔁 Bono Recuperación de Pacientes</div>
-      <div class="co-bono-row"><span class="co-bono-label">${totalReact} reactivado${totalReact!==1?'s':''} × ${fmtPeso(cfg.bono_react)}</span><span class="co-bono-amount">${fmtPeso(bonoReact)}</span></div>
+      <div class="co-bono-row"><span class="co-bono-label">${totalReact} reactivado${totalReact!==1?'s':''} × ${labelBonoReact}</span><span class="co-bono-amount">${fmtPeso(bonoReact)}</span></div>
       <div class="co-breakdown">${reactH}</div>
       <div class="co-manual-row"><input class="co-manual-inp" id="coManualReactInp" type="text" placeholder="Agregar reactivación manual..." onkeydown="if(event.key==='Enter')addManualReactivacion()"><button onclick="addManualReactivacion()" style="padding:7px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.8rem;white-space:nowrap">+ Agregar</button></div></div>
     ${bonoCruzAux > 0 ? `<div class="co-bono"><div class="co-bono-title">➕ Bono Venta Cruzada asignada</div>
