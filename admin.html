@@ -9041,8 +9041,9 @@ const CONCEPTOS_EGRESO = {
   'Otro': ['Otro']
 };
 const COSTOS_REFERENCIA = {
-  'Honorarios Fisio': 4000000, 'Seguridad Social': 500000, 'Asistente Fisio': 1200000,
-  'Auxiliar Administrativa': 500000, 'Arriendo': 450000, 'Servicios públicos': 50000,
+  'Honorarios Fisio': 4000000, 'Seguridad Social': 500000,
+  'Asistente Fisio': 1200000, 'Auxiliar Administrativa': 500000,
+  'Arriendo': 450000, 'Servicios públicos': 50000,
   'Suscripción IA': 80000, 'Suscripción CapCut': 12000, 'Asesorías AP x4/Mes': 480000,
   'Redes Sociales Contenido': 240000, 'Activación marca-Eventos': 300000,
   'Pautas Redes': 100000, 'Mantenimiento y compras': 200000, 'Insumos': 100000
@@ -9164,18 +9165,22 @@ function renderEgresosList() {
 // Valores por defecto — se sobreescriben con lo guardado en localStorage
 const COSTOS_DEFAULTS = {
   // Costos Fijos
-  honorarios_fisio:  4000000,
-  seguridad_social:   500000,
-  auxiliar_admin:     500000,
+  honorarios_fisio:   4000000,
+  seguridad_social:    500000,
+  asistente_fisio:    1200000,
+  auxiliar_admin:      500000,
   // Costos Operativos
-  suscripcion_ia:      80000,
-  suscripcion_capcut:  12000,
-  asesorias_ap:       790000,
+  arriendo:            450000,
+  servicios_publicos:   50000,
+  suscripcion_ia:       80000,
+  suscripcion_capcut:   12000,
+  asesorias_ap:        480000,
   // Costos Variables
-  redes_contenido:    150000,
-  pautas_redes:       100000,
-  mantenimiento:      200000,
-  insumos:            100000,
+  redes_contenido:     240000,
+  activacion_eventos:  300000,
+  pautas_redes:        100000,
+  mantenimiento:       200000,
+  insumos:             100000,
   // Porcentajes adicionales
   pct_imprevistos: 5,
   pct_utilidad:   20,
@@ -9184,7 +9189,17 @@ const COSTOS_DEFAULTS = {
 function getCostosEstructura() {
   try {
     const s = kvGet('costosEstructura');
-    return s ? {...COSTOS_DEFAULTS, ...JSON.parse(s)} : {...COSTOS_DEFAULTS};
+    if (!s) return {...COSTOS_DEFAULTS};
+    const stored = JSON.parse(s);
+    // Migración: corregir valores desactualizados
+    if (stored.asesorias_ap    === 790000) stored.asesorias_ap    = 480000;
+    if (stored.redes_contenido === 150000) stored.redes_contenido = 240000;
+    // Agregar campos nuevos si faltan
+    if (!stored.asistente_fisio)    stored.asistente_fisio    = 1200000;
+    if (!stored.arriendo)           stored.arriendo            = 450000;
+    if (!stored.servicios_publicos) stored.servicios_publicos  = 50000;
+    if (!stored.activacion_eventos) stored.activacion_eventos  = 300000;
+    return {...COSTOS_DEFAULTS, ...stored};
   } catch(e) { return {...COSTOS_DEFAULTS}; }
 }
 
@@ -9193,17 +9208,28 @@ function saveCostosEstructura(obj) {
 }
 
 function calcTotalCostos(c) {
-  const subtotal = c.honorarios_fisio + c.seguridad_social + c.auxiliar_admin
-    + c.suscripcion_ia + c.suscripcion_capcut + c.asesorias_ap
-    + c.redes_contenido + c.pautas_redes + c.mantenimiento + c.insumos;
+  const subtotal = (c.honorarios_fisio   || 0)
+    + (c.seguridad_social    || 0)
+    + (c.asistente_fisio     || 0)
+    + (c.auxiliar_admin      || 0)
+    + (c.arriendo            || 0)
+    + (c.servicios_publicos  || 0)
+    + (c.suscripcion_ia      || 0)
+    + (c.suscripcion_capcut  || 0)
+    + (c.asesorias_ap        || 0)
+    + (c.redes_contenido     || 0)
+    + (c.activacion_eventos  || 0)
+    + (c.pautas_redes        || 0)
+    + (c.mantenimiento       || 0)
+    + (c.insumos             || 0);
   const imprevistos = Math.round(subtotal * (c.pct_imprevistos / 100));
   const utilidad    = Math.round(subtotal * (c.pct_utilidad    / 100));
   return { subtotal, imprevistos, utilidad, total: subtotal + imprevistos + utilidad };
 }
 
 const KPI_CONFIG_DEFAULTS = {
-  meta_sesiones_semana: 24,
-  meta_ventas_mes:      8040000,
+  meta_sesiones_semana: 30,       // $10.265.000 ÷ $85.500 avg ticket ÷ 4 semanas
+  meta_ventas_mes:      10265000, // Presupuesto total (costos + imprevistos 5% + utilidad 20%)
   meta_leads_min:       40,
   meta_leads_max:       50,
   meta_conv_min:        25,
@@ -9224,7 +9250,12 @@ const KPI_CONFIG_DEFAULTS = {
 function getKPIConfig() {
   try {
     const stored = kvGet('kpiConfig');
-    return stored ? {...KPI_CONFIG_DEFAULTS, ...JSON.parse(stored)} : {...KPI_CONFIG_DEFAULTS};
+    if (!stored) return {...KPI_CONFIG_DEFAULTS};
+    const parsed = JSON.parse(stored);
+    // Migración: si el usuario tiene los valores viejos, actualizarlos al nuevo presupuesto
+    if (parsed.meta_ventas_mes === 8040000) parsed.meta_ventas_mes = 10265000;
+    if (parsed.meta_sesiones_semana === 24) parsed.meta_sesiones_semana = 30;
+    return {...KPI_CONFIG_DEFAULTS, ...parsed};
   } catch(e) { return {...KPI_CONFIG_DEFAULTS}; }
 }
 
@@ -10130,15 +10161,19 @@ function _buildReporteMes() {
           <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;font-weight:700">Costos Fijos</div>
           ${filaC('Honorarios Fisio','honorarios_fisio',costos.honorarios_fisio)}
           ${filaC('Seguridad Social','seguridad_social',costos.seguridad_social)}
+          ${filaC('Asistente Fisio','asistente_fisio',costos.asistente_fisio)}
           ${filaC('Auxiliar Administrativa','auxiliar_admin',costos.auxiliar_admin)}
           <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 8px;font-weight:700">Costos Operativos</div>
+          ${filaC('Arriendo','arriendo',costos.arriendo)}
+          ${filaC('Servicios públicos','servicios_publicos',costos.servicios_publicos)}
           ${filaC('Suscripción IA','suscripcion_ia',costos.suscripcion_ia)}
           ${filaC('Suscripción CapCut','suscripcion_capcut',costos.suscripcion_capcut)}
-          ${filaC('Asesorías AP / Mes','asesorias_ap',costos.asesorias_ap)}
+          ${filaC('Asesorías AP x4/Mes','asesorias_ap',costos.asesorias_ap)}
         </div>
         <div>
           <div style="font-size:.7rem;font-family:var(--font-m);color:var(--primary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;font-weight:700">Costos Variables</div>
           ${filaC('Redes Sociales Contenido','redes_contenido',costos.redes_contenido)}
+          ${filaC('Activación marca-Eventos','activacion_eventos',costos.activacion_eventos)}
           ${filaC('Pautas Redes','pautas_redes',costos.pautas_redes)}
           ${filaC('Mantenimiento y compras','mantenimiento',costos.mantenimiento)}
           ${filaC('Insumos','insumos',costos.insumos)}
