@@ -2850,7 +2850,7 @@ tr:last-child td{ border-bottom: none; }
               </div>
               <div class="help-banner-step">
                 <div class="help-banner-step-num">3</div>
-                <div class="help-banner-step-text"><strong>Meta con utilidad ($10.265.000):</strong> incluye un 20% de ganancia. Es el objetivo real del negocio cada mes.</div>
+                <div class="help-banner-step-text"><strong>Meta con utilidad ($8.000.000):</strong> incluye un 20% de ganancia. Es el objetivo real del negocio cada mes.</div>
               </div>
               <div class="help-banner-step">
                 <div class="help-banner-step-num">4</div>
@@ -5570,6 +5570,10 @@ async function reload() {
 
 // ── HELPERS FINANCIEROS ──
 const esRegistroServ = s => (s || '').toLowerCase().trim().startsWith('registro');
+// Detecta sesiones tipo "Full" (90 min): Completa o cualquier paquete Full
+const esSesionFull    = s => { const n = (s||'').toLowerCase(); return n.includes('full') || n.includes('completa'); };
+// Detecta sesiones tipo individual corta: Cuello/Piernas/Express/Readap/Valoración
+const esSesionIndiv   = s => { const n = (s||'').toLowerCase(); return n.includes('cuello') || n.includes('pierna') || n.includes('express') || n.includes('readap') || n.includes('valorac'); };
 
 // esCobrada definida arriba junto a pagoBadge
 function esCobrada_UNUSED(c) {
@@ -9254,8 +9258,8 @@ function calcTotalCostos(c) {
 }
 
 const KPI_CONFIG_DEFAULTS = {
-  meta_sesiones_semana: 30,       // $10.265.000 ÷ $85.500 avg ticket ÷ 4 semanas
-  meta_ventas_mes:      10265000, // Presupuesto total (costos + imprevistos 5% + utilidad 20%)
+  meta_sesiones_semana: 30,
+  meta_ventas_mes:      8000000,
   meta_leads_min:       40,
   meta_leads_max:       50,
   meta_conv_min:        25,
@@ -9271,6 +9275,22 @@ const KPI_CONFIG_DEFAULTS = {
   duracion_full:        90,
   precio_express:       75000,
   duracion_express:     50,
+  // Precios por servicio (presencial / domicilio)
+  sv_cuello_p:     75000,  sv_cuello_d:      90000,
+  sv_piernas_p:    75000,  sv_piernas_d:     90000,
+  sv_completa_p:  110000,  sv_completa_d:   125000,
+  sv_valoracion_p: 80000,  sv_valoracion_d:  95000,
+  sv_readap_p:     70000,  sv_readap_d:      85000,
+  sv_express_p:    75000,  sv_express_d:     90000,
+  sv_diag_p:      160000,  sv_diag_d:       185000,
+  sv_bienvenida_p:120000,  sv_bienvenida_d: 120000,
+  sv_mini_p:       40000,  sv_mini_d:        40000,
+  sv_pkRecup_p:   264000,  sv_pkRecup_d:    264000,
+  sv_pkInicio_p:  378000,  sv_pkInicio_d:   469000,
+  sv_pkAvance_p:  476000,  sv_pkAvance_d:   598000,
+  sv_pkTotal_p:   560000,  sv_pkTotal_d:    722000,
+  sv_planActivo_p:135000,  sv_planActivo_d: 165000,
+  sv_planPro_p:   230000,  sv_planPro_d:    275000,
 };
 
 function getKPIConfig() {
@@ -9279,7 +9299,7 @@ function getKPIConfig() {
     if (!stored) return {...KPI_CONFIG_DEFAULTS};
     const parsed = JSON.parse(stored);
     // Migración: si el usuario tiene los valores viejos, actualizarlos al nuevo presupuesto
-    if (parsed.meta_ventas_mes === 8040000) parsed.meta_ventas_mes = 10265000;
+    if (parsed.meta_ventas_mes === 8040000 || parsed.meta_ventas_mes === 10265000) parsed.meta_ventas_mes = 8000000;
     if (parsed.meta_sesiones_semana === 24) parsed.meta_sesiones_semana = 30;
     return {...KPI_CONFIG_DEFAULTS, ...parsed};
   } catch(e) { return {...KPI_CONFIG_DEFAULTS}; }
@@ -9356,8 +9376,8 @@ function reloadMetas() {
   META_ENCUESTAS       = cfg.meta_encuestas;
   META_CANCELACION_PCT = cfg.meta_cancelacion;
   META_RETENCION_PCT   = cfg.meta_retencion;
-  // Sincronizar precios de servicios si ya fueron guardados
-  if (cfg.sv_cuello_p) _syncPreciosToAutoFill(cfg);
+  // Sincronizar precios de servicios siempre
+  _syncPreciosToAutoFill(cfg);
 }
 
 function getKPIManual() {
@@ -9704,8 +9724,8 @@ function renderKPITablero() {
     html += '</div>';
 
     // Alerta rentabilidad
-    const fullCnt  = mixArr.find(([s]) => s.toLowerCase().includes('full'))?.[1] || 0;
-    const expressCnt = mixArr.find(([s]) => s.toLowerCase().includes('express'))?.[1] || 0;
+    const fullCnt    = mixArr.reduce((t,[s,n]) => esSesionFull(s)  ? t+n : t, 0);
+    const expressCnt = mixArr.reduce((t,[s,n]) => esSesionIndiv(s) ? t+n : t, 0);
     if (fullCnt > expressCnt && fullCnt > 0) {
       html += `<div style="margin-top:12px;padding:11px 14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;font-size:.8rem;color:#ef4444">
         ⚠️ <strong>Alerta de rentabilidad:</strong> Las Descargas Full (${fullCnt}) superan a las Express (${expressCnt}) este mes. La Descarga Full genera $73.333/h vs $90.000/h de la Express. Prioriza la Descarga Express y Readaptación para maximizar ingresos por hora.
@@ -10021,8 +10041,8 @@ function _buildReporteMes() {
   // ── Recomendaciones ──
   const mejoras = [];
 
-  const fullCnt    = mixArr.find(([s2])=>s2.toLowerCase().includes('full'))?.[1] || 0;
-  const expressCnt = mixArr.find(([s2])=>s2.toLowerCase().includes('express'))?.[1] || 0;
+  const fullCnt    = mixArr.reduce((t,[s,n]) => esSesionFull(s)  ? t+n : t, 0);
+  const expressCnt = mixArr.reduce((t,[s,n]) => esSesionIndiv(s) ? t+n : t, 0);
 
   if (totalSesiones < metaSesionesMes) {
     const falta = metaSesionesMes-totalSesiones;
@@ -10592,8 +10612,8 @@ function copiarBriefClaude() {
   const mixMap = {}, mixIng = {};
   citasMes.forEach(c=>{ const sv=c.servicio||'Sin tipo'; mixMap[sv]=(mixMap[sv]||0)+1; mixIng[sv]=(mixIng[sv]||0)+parsePrecio(c.precio); });
   const mixArr = Object.entries(mixMap).sort((a,b)=>b[1]-a[1]);
-  const fullCnt    = mixArr.find(([s])=>s.toLowerCase().includes('full'))?.[1] || 0;
-  const expressCnt = mixArr.find(([s])=>s.toLowerCase().includes('express'))?.[1] || 0;
+  const fullCnt    = mixArr.reduce((t,[s,n]) => esSesionFull(s)  ? t+n : t, 0);
+  const expressCnt = mixArr.reduce((t,[s,n]) => esSesionIndiv(s) ? t+n : t, 0);
 
   // ── Cancelaciones ──
   const motivosMes    = getCancelMotivos();
@@ -11082,7 +11102,7 @@ function renderKPIGuia() {
   citas.filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
     .forEach(c => { const s = c.servicio || 'Sin tipo'; mixMap[s] = (mixMap[s]||0)+1; });
   const totalMix = Object.values(mixMap).reduce((s,v) => s+v, 0);
-  const fullCnt  = Object.entries(mixMap).find(([s]) => s.toLowerCase().includes('full'))?.[1] || 0;
+  const fullCnt  = Object.entries(mixMap).reduce((t,[s,n]) => esSesionFull(s) ? t+n : t, 0);
   const fullPct  = totalMix > 0 ? Math.round(fullCnt / totalMix * 100) : 0;
 
   // KPI 3 — Leads mes
