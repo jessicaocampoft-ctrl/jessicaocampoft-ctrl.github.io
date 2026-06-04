@@ -2521,8 +2521,9 @@ tr:last-child td{ border-bottom: none; }
             <div class="card-title" style="margin-bottom:14px">💳 Métodos de pago registrados</div>
             <div id="metricPagos"></div>
           </div>
-          <div class="card">
-            <div class="card-title" style="margin-bottom:14px">👥 Nuevos vs Recurrentes</div>
+          <div class="card" style="grid-column:1/-1">
+            <div class="card-title" style="margin-bottom:4px">👥 Pacientes nuevos vs recurrentes — mes a mes</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:14px">Nuevo = primera vez en la clínica ese mes · Recurrente = ya había venido antes</div>
             <div id="metricPacientes"></div>
           </div>
           <div class="card">
@@ -11475,6 +11476,7 @@ function renderEstructuraFinanciera() {
 function renderMetricas() {
   const citas = citasReales();
   const COLORES = ['var(--primary)','#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6'];
+  const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
   // 1. Horarios más demandados (excluye 00:00 = citas sin hora registrada)
   const horMap = {};
@@ -11523,37 +11525,96 @@ function renderMetricas() {
       : '<div class="empty" style="padding:20px 0"><p>Sin datos de pago</p></div>';
   }
 
-  // 3. Nuevos vs Recurrentes (pacientes con 1 sola cita = nuevo, 2+ = recurrente)
-  const contPac = {};
-  citas.forEach(c => { const k = (c.nombre||'').toLowerCase().trim(); contPac[k] = (contPac[k]||0)+1; });
-  const nuevos = Object.values(contPac).filter(v => v === 1).length;
-  const recurrentes = Object.values(contPac).filter(v => v > 1).length;
-  const totalPac = nuevos + recurrentes || 1;
-  const pctNuevos = Math.round(nuevos / totalPac * 100);
-  const pctRec    = Math.round(recurrentes / totalPac * 100);
+  // 3. Nuevos vs Recurrentes — mes a mes (últimos 6 meses con datos)
   const pacEl = document.getElementById('metricPacientes');
   if (pacEl) {
-    pacEl.innerHTML = `
-      <div style="display:flex;gap:8px;margin-bottom:14px">
-        <div style="flex:${pctNuevos||1};background:var(--primary);height:10px;border-radius:99px 0 0 99px"></div>
-        <div style="flex:${pctRec||1};background:#6366f1;height:10px;border-radius:0 99px 99px 0"></div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div class="metric-row">
-          <div style="font-size:.82rem;flex:1">🟢 Nuevos pacientes</div>
-          <div class="metric-val" style="color:var(--primary)">${nuevos} <span style="font-size:.7rem;color:var(--muted)">(${pctNuevos}%)</span></div>
+    // Construir historial completo: primera cita de cada paciente
+    const primeraCita = {}; // nombre_key → "YYYY-MM" de su primera cita
+    const todasCitas = citasReales();
+    todasCitas
+      .filter(c => c.nombre && normDate(c.fecha))
+      .sort((a,b) => normDate(a.fecha).localeCompare(normDate(b.fecha)))
+      .forEach(c => {
+        const k   = c.nombre.toLowerCase().trim();
+        const mes = normDate(c.fecha).slice(0,7); // "YYYY-MM"
+        if (!primeraCita[k]) primeraCita[k] = mes;
+      });
+
+    // Determinar rango: últimos 6 meses que tengan al menos 1 cita
+    const now3 = new Date();
+    const mesesDisp = [];
+    for (let i = 11; i >= 0; i--) {
+      const d  = new Date(now3.getFullYear(), now3.getMonth() - i, 1);
+      const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      const tieneCitas = todasCitas.some(c => normDate(c.fecha).startsWith(ym));
+      if (tieneCitas) mesesDisp.push({ ym, label: MESES[d.getMonth()] + ' ' + String(d.getFullYear()).slice(2) });
+    }
+    const mesesMostrar = mesesDisp.slice(-6);
+
+    if (!mesesMostrar.length) {
+      pacEl.innerHTML = '<div class="empty" style="padding:20px 0"><p>Sin datos</p></div>';
+    } else {
+      // Para cada mes: contar nuevos (primera cita ese mes) y recurrentes (primera cita en mes anterior)
+      const filas = mesesMostrar.map(({ ym, label }) => {
+        const pacsMes = new Set(
+          todasCitas
+            .filter(c => c.nombre && normDate(c.fecha).startsWith(ym))
+            .map(c => c.nombre.toLowerCase().trim())
+        );
+        let nNuevos = 0, nAntig = 0;
+        pacsMes.forEach(k => {
+          if (primeraCita[k] === ym) nNuevos++;
+          else nAntig++;
+        });
+        const total = nNuevos + nAntig || 1;
+        const pctN  = Math.round(nNuevos / total * 100);
+        const pctA  = Math.round(nAntig  / total * 100);
+        return { label, nNuevos, nAntig, total: nNuevos + nAntig, pctN, pctA };
+      });
+
+      const maxTotal = Math.max(...filas.map(f => f.total), 1);
+
+      // Leyenda
+      let html = `
+        <div style="display:flex;gap:16px;margin-bottom:14px;font-size:.75rem">
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--primary);display:inline-block"></span>Nuevo</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#6366f1;display:inline-block"></span>Recurrente</span>
         </div>
-        <div class="metric-row">
-          <div style="font-size:.82rem;flex:1">🔵 Recurrentes</div>
-          <div class="metric-val" style="color:#6366f1">${recurrentes} <span style="font-size:.7rem;color:var(--muted)">(${pctRec}%)</span></div>
-        </div>
-        <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Total pacientes únicos: ${totalPac}</div>
-      </div>`;
+        <div style="display:flex;flex-direction:column;gap:10px">`;
+
+      filas.forEach(f => {
+        const wN = Math.round(f.nNuevos / maxTotal * 100);
+        const wA = Math.round(f.nAntig  / maxTotal * 100);
+        html += `
+          <div style="display:grid;grid-template-columns:70px 1fr 90px;align-items:center;gap:10px">
+            <div style="font-size:.8rem;color:var(--muted);font-family:var(--font-m)">${f.label}</div>
+            <div style="display:flex;gap:3px;height:18px;border-radius:4px;overflow:hidden;background:var(--s2)">
+              ${f.nNuevos ? `<div style="width:${wN}%;background:var(--primary);transition:width .3s"></div>` : ''}
+              ${f.nAntig  ? `<div style="width:${wA}%;background:#6366f1;transition:width .3s"></div>` : ''}
+            </div>
+            <div style="font-size:.75rem;display:flex;gap:8px;justify-content:flex-end">
+              <span style="color:var(--primary);font-family:var(--font-b)">${f.nNuevos} N</span>
+              <span style="color:#6366f1;font-family:var(--font-b)">${f.nAntig} R</span>
+            </div>
+          </div>`;
+      });
+
+      // Totales acumulados
+      const totalNuevosAcc  = filas.reduce((s,f) => s + f.nNuevos, 0);
+      const totalAntigAcc   = filas.reduce((s,f) => s + f.nAntig,  0);
+      html += `</div>
+        <div style="margin-top:14px;padding:10px 14px;background:var(--s2);border-radius:8px;display:flex;gap:20px;flex-wrap:wrap;font-size:.78rem">
+          <span>📊 Período: <strong>${mesesMostrar[0].label} – ${mesesMostrar[mesesMostrar.length-1].label}</strong></span>
+          <span style="color:var(--primary)">🟢 Nuevos: <strong>${totalNuevosAcc}</strong></span>
+          <span style="color:#6366f1">🔵 Recurrentes: <strong>${totalAntigAcc}</strong></span>
+        </div>`;
+
+      pacEl.innerHTML = html;
+    }
   }
 
   // 4. Tasa de cancelación últimos 4 meses
   const now2 = new Date();
-  const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   const meses4 = [];
   for (let i = 3; i >= 0; i--) {
     const d = new Date(now2.getFullYear(), now2.getMonth()-i, 1);
