@@ -11029,7 +11029,7 @@ function renderKPIGuia() {
   const toStr = d => d.toISOString().split('T')[0];
 
   // KPI 1 — Sesiones: semana actual (mes actual) o total del mes (meses pasados)
-  let _sessLabelG, _sessEvalG, _nEvG = 0;
+  let _sessLabelG, _sessEvalG, _nEvG = 0, _ventasG = 0;
   if (esMesActual) {
     const diaSemana  = now.getDay() === 0 ? 6 : now.getDay() - 1;
     const lunesSem   = new Date(now); lunesSem.setDate(now.getDate() - diaSemana);
@@ -11043,11 +11043,11 @@ function renderKPIGuia() {
       return f >= toStr(lunesSem) && f <= toStr(domingoSem);
     });
     const _nCitasG = citasSemana.length;
-    _nEvG = eventosSemanaG.length;
+    _nEvG    = eventosSemanaG.length;
     const sessSemana = _nCitasG + _nEvG;
-    const _ventasG   = citasSemana.reduce((s,c) => s + parsePrecio(c.precio), 0)
-                     + eventosSemanaG.reduce((s,e) => s + parsePrecio(e.cobro), 0);
-    const _revOkG    = _ventasG >= META_VENTAS_SEMANA * 0.84;
+    _ventasG = citasSemana.reduce((s,c) => s + parsePrecio(c.precio), 0)
+             + eventosSemanaG.reduce((s,e) => s + parsePrecio(e.cobro), 0);
+    const _revOkG = _ventasG >= META_VENTAS_SEMANA * 0.84;
     _sessLabelG = _nEvG > 0 ? `${_nCitasG} citas + ${_nEvG} evento${_nEvG>1?'s':''}` : `${sessSemana}`;
     _sessEvalG  = (_nEvG > 0 && _revOkG) ? META_SESIONES_SEMANA : sessSemana;
   } else {
