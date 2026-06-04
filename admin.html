@@ -7439,12 +7439,23 @@ function renderReactivacion() {
 
   const chipColor = d => d >= 365 ? '#ef4444' : d >= 180 ? '#f59e0b' : 'var(--primary)';
 
-  // Mensaje WhatsApp de reactivación
-  const waReac = (tel, nombre) => {
+  // Mensajes de reactivación por estilo
+  const REAC_MSGS = {
+    calido: (n) =>
+      `Hola ${n}! 👋\nHace tiempo no nos visitás y nos encantaría verte de nuevo.\n\n¿Cómo te has sentido? Si querés retomar tus sesiones, estamos disponibles para agendarte 🙌\n\nEscríbenos cuando quieras 😊`,
+    motivacional: (n) =>
+      `Hola ${n}! 💪\nTu cuerpo lo nota cuando falta la descarga — el estrés acumulado no desaparece solo.\n\nLlevás un tiempo sin sesión y este es el momento perfecto para retomar. No esperes a que el cuerpo te lo exija.\n\n¿Cuándo te agendamos? 🙌`,
+    resultado: (n) =>
+      `Hola ${n}! 🌿\n¿Recordás cómo te sentías después de tus sesiones? Ese alivio, esa ligereza, ese "volvería mañana"...\n\nEso te espera. Llevás un tiempo sin venir y queremos que retomes tu bienestar.\n\n¿Agendamos esta semana? 😊`,
+    espacio: (n) =>
+      `Hola ${n}! 🗓️\nTenemos un espacio disponible esta semana y pensamos en vos.\n\nHace tiempo no te vemos — ¿qué tal si retomamos? Escríbenos y te buscamos el mejor horario 🙌`,
+  };
+
+  const waReacUrl = (tel, nombre, tipo) => {
     if (!tel || tel.length < 7) return null;
-    const phone = tel.length <= 10 ? '57' + tel : tel;
+    const phone   = tel.length <= 10 ? '57' + tel : tel;
     const primero = nombre.split(' ')[0];
-    const msg = `Hola ${primero}! 👋\nTe escribimos desde la clínica — hace tiempo no nos visitás y nos encantaría verte de nuevo.\n\n¿Cómo te has sentido? Si quieres retomar tus sesiones, estamos disponibles para agendarte 🙌\n\nEscríbenos cuando quieras 😊`;
+    const msg     = (REAC_MSGS[tipo] || REAC_MSGS.calido)(primero);
     return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   };
 
@@ -7456,34 +7467,67 @@ function renderReactivacion() {
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">`;
 
-  inactivos.forEach(p => {
-    const d     = diffDias(p.ultimaPasada);
-    const color = chipColor(d);
-    const waUrl = waReac(p.telefono, p.nombre);
+  inactivos.forEach((p, i) => {
+    const d      = diffDias(p.ultimaPasada);
+    const color  = chipColor(d);
+    const hasTel = p.telefono && p.telefono.length >= 7;
     const dLabel = d >= 365
       ? `${Math.floor(d/365)} año${Math.floor(d/365)>1?'s':''} ${d%365>0?Math.floor((d%365)/30)+'m':''}`
       : d >= 30 ? `${Math.floor(d/30)} mes${Math.floor(d/30)>1?'es':''}` : `${d} días`;
+
+    const selectId = `reacMsg_${i}`;
+    const btnId    = `reacBtn_${i}`;
+    const telEnc   = encodeURIComponent(p.telefono || '');
+    const nomEnc   = encodeURIComponent(p.nombre);
+
     html += `
-      <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border-radius:10px;border-left:3px solid ${color}">
-        <div>
-          <div style="font-size:.88rem;font-weight:600">${p.nombre}</div>
-          <div style="font-size:.73rem;color:var(--muted);margin-top:2px">
-            Última visita: ${fmtDate(p.ultimaPasada)}
-            ${p.telefono ? ` · 📞 ${p.telefono}` : ''}
+      <div style="padding:12px 14px;background:var(--s2);border-radius:10px;border-left:3px solid ${color}">
+        <div style="display:grid;grid-template-columns:1fr auto;align-items:start;gap:10px;margin-bottom:${hasTel?'10px':'0'}">
+          <div>
+            <div style="font-size:.88rem;font-weight:600">${p.nombre}</div>
+            <div style="font-size:.73rem;color:var(--muted);margin-top:2px">
+              Última visita: ${fmtDate(p.ultimaPasada)}${p.telefono ? ` · 📞 ${p.telefono}` : ''}
+            </div>
+          </div>
+          <div style="font-size:.75rem;font-family:var(--font-m);color:${color};white-space:nowrap;text-align:right">
+            Inactivo hace<br><strong>${dLabel}</strong>
           </div>
         </div>
-        <div style="font-size:.75rem;font-family:var(--font-m);color:${color};white-space:nowrap;text-align:right">
-          Inactivo hace<br><strong>${dLabel}</strong>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-          ${waUrl ? `<a href="${waUrl}" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>` : '<span style="font-size:.72rem;color:var(--muted)">Sin tel.</span>'}
-          <button class="btn btn-teal btn-sm" onclick="agendarDesdePaciente('${encodeURIComponent(p.nombre)}','${p.telefono}','')">Agendar</button>
-        </div>
+        ${hasTel ? `
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="${selectId}" onchange="_updateReacBtn('${selectId}','${btnId}','${telEnc}','${nomEnc}')"
+            style="flex:1;min-width:180px;font-size:.75rem;padding:5px 8px;background:var(--s1);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-b);cursor:pointer;outline:none">
+            <option value="calido">😊 Cálido — "hace tiempo no nos visitás..."</option>
+            <option value="motivacional">💪 Motivacional — "tu cuerpo lo nota cuando falta..."</option>
+            <option value="resultado">🌿 Resultado — "¿recordás cómo te sentías después?"</option>
+            <option value="espacio">🗓️ Espacio disponible — "tenemos un espacio esta semana..."</option>
+          </select>
+          <a id="${btnId}" href="${waReacUrl(p.telefono, p.nombre, 'calido')}" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>
+          <button class="btn btn-teal btn-sm" onclick="agendarDesdePaciente('${nomEnc}','${p.telefono}','')">Agendar</button>
+        </div>` : '<span style="font-size:.72rem;color:var(--muted)">Sin teléfono registrado</span>'}
       </div>`;
   });
 
   html += `</div>`;
   el.innerHTML = html;
+}
+
+function _updateReacBtn(selectId, btnId, telEnc, nomEnc) {
+  const sel  = document.getElementById(selectId);
+  const btn  = document.getElementById(btnId);
+  if (!sel || !btn) return;
+  const tipo    = sel.value;
+  const tel     = decodeURIComponent(telEnc);
+  const nombre  = decodeURIComponent(nomEnc);
+  const primero = nombre.split(' ')[0];
+  const MSGS = {
+    calido:       `Hola ${primero}! 👋\nHace tiempo no nos visitás y nos encantaría verte de nuevo.\n\n¿Cómo te has sentido? Si querés retomar tus sesiones, estamos disponibles para agendarte 🙌\n\nEscríbenos cuando quieras 😊`,
+    motivacional: `Hola ${primero}! 💪\nTu cuerpo lo nota cuando falta la descarga — el estrés acumulado no desaparece solo.\n\nLlevás un tiempo sin sesión y este es el momento perfecto para retomar. No esperes a que el cuerpo te lo exija.\n\n¿Cuándo te agendamos? 🙌`,
+    resultado:    `Hola ${primero}! 🌿\n¿Recordás cómo te sentías después de tus sesiones? Ese alivio, esa ligereza, ese "volvería mañana"...\n\nEso te espera. Llevás un tiempo sin venir y queremos que retomes tu bienestar.\n\n¿Agendamos esta semana? 😊`,
+    espacio:      `Hola ${primero}! 🗓️\nTenemos un espacio disponible esta semana y pensamos en vos.\n\nHace tiempo no te vemos — ¿qué tal si retomamos? Escríbenos y te buscamos el mejor horario 🙌`,
+  };
+  const phone = tel.length <= 10 ? '57' + tel : tel;
+  btn.href = `https://wa.me/${phone}?text=${encodeURIComponent(MSGS[tipo] || MSGS.calido)}`;
 }
 
 function dbEditarPac(idx) {
