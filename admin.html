@@ -11310,7 +11310,7 @@ function renderKPIGuia() {
   citas.filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
     .forEach(c => { if (c.nombre) _pacUnicosMes[c.nombre.trim().toLowerCase()] = c.nombre.trim(); });
   const _listaRecurrentes = Object.entries(_pacUnicosMes)
-    .filter(([nom]) => (_totalSesionesPac[nom]?.count || 0) > 1)
+    .filter(([nom]) => (_totalSesionesPac[nom] ? _totalSesionesPac[nom].count : 0) > 1)
     .map(([, nombreReal]) => nombreReal).sort();
   const _stNuevos = _listaNuevos.length, _stRecurrentes = _listaRecurrentes.length;
 
