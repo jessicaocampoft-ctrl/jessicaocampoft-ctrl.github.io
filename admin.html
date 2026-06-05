@@ -8731,10 +8731,10 @@ async function enviarEmailUno(encNombre, semanas) {
 // ── META MENSUAL ──
 // ══════════════════════════════════════════════════════════════
 function getMeta() {
-  // kpiConfig es la fuente oficial; metaMensual solo como legado
-  const fromKpi = getKPIConfig().meta_ventas_mes;
-  if (fromKpi) return fromKpi;
-  return parseInt(kvGet('metaMensual')||'0', 10);
+  // Limpiar metaMensual si tiene valor viejo
+  const stored = parseInt(kvGet('metaMensual')||'0', 10);
+  if (stored === 8000000 || stored === 8040000) { kvSet('metaMensual', 10265000); }
+  return getKPIConfig().meta_ventas_mes || 10265000;
 }
 
 function actualizarMetaBarra(cobrado) {
