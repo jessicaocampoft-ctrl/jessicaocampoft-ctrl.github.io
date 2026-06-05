@@ -9309,22 +9309,20 @@ function getKPIConfig() {
     const stored = kvGet('kpiConfig');
     if (!stored) return {...KPI_CONFIG_DEFAULTS};
     const parsed = JSON.parse(stored);
-    // Migración: si el usuario tiene los valores viejos, actualizarlos al nuevo presupuesto
-    if (parsed.meta_ventas_mes === 8040000 || parsed.meta_ventas_mes === 10265000) parsed.meta_ventas_mes = 8000000;
-    if (parsed.meta_sesiones_semana === 24) parsed.meta_sesiones_semana = 30;
+    // Migración: si el usuario tiene los valores viejos, actualizarlos y guardar en KV
+    let migrated = false;
+    if (parsed.meta_ventas_mes === 8040000 || parsed.meta_ventas_mes === 10265000) { parsed.meta_ventas_mes = 8000000; migrated = true; }
+    if (parsed.meta_sesiones_semana === 24) { parsed.meta_sesiones_semana = 30; migrated = true; }
+    if (migrated) { try { kvSet('kpiConfig', JSON.stringify(parsed)); } catch(e) {} }
     return {...KPI_CONFIG_DEFAULTS, ...parsed};
   } catch(e) { return {...KPI_CONFIG_DEFAULTS}; }
 }
 
 const _cfg0 = getKPIConfig();
-// Si hay estructura de costos guardada, su total tiene precedencia sobre kpiConfig
-const _costosInit = getCostosEstructura();
-const _calcInit   = calcTotalCostos(_costosInit);
-// Solo aplica si el usuario tiene costos guardados (distinto al default puro)
-const _metaFromCostos = kvGet('costosEstructura') ? _calcInit.total : _cfg0.meta_ventas_mes;
+// kpiConfig es siempre la fuente de verdad; costosEstructura solo se usa para calcular en su propia sección
 let META_SESIONES_SEMANA = _cfg0.meta_sesiones_semana;
-let META_VENTAS_SEMANA   = Math.round(_metaFromCostos / 4);
-let META_VENTAS_MES      = _metaFromCostos;
+let META_VENTAS_SEMANA   = Math.round(_cfg0.meta_ventas_mes / 4);
+let META_VENTAS_MES      = _cfg0.meta_ventas_mes;
 let META_NPS             = _cfg0.meta_nps;
 let META_ENCUESTAS       = _cfg0.meta_encuestas;
 let META_CANCELACION_PCT = _cfg0.meta_cancelacion;
@@ -11769,12 +11767,16 @@ function pmGuardarCostos() {
   };
   const calc = calcTotalCostos(costos);
   saveCostosEstructura(costos);
-  // Actualizar meta de ventas en kpiConfig y globales
+  // Solo actualiza meta de ventas si el campo kpi_ventas_mes fue editado manualmente en este guardado
   const cfg = getKPIConfig();
-  cfg.meta_ventas_mes = calc.total;
-  kvSet('kpiConfig', JSON.stringify(cfg));
-  META_VENTAS_MES    = calc.total;
-  META_VENTAS_SEMANA = Math.round(calc.total / 4);
+  const inputMeta = parseInt(document.getElementById('pm_kpi_ventas_mes')?.value) || 0;
+  if (inputMeta && inputMeta !== cfg.meta_ventas_mes) {
+    cfg.meta_ventas_mes = inputMeta;
+    kvSet('kpiConfig', JSON.stringify(cfg));
+    META_VENTAS_MES    = inputMeta;
+    META_VENTAS_SEMANA = Math.round(inputMeta / 4);
+    kvSet('metaMensual', inputMeta);
+  }
   reloadMetas();
   applyKPIRefSpans();
   toast('✅ Presupuesto guardado — meta actualizada a $' + Number(calc.total).toLocaleString('es-CO'), 'ok');
