@@ -1598,8 +1598,8 @@ tr:last-child td{ border-bottom: none; }
         </div>
       </div>
 
-      <!-- Fila 2: Finanzas -->
-      <div class="stats-grid" style="margin-bottom:16px">
+      <!-- Fila 2: Finanzas cobrado -->
+      <div class="stats-grid" style="margin-bottom:12px;grid-template-columns:repeat(3,1fr)">
         <div class="stat-card clickable" onclick="showView('finanzas')" title="Ver finanzas">
           <div class="stat-label">Cobrado este mes</div>
           <div class="stat-val" id="stCobrado" style="font-size:1.5rem">—</div>
@@ -1614,6 +1614,14 @@ tr:last-child td{ border-bottom: none; }
           <div class="stat-label">Cobrado hoy</div>
           <div class="stat-val" id="stCobradoHoy" style="font-size:1.5rem">—</div>
           <div class="stat-desc">ingresos del día</div>
+        </div>
+      </div>
+      <!-- Fila 2b: Por cobrar -->
+      <div class="stats-grid" style="margin-bottom:16px;grid-template-columns:repeat(2,1fr)">
+        <div class="stat-card clickable" onclick="_verCobrosPendientesSemana()" style="border-color:rgba(251,191,36,.35)" title="Ver citas pendientes esta semana">
+          <div class="stat-label" style="color:#d97706">Por cobrar esta semana</div>
+          <div class="stat-val" id="stPorCobrarSemana" style="font-size:1.5rem;color:#d97706">—</div>
+          <div class="stat-desc">citas futuras esta semana · clic para ver</div>
         </div>
         <div class="stat-card clickable" onclick="_verCobrosPendientes()" style="border-color:rgba(251,191,36,.35)" title="Ver citas pendientes de cobro">
           <div class="stat-label" style="color:#d97706">Por cobrar este mes</div>
@@ -5730,7 +5738,7 @@ function initDashboard() {
       .reduce((s,e) => s + parsePrecio(e.cobro), 0);
   document.getElementById('stCobradoHoy').textContent = cobradoHoy > 0 ? '$'+cobradoHoy.toLocaleString('es-CO') : '—';
 
-  // Por cobrar = citas FUTURAS del mes + eventos futuros del mes con cobro
+  // Por cobrar este mes = citas FUTURAS del mes + eventos futuros del mes con cobro
   const porCobrarEventos = (allData.eventos || [])
     .filter(e => { const [cy,cm]=normDate(e.fecha).split('-'); return +cm===m && +cy===y && normDate(e.fecha) > todayStr; })
     .reduce((s,e) => s + parsePrecio(e.cobro), 0);
@@ -5738,6 +5746,15 @@ function initDashboard() {
     .filter(c => normDate(c.fecha) > todayStr)
     .reduce((s,c) => s + parsePrecio(c.precio), 0) + porCobrarEventos;
   document.getElementById('stPorCobrar').textContent = porCobrar > 0 ? '$'+porCobrar.toLocaleString('es-CO') : '—';
+
+  // Por cobrar esta semana = citas FUTURAS dentro de la semana actual
+  const porCobrarSemanaEventos = (allData.eventos || [])
+    .filter(e => { const f=normDate(e.fecha); const [cy,cm,cd]=f.split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW && f>todayStr; })
+    .reduce((s,e) => s + parsePrecio(e.cobro), 0);
+  const porCobrarSemana = citas
+    .filter(c => { const f=normDate(c.fecha); const [cy,cm,cd]=f.split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW && f>todayStr; })
+    .reduce((s,c) => s + parsePrecio(c.precio), 0) + porCobrarSemanaEventos;
+  document.getElementById('stPorCobrarSemana').textContent = porCobrarSemana > 0 ? '$'+porCobrarSemana.toLocaleString('es-CO') : '—';
 
   // Meta mensual
   actualizarMetaBarra(cobrado);
@@ -5842,6 +5859,43 @@ function _verCobrosPendientes() {
 
   // Reutiliza el modal de reporte
   document.getElementById('reporteMesTitulo').textContent = 'Cobros pendientes este mes';
+  document.getElementById('reporteMesBody').innerHTML = html;
+  document.getElementById('modalReporteMes').style.display = 'flex';
+}
+
+function _verCobrosPendientesSemana() {
+  const now   = new Date();
+  const hoy   = today();
+  const dow   = now.getDay();
+  const startW = new Date(now); startW.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1)); startW.setHours(0,0,0,0);
+  const endW   = new Date(startW); endW.setDate(startW.getDate() + 6); endW.setHours(23,59,59,999);
+  const toS = d => d.toISOString().split('T')[0];
+  const sw = toS(startW), ew = toS(endW);
+
+  const citas = citasReales();
+  const futuras = citas.filter(c => {
+    const f = normDate(c.fecha);
+    return f > hoy && f >= sw && f <= ew && !isPagada(c.id);
+  }).sort((a,b) => normDate(a.fecha).localeCompare(normDate(b.fecha)));
+
+  if (!futuras.length) { toast('No hay cobros pendientes esta semana', 'ok'); return; }
+  const total = futuras.reduce((s,c) => s+parsePrecio(c.precio), 0);
+
+  let html = `<div style="font-family:var(--font-h);font-size:1.1rem;font-weight:600;margin-bottom:14px">
+    💳 Cobros pendientes esta semana — ${futuras.length} citas · ${fmtPeso(total)}
+  </div><div style="display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto">`;
+  futuras.forEach(c => {
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--s2);border-radius:8px;gap:8px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:.84rem;font-weight:600">${c.nombre}</div>
+        <div style="font-size:.72rem;color:var(--muted)">${esc(fmtDate(c.fecha))} · ${esc(c.hora)} · ${esc(c.servicio)}</div>
+      </div>
+      <span style="font-family:var(--font-m);font-size:.88rem;font-weight:700;color:#f59e0b">${c.precio}</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  document.getElementById('reporteMesTitulo').textContent = 'Cobros pendientes esta semana';
   document.getElementById('reporteMesBody').innerHTML = html;
   document.getElementById('modalReporteMes').style.display = 'flex';
 }
