@@ -959,11 +959,17 @@ function getServiceDuration(service) {
   var s = (service || '').toLowerCase()
     .replace(/[áàâ]/g,'a').replace(/[éèê]/g,'e')
     .replace(/[íìî]/g,'i').replace(/[óòô]/g,'o').replace(/[úùû]/g,'u');
-  if (s.indexOf('completa') > -1)       return 80;
-  if (s.indexOf('readaptacion') > -1)   return 50;
-  if (s.indexOf('valoracion') > -1)     return 50;
-  if (s.indexOf('piernas') > -1)        return 50;
-  if (s.indexOf('cuello') > -1)         return 50;
+  if (s.indexOf('mini') > -1)           return 20;  // Mini-sesión Familiar 20 min
+  if (s.indexOf('completa') > -1)       return 80;  // Descarga Muscular Completa
+  if (s.indexOf('full') > -1)           return 80;  // Paquete Recuperación Full
+  if (s.indexOf('plan pro') > -1)       return 80;  // Plan Pro (sesión Full incluida)
+  if (s.indexOf('paquete readap') > -1) return 45;  // Paquetes Readaptación Inicio/Avance/Total
+  if (s.indexOf('readaptacion') > -1)   return 50;  // Readaptación Funcional suelta
+  if (s.indexOf('valoracion') > -1)     return 50;  // Valoración Funcional
+  if (s.indexOf('piernas') > -1)        return 50;  // Descarga Muscular Piernas
+  if (s.indexOf('cuello') > -1)         return 50;  // Descarga Muscular Cuello/Espalda
+  if (s.indexOf('plan activo') > -1)    return 50;  // Plan Activo (Express)
+  if (s.indexOf('combo') > -1)          return 50;  // Combo Diagnóstico Pro / Combo Bienvenida
   return 60;
 }
 
