@@ -11392,6 +11392,29 @@ function renderKPIGuia() {
   html += _mkPacList('kpiListaNuevos',      '🌱', 'Pacientes nuevos (1 sola sesión)',  _stNuevos,      _listaNuevos,      '#059669');
   html += _mkPacList('kpiListaRecurrentes', '👥', esMesActual ? 'Recurrentes este mes'       : 'Recurrentes',       _stRecurrentes, _listaRecurrentes, '#6366f1');
   html += _mkPacList('kpiListaUnaVez',      '⚠️', 'Solo 1 sesión · no han vuelto (+3 meses)', _listaUnaVez.length, _listaUnaVez,   '#f59e0b');
+  // Cálculo: sesiones diarias necesarias para cumplir meta
+  if (esMesActual) {
+    const diasEnMes     = new Date(y, m, 0).getDate();
+    const diasRestantes = diasEnMes - now.getDate();
+    const faltante      = Math.max(0, META_VENTAS_MES - ventasMes);
+    const citasMesHechas = citas.filter(c => { const [cy,cm2] = normDate(c.fecha).split('-'); return +cm2===m && +cy===y; });
+    const avgPrecio     = citasMesHechas.length > 0
+      ? citasMesHechas.reduce((s,c) => s + parsePrecio(c.precio), 0) / citasMesHechas.length
+      : (getKPIConfig().precio_full || 80000);
+    const sesionesNecesarias = avgPrecio > 0 ? Math.ceil(faltante / avgPrecio) : 0;
+    const sesionesDiarias    = diasRestantes > 0 ? Math.ceil(sesionesNecesarias / diasRestantes) : sesionesNecesarias;
+    const metaYaCumplida     = ventasMes >= META_VENTAS_MES;
+    const colorBanner        = metaYaCumplida ? 'rgba(16,185,129,.12)' : 'rgba(245,158,11,.1)';
+    const borderBanner       = metaYaCumplida ? 'rgba(16,185,129,.3)' : 'rgba(245,158,11,.3)';
+    const iconoBanner        = metaYaCumplida ? '🎉' : '📌';
+    const textoBanner        = metaYaCumplida
+      ? `<strong>¡Meta mensual cumplida!</strong> Has superado ${fmtPeso(META_VENTAS_MES)} este mes.`
+      : `Para cumplir la meta mensual, se deben agendar en promedio <strong>${sesionesDiarias} sesiones diarias</strong> en los <strong>${diasRestantes} días restantes</strong> del mes — faltan ${fmtPeso(faltante)}.`;
+    html += `<div style="grid-column:1/-1;padding:10px 14px;background:${colorBanner};border:1px solid ${borderBanner};border-radius:8px;font-size:.78rem;color:var(--text)">
+      ${iconoBanner} ${textoBanner}
+    </div>`;
+  }
+
   if (!esMesActual) {
     html += `<div style="grid-column:1/-1;font-size:.72rem;color:var(--muted);padding:8px 10px;background:rgba(27,191,176,.06);border:1px solid rgba(27,191,176,.15);border-radius:8px">
       ℹ️ <strong>NPS y Encuestas</strong> solo están disponibles para el mes actual (se cargan desde el formulario). Los demás indicadores se calculan desde las citas del sistema.
