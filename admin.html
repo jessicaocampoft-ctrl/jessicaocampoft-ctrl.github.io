@@ -11389,8 +11389,23 @@ function renderKPIGuia() {
       <div id="${id}" style="display:none;margin-top:8px;max-height:160px;overflow-y:auto">${items || '<div style="font-size:.75rem;color:var(--muted);padding:4px 0">Sin pacientes este mes</div>'}</div>
     </div>`;
   };
+  // Pacientes de 1 sola sesión que no han vuelto en +30 días
+  const _citasPorPac = {};
+  citasReales().forEach(c => {
+    if (!c.nombre) return;
+    const nom = c.nombre.trim().toLowerCase();
+    if (!_citasPorPac[nom]) _citasPorPac[nom] = { nombre: c.nombre.trim(), fechas: [] };
+    _citasPorPac[nom].fechas.push(normDate(c.fecha));
+  });
+  const hace30 = new Date(now); hace30.setDate(now.getDate() - 30);
+  const hace30Str = hace30.toISOString().split('T')[0];
+  const _listaUnaVez = Object.values(_citasPorPac)
+    .filter(p => p.fechas.length === 1 && p.fechas[0] <= hace30Str)
+    .map(p => p.nombre).sort();
+
   html += _mkPacList('kpiListaNuevos',      '🌱', esMesActual ? 'Pacientes nuevos este mes' : 'Pacientes nuevos',  _stNuevos,      _listaNuevos,      '#059669');
   html += _mkPacList('kpiListaRecurrentes', '👥', esMesActual ? 'Recurrentes este mes'       : 'Recurrentes',       _stRecurrentes, _listaRecurrentes, '#6366f1');
+  html += _mkPacList('kpiListaUnaVez',      '⚠️', 'Solo 1 sesión · no han vuelto (+30 días)', _listaUnaVez.length, _listaUnaVez,   '#f59e0b');
   if (!esMesActual) {
     html += `<div style="grid-column:1/-1;font-size:.72rem;color:var(--muted);padding:8px 10px;background:rgba(27,191,176,.06);border:1px solid rgba(27,191,176,.15);border-radius:8px">
       ℹ️ <strong>NPS y Encuestas</strong> solo están disponibles para el mes actual (se cargan desde el formulario). Los demás indicadores se calculan desde las citas del sistema.
