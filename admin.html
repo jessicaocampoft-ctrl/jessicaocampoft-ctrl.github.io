@@ -11296,9 +11296,9 @@ function renderKPIGuia() {
   // Extra — Pacientes nuevos vs recurrentes este mes
   const _pacUnicosMes = {};
   citas.filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y && c.estado !== 'Cancelada'; })
-    .forEach(c => { if (c.nombre) _pacUnicosMes[c.nombre.trim().toLowerCase()] = true; });
-  let _stNuevos = 0, _stRecurrentes = 0;
-  Object.keys(_pacUnicosMes).forEach(nom => {
+    .forEach(c => { if (c.nombre) _pacUnicosMes[c.nombre.trim().toLowerCase()] = c.nombre.trim(); });
+  const _listaNuevos = [], _listaRecurrentes = [];
+  Object.entries(_pacUnicosMes).forEach(([nom, nombreReal]) => {
     const tieneAntes = citas.some(c2 => {
       const [cy2,cm2] = normDate(c2.fecha).split('-');
       if (c2.nombre && c2.nombre.trim().toLowerCase() === nom && c2.estado !== 'Cancelada') {
@@ -11307,8 +11307,10 @@ function renderKPIGuia() {
       }
       return false;
     });
-    if (tieneAntes) _stRecurrentes++; else _stNuevos++;
+    if (tieneAntes) _listaRecurrentes.push(nombreReal); else _listaNuevos.push(nombreReal);
   });
+  _listaNuevos.sort(); _listaRecurrentes.sort();
+  const _stNuevos = _listaNuevos.length, _stRecurrentes = _listaRecurrentes.length;
 
   // Extra — Cancelaciones mes (excluye pruebas)
   const _motivosGuia  = getCancelMotivos();
@@ -11377,8 +11379,18 @@ function renderKPIGuia() {
   html += _kpiCardGuia('🗄️', `BD actualizada (${_bdLabel} pac.)`, bd + '%', 100, '%', true, '100%',              undefined, 'gkKpi8');
   html += _kpiCardGuia('❌', 'Cancelaciones mes',       tasaCancel + '%',                         META_CANCELACION_PCT, '%', false, `<${META_CANCELACION_PCT}%`, undefined, 'gkKpi4b');
   html += _kpiCardGuia('🔁', 'Retención 60 días',       tasaRet + '%',                            META_RETENCION_PCT,   '%', true,  `>${META_RETENCION_PCT}%`,   undefined, 'gkKpi1');
-  html += _kpiCardGuia('🌱', esMesActual ? 'Pacientes nuevos este mes' : 'Pacientes nuevos', _stNuevos, null, '', true, 'primera visita este mes', undefined, null);
-  html += _kpiCardGuia('👥', esMesActual ? 'Recurrentes este mes' : 'Recurrentes', _stRecurrentes, null, '', true, 'ya habían venido antes', undefined, null);
+  const _mkPacList = (id, icon, label, count, lista, color) => {
+    const items = lista.map(n => `<div style="font-size:.75rem;color:var(--text);padding:3px 0;border-bottom:1px solid var(--border)">${n}</div>`).join('');
+    return `<div style="padding:14px 16px;background:var(--s2);border-radius:12px;border:1px solid ${color}33;border-left:3px solid ${color}">
+      <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:6px">${icon} ${label}</div>
+      <div style="font-family:var(--font-h);font-size:1.15rem;font-weight:700;color:${color}">${count}</div>
+      <button onclick="const d=document.getElementById('${id}');d.style.display=d.style.display==='none'?'block':'none';this.textContent=d.style.display==='none'?'▼ Ver lista':'▲ Ocultar'"
+        style="margin-top:8px;font-size:.7rem;background:transparent;border:1px solid ${color}55;color:${color};padding:3px 10px;border-radius:6px;cursor:pointer;font-family:var(--font-b)">▼ Ver lista</button>
+      <div id="${id}" style="display:none;margin-top:8px;max-height:160px;overflow-y:auto">${items || '<div style="font-size:.75rem;color:var(--muted);padding:4px 0">Sin pacientes este mes</div>'}</div>
+    </div>`;
+  };
+  html += _mkPacList('kpiListaNuevos',      '🌱', esMesActual ? 'Pacientes nuevos este mes' : 'Pacientes nuevos',  _stNuevos,      _listaNuevos,      '#059669');
+  html += _mkPacList('kpiListaRecurrentes', '👥', esMesActual ? 'Recurrentes este mes'       : 'Recurrentes',       _stRecurrentes, _listaRecurrentes, '#6366f1');
   if (!esMesActual) {
     html += `<div style="grid-column:1/-1;font-size:.72rem;color:var(--muted);padding:8px 10px;background:rgba(27,191,176,.06);border:1px solid rgba(27,191,176,.15);border-radius:8px">
       ℹ️ <strong>NPS y Encuestas</strong> solo están disponibles para el mes actual (se cargan desde el formulario). Los demás indicadores se calculan desde las citas del sistema.
