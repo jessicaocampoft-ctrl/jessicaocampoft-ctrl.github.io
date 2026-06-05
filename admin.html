@@ -1598,6 +1598,20 @@ tr:last-child td{ border-bottom: none; }
         </div>
       </div>
 
+      <!-- Fila 1b: Pacientes nuevos vs recurrentes -->
+      <div class="stats-grid" style="margin-bottom:12px;grid-template-columns:repeat(2,1fr)">
+        <div class="stat-card clickable" onclick="showView('pacientes')" title="Ver pacientes nuevos este mes" style="border-color:rgba(16,185,129,.3)">
+          <div class="stat-label" style="color:#059669">🌱 Nuevos este mes</div>
+          <div class="stat-val" id="stNuevosMes" style="font-size:1.5rem;color:#059669">—</div>
+          <div class="stat-desc">primera visita este mes</div>
+        </div>
+        <div class="stat-card clickable" onclick="showView('pacientes')" title="Ver pacientes recurrentes este mes" style="border-color:rgba(99,102,241,.3)">
+          <div class="stat-label" style="color:#6366f1">🔁 Recurrentes este mes</div>
+          <div class="stat-val" id="stRecurrentesMes" style="font-size:1.5rem;color:#6366f1">—</div>
+          <div class="stat-desc">ya habían venido antes</div>
+        </div>
+      </div>
+
       <!-- Fila 2: Finanzas cobrado -->
       <div class="stats-grid" style="margin-bottom:12px;grid-template-columns:repeat(3,1fr)">
         <div class="stat-card clickable" onclick="showView('finanzas')" title="Ver finanzas">
@@ -4915,7 +4929,7 @@ function _animateCounter(el, target, duration = 700) {
 // Hooking initDashboard para animar los valores al cargar
 const _origInitDashboard = window.initDashboard;
 function _animateDashStats() {
-  const ids = ['stHoy','stSemana','stMes','stPacientes','stCobrado','stCobradoSemana','stCobradoHoy','stPorCobrar'];
+  const ids = ['stHoy','stSemana','stMes','stPacientes','stCobrado','stCobradoSemana','stCobradoHoy','stPorCobrar','stNuevosMes','stRecurrentesMes','stPorCobrarSemana'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (!el || el.textContent === '—') return;
@@ -5712,6 +5726,22 @@ function initDashboard() {
   document.getElementById('stSemana').textContent   = semana;
   document.getElementById('stMes').textContent      = mes;
   document.getElementById('stPacientes').textContent = pacs;
+
+  // Pacientes nuevos vs recurrentes este mes
+  const citasMesNom = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y && !(c.estado||'').includes('Cancel'); });
+  const nombresMes  = new Set(citasMesNom.map(c => (c.nombre||'').toLowerCase().trim()).filter(Boolean));
+  let stNuevos = 0, stRecurrentes = 0;
+  nombresMes.forEach(nombre => {
+    const tieneAntes = citas.some(c => {
+      const [cy,cm2] = normDate(c.fecha).split('-');
+      return (c.nombre||'').toLowerCase().trim() === nombre
+        && (+cy < y || (+cy === y && +cm2 < m))
+        && !(c.estado||'').includes('Cancel');
+    });
+    if (tieneAntes) stRecurrentes++; else stNuevos++;
+  });
+  document.getElementById('stNuevosMes').textContent      = stNuevos;
+  document.getElementById('stRecurrentesMes').textContent = stRecurrentes;
 
   // Cobrado = citas del mes ya ocurridas (fecha <= hoy) + eventos del mes ya ocurridos
   const citasMesAll = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
