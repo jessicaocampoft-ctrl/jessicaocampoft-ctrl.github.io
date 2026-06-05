@@ -1598,20 +1598,6 @@ tr:last-child td{ border-bottom: none; }
         </div>
       </div>
 
-      <!-- Fila 1b: Pacientes nuevos vs recurrentes -->
-      <div class="stats-grid" style="margin-bottom:12px;grid-template-columns:repeat(2,1fr)">
-        <div class="stat-card clickable" onclick="showView('pacientes')" title="Ver pacientes nuevos este mes" style="border-color:rgba(16,185,129,.3)">
-          <div class="stat-label" style="color:#059669">🌱 Nuevos este mes</div>
-          <div class="stat-val" id="stNuevosMes" style="font-size:1.5rem;color:#059669">—</div>
-          <div class="stat-desc">primera visita este mes</div>
-        </div>
-        <div class="stat-card clickable" onclick="showView('pacientes')" title="Ver pacientes recurrentes este mes" style="border-color:rgba(99,102,241,.3)">
-          <div class="stat-label" style="color:#6366f1">🔁 Recurrentes este mes</div>
-          <div class="stat-val" id="stRecurrentesMes" style="font-size:1.5rem;color:#6366f1">—</div>
-          <div class="stat-desc">ya habían venido antes</div>
-        </div>
-      </div>
-
       <!-- Fila 2: Finanzas cobrado -->
       <div class="stats-grid" style="margin-bottom:12px;grid-template-columns:repeat(3,1fr)">
         <div class="stat-card clickable" onclick="showView('finanzas')" title="Ver finanzas">
@@ -4929,7 +4915,7 @@ function _animateCounter(el, target, duration = 700) {
 // Hooking initDashboard para animar los valores al cargar
 const _origInitDashboard = window.initDashboard;
 function _animateDashStats() {
-  const ids = ['stHoy','stSemana','stMes','stPacientes','stCobrado','stCobradoSemana','stCobradoHoy','stPorCobrar','stNuevosMes','stRecurrentesMes','stPorCobrarSemana'];
+  const ids = ['stHoy','stSemana','stMes','stPacientes','stCobrado','stCobradoSemana','stCobradoHoy','stPorCobrar','stPorCobrarSemana'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (!el || el.textContent === '—') return;
@@ -11307,6 +11293,23 @@ function renderKPIGuia() {
   const _bdGuia = calcBDActualizada(m, y);
   const bd      = _bdGuia ? _bdGuia.pct : (esMesActual ? (manual.bd || 0) : 0);
 
+  // Extra — Pacientes nuevos vs recurrentes este mes
+  const _pacUnicosMes = {};
+  citas.filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y && c.estado !== 'Cancelada'; })
+    .forEach(c => { if (c.nombre) _pacUnicosMes[c.nombre.trim().toLowerCase()] = true; });
+  let _stNuevos = 0, _stRecurrentes = 0;
+  Object.keys(_pacUnicosMes).forEach(nom => {
+    const tieneAntes = citas.some(c2 => {
+      const [cy2,cm2] = normDate(c2.fecha).split('-');
+      if (c2.nombre && c2.nombre.trim().toLowerCase() === nom && c2.estado !== 'Cancelada') {
+        if (+cy2 < y) return true;
+        if (+cy2 === y && +cm2 < m) return true;
+      }
+      return false;
+    });
+    if (tieneAntes) _stRecurrentes++; else _stNuevos++;
+  });
+
   // Extra — Cancelaciones mes (excluye pruebas)
   const _motivosGuia  = getCancelMotivos();
   const todasCitasMes = (allData.citas || []).filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
@@ -11374,6 +11377,8 @@ function renderKPIGuia() {
   html += _kpiCardGuia('🗄️', `BD actualizada (${_bdLabel} pac.)`, bd + '%', 100, '%', true, '100%',              undefined, 'gkKpi8');
   html += _kpiCardGuia('❌', 'Cancelaciones mes',       tasaCancel + '%',                         META_CANCELACION_PCT, '%', false, `<${META_CANCELACION_PCT}%`, undefined, 'gkKpi4b');
   html += _kpiCardGuia('🔁', 'Retención 60 días',       tasaRet + '%',                            META_RETENCION_PCT,   '%', true,  `>${META_RETENCION_PCT}%`,   undefined, 'gkKpi1');
+  html += _kpiCardGuia('🌱', esMesActual ? 'Pacientes nuevos este mes' : 'Pacientes nuevos', _stNuevos, null, '', true, 'primera visita este mes', undefined, null);
+  html += _kpiCardGuia('👥', esMesActual ? 'Recurrentes este mes' : 'Recurrentes', _stRecurrentes, null, '', true, 'ya habían venido antes', undefined, null);
   if (!esMesActual) {
     html += `<div style="grid-column:1/-1;font-size:.72rem;color:var(--muted);padding:8px 10px;background:rgba(27,191,176,.06);border:1px solid rgba(27,191,176,.15);border-radius:8px">
       ℹ️ <strong>NPS y Encuestas</strong> solo están disponibles para el mes actual (se cargan desde el formulario). Los demás indicadores se calculan desde las citas del sistema.
