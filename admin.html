@@ -11382,7 +11382,8 @@ function renderKPIGuia() {
     const diasEnMes = new Date(y, m, 0).getDate();
     let diasRestantes = 0;
     for (let d = now.getDate() + 1; d <= diasEnMes; d++) {
-      if (new Date(y, m - 1, d).getDay() !== 0) diasRestantes++; // excluir domingos
+      const dow = new Date(y, m - 1, d).getDay();
+      if (dow !== 0 && dow !== 6) diasRestantes++; // solo lunes a viernes
     }
     const faltante      = Math.max(0, META_VENTAS_MES - ventasMes);
     const citasMesHechas = citas.filter(c => { const [cy,cm2] = normDate(c.fecha).split('-'); return +cm2===m && +cy===y; });
