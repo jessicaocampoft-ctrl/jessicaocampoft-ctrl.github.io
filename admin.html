@@ -11379,8 +11379,11 @@ function renderKPIGuia() {
   html += _mkPacList('kpiListaUnaVez',      '⚠️', 'Solo 1 sesión · no han vuelto (+3 meses)', _listaUnaVez.length, _listaUnaVez,   '#f59e0b');
   // Cálculo: sesiones diarias necesarias para cumplir meta
   if (esMesActual) {
-    const diasEnMes     = new Date(y, m, 0).getDate();
-    const diasRestantes = diasEnMes - now.getDate();
+    const diasEnMes = new Date(y, m, 0).getDate();
+    let diasRestantes = 0;
+    for (let d = now.getDate() + 1; d <= diasEnMes; d++) {
+      if (new Date(y, m - 1, d).getDay() !== 0) diasRestantes++; // excluir domingos
+    }
     const faltante      = Math.max(0, META_VENTAS_MES - ventasMes);
     const citasMesHechas = citas.filter(c => { const [cy,cm2] = normDate(c.fecha).split('-'); return +cm2===m && +cy===y; });
     const avgPrecio     = citasMesHechas.length > 0
