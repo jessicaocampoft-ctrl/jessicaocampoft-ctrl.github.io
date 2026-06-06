@@ -6284,8 +6284,7 @@ async function confirmarCancelacion() {
       const cita = allData.citas.find(c => c.id === id);
       if (cita) { cita.estado = 'Cancelada'; cita.motivoCancelacion = motivo; }
       saveCancelMotivo(id, motivo);
-      const esPrueba = motivo === 'Prueba';
-      toast(esPrueba ? '🧪 Cita cancelada (prueba — no afecta KPIs)' : `Cita cancelada: ${motivo}`, 'ok');
+      toast(esCancelExcluida(motivo) ? `🧪 Cita cancelada (${motivo} — no afecta KPIs)` : `Cita cancelada: ${motivo}`, 'ok');
       document.getElementById('modalCancelar').style.display = 'none';
       closeModal('modalDetalle');
       initDashboard();
@@ -6309,6 +6308,23 @@ function saveCancelMotivo(id, motivo) {
 
 function getCancelMotivo(id) {
   return getCancelMotivos()[id] || null;
+}
+
+// Motivos que se excluyen del conteo de cancelaciones en los KPIs
+function esCancelExcluida(motivo) {
+  return motivo === 'Prueba' || motivo === 'Error mío';
+}
+
+function marcarErrorMio(id) {
+  const map = getCancelMotivos();
+  if (map[id] === 'Error mío') {
+    delete map[id]; // toggle: si ya estaba, lo quita
+  } else {
+    map[id] = 'Error mío';
+  }
+  kvSet('cancelMotivos', JSON.stringify(map));
+  _renderCancelBreakdown();
+  renderGestionMes();
 }
 
 // ── Abrir modal de edición con datos actuales ──
@@ -9838,7 +9854,7 @@ function renderKPITablero() {
     return +cm===m && +cy===y;
   });
   const canceladasMes = todasCitasMes.filter(c =>
-    (c.estado||'').toLowerCase().includes('cancel') && _motivosMes[c.id] !== 'Prueba'
+    (c.estado||'').toLowerCase().includes('cancel') && !esCancelExcluida(_motivosMes[c.id])
   ).length;
   const tasaCancel = todasCitasMes.length > 0 ? Math.round((canceladasMes / todasCitasMes.length) * 100) : 0;
 
@@ -10140,7 +10156,7 @@ function _buildReporteMes() {
     return +cm===m && +cy===y;
   });
   const canceladasMes = todasMes.filter(c =>
-    (c.estado||'').toLowerCase().includes('cancel') && motivosMes[c.id] !== 'Prueba'
+    (c.estado||'').toLowerCase().includes('cancel') && !esCancelExcluida(motivosMes[c.id])
   );
   const tasaCancel = todasMes.length>0 ? Math.round((canceladasMes.length/todasMes.length)*100) : 0;
   const noShowRate = todasMes.length>0 ? Math.round((noShowsMes.length/todasMes.length)*100) : 0;
@@ -11320,7 +11336,7 @@ function renderKPIGuia() {
   const _motivosGuia  = getCancelMotivos();
   const todasCitasMes = (allData.citas || []).filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
   const canceladasMes = todasCitasMes.filter(c =>
-    (c.estado||'').toLowerCase().includes('cancel') && _motivosGuia[c.id] !== 'Prueba'
+    (c.estado||'').toLowerCase().includes('cancel') && !esCancelExcluida(_motivosGuia[c.id])
   ).length;
   const tasaCancel = todasCitasMes.length > 0 ? Math.round((canceladasMes / todasCitasMes.length) * 100) : 0;
 
@@ -11540,14 +11556,14 @@ function _renderCancelBreakdown() {
     const [cy,cm] = normDate(c.fecha).split('-');
     return +cm===m && +cy===y && (c.estado||'').toLowerCase().includes('cancel');
   });
-  const cancelMesPruebas = cancelMesAll.filter(c => motivos[c.id] === 'Prueba');
-  const cancelMes        = cancelMesAll.filter(c => motivos[c.id] !== 'Prueba');
+  const cancelMesPruebas = cancelMesAll.filter(c => esCancelExcluida(motivos[c.id]));
+  const cancelMes        = cancelMesAll.filter(c => !esCancelExcluida(motivos[c.id]));
 
   const cancelSem = (allData.citas || []).filter(c => {
     const f = normDate(c.fecha);
     return f >= toStr(lunesSem) && f <= toStr(domingoSem)
       && (c.estado||'').toLowerCase().includes('cancel')
-      && motivos[c.id] !== 'Prueba';
+      && !esCancelExcluida(motivos[c.id]);
   });
 
   // Breakdown por servicio y día (solo cancelaciones reales)
@@ -11613,7 +11629,7 @@ function _renderCancelBreakdown() {
   // Lista detallada de citas canceladas este mes
   html += `<div style="margin-top:14px">
     <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">
-      DETALLE — citas canceladas este mes
+      DETALLE — citas canceladas este mes <span style="font-size:.65rem;color:var(--muted);text-transform:none">(marca "Error mío" para excluir del KPI)</span>
     </div>`;
 
   if (cancelMes.length === 0) {
@@ -11623,23 +11639,27 @@ function _renderCancelBreakdown() {
     html += sorted.map(c => {
       const mot = motivos[c.id];
       const motHtml = mot
-        ? `<span style="background:#f59e0b22;color:#92400e;border-radius:4px;padding:1px 6px;font-size:.7rem;margin-left:6px">${mot}</span>`
-        : `<span style="color:var(--muted);font-size:.7rem;margin-left:6px">sin motivo</span>`;
+        ? `<span style="background:#f59e0b22;color:#92400e;border-radius:4px;padding:1px 6px;font-size:.7rem">${mot}</span>`
+        : '';
       return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--s2);border-radius:7px;margin-bottom:4px;font-size:.78rem">
-        <div>
+        <div style="flex:1;min-width:0">
           <strong>${c.nombre || '—'}</strong>
           <span style="color:var(--muted);margin-left:6px">${normDate(c.fecha)}</span>
           <span style="color:var(--muted);margin-left:4px">· ${c.servicio || '—'}</span>
-          ${motHtml}
+          ${motHtml ? `<span style="margin-left:6px">${motHtml}</span>` : ''}
         </div>
+        <button onclick="marcarErrorMio('${c.id}')"
+          style="margin-left:8px;flex-shrink:0;padding:3px 10px;border-radius:6px;border:1px solid #ef444466;background:#ef444411;color:#ef4444;font-size:.7rem;cursor:pointer;font-family:var(--font-b)">
+          ✗ Error mío
+        </button>
       </div>`;
     }).join('');
   }
 
   if (cancelMesPruebas.length) {
     html += `<div style="margin-top:8px;padding:6px 10px;background:rgba(99,102,241,.07);border-radius:7px;font-size:.75rem;color:#6366f1">
-      🧪 ${cancelMesPruebas.length} cancelación${cancelMesPruebas.length>1?'es':''} marcada${cancelMesPruebas.length>1?'s':''} como <strong>Prueba</strong> — excluida${cancelMesPruebas.length>1?'s':''} del conteo:
-      ${cancelMesPruebas.map(c=>`<span style="margin-left:6px;opacity:.8">${c.nombre||'—'} (${normDate(c.fecha)})</span>`).join('')}
+      🧪 ${cancelMesPruebas.length} excluida${cancelMesPruebas.length>1?'s':''} del conteo (Prueba / Error mío):
+      ${cancelMesPruebas.map(c=>`<span style="margin-left:6px;opacity:.8">${c.nombre||'—'} (${normDate(c.fecha)}) — ${motivos[c.id]||''}</span>`).join('')}
     </div>`;
   }
 
@@ -14962,4 +14982,5 @@ function copiarDisponibilidadWA() {
 </script>
 </body>
 </html>
+
 
