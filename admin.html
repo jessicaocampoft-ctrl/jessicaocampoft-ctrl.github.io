@@ -9710,7 +9710,7 @@ function renderKPITablero() {
   const diaSemana = now.getDay() === 0 ? 6 : now.getDay() - 1;
   const lunesSem  = new Date(now); lunesSem.setDate(now.getDate() - diaSemana);
   const domingoSem = new Date(lunesSem); domingoSem.setDate(lunesSem.getDate() + 6);
-  const toStr = d => d.toISOString().split('T')[0];
+  const toStr = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 
   // Sesiones esta semana (excluyendo canceladas y no-shows)
   // Nota: citasReales() ya excluye 'Cancelada'; aquí filtramos también 'No asistió'
@@ -11228,7 +11228,7 @@ function renderKPIGuia() {
   const esMesActual = m === now.getMonth()+1 && y === now.getFullYear();
   const citas = citasReales();
 
-  const toStr = d => d.toISOString().split('T')[0];
+  const toStr = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 
   // KPI 1 — Sesiones: semana actual (mes actual) o total del mes (meses pasados)
   let _sessLabelG, _sessEvalG, _nEvG = 0, _ventasG = 0;
@@ -11521,7 +11521,7 @@ function _renderCancelBreakdown() {
   const diaSemana  = now.getDay() === 0 ? 6 : now.getDay() - 1;
   const lunesSem   = new Date(now); lunesSem.setDate(now.getDate() - diaSemana);
   const domingoSem = new Date(lunesSem); domingoSem.setDate(lunesSem.getDate() + 6);
-  const toStr = d => d.toISOString().split('T')[0];
+  const toStr = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 
   const motivos = getCancelMotivos();
 
