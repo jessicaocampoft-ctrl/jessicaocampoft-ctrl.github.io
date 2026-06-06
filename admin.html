@@ -11277,26 +11277,12 @@ function renderKPIGuia() {
   const _bdGuia = calcBDActualizada(m, y);
   const bd      = _bdGuia ? _bdGuia.pct : (esMesActual ? (manual.bd || 0) : 0);
 
-  // Extra — Pacientes nuevos (1 sola sesión en toda la historia) vs recurrentes este mes
-  // Contar total de sesiones por paciente en toda la historia
-  const _totalSesionesPac = {};
-  citas.forEach(c => {
-    if (!c.nombre) return;
-    const nom = c.nombre.trim().toLowerCase();
-    _totalSesionesPac[nom] = (_totalSesionesPac[nom] || { nombre: c.nombre.trim(), count: 0 });
-    _totalSesionesPac[nom].count++;
-  });
-  // Nuevos = exactamente 1 sesión en toda la historia (verdaderamente nuevos)
-  const _listaNuevos = Object.values(_totalSesionesPac)
-    .filter(p => p.count === 1).map(p => p.nombre).sort();
-  // Recurrentes este mes = vinieron este mes y tienen >1 sesión en la historia
+  // Recurrentes este mes = vinieron este mes
   const _pacUnicosMes = {};
   citas.filter(c => { const [cy,cm] = normDate(c.fecha).split('-'); return +cm===m && +cy===y; })
     .forEach(c => { if (c.nombre) _pacUnicosMes[c.nombre.trim().toLowerCase()] = c.nombre.trim(); });
-  const _listaRecurrentes = Object.entries(_pacUnicosMes)
-    .filter(([nom]) => (_totalSesionesPac[nom] ? _totalSesionesPac[nom].count : 0) > 1)
-    .map(([, nombreReal]) => nombreReal).sort();
-  const _stNuevos = _listaNuevos.length, _stRecurrentes = _listaRecurrentes.length;
+  const _listaRecurrentes = Object.values(_pacUnicosMes).sort();
+  const _stRecurrentes = _listaRecurrentes.length;
 
   // Extra — Cancelaciones mes (excluye pruebas)
   const _motivosGuia  = getCancelMotivos();
@@ -11389,8 +11375,7 @@ function renderKPIGuia() {
     .filter(p => p.fechas.length === 1 && p.fechas[0] <= hace90Str)
     .map(p => p.nombre).sort();
 
-  html += _mkPacList('kpiListaNuevos',      '🌱', 'Pacientes nuevos (1 sola sesión)',  _stNuevos,      _listaNuevos,      '#059669');
-  html += _mkPacList('kpiListaRecurrentes', '👥', esMesActual ? 'Recurrentes este mes'       : 'Recurrentes',       _stRecurrentes, _listaRecurrentes, '#6366f1');
+  html += _mkPacList('kpiListaRecurrentes', '👥', esMesActual ? 'Pacientes este mes' : 'Pacientes del mes', _stRecurrentes, _listaRecurrentes, '#6366f1');
   html += _mkPacList('kpiListaUnaVez',      '⚠️', 'Solo 1 sesión · no han vuelto (+3 meses)', _listaUnaVez.length, _listaUnaVez,   '#f59e0b');
   // Cálculo: sesiones diarias necesarias para cumplir meta
   if (esMesActual) {
