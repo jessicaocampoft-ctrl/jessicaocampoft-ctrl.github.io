@@ -5280,7 +5280,7 @@ function _calcRecDates() {
   const dates = [];
   const cur   = new Date(start + 'T12:00:00');
   for (let i = 0; i < qty; i++) {
-    dates.push({ date: cur.toISOString().split('T')[0], time });
+    dates.push({ date: cur.toLocalDateStr(), time });
     cur.setDate(cur.getDate() + days);
   }
   return dates;
@@ -5466,10 +5466,12 @@ function filtrarDia(dateStr) {
   renderAgenda();
 }
 
-// Returns "YYYY-MM-DD" from a Date object
+// Returns "YYYY-MM-DD" from a Date object (always local time, never UTC)
 function toDateStr(d) {
   return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
 }
+// Polyfill: mismo resultado como método de instancia para poder reemplazar .toLocalDateStr()
+Date.prototype.toLocalDateStr = function() { return toDateStr(this); };
 // Normalizes any date value (Date object, ISO string, plain "YYYY-MM-DD") → "YYYY-MM-DD"
 function normDate(s) {
   if (!s) return '';
@@ -5871,7 +5873,7 @@ function _verCobrosPendientesSemana() {
   const dow   = now.getDay();
   const startW = new Date(now); startW.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1)); startW.setHours(0,0,0,0);
   const endW   = new Date(startW); endW.setDate(startW.getDate() + 6); endW.setHours(23,59,59,999);
-  const toS = d => d.toISOString().split('T')[0];
+  const toS = d => d.toLocalDateStr();
   const sw = toS(startW), ew = toS(endW);
 
   const citas = citasReales();
@@ -7566,7 +7568,7 @@ function renderReactivacion() {
   const dias   = parseInt(document.getElementById('reacDias')?.value || '90', 10);
   const hoy    = today(); // "YYYY-MM-DD"
   const limite = new Date(); limite.setDate(limite.getDate() - dias);
-  const limiteStr = limite.toISOString().split('T')[0];
+  const limiteStr = limite.toLocalDateStr();
 
   // Agrupar citas por paciente (clave por teléfono o nombre)
   const map = {};
@@ -9573,7 +9575,7 @@ function addLead(canal = 'WhatsApp') {
   const ahora = new Date();
   leads.push({
     id: Date.now(),
-    fecha: ahora.toISOString().slice(0,10),  // YYYY-MM-DD
+    fecha: ahora.toLocalDateStr(),  // YYYY-MM-DD
     hora: ahora.toTimeString().slice(0,5),    // HH:MM
     canal: canal,
     timestamp: ahora.getTime()
@@ -9591,7 +9593,7 @@ function deleteLastLead() {
 }
 
 function getLeadsHoy() {
-  const hoy = new Date().toISOString().slice(0,10);
+  const hoy = new Date().toLocalDateStr();
   return getLeads().filter(l => l.fecha === hoy).length;
 }
 
@@ -11392,7 +11394,7 @@ function renderKPIGuia() {
     _citasPorPac[nom].fechas.push(normDate(c.fecha));
   });
   const hace90 = new Date(now); hace90.setDate(now.getDate() - 90);
-  const hace90Str = hace90.toISOString().split('T')[0];
+  const hace90Str = hace90.toLocalDateStr();
   const _listaUnaVez = Object.values(_citasPorPac)
     .filter(p => p.fechas.length === 1 && p.fechas[0] <= hace90Str)
     .map(p => p.nombre).sort();
@@ -12888,7 +12890,7 @@ function setModoIngresos(modo) {
   renderIngresosDetalle();
 }
 
-function _ingFmt(d) { return d.toISOString().slice(0,10); }
+function _ingFmt(d) { return d.toLocalDateStr(); }
 function _ingFmtLabel(d) { return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'}); }
 function _ingFmtMes(d) { return d.toLocaleDateString('es-CO',{month:'long',year:'numeric'}); }
 
@@ -13638,7 +13640,7 @@ function marcarTareaCompletada(key) {
 }
 function posponerTarea(key) {
   const manana = new Date(); manana.setDate(manana.getDate()+1);
-  const mananaStr = manana.toISOString().slice(0,10);
+  const mananaStr = manana.toLocalDateStr();
   kvSet(key+'_posponer', mananaStr);
   toast('Tarea pospuesta para mañana'); renderTareas();
 }
@@ -13777,7 +13779,7 @@ function guardarPaqueteAsignado() {
   const vigD = new Date(fechaC+'T12:00:00');
   vigD.setDate(vigD.getDate() + (+pl.vigencia||60));
   const asignados = _getPkAsignados();
-  asignados.push({ paciente, telefono:tel, nombre:pl.nombre, sesiones:+pl.sesiones, consumidas:0, precio:pl.precio, fechaCompra:fechaC, vencimiento:vigD.toISOString().slice(0,10), notas });
+  asignados.push({ paciente, telefono:tel, nombre:pl.nombre, sesiones:+pl.sesiones, consumidas:0, precio:pl.precio, fechaCompra:fechaC, vencimiento:vigD.toLocalDateStr(), notas });
   _savePkAsignados(asignados);
   document.getElementById('modalPaquete').style.display='none';
   renderPaquetes(); toast('Paquete asignado ✓');
@@ -14485,7 +14487,7 @@ function _comisMesVal() {
 }
 
 function _comisSemanasLlenas(citas, eventos, year, month, metaSes) {
-  const toS = d => d.toISOString().split('T')[0];
+  const toS = d => d.toLocalDateStr();
   const mS = new Date(year, month-1, 1), mE = new Date(year, month, 0);
   let cur = new Date(mS);
   const dow = cur.getDay();
@@ -14503,7 +14505,7 @@ function _comisSemanasLlenas(citas, eventos, year, month, metaSes) {
 }
 
 function _comisReactivaciones(citas, year, month) {
-  const toS = d => d.toISOString().split('T')[0];
+  const toS = d => d.toLocalDateStr();
   const mS = new Date(year, month-1, 1);
   const msStr = toS(mS), meStr = toS(new Date(year, month, 0));
   const byP = {};
@@ -14532,7 +14534,7 @@ function _comisReactivaciones(citas, year, month) {
 }
 
 function _comisReventas(citas, year, month, mantKws, pct) {
-  const toS = d => d.toISOString().split('T')[0];
+  const toS = d => d.toLocalDateStr();
   const msStr = toS(new Date(year, month-1, 1)), meStr = toS(new Date(year, month, 0));
   const ventas = citas.filter(c => {
     if ((c.estado||'').includes('Cancel') || c.estado==='No asistió') return false;
@@ -14549,7 +14551,7 @@ function _comisReventas(citas, year, month, mantKws, pct) {
 }
 
 function _comisVentasCruzadas(citas, year, month, descKw) {
-  const toS = d => d.toISOString().split('T')[0];
+  const toS = d => d.toLocalDateStr();
   const msStr = toS(new Date(year, month-1, 1)), meStr = toS(new Date(year, month, 0));
   const mes = citas.filter(c => { if ((c.estado||'').includes('Cancel')||c.estado==='No asistió') return false; const f=normDate(c.fecha); return f>=msStr&&f<=meStr; });
   const byP = {};
@@ -14918,3 +14920,4 @@ function copiarDisponibilidadWA() {
 </script>
 </body>
 </html>
+
