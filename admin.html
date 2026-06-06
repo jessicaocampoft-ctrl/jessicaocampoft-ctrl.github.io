@@ -4719,6 +4719,7 @@ function updateProfileCard() {
   const citas = citasReales();
 
   const semana = citas.filter(c => {
+    if (!c.hora) return false;
     const [cy,cm,cd] = normDate(c.fecha).split('-');
     const d = new Date(+cy, +cm-1, +cd);
     return d >= startW && d <= endW;
@@ -5704,7 +5705,7 @@ function initDashboard() {
   const citas = citasReales();
 
   const hoy    = citas.filter(c => normDate(c.fecha) === todayStr).length;
-  const semana = citas.filter(c => { const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; }).length;
+  const semana = citas.filter(c => { if (!c.hora) return false; const [cy,cm,cd]=normDate(c.fecha).split('-'); const d=new Date(+cy,+cm-1,+cd); return d>=startW && d<=endW; }).length;
   const mes    = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; }).length;
   const pacs   = new Set(citas.map(c => c.telefono || c.email || (c.nombre||'').toLowerCase().trim())).size;
 
