@@ -8792,7 +8792,8 @@ function agendarDesdeSeg(encNombre, encTel, encEmail) {
 async function limpiarCitasSinHora() {
   const sinHora = (allData.citas || []).filter(c => (!c.hora || c.hora === '00:00') && c.estado !== 'Cancelada');
   if (sinHora.length === 0) { toast('No hay citas sin hora — todo está limpio ✓', 'ok'); return; }
-  if (!confirm(`Se encontraron ${sinHora.length} cita(s) sin hora registrada. ¿Eliminarlas de la base de datos?`)) return;
+  const detalle = sinHora.map(c => `• ${c.nombre} — ${c.servicio} — ${c.fecha} — estado: ${c.estado}`).join('\n');
+  if (!confirm(`Se encontraron ${sinHora.length} cita(s) sin hora registrada:\n\n${detalle}\n\n¿Eliminarlas de la base de datos?`)) return;
   const btn = document.getElementById('btnLimpiarSinHora');
   btn.textContent = 'Limpiando...'; btn.disabled = true;
   try {
