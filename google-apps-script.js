@@ -87,6 +87,7 @@ function doGet(e) {
   if (p.action === 'editBooking')   return js(doEditBooking(JSON.parse(p.data)));
   if (p.action === 'deletePatient')  return js(deletePatient(decodeURIComponent(p.nombre)));
   if (p.action === 'editPatient')    return js(editPatient(JSON.parse(p.data)));
+  if (p.action === 'cleanCitasSinHora') return js(cleanCitasSinHora());
   if (p.action === 'getReminders')   return js(getRemindersData());
   if (p.action === 'sendReminders')  return js(sendEmailReminders());
   if (p.action === 'generateEval')   return js(generateEvalReport(JSON.parse(decodeURIComponent(p.data))));
@@ -1566,6 +1567,24 @@ function getCodigos() {
     });
   }
   return {ok: true, codigos: lista};
+}
+
+// Elimina citas sin hora de la hoja Citas
+function cleanCitasSinHora() {
+  var sheet = getOrCreateSheet().getSheetByName('Citas');
+  var rows  = sheet.getDataRange().getValues();
+  var deleted = 0;
+  for (var i = rows.length - 1; i >= 1; i--) {
+    var hora = rows[i][8]; // columna Hora (índice 8)
+    var horaStr = (hora instanceof Date)
+      ? (hora.getHours() + ':' + hora.getMinutes())
+      : ('' + (hora || '')).trim();
+    if (!horaStr || horaStr === '0:0' || horaStr === '00:00' && !hora) {
+      sheet.deleteRow(i + 1);
+      deleted++;
+    }
+  }
+  return { ok: true, deleted: deleted };
 }
 
 function buildEvalPrompt(d) {

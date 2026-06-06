@@ -2350,6 +2350,7 @@ tr:last-child td{ border-bottom: none; }
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="renderSeguimiento()">🔄 Actualizar</button>
+          <button class="btn btn-ghost btn-sm" id="btnLimpiarSinHora" onclick="limpiarCitasSinHora()" title="Elimina citas antiguas que no tienen hora registrada">🧹 Limpiar citas sin hora</button>
           <button class="fin-export-btn" onclick="exportarSeguimientoCSV()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Exportar CSV
@@ -8786,6 +8787,25 @@ function agendarDesdeSeg(encNombre, encTel, encEmail) {
   document.getElementById('ncEmail').value = decodeURIComponent(encEmail);
   document.getElementById('pacSearch').value = decodeURIComponent(encNombre);
   toast('Datos cargados. Completa fecha, hora y servicio.');
+}
+
+async function limpiarCitasSinHora() {
+  const sinHora = (allData.citas || []).filter(c => !c.hora && c.estado !== 'Cancelada');
+  if (sinHora.length === 0) { toast('No hay citas sin hora — todo está limpio ✓', 'ok'); return; }
+  if (!confirm(`Se encontraron ${sinHora.length} cita(s) sin hora registrada. ¿Eliminarlas de la base de datos?`)) return;
+  const btn = document.getElementById('btnLimpiarSinHora');
+  btn.textContent = 'Limpiando...'; btn.disabled = true;
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=cleanCitasSinHora&token=${encodeURIComponent(TOKEN)}`);
+    const d = await r.json();
+    if (d.ok) {
+      toast(`✓ ${d.deleted} cita(s) sin hora eliminadas correctamente`, 'ok');
+      await reload();
+    } else {
+      toast('Error: ' + (d.error || ''), 'err');
+    }
+  } catch(e) { toast('Error de conexión', 'err'); }
+  finally { btn.textContent = '🧹 Limpiar citas sin hora'; btn.disabled = false; }
 }
 
 function exportarSeguimientoCSV() {
