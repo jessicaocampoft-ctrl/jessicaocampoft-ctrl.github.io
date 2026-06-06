@@ -8493,8 +8493,16 @@ function toggleSegFiltro(f) {
 // Helpers KV sync seguimiento
 function segReagendo(nombre)    { return !!kvGet('seg_reagendo_'+nombre); }
 function segToggleR(nombre)     {
-  if (segReagendo(nombre)) kvRemove('seg_reagendo_'+nombre);
-  else { kvSet('seg_reagendo_'+nombre,'1'); segLogAction(nombre,'reagendo','Marcado como Reagendó ✓'); }
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth()+1;
+  if (segReagendo(nombre)) {
+    kvRemove('seg_reagendo_'+nombre);
+    _comisSetManualReact(y, m, _comisManualReact(y,m).filter(n => n.toLowerCase() !== nombre.toLowerCase()));
+  } else {
+    kvSet('seg_reagendo_'+nombre,'1');
+    segLogAction(nombre,'reagendo','Marcado como Reagendó ✓');
+    const list = _comisManualReact(y, m);
+    if (!list.find(n => n.toLowerCase() === nombre.toLowerCase())) { list.push(nombre); _comisSetManualReact(y, m, list); }
+  }
   renderSeguimiento();
 }
 function segWaSent(nombre, tipo){ return !!kvGet('seg_wa_'+tipo+'_'+nombre); }
