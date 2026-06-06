@@ -1579,7 +1579,7 @@ function cleanCitasSinHora() {
     var horaStr = (hora instanceof Date)
       ? (hora.getHours() + ':' + hora.getMinutes())
       : ('' + (hora || '')).trim();
-    if (!horaStr || horaStr === '0:0' || horaStr === '00:00' && !hora) {
+    if (!horaStr || horaStr === '0:0' || horaStr === '00:00') {
       sheet.deleteRow(i + 1);
       deleted++;
     }
