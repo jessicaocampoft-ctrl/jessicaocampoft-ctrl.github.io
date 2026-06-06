@@ -606,6 +606,9 @@ tr.evt-row:hover td{background:rgba(139,92,246,.07)}
 .seg-chip.active.sem5{background:rgba(220,38,38,.18)}
 .seg-chip.active.reagendo{background:rgba(22,163,74,.18)}
 .seg-chip.active.readap{background:rgba(3,105,161,.18)}
+/* ── MENSAJES PREDETERMINADOS ── */
+.msg-chip{color:var(--muted);border-color:var(--border);background:var(--s2)}
+.msg-chip.active{color:var(--primary);border-color:rgba(27,191,176,.4);background:rgba(27,191,176,.12)}
 .seg-card{
   display:flex;align-items:center;gap:14px;padding:16px 18px;
   background:var(--s1);border:1px solid var(--border);border-radius:10px;
@@ -1446,6 +1449,11 @@ tr:last-child td{ border-bottom: none; }
         Seguimiento
       </span>
       <span id="badgeSeguimiento" style="display:none;background:#7c3aed;color:#fff;border-radius:99px;font-size:.68rem;font-weight:700;padding:1px 7px;line-height:1.6">0</span>
+    </button>
+
+    <button class="sb-link" id="sb-mensajes" data-tooltip="Mensajes" onclick="showView('mensajes')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Mensajes
     </button>
 
     <button class="sb-link" id="sb-empresas" data-tooltip="Empresas" onclick="showView('empresas')">
@@ -4189,6 +4197,61 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
 
     </section>
 
+    <!-- ── MENSAJES PREDETERMINADOS ── -->
+    <section id="vMensajes" style="display:none">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title"><em>Mensajes</em> predeterminados</h1>
+          <p class="page-sub">Plantillas de texto listas para copiar y enviar por WhatsApp</p>
+        </div>
+        <button class="btn btn-teal" onclick="abrirNuevoMensaje()">+ Nuevo mensaje</button>
+      </div>
+
+      <!-- Chips categoría -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
+        <button class="seg-chip msg-chip active" id="msgChip-all"           onclick="setMsgCat('')">Todos</button>
+        <button class="seg-chip msg-chip"        id="msgChip-recordatorio"  onclick="setMsgCat('recordatorio')">🔔 Recordatorio</button>
+        <button class="seg-chip msg-chip"        id="msgChip-reagendamiento" onclick="setMsgCat('reagendamiento')">📅 Reagendamiento</button>
+        <button class="seg-chip msg-chip"        id="msgChip-seguimiento"   onclick="setMsgCat('seguimiento')">💬 Seguimiento</button>
+        <button class="seg-chip msg-chip"        id="msgChip-promocion"     onclick="setMsgCat('promocion')">🎯 Promoción</button>
+        <button class="seg-chip msg-chip"        id="msgChip-general"       onclick="setMsgCat('general')">📋 General</button>
+      </div>
+
+      <div id="msgGrid"></div>
+    </section>
+
+    <!-- ── MODAL MENSAJES ── -->
+    <div id="modalMensaje" class="modal-bg" onclick="if(event.target===this)closeModal('modalMensaje')">
+      <div class="modal">
+        <h2 class="modal-title" id="msgModalTitle">Nuevo mensaje</h2>
+        <input type="hidden" id="msgEditId">
+        <div class="form-grid g1" style="gap:16px">
+          <div class="field">
+            <label>Título</label>
+            <input type="text" id="msgTitulo" placeholder="Ej: Recordatorio de cita">
+          </div>
+          <div class="field">
+            <label>Categoría</label>
+            <select id="msgCat">
+              <option value="recordatorio">🔔 Recordatorio</option>
+              <option value="reagendamiento">📅 Reagendamiento</option>
+              <option value="seguimiento">💬 Seguimiento</option>
+              <option value="promocion">🎯 Promoción</option>
+              <option value="general">📋 General</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Mensaje <span style="color:var(--muted);font-weight:400">— usa {nombre}, {fecha}, {hora} como variables</span></label>
+            <textarea id="msgTexto" rows="7" placeholder="Hola {nombre}, te recordamos que tienes cita el {fecha} a las {hora}. Cualquier cambio escríbenos con anticipación. ¡Hasta pronto!"></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" onclick="closeModal('modalMensaje')">Cancelar</button>
+          <button class="btn btn-teal" onclick="guardarMensaje()">Guardar</button>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <!-- ── MOBILE BOTTOM NAV ── -->
@@ -4824,7 +4887,7 @@ function openEvalExpress() {
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
-  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','presupuesto','seguimiento','empresas','pasaporte','comisiones'].forEach(id => {
+  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -4869,6 +4932,7 @@ function showView(v) {
   if (v === 'tareas')         renderTareas();
   if (v === 'tareasConfig')   initTareasConfig();
   if (v === 'paquetes')       renderPaquetes();
+  if (v === 'mensajes')       renderMensajes();
   if (v === 'empresas')       renderEmpresas();
   if (v === 'codigos')        renderCodigos();
   if (v === 'guiakpis')       { renderKPIGuia(); actualizarContadorLeads(); loadRutinaChecks(); }
@@ -14986,6 +15050,125 @@ function copiarDisponibilidadWA() {
     const msgEl = document.getElementById('dispCopyMsg');
     if (msgEl) { msgEl.style.display = 'block'; setTimeout(() => msgEl.style.display = 'none', 2500); }
   });
+}
+</script>
+
+<script>
+// ── MENSAJES PREDETERMINADOS ──
+const _MSG_CATS = {
+  recordatorio:   { label: '🔔 Recordatorio',   color: '#3b82f6' },
+  reagendamiento: { label: '📅 Reagendamiento', color: '#8b5cf6' },
+  seguimiento:    { label: '💬 Seguimiento',    color: '#1BBFB0' },
+  promocion:      { label: '🎯 Promoción',       color: '#f59e0b' },
+  general:        { label: '📋 General',         color: '#6b7280' }
+};
+let _msgCatActiva = '';
+
+function _getMensajesPre() {
+  try { return JSON.parse(kvGet('mensajes_pre') || '[]'); } catch(e) { return []; }
+}
+function _setMensajesPre(arr) { kvSet('mensajes_pre', JSON.stringify(arr)); }
+
+function renderMensajes() {
+  const grid = document.getElementById('msgGrid');
+  if (!grid) return;
+  const msgs = _getMensajesPre();
+  const filtrados = _msgCatActiva ? msgs.filter(m => m.cat === _msgCatActiva) : msgs;
+  if (!filtrados.length) {
+    grid.innerHTML = '<div class="empty"><div style="font-size:2.5rem;margin-bottom:12px">💬</div><div>No hay mensajes aquí todavía.<br>Crea el primero con <strong>+ Nuevo mensaje</strong></div></div>';
+    return;
+  }
+  grid.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">'
+    + filtrados.map(_msgCard).join('') + '</div>';
+}
+
+function _msgCard(m) {
+  const cat = _MSG_CATS[m.cat] || _MSG_CATS.general;
+  const preview = m.texto.length > 130 ? m.texto.slice(0, 130) + '…' : m.texto;
+  return `<div style="background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:20px;border-left:3px solid ${cat.color};display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div>
+        <div style="font-family:var(--font-h);font-size:1rem;font-weight:600;margin-bottom:5px">${m.titulo}</div>
+        <span style="font-size:.72rem;font-weight:700;color:${cat.color};background:${cat.color}1a;padding:2px 9px;border-radius:99px">${cat.label}</span>
+      </div>
+      <div style="display:flex;gap:2px;flex-shrink:0">
+        <button onclick="editarMensaje('${m.id}')" title="Editar" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:5px;border-radius:6px;font-size:.95rem" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted)'">✏️</button>
+        <button onclick="eliminarMensaje('${m.id}')" title="Eliminar" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:5px;border-radius:6px;font-size:.95rem" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--muted)'">🗑️</button>
+      </div>
+    </div>
+    <div style="font-size:.84rem;color:var(--muted);line-height:1.65;white-space:pre-wrap;flex:1">${preview}</div>
+    <button onclick="copiarMensajePre('${m.id}')" style="padding:10px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.84rem;font-weight:600" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      📋 Copiar mensaje
+    </button>
+  </div>`;
+}
+
+function setMsgCat(cat) {
+  _msgCatActiva = cat;
+  document.querySelectorAll('[id^="msgChip-"]').forEach(c => c.classList.remove('active'));
+  const chip = document.getElementById('msgChip-' + (cat || 'all'));
+  if (chip) chip.classList.add('active');
+  renderMensajes();
+}
+
+function abrirNuevoMensaje() {
+  document.getElementById('msgModalTitle').textContent = 'Nuevo mensaje';
+  document.getElementById('msgEditId').value = '';
+  document.getElementById('msgTitulo').value = '';
+  document.getElementById('msgCat').value = _msgCatActiva || 'recordatorio';
+  document.getElementById('msgTexto').value = '';
+  openModal('modalMensaje');
+  setTimeout(() => document.getElementById('msgTitulo').focus(), 100);
+}
+
+function editarMensaje(id) {
+  const m = _getMensajesPre().find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('msgModalTitle').textContent = 'Editar mensaje';
+  document.getElementById('msgEditId').value = id;
+  document.getElementById('msgTitulo').value = m.titulo;
+  document.getElementById('msgCat').value = m.cat;
+  document.getElementById('msgTexto').value = m.texto;
+  openModal('modalMensaje');
+}
+
+function guardarMensaje() {
+  const titulo = document.getElementById('msgTitulo').value.trim();
+  const cat    = document.getElementById('msgCat').value;
+  const texto  = document.getElementById('msgTexto').value.trim();
+  if (!titulo || !texto) { toast('Completa el título y el mensaje', 'err'); return; }
+  const msgs  = _getMensajesPre();
+  const editId = document.getElementById('msgEditId').value;
+  if (editId) {
+    const idx = msgs.findIndex(m => m.id === editId);
+    if (idx >= 0) msgs[idx] = { ...msgs[idx], titulo, cat, texto };
+  } else {
+    msgs.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2,5), titulo, cat, texto, created: Date.now() });
+  }
+  _setMensajesPre(msgs);
+  closeModal('modalMensaje');
+  renderMensajes();
+  toast('Mensaje guardado ✓', 'ok');
+}
+
+function eliminarMensaje(id) {
+  if (!confirm('¿Eliminar este mensaje?')) return;
+  _setMensajesPre(_getMensajesPre().filter(m => m.id !== id));
+  renderMensajes();
+  toast('Mensaje eliminado', 'ok');
+}
+
+function copiarMensajePre(id) {
+  const m = _getMensajesPre().find(x => x.id === id);
+  if (!m) return;
+  navigator.clipboard.writeText(m.texto)
+    .then(() => toast('Copiado al portapapeles ✓', 'ok'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = m.texto; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      toast('Copiado al portapapeles ✓', 'ok');
+    });
 }
 </script>
 </body>
