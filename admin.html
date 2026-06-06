@@ -4570,6 +4570,14 @@ async function _flushKV() {
   }
 }
 
+// Garantiza que leads y checklist pendientes se guarden aunque el navegador cierre
+window.addEventListener('beforeunload', () => {
+  if (!Object.keys(_kvDirty).length) return;
+  const batch = { ..._kvDirty };
+  _kvDirty = {};
+  fetch(`${APPS_SCRIPT_URL}?action=setAdminKV&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(batch))}`, { keepalive: true });
+});
+
 let TOKEN  = sessionStorage.getItem('adminToken') || '';
 let allData = {citas: [], bloqueos: [], eventos: []};
 let _kpiViewMonth = null; // {m, y} o null = mes actual
@@ -11672,7 +11680,7 @@ function _rutinaKey() {
 function loadRutinaChecks() {
   const today = _rutinaKey();
   let checked = [];
-  try { checked = JSON.parse(localStorage.getItem(today) || '[]'); } catch {}
+  try { checked = JSON.parse(kvGet(today) || '[]'); } catch {}
   RUTINA_IDS.forEach(id => {
     const cb  = document.getElementById('rck_' + id);
     const lbl = cb ? cb.closest('.gk-check-item') : null;
@@ -11687,22 +11695,21 @@ function toggleRutinaCheck(id) {
   const cb  = document.getElementById('rck_' + id);
   const lbl = cb ? cb.closest('.gk-check-item') : null;
   if (!cb || !lbl) return;
-  // El evento onchange ya cambia cb.checked; el onclick desde el label también
   // Usamos un pequeño delay para leer el valor actualizado
   setTimeout(() => {
     const done = cb.checked;
     lbl.classList.toggle('done', done);
     const today = _rutinaKey();
     let checked = [];
-    try { checked = JSON.parse(localStorage.getItem(today) || '[]'); } catch {}
+    try { checked = JSON.parse(kvGet(today) || '[]'); } catch {}
     if (done && !checked.includes(id))  checked.push(id);
     if (!done) checked = checked.filter(x => x !== id);
-    localStorage.setItem(today, JSON.stringify(checked));
+    kvSet(today, JSON.stringify(checked));
   }, 0);
 }
 
 function resetRutina() {
-  localStorage.removeItem(_rutinaKey());
+  kvRemove(_rutinaKey());
   loadRutinaChecks();
   toast('Checklist reiniciado', 'ok');
 }
