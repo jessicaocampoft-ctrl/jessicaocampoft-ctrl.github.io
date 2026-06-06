@@ -11609,6 +11609,41 @@ function _renderCancelBreakdown() {
   }
 
   html += `</div>`;
+
+  // Lista detallada de citas canceladas este mes
+  html += `<div style="margin-top:14px">
+    <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">
+      DETALLE — citas canceladas este mes
+    </div>`;
+
+  if (cancelMes.length === 0) {
+    html += `<div style="font-size:.78rem;color:var(--ok)">Sin cancelaciones reales este mes.</div>`;
+  } else {
+    const sorted = [...cancelMes].sort((a,b) => normDate(b.fecha).localeCompare(normDate(a.fecha)));
+    html += sorted.map(c => {
+      const mot = motivos[c.id];
+      const motHtml = mot
+        ? `<span style="background:#f59e0b22;color:#92400e;border-radius:4px;padding:1px 6px;font-size:.7rem;margin-left:6px">${mot}</span>`
+        : `<span style="color:var(--muted);font-size:.7rem;margin-left:6px">sin motivo</span>`;
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--s2);border-radius:7px;margin-bottom:4px;font-size:.78rem">
+        <div>
+          <strong>${c.nombre || '—'}</strong>
+          <span style="color:var(--muted);margin-left:6px">${normDate(c.fecha)}</span>
+          <span style="color:var(--muted);margin-left:4px">· ${c.servicio || '—'}</span>
+          ${motHtml}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  if (cancelMesPruebas.length) {
+    html += `<div style="margin-top:8px;padding:6px 10px;background:rgba(99,102,241,.07);border-radius:7px;font-size:.75rem;color:#6366f1">
+      🧪 ${cancelMesPruebas.length} cancelación${cancelMesPruebas.length>1?'es':''} marcada${cancelMesPruebas.length>1?'s':''} como <strong>Prueba</strong> — excluida${cancelMesPruebas.length>1?'s':''} del conteo:
+      ${cancelMesPruebas.map(c=>`<span style="margin-left:6px;opacity:.8">${c.nombre||'—'} (${normDate(c.fecha)})</span>`).join('')}
+    </div>`;
+  }
+
+  html += `</div>`;
   el.innerHTML = html;
 }
 
