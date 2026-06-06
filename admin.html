@@ -4144,7 +4144,7 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
         <div class="co-cfg-grid">
           <div><label class="co-inp-label">Bono agenda llena (mes completo)</label><input class="co-inp" id="cfg_bono_agenda" type="number" placeholder="80000"></div>
           <div><label class="co-inp-label">Semanas meta (de 4 o 5)</label><input class="co-inp" id="cfg_semanas_meta" type="number" placeholder="4"></div>
-          <div><label class="co-inp-label">Sesiones/semana = "llena"</label><input class="co-inp" id="cfg_ses_llena" type="number" placeholder="23"></div>
+          <div><label class="co-inp-label">Sesiones/semana = "llena" <span style="color:var(--primary);font-size:.65rem">↳ tomado de Meta KPI</span></label><input class="co-inp" id="cfg_ses_llena" type="number" disabled style="opacity:.6;cursor:not-allowed" title="Se sincroniza automáticamente con la meta de sesiones del KPI. Cámbiala en Guía de KPIs → Editar valores de referencia."></div>
           <div><label class="co-inp-label">Bono por reactivación (por paciente)</label><div style="display:flex;gap:6px;align-items:center"><input class="co-inp" id="cfg_bono_react" type="number" placeholder="15000" style="flex:1;min-width:0"><select class="co-inp" id="cfg_bono_react_tipo" style="width:110px;padding:6px 8px"><option value="fijo">$ Fijo</option><option value="pct">% servicio</option></select></div></div>
         </div>
 
@@ -14467,7 +14467,7 @@ function _comisGetConfig() {
   return {
     bono_agenda:           parseInt(cfg.bono_agenda           || '80000', 10),
     semanas_meta:          parseInt(cfg.semanas_meta          || '4',     10),
-    ses_llena:             parseInt(cfg.ses_llena             || '23',    10),
+    ses_llena:             META_SESIONES_SEMANA, // siempre igual a la meta KPI — fuente única de verdad
     bono_react:            parseInt(cfg.bono_react            || '15000', 10),
     bono_react_tipo:       cfg.bono_react_tipo || 'fijo',
     pct_reventa:           parseInt(cfg.pct_reventa           || '5',     10),
@@ -14515,7 +14515,7 @@ function toggleComisConfig() {
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
   set('cfg_bono_agenda',          cfg.bono_agenda);
   set('cfg_semanas_meta',         cfg.semanas_meta);
-  set('cfg_ses_llena',            cfg.ses_llena);
+  set('cfg_ses_llena',            META_SESIONES_SEMANA);
   set('cfg_bono_react',           cfg.bono_react);
   set('cfg_bono_react_tipo',      cfg.bono_react_tipo);
   set('cfg_pct_reventa',          cfg.pct_reventa);
