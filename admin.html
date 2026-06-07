@@ -3985,6 +3985,20 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
         <p class="page-sub">Registro de referidos y bonos generados. Cada código es único por mes.</p>
       </div>
 
+      <!-- Reglas del plan de referidos -->
+      <div style="background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.35);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+        <span style="font-size:1.4rem;flex-shrink:0">🎁</span>
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:700;color:#92400e;margin-bottom:6px;font-size:.95rem">Plan de Referidos</div>
+          <div style="font-size:.85rem;color:#78350f;line-height:1.7">
+            Quien refiere a un nuevo paciente recibe un
+            <strong style="background:rgba(234,179,8,.2);padding:1px 7px;border-radius:6px">bono de $20.000</strong>
+            para descontar en su próxima sesión.<br>
+            <span style="color:#92400e">⚠️ Máximo <strong>2 bonos acumulables por mes</strong> por persona.</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Banner bonos pendientes en vista Códigos -->
       <div id="bonoPendingBanner" style="display:none;background:rgba(217,119,6,.09);border:1px solid rgba(217,119,6,.4);border-radius:10px;padding:14px 20px;margin-bottom:18px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -14104,6 +14118,19 @@ function dbReferidoFilter() {
 // ══════════════════════════════════════════════════════════════
 // CÓDIGOS REF & BONO
 // ══════════════════════════════════════════════════════════════
+const BONO_VALOR   = 20000;
+const BONO_MAX_MES = 2;
+const _MES_EN = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+function _mesAbrevActual() { return _MES_EN[new Date().getMonth()]; }
+function _bonosReferidorMes(referidoPor) {
+  const mes = _mesAbrevActual();
+  return (allData.codigos || []).filter(c =>
+    c.tipo === 'BONO' &&
+    (c.paciente || '').toLowerCase().trim() === (referidoPor || '').toLowerCase().trim() &&
+    (c.codigo || '').split('-')[1] === mes
+  );
+}
+
 function updateBonosBadge() {
   const codigos = allData.codigos || [];
   const refConBono = new Set(codigos.filter(c => c.tipo === 'BONO').map(c => c.codigoRef));
@@ -14141,10 +14168,13 @@ function updateBonosBadge() {
             <span style="color:var(--muted)"> tiene bono pendiente — refirió a <strong>${c.paciente || '?'}</strong></span>
           </div>
           <span style="font-family:var(--font-m);font-size:.75rem;color:var(--muted)">${c.fecha || ''}</span>
-          <button class="btn btn-sm" onclick="generarBono('${c.codigo}','${(c.referidoPor||'').replace(/'/g,"\\'")}','${(c.telefono||'').replace(/'/g,"\\'")}' )"
-            style="background:rgba(234,179,8,.15);color:#92400e;border:1px solid rgba(234,179,8,.4);font-size:.75rem;white-space:nowrap">
-            🎁 Generar Bono
-          </button>
+          ${_bonosReferidorMes(c.referidoPor||'').length >= BONO_MAX_MES
+            ? `<span style="font-size:.75rem;color:#92400e;opacity:.65;padding:3px 8px;border:1px solid rgba(234,179,8,.25);border-radius:6px;white-space:nowrap">🔒 Límite mensual</span>`
+            : `<button class="btn btn-sm" onclick="generarBono('${c.codigo}','${(c.referidoPor||'').replace(/'/g,"\\'")}','${(c.telefono||'').replace(/'/g,"\\'")}' )"
+                style="background:rgba(234,179,8,.15);color:#92400e;border:1px solid rgba(234,179,8,.4);font-size:.75rem;white-space:nowrap">
+                🎁 Bono $${BONO_VALOR.toLocaleString('es-CO')}
+              </button>`
+          }
         </div>`).join('');
       bonoPendingBanner.style.display = 'block';
     } else {
@@ -14188,11 +14218,15 @@ function renderCodigos() {
       : (c.tipo === 'REF' && refConBono.has(c.codigo)
           ? `<span style="font-family:var(--font-m);font-size:.8rem;color:#92400e">BONO-${c.codigo.slice(4)} ✓</span>`
           : '—');
+    const _bonosMesRef = esREF ? _bonosReferidorMes(c.referidoPor || '') : [];
+    const _topeMes     = _bonosMesRef.length >= BONO_MAX_MES;
     const btnBono = esREF && !refConBono.has(c.codigo)
-      ? `<button class="btn btn-sm" onclick="generarBono('${c.codigo}','${(c.referidoPor||'').replace(/'/g,"\\'")}','${(c.telefono||'').replace(/'/g,"\\'")}' )"
-           style="background:rgba(234,179,8,.12);color:#92400e;border:1px solid rgba(234,179,8,.3);font-size:.75rem">
-           🎁 Generar Bono
-         </button>`
+      ? (_topeMes
+          ? `<span style="font-size:.75rem;color:#92400e;opacity:.6;padding:3px 8px;border:1px solid rgba(234,179,8,.25);border-radius:6px;background:rgba(234,179,8,.07)">🔒 Límite mensual (${BONO_MAX_MES}/${BONO_MAX_MES})</span>`
+          : `<button class="btn btn-sm" onclick="generarBono('${c.codigo}','${(c.referidoPor||'').replace(/'/g,"\\'")}','${(c.telefono||'').replace(/'/g,"\\'")}' )"
+               style="background:rgba(234,179,8,.12);color:#92400e;border:1px solid rgba(234,179,8,.3);font-size:.75rem">
+               🎁 Generar Bono $${BONO_VALOR.toLocaleString('es-CO')} <span style="opacity:.65">(${_bonosMesRef.length}/${BONO_MAX_MES} mes)</span>
+             </button>`)
       : '';
     const btnMarcar = c.estado === 'Activo'
       ? `<button class="btn btn-sm" onclick="marcarUsado('${c.codigo}')"
@@ -14228,7 +14262,12 @@ async function marcarUsado(codigo) {
 }
 
 async function generarBono(codigoRef, referidoPor, telefonoRef) {
-  if (!confirm(`¿Generar bono para ${referidoPor || 'quien refirió'}?\nEsto creará un código BONO vinculado a ${codigoRef}`)) return;
+  const bonosMes = _bonosReferidorMes(referidoPor);
+  if (bonosMes.length >= BONO_MAX_MES) {
+    toast(`${referidoPor || 'Este paciente'} ya tiene ${BONO_MAX_MES} bonos este mes — límite alcanzado`, 'err');
+    return;
+  }
+  if (!confirm(`¿Generar bono de $${BONO_VALOR.toLocaleString('es-CO')} para ${referidoPor || 'quien refirió'}?\nBonos este mes: ${bonosMes.length + 1}/${BONO_MAX_MES}\nSe descontará en su próxima sesión.`)) return;
   try {
     // Generar el número (mismo que el REF)
     const numRef  = codigoRef.split('-').pop(); // ej: "001"
