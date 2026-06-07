@@ -15069,7 +15069,41 @@ function _getMensajesPre() {
 }
 function _setMensajesPre(arr) { kvSet('mensajes_pre', JSON.stringify(arr)); }
 
+const _MSG_DEFAULTS = [
+  { id:'def1', cat:'recordatorio',   titulo:'Confirmación de cita',
+    texto:'Hola {nombre}! Tu cita está confirmada ✅\n\n*{servicio}*\n{fecha} · {hora}\n📍 En sitio\n\nCualquier duda me avisas. Hasta pronto! 😊\n— Jessica Ocampo Fisioterapeuta', created:0 },
+  { id:'def2', cat:'recordatorio',   titulo:'Recordatorio de cita (día anterior)',
+    texto:'Hola {nombre}! 👋 Te recuerdo tu cita de *{servicio}* mañana {fecha} a las {hora}. Recuerda llegar unos minutos antes con ropa cómoda. 💪\n\nCualquier duda me avisas. — Jessica Ocampo Fisioterapeuta', created:0 },
+  { id:'def3', cat:'seguimiento',    titulo:'Post-sesión — Descarga muscular',
+    texto:'Hola {nombre}! 👋 Soy Jessica. Han pasado 2 días desde tu sesión de Descarga Muscular. ¿Cómo te has sentido? ¿Notas mejoría en la zona trabajada? Cualquier molestia me cuentas para ajustar tu próximo plan. 💪', created:0 },
+  { id:'def4', cat:'seguimiento',    titulo:'Post-sesión — Valoración funcional',
+    texto:'Hola {nombre}! 👋 Soy Jessica. ¿Cómo te has sentido después de la Valoración Funcional de ayer? Si tienes alguna duda sobre los hallazgos o el plan que conversamos, quedo atenta. 🙏', created:0 },
+  { id:'def5', cat:'seguimiento',    titulo:'Post-sesión — Readaptación funcional',
+    texto:'Hola {nombre}! 👋 Soy Jessica. ¿Cómo te ha ido con los ejercicios del plan de ayer? Recuerda hacer las repeticiones que acordamos. Si sientes alguna molestia o duda, me cuentas para ajustarlo. 💪', created:0 },
+  { id:'def6', cat:'seguimiento',    titulo:'Encuesta de satisfacción',
+    texto:'Hola {nombre}! 😊 Tu opinión me importa mucho. ¿Me regalas 2 minutos para contarme cómo fue tu experiencia? 🙏\n\nhttps://forms.gle/srX1enyKN59n8TfQA\n\n⭐ ¡Premio! Cuando termines la encuesta, envíame un pantallazo y en tu próxima sesión te regalo 10 min de Botas de Compresión 💪\n\nGracias por confiar en mí! — Jessica Ocampo Fisioterapeuta', created:0 },
+  { id:'def7', cat:'reagendamiento', titulo:'Recordatorio semana 5 (35–41 días)',
+    texto:'Hola {nombre}! 👋 Soy Jessica Ocampo Fisioterapeuta. Ya van 5 semanas desde tu última sesión de Descarga Muscular. La próxima semana sería el momento ideal para reagendar antes de que el cuerpo empiece a acumular tensión. ¿Te agendo?', created:0 },
+  { id:'def8', cat:'reagendamiento', titulo:'Recordatorio semana 6 (42–48 días)',
+    texto:'Hola {nombre}! 👋 Soy Jessica Ocampo Fisioterapeuta. Ya se cumplieron las 6 semanas desde tu última sesión de Descarga Muscular — es el momento de reagendar. Mantener la frecuencia es lo que hace que los resultados se sostengan. ¿Te agendo esta semana?', created:0 },
+  { id:'def9', cat:'reagendamiento', titulo:'Urgente semana 7+ (49+ días)',
+    texto:'Hola {nombre}! 👋 Soy Jessica Ocampo Fisioterapeuta. Hace más de un mes desde tu última sesión de Descarga Muscular. El cuerpo ya empieza a acumular tensión de nuevo. ¿Cuándo te viene bien retomar? Cuéntame y coordinamos. 💪', created:0 },
+  { id:'def10', cat:'promocion',     titulo:'Renovación de paquete (1 sesión restante)',
+    texto:'Hola {nombre}! ❗ Te aviso que te queda solo 1 sesión en tu paquete. ¿Renovamos antes de que se acabe para no perder el ritmo? 💪\n— Jessica Ocampo Fisioterapeuta', created:0 },
+  { id:'def11', cat:'promocion',     titulo:'Paquete vencido — invitación a renovar',
+    texto:'Hola {nombre}! ❌ Tu paquete venció. Si quieres seguir con tu plan, podemos renovarlo ahora. ¿Te interesa? 🙏\n— Jessica Ocampo Fisioterapeuta', created:0 },
+  { id:'def12', cat:'general',       titulo:'Envío de link Pasaporte',
+    texto:'Hola {nombre}! 👋 Aquí te comparto tu link de seguimiento personal donde puedes ver el historial de tus sesiones. 📱\n\n{link_pasaporte}\n\n— Jessica Ocampo Fisioterapeuta', created:0 }
+];
+
+function _initMensajesPre() {
+  if (kvGet('mensajes_pre_seeded')) return;
+  _setMensajesPre(_MSG_DEFAULTS);
+  kvSet('mensajes_pre_seeded', '1');
+}
+
 function renderMensajes() {
+  _initMensajesPre();
   const grid = document.getElementById('msgGrid');
   if (!grid) return;
   const msgs = _getMensajesPre();
