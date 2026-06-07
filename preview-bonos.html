@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plan de Referidos — Jessica Ocampo Fisioterapeuta</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F8FA;--s1:#FFFFFF;--s2:#F0F2F5;
+  --primary:#1BBFB0;--primary-d:#17A89A;
+  --gold:#d97706;--gold-l:rgba(217,119,6,.1);--gold-b:rgba(217,119,6,.3);
+  --text:#1A1A2E;--muted:#6B7280;
+  --border:rgba(27,191,176,.18);
+  --font-h:'Cormorant Garamond',serif;
+  --font-b:'DM Sans',sans-serif;
+  --font-m:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;padding:40px 20px}
+
+/* ── WRAPPER ── */
+.wrap{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+
+/* ── HEADER ── */
+.header{text-align:center;padding:8px 0 4px}
+.header-label{font-family:var(--font-m);font-size:.72rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.header-title{font-family:var(--font-h);font-size:2.8rem;font-weight:600;line-height:1.1;margin-bottom:10px}
+.header-title em{color:var(--primary);font-style:italic}
+.header-sub{font-size:.95rem;color:var(--muted);max-width:520px;margin:0 auto;line-height:1.6}
+
+/* ── CARDS GRID ── */
+.cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:600px){.cards-grid{grid-template-columns:1fr}}
+
+/* ── CARD BASE ── */
+.plan-card{
+  background:var(--s1);border-radius:18px;padding:28px 26px;
+  display:flex;flex-direction:column;gap:18px;
+  border:1.5px solid var(--border);
+  box-shadow:0 2px 20px rgba(27,191,176,.07);
+}
+
+/* ── CARD — QUIEN REFIERE ── */
+.card-refiere{border-top:4px solid var(--primary)}
+.card-referido{border-top:4px solid var(--gold)}
+
+/* ── CARD HEADER ── */
+.card-who{
+  display:flex;align-items:center;gap:12px;
+}
+.card-icon{
+  width:46px;height:46px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;
+}
+.icon-teal{background:rgba(27,191,176,.12)}
+.icon-gold{background:rgba(217,119,6,.1)}
+.card-who-label{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.card-who-name{font-family:var(--font-h);font-size:1.35rem;font-weight:600;line-height:1.1}
+
+/* ── BENEFICIOS ── */
+.benefits{display:flex;flex-direction:column;gap:12px}
+.benefit{
+  display:flex;align-items:flex-start;gap:12px;
+  background:var(--s2);border-radius:12px;padding:14px 16px;
+}
+.benefit-icon{font-size:1.25rem;flex-shrink:0;margin-top:1px}
+.benefit-label{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.benefit-val{font-weight:700;font-size:1.05rem;line-height:1.25;color:var(--text)}
+.benefit-val.big{font-family:var(--font-h);font-size:1.55rem;color:var(--primary)}
+.benefit-val.big-gold{font-family:var(--font-h);font-size:1.55rem;color:var(--gold)}
+.benefit-desc{font-size:.8rem;color:var(--muted);margin-top:2px;line-height:1.5}
+
+/* ── LÍMITE TAG ── */
+.limit-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(217,119,6,.09);border:1px solid rgba(217,119,6,.25);
+  border-radius:8px;padding:8px 14px;
+  font-size:.8rem;color:#92400e;font-weight:600;
+}
+
+/* ── SEPARADOR CON TEXTO ── */
+.divider{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--font-m);font-size:.7rem;color:var(--muted);
+  font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── HOW IT WORKS ── */
+.steps{
+  background:var(--s1);border-radius:18px;padding:28px 26px;
+  border:1.5px solid var(--border);
+  box-shadow:0 2px 20px rgba(27,191,176,.07);
+}
+.steps-title{font-family:var(--font-h);font-size:1.5rem;font-weight:600;margin-bottom:20px;text-align:center}
+.steps-title em{color:var(--primary);font-style:italic}
+.steps-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:600px){.steps-list{grid-template-columns:1fr}}
+.step{background:var(--s2);border-radius:12px;padding:16px;text-align:center}
+.step-num{
+  width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;
+  font-weight:700;font-size:.88rem;display:flex;align-items:center;justify-content:center;
+  margin:0 auto 10px;
+}
+.step-text{font-size:.83rem;color:var(--text);line-height:1.55}
+.step-text strong{color:var(--primary)}
+
+/* ── FOOTER NOTE ── */
+.footer-note{
+  text-align:center;font-size:.8rem;color:var(--muted);
+  padding:16px 20px;background:var(--s1);border-radius:12px;
+  border:1px solid var(--border);line-height:1.7;
+}
+.footer-note strong{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-label">Jessica Ocampo Fisioterapeuta</div>
+    <h1 class="header-title">Plan de <em>Referidos</em></h1>
+    <p class="header-sub">Comparte tu experiencia y gana. Tú te beneficias, tu amigo también.</p>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards-grid">
+
+    <!-- ── CARD: QUIEN REFIERE ── -->
+    <div class="plan-card card-refiere">
+      <div class="card-who">
+        <div class="card-icon icon-teal">🤝</div>
+        <div>
+          <div class="card-who-label">Para ti que refieres</div>
+          <div class="card-who-name">El que recomienda</div>
+        </div>
+      </div>
+
+      <div class="benefits">
+        <div class="benefit">
+          <div class="benefit-icon">🎁</div>
+          <div>
+            <div class="benefit-label">Bono en tu próxima sesión</div>
+            <div class="benefit-val big">$20.000</div>
+            <div class="benefit-desc">Se aplica como descuento directo en tu próxima cita una vez tu amigo asista.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="limit-tag">
+        ⚠️ Máximo <strong style="margin:0 4px">2 bonos acumulables</strong> por mes
+      </div>
+    </div>
+
+    <!-- ── CARD: QUIEN ES REFERIDO ── -->
+    <div class="plan-card card-referido">
+      <div class="card-who">
+        <div class="card-icon icon-gold">🌟</div>
+        <div>
+          <div class="card-who-label">Para tu amigo referido</div>
+          <div class="card-who-name">El que llega nuevo</div>
+        </div>
+      </div>
+
+      <div class="benefits">
+        <div class="benefit">
+          <div class="benefit-icon">🔍</div>
+          <div>
+            <div class="benefit-label">Valoración gratuita</div>
+            <div class="benefit-val big-gold">15 min gratis</div>
+            <div class="benefit-desc">Valoración inicial sin costo para entender qué necesita su cuerpo.</div>
+          </div>
+        </div>
+
+        <div class="benefit">
+          <div class="benefit-icon">💸</div>
+          <div>
+            <div class="benefit-label">Descuento en su primer servicio</div>
+            <div class="benefit-val big-gold">10% off</div>
+            <div class="benefit-desc">Descuento aplicado sobre el servicio que elija en su primera sesión.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CÓMO FUNCIONA -->
+  <div class="divider">Cómo funciona</div>
+
+  <div class="steps">
+    <h2 class="steps-title">Así de <em>fácil</em></h2>
+    <div class="steps-list">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">Tu amigo agenda su cita y menciona <strong>tu nombre</strong> como quien lo refirió</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">Tu amigo recibe su <strong>valoración de 15 min gratis</strong> y <strong>10% de descuento</strong> en su servicio</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">Tú recibes un <strong>bono de $20.000</strong> para descontar en tu próxima sesión</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTA PIE -->
+  <div class="footer-note">
+    📌 <strong>Condiciones:</strong> El bono del referidor aplica una vez el amigo asista a su primera sesión. Máximo 2 bonos acumulables por mes por persona. El descuento del referido aplica únicamente en la primera sesión. No acumulable con otras promociones.
+  </div>
+
+</div>
+</body>
+</html>
