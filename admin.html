@@ -2883,50 +2883,7 @@ tr:last-child td{ border-bottom: none; }
         <div id="kpiTableroResult"></div>
       </div>
 
-      <!-- ══ ESTRUCTURA FINANCIERA ══ -->
-      <div style="margin-top:28px;margin-bottom:28px">
-        <div class="fin-section-title">🏗️ Estructura Financiera</div>
-
-        <!-- Banner ayuda Estructura Financiera -->
-        <div class="help-banner open" data-help-id="estructura-fin" onclick="toggleHelpBanner(this)">
-          <div class="help-banner-header">
-            <div class="help-banner-title">💡 ¿Qué significan los 3 puntos de equilibrio?</div>
-            <div class="help-banner-toggle">▼</div>
-          </div>
-          <div class="help-banner-body" onclick="event.stopPropagation()">
-            <p class="help-banner-intro">
-              Estos 3 números son tus <strong>líneas rojas financieras</strong>. Te dicen cuánto necesitas
-              vender al mes para sobrevivir, operar tranquila, o ganar la utilidad que quieres.
-            </p>
-            <div class="help-banner-steps">
-              <div class="help-banner-step">
-                <div class="help-banner-step-num">1</div>
-                <div class="help-banner-step-text"><strong>Supervivencia ($8.212.000):</strong> el mínimo para cubrir TODOS los costos del mes. Por debajo, pierdes plata real.</div>
-              </div>
-              <div class="help-banner-step">
-                <div class="help-banner-step-num">2</div>
-                <div class="help-banner-step-text"><strong>Operativo ($8.622.600):</strong> supervivencia + un 5% de colchón para imprevistos. Aquí estás "segura" pero sin ganancia.</div>
-              </div>
-              <div class="help-banner-step">
-                <div class="help-banner-step-num">3</div>
-                <div class="help-banner-step-text"><strong>Meta con utilidad ($10.265.000):</strong> incluye un 20% de ganancia. Es el objetivo real del negocio cada mes.</div>
-              </div>
-              <div class="help-banner-step">
-                <div class="help-banner-step-num">4</div>
-                <div class="help-banner-step-text">El <strong>indicador de progreso</strong> arriba muestra dónde vas hoy en relación a estas 3 metas. <strong>Tu objetivo es siempre llegar al verde.</strong></div>
-              </div>
-            </div>
-            <div class="help-banner-footer">
-              <div class="help-banner-tip">💬 Tip: si en la semana 3 del mes no has llegado al punto operativo, activa promociones o paquetes.</div>
-              <button class="help-banner-link" onclick="showView('guiakpis'); setTimeout(() => { const el = document.querySelectorAll('.gk-kpi-card')[4]; if(el) { el.classList.add('open'); el.scrollIntoView({behavior:'smooth',block:'center'}); } }, 300)">
-                📚 Ver guía completa
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div id="estructuraFinResult"></div>
-      </div>
+      <div id="estructuraFinResult"></div>
 
     </section>
 
@@ -2958,6 +2915,44 @@ tr:last-child td{ border-bottom: none; }
         <p>Un indicador (o KPI) es <strong>un número que te dice si el negocio va bien o mal en algo específico</strong>. Piensa en el tablero de un carro: no necesitas saber cómo funciona el motor, solo necesitas mirar el velocímetro, el combustible y la temperatura.</p>
         <p><strong>La clínica es el carro. Los KPIs son tu tablero.</strong> Sin ellos manejas a ciegas: te das cuenta de los problemas cuando ya es muy tarde.</p>
         <p style="margin-top:12px;font-size:.85rem;color:var(--muted)"><strong>Regla de oro:</strong> los KPIs no son para juzgar a nadie, son para tomar mejores decisiones. Si los reportas con honestidad, todos ganamos.</p>
+      </div>
+
+      <!-- ══ ESTRUCTURA FINANCIERA ══ -->
+      <div style="margin-top:20px;margin-bottom:20px">
+        <div class="gk-section-title">🏗️ Estructura Financiera</div>
+        <div class="help-banner open" data-help-id="estructura-fin" onclick="toggleHelpBanner(this)">
+          <div class="help-banner-header">
+            <div class="help-banner-title">💡 ¿Qué significan los 3 puntos de equilibrio?</div>
+            <div class="help-banner-toggle">▼</div>
+          </div>
+          <div class="help-banner-body" onclick="event.stopPropagation()">
+            <p class="help-banner-intro">
+              Estos 3 números son tus <strong>líneas rojas financieras</strong>. Te dicen cuánto necesitas
+              vender al mes para sobrevivir, operar tranquila, o ganar la utilidad que quieres.
+            </p>
+            <div class="help-banner-steps">
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">1</div>
+                <div class="help-banner-step-text"><strong>Supervivencia ($8.212.000):</strong> el mínimo para cubrir TODOS los costos del mes. Por debajo, pierdes plata real.</div>
+              </div>
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">2</div>
+                <div class="help-banner-step-text"><strong>Operativo ($8.622.600):</strong> supervivencia + un 5% de colchón para imprevistos. Aquí estás "segura" pero sin ganancia.</div>
+              </div>
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">3</div>
+                <div class="help-banner-step-text"><strong>Meta con utilidad ($10.265.000):</strong> incluye un 20% de ganancia. Es el objetivo real del negocio cada mes.</div>
+              </div>
+              <div class="help-banner-step">
+                <div class="help-banner-step-num">4</div>
+                <div class="help-banner-step-text">El <strong>indicador de progreso</strong> arriba muestra dónde vas hoy en relación a estas 3 metas. <strong>Tu objetivo es siempre llegar al verde.</strong></div>
+              </div>
+            </div>
+            <div class="help-banner-footer">
+              <div class="help-banner-tip">💬 Tip: si en la semana 3 del mes no has llegado al punto operativo, activa promociones o paquetes.</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Dashboard live conectado desde Finanzas -->
