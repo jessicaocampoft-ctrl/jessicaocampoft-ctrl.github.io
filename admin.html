@@ -3680,6 +3680,10 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
             <input type="checkbox" id="rck_d3" onchange="toggleRutinaCheck('d3')">
             <span>Sumar los leads desde Indicadores de Gestión (botón ➕ Lead WhatsApp o ➕ Lead Instagram)</span>
           </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('d9')">
+            <input type="checkbox" id="rck_d9" onchange="toggleRutinaCheck('d9')">
+            <span>Verificar que hoy se agendaron al menos 6 sesiones — <strong>priorizar sesiones en sitio</strong> para cumplir la meta mensual</span>
+          </label>
           <label class="gk-check-item" onclick="toggleRutinaCheck('d6')">
             <input type="checkbox" id="rck_d6" onchange="toggleRutinaCheck('d6')">
             <span>Contestar mensajes de nuevos interesados en menos de 10 minutos — estudios muestran que responder en los primeros 10 min aumenta hasta 9× la probabilidad de convertir el lead en cita</span>
@@ -11807,7 +11811,7 @@ function _renderEncuestaStatsUI(stats) {
 }
 
 // ── RUTINA DE MEDICIÓN — checklist tachable con reinicio diario ──
-const RUTINA_IDS = ['d3','d6','d7','d8','s1','s2','s3','s4','s5','s6','s7','m1','m3','m4','m5','m6'];
+const RUTINA_IDS = ['d3','d6','d7','d8','d9','s1','s2','s3','s4','s5','s6','s7','m1','m3','m4','m5','m6'];
 
 function _rutinaKey() {
   const d = new Date();
