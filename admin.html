@@ -3681,25 +3681,9 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
 
         <div class="gk-rutina-grupo">
           <div class="gk-rutina-titulo">☀️ DIARIO (5 minutos al final del día)</div>
-          <label class="gk-check-item" onclick="toggleRutinaCheck('d1')">
-            <input type="checkbox" id="rck_d1" onchange="toggleRutinaCheck('d1')">
-            <span>Verificar que todas las citas del día estén marcadas — atendidas, canceladas (con motivo) o no asistió</span>
-          </label>
-          <label class="gk-check-item" onclick="toggleRutinaCheck('d2')">
-            <input type="checkbox" id="rck_d2" onchange="toggleRutinaCheck('d2')">
-            <span>Registrar el método de pago de cada cita atendida (efectivo, Nequi, Bancolombia, transferencia)</span>
-          </label>
           <label class="gk-check-item" onclick="toggleRutinaCheck('d3')">
             <input type="checkbox" id="rck_d3" onchange="toggleRutinaCheck('d3')">
             <span>Sumar los leads desde Indicadores de Gestión (botón ➕ Lead WhatsApp o ➕ Lead Instagram)</span>
-          </label>
-          <label class="gk-check-item" onclick="toggleRutinaCheck('d4')">
-            <input type="checkbox" id="rck_d4" onchange="toggleRutinaCheck('d4')">
-            <span>Validar que todos los pacientes nuevos tienen teléfono y email en el sistema</span>
-          </label>
-          <label class="gk-check-item" onclick="toggleRutinaCheck('d5')">
-            <input type="checkbox" id="rck_d5" onchange="toggleRutinaCheck('d5')">
-            <span>Si hubo evento: verificar que está registrado en la agenda con su cobro correcto</span>
           </label>
           <label class="gk-check-item" onclick="toggleRutinaCheck('d6')">
             <input type="checkbox" id="rck_d6" onchange="toggleRutinaCheck('d6')">
@@ -11831,7 +11815,7 @@ function _renderEncuestaStatsUI(stats) {
 }
 
 // ── RUTINA DE MEDICIÓN — checklist tachable con reinicio diario ──
-const RUTINA_IDS = ['d1','d2','d3','d4','d5','d6','d7','d8','s1','s2','s3','s4','s5','s6','s7','m1','m2','m3','m4','m5','m6'];
+const RUTINA_IDS = ['d3','d6','d7','d8','s1','s2','s3','s4','s5','s6','s7','m1','m2','m3','m4','m5','m6'];
 
 function _rutinaKey() {
   const d = new Date();
