@@ -3701,6 +3701,18 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
             <input type="checkbox" id="rck_d5" onchange="toggleRutinaCheck('d5')">
             <span>Si hubo evento: verificar que está registrado en la agenda con su cobro correcto</span>
           </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('d6')">
+            <input type="checkbox" id="rck_d6" onchange="toggleRutinaCheck('d6')">
+            <span>Contestar mensajes de nuevos interesados en menos de 10 minutos — estudios muestran que responder en los primeros 10 min aumenta hasta 9× la probabilidad de convertir el lead en cita</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('d7')">
+            <input type="checkbox" id="rck_d7" onchange="toggleRutinaCheck('d7')">
+            <span>Revisar mensajes pendientes del día anterior y contestarlos antes de las 10 a.m.</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('d8')">
+            <input type="checkbox" id="rck_d8" onchange="toggleRutinaCheck('d8')">
+            <span>Enviar mensajes de seguimiento según servicio: pacientes nuevos (siempre al día siguiente) · Valoración Funcional (1 día después) · Descarga Muscular (2 días después) · Readaptación Funcional (1 día después) — cuando el paciente responda, enviar la encuesta de satisfacción</span>
+          </label>
         </div>
 
         <div class="gk-rutina-grupo">
@@ -3724,6 +3736,14 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
           <label class="gk-check-item" onclick="toggleRutinaCheck('s5')">
             <input type="checkbox" id="rck_s5" onchange="toggleRutinaCheck('s5')">
             <span>Si algún KPI está en rojo: ejecutar la acción del Manual de Emergencia</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('s6')">
+            <input type="checkbox" id="rck_s6" onchange="toggleRutinaCheck('s6')">
+            <span>Crear y publicar 4 videos de contenido esta semana (mínimo 1 por red social activa)</span>
+          </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('s7')">
+            <input type="checkbox" id="rck_s7" onchange="toggleRutinaCheck('s7')">
+            <span>Iniciar campaña de recuperación de pacientes inactivos — enviar mensaje personalizado a los que no han vuelto en 30+ días</span>
           </label>
         </div>
 
@@ -11811,7 +11831,7 @@ function _renderEncuestaStatsUI(stats) {
 }
 
 // ── RUTINA DE MEDICIÓN — checklist tachable con reinicio diario ──
-const RUTINA_IDS = ['d1','d2','d3','d4','d5','s1','s2','s3','s4','s5','m1','m2','m3','m4','m5','m6'];
+const RUTINA_IDS = ['d1','d2','d3','d4','d5','d6','d7','d8','s1','s2','s3','s4','s5','s6','s7','m1','m2','m3','m4','m5','m6'];
 
 function _rutinaKey() {
   const d = new Date();
