@@ -1803,13 +1803,13 @@ tr:last-child td{ border-bottom: none; }
 
       <!-- TAB: SERVICIOS -->
       <div id="gTab-servicios">
-        <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;align-items:start">
 
           <!-- Descarga cuello/espalda -->
           <div class="card">
             <div class="card-title" style="color:#0F6E56">💆 Descarga cuello / espalda — $75.000 presencial · $90.000 domicilio</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px">Úsalo cuando el paciente ya pidió info de este servicio</div>
-            <pre id="gMsg-cuello" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:320px;overflow-y:auto">¡Hola! 👋 Con gusto te cuento sobre la *Descarga de Cuello y Espalda* 💆
+            <textarea id="gMsg-cuello" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola! 👋 Con gusto te cuento sobre la *Descarga de Cuello y Espalda* 💆
 
 *¿En qué consiste?*
 Trabajamos directamente sobre los músculos del cuello, trapecios y espalda alta con técnicas de liberación profunda. Punto por punto, hasta que el músculo suelta por completo. Dura aprox. 50 minutos.
@@ -1828,15 +1828,15 @@ Trabajamos directamente sobre los músculos del cuello, trapecios y espalda alta
 💰 *Presencial: $75.000 · A domicilio: $90.000*
 ⏱ Duración: 50 minutos aprox.
 
-¿Te agendamos? 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-cuello',this)">📋 Copiar mensaje</button>
+¿Te agendamos? 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-cuello',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-cuello',this)">📋 Copiar mensaje</button>
           </div>
 
           <!-- Descarga piernas -->
           <div class="card">
             <div class="card-title" style="color:#185FA5">🦵 Descarga piernas — $75.000 presencial · $90.000 domicilio</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px">Úsalo cuando el paciente ya pidió info de este servicio</div>
-            <pre id="gMsg-piernas" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:320px;overflow-y:auto">¡Hola! 👋 Con gusto te cuento sobre la *Descarga de Piernas* 🦵
+            <textarea id="gMsg-piernas" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola! 👋 Con gusto te cuento sobre la *Descarga de Piernas* 🦵
 
 *¿En qué consiste?*
 Liberamos la tensión acumulada en cuádriceps, isquiotibiales, gemelos y glúteos con técnicas manuales y de percusión. Drenamos la fatiga muscular y devolvemos elasticidad a cada músculo. Dura aprox. 50 minutos.
@@ -1854,15 +1854,15 @@ Liberamos la tensión acumulada en cuádriceps, isquiotibiales, gemelos y glúte
 💰 *Presencial: $75.000 · A domicilio: $90.000*
 ⏱ Duración: 50 minutos aprox.
 
-¿Te agendamos? 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-piernas',this)">📋 Copiar mensaje</button>
+¿Te agendamos? 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-piernas',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-piernas',this)">📋 Copiar mensaje</button>
           </div>
 
           <!-- Descarga completa -->
           <div class="card">
             <div class="card-title" style="color:#854F0B">💆‍♀️ Descarga completa — $110.000 presencial · $125.000 domicilio</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px">Úsalo cuando el paciente ya pidió info de este servicio</div>
-            <pre id="gMsg-completa" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:320px;overflow-y:auto">¡Hola! 👋 Con gusto te cuento sobre la *Descarga Completa* 💆‍♀️🦵
+            <textarea id="gMsg-completa" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola! 👋 Con gusto te cuento sobre la *Descarga Completa* 💆‍♀️🦵
 
 *¿En qué consiste?*
 Trabajamos todo el cuerpo en una sola visita — cuello, espalda alta, zona lumbar, glúteos y piernas. Jessica diseña el recorrido según lo que tu cuerpo necesita ese día. Es nuestra sesión más completa y más poderosa. Dura entre 70 y 80 minutos.
@@ -1881,15 +1881,15 @@ Trabajamos todo el cuerpo en una sola visita — cuello, espalda alta, zona lumb
 💰 *Presencial: $110.000 · A domicilio: $125.000*
 ⏱ Duración: 70-80 minutos aprox.
 
-¿Te agendamos? 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-completa',this)">📋 Copiar mensaje</button>
+¿Te agendamos? 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-completa',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-completa',this)">📋 Copiar mensaje</button>
           </div>
 
           <!-- Valoración funcional -->
           <div class="card">
             <div class="card-title" style="color:#533AB7">🔍 Valoración funcional — $80.000 presencial · $95.000 domicilio</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px">Úsalo cuando el paciente ya pidió info de este servicio</div>
-            <pre id="gMsg-valoracion" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:320px;overflow-y:auto">¡Hola! 👋 Con gusto te cuento sobre la *Valoración Funcional* 🔍
+            <textarea id="gMsg-valoracion" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola! 👋 Con gusto te cuento sobre la *Valoración Funcional* 🔍
 
 *¿En qué consiste?*
 Jessica evalúa tu postura, tus patrones de movimiento y tu función muscular con un protocolo clínico completo. Detecta compensaciones y zonas de riesgo antes de que se conviertan en lesión. Al finalizar recibes recomendaciones escritas y personalizadas. Dura aprox. 60 minutos.
@@ -1907,15 +1907,15 @@ Jessica evalúa tu postura, tus patrones de movimiento y tu función muscular co
 💰 *Presencial: $80.000 · A domicilio: $95.000*
 ⏱ Duración: 60 minutos aprox.
 
-¿Te agendamos? 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-valoracion',this)">📋 Copiar mensaje</button>
+¿Te agendamos? 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-valoracion',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-valoracion',this)">📋 Copiar mensaje</button>
           </div>
 
           <!-- Readaptación funcional -->
           <div class="card">
             <div class="card-title" style="color:#3B6D11">🏃 Readaptación funcional — $70.000 presencial · $85.000 domicilio</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px">Úsalo cuando el paciente ya pidió info de este servicio</div>
-            <pre id="gMsg-readaptacion" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:320px;overflow-y:auto">¡Hola! 👋 Con gusto te cuento sobre la *Readaptación Funcional* 🏃
+            <textarea id="gMsg-readaptacion" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola! 👋 Con gusto te cuento sobre la *Readaptación Funcional* 🏃
 
 *¿En qué consiste?*
 Trabajamos los patrones de movimiento que generan dolor o riesgo de lesión — la forma en que caminas, te agachas, entrenas o cargas peso. Jessica corrige cada patrón con ejercicios específicos y técnica supervisada. No es una sesión pasiva: tú participas, aprendes y sales con herramientas para seguir mejorando. Dura aprox. 50 minutos.
@@ -1933,8 +1933,8 @@ Trabajamos los patrones de movimiento que generan dolor o riesgo de lesión — 
 💰 *Presencial: $70.000 · A domicilio: $85.000*
 ⏱ Duración: 50 minutos aprox.
 
-¿Te agendamos? 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-readaptacion',this)">📋 Copiar mensaje</button>
+¿Te agendamos? 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-readaptacion',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-readaptacion',this)">📋 Copiar mensaje</button>
           </div>
 
         </div>
@@ -1942,13 +1942,13 @@ Trabajamos los patrones de movimiento que generan dolor o riesgo de lesión — 
 
       <!-- TAB: PAQUETES -->
       <div id="gTab-paquetes" style="display:none">
-        <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;align-items:start">
 
           <!-- Pack Reset -->
           <div class="card">
             <div class="card-title" style="color:#0F6E56">🟢 Pack Reset — $229.000 presencial · $268.000 domicilio</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:6px">Valoración + Descarga completa + Readaptación · Para quien tiene dolor y quiere resolverlo de raíz</div>
-            <pre id="gMsg-pack1" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:300px;overflow-y:auto">¡Hola! 👋 Con gusto te cuento sobre nuestro *Pack Reset* 🔄
+            <textarea id="gMsg-pack1" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola! 👋 Con gusto te cuento sobre nuestro *Pack Reset* 🔄
 
 Es nuestro paquete más completo para quien tiene dolor y quiere resolverlo de raíz — no solo aliviar el síntoma.
 
@@ -1967,15 +1967,15 @@ Es nuestro paquete más completo para quien tiene dolor y quiere resolverlo de r
 💰 *Presencial: $229.000 · A domicilio: $268.000*
 (Precio normal: $260.000 / $305.000)
 
-¿Te agendamos? 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-pack1',this)">📋 Copiar mensaje</button>
+¿Te agendamos? 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-pack1',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-pack1',this)">📋 Copiar mensaje</button>
           </div>
 
           <!-- Pack Descarga Express -->
           <div class="card">
             <div class="card-title" style="color:#185FA5">🔵 Pack Descarga Express — $198.000 presencial · $238.000 domicilio</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:6px">3 × Descarga cuello/espalda o piernas · Para quien ya me conoce y necesita descargarse</div>
-            <pre id="gMsg-pack2" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:300px;overflow-y:auto">¡Hola! 👋 Con gusto te cuento sobre nuestro *Pack Descarga Express* ⚡
+            <textarea id="gMsg-pack2" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola! 👋 Con gusto te cuento sobre nuestro *Pack Descarga Express* ⚡
 
 Ideal para quien ya sabe lo que funciona y quiere descargarse de forma constante sin pagar sesión por sesión.
 
@@ -1992,15 +1992,15 @@ Ideal para quien ya sabe lo que funciona y quiere descargarse de forma constante
 💰 *Presencial: $198.000 · A domicilio: $238.000*
 (Precio normal: $225.000 / $270.000)
 
-¿Te agendamos? 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-pack2',this)">📋 Copiar mensaje</button>
+¿Te agendamos? 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-pack2',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-pack2',this)">📋 Copiar mensaje</button>
           </div>
 
           <!-- Pack Diagnóstico + Movimiento -->
           <div class="card">
             <div class="card-title" style="color:#854F0B">🟡 Pack Diagnóstico + Movimiento — $194.000 presencial · $233.000 domicilio</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:6px">Valoración + 2 × Readaptación · Para quien quiere saber cómo se mueve y mejorar</div>
-            <pre id="gMsg-pack3" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:300px;overflow-y:auto">¡Hola! 👋 Con gusto te cuento sobre nuestro *Pack Diagnóstico + Movimiento* 🏃
+            <textarea id="gMsg-pack3" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola! 👋 Con gusto te cuento sobre nuestro *Pack Diagnóstico + Movimiento* 🏃
 
 Para quien quiere entender cómo se mueve y mejorarlo — ideal para prevención y rendimiento.
 
@@ -2020,8 +2020,8 @@ Para quien quiere entender cómo se mueve y mejorarlo — ideal para prevención
 💰 *Presencial: $194.000 · A domicilio: $233.000*
 (Precio normal: $220.000 / $265.000)
 
-¿Te agendamos? 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-pack3',this)">📋 Copiar mensaje</button>
+¿Te agendamos? 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-pack3',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-pack3',this)">📋 Copiar mensaje</button>
           </div>
 
         </div>
@@ -2029,13 +2029,13 @@ Para quien quiere entender cómo se mueve y mejorarlo — ideal para prevención
 
       <!-- TAB: MEMBRESÍAS -->
       <div id="gTab-membresias" style="display:none">
-        <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;align-items:start">
 
           <!-- Membresía Esencial -->
           <div class="card">
             <div class="card-title" style="color:#0F6E56">🟢 Membresía Esencial Anual — $660.000 / año ($55.000/mes)</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:6px">Descarga cuello/espalda · 1 sesión mensual · Solo en sitio · Pago único anual</div>
-            <pre id="gMsg-mem1" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:300px;overflow-y:auto">¡Hola! 👋 Con gusto te cuento sobre nuestra *Membresía Esencial Anual* 💚
+            <textarea id="gMsg-mem1" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola! 👋 Con gusto te cuento sobre nuestra *Membresía Esencial Anual* 💚
 
 Para quien quiere mantenerse activo todo el año sin esperar a que vuelva el dolor.
 
@@ -2052,15 +2052,15 @@ Ahorras $240.000 vs pagar sesión por sesión 🎉
 📋 1 sesión mensual · No acumulable · Intransferible
 📅 Vigencia 12 meses desde el pago
 
-¿Te interesa? Con gusto te damos más información 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-mem1',this)">📋 Copiar mensaje</button>
+¿Te interesa? Con gusto te damos más información 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-mem1',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-mem1',this)">📋 Copiar mensaje</button>
           </div>
 
           <!-- Membresía Completa -->
           <div class="card">
             <div class="card-title" style="color:#185FA5">🔵 Membresía Completa Anual — $960.000 / año ($80.000/mes)</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:6px">Descarga completa · 1 sesión mensual · Solo en sitio · Pago único anual</div>
-            <pre id="gMsg-mem2" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:300px;overflow-y:auto">¡Hola! 👋 Con gusto te cuento sobre nuestra *Membresía Completa Anual* 💙
+            <textarea id="gMsg-mem2" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola! 👋 Con gusto te cuento sobre nuestra *Membresía Completa Anual* 💙
 
 Para quien necesita descarga profunda de cuerpo entero y quiere resultados que se mantengan mes a mes.
 
@@ -2077,15 +2077,15 @@ Ahorras $360.000 vs pagar sesión por sesión 🎉
 📋 1 sesión mensual · No acumulable · Intransferible
 📅 Vigencia 12 meses desde el pago
 
-¿Te interesa? Con gusto te ayudamos a elegir 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-mem2',this)">📋 Copiar mensaje</button>
+¿Te interesa? Con gusto te ayudamos a elegir 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-mem2',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-mem2',this)">📋 Copiar mensaje</button>
           </div>
 
           <!-- Membresía Valoración + Seguimiento -->
           <div class="card">
             <div class="card-title" style="color:#854F0B">🟡 Membresía Valoración + Seguimiento — $696.000 / año ($58.000/mes)</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:6px">Valoración funcional + seguimiento WhatsApp · 1 sesión mensual · Solo en sitio</div>
-            <pre id="gMsg-mem3" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:300px;overflow-y:auto">¡Hola! 👋 Con gusto te cuento sobre nuestra *Membresía Valoración + Seguimiento* 🔍
+            <textarea id="gMsg-mem3" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola! 👋 Con gusto te cuento sobre nuestra *Membresía Valoración + Seguimiento* 🔍
 
 Para quien quiere monitorear su movimiento mes a mes y recibir orientación continua personalizada.
 
@@ -2102,8 +2102,8 @@ Ahorras $264.000 vs pagar sesión por sesión 🎉
 📋 1 sesión mensual · No acumulable · Intransferible
 📅 Vigencia 12 meses desde el pago
 
-¿Te interesa? Con gusto te contamos más 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-mem3',this)">📋 Copiar mensaje</button>
+¿Te interesa? Con gusto te contamos más 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-mem3',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-mem3',this)">📋 Copiar mensaje</button>
           </div>
 
         </div>
@@ -2111,7 +2111,7 @@ Ahorras $264.000 vs pagar sesión por sesión 🎉
 
       <!-- TAB: RECUPERACIÓN -->
       <div id="gTab-recuperacion" style="display:none">
-        <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;align-items:start">
 
           <div style="background:var(--s2);border-left:3px solid var(--primary);border-radius:0 8px 8px 0;padding:10px 14px;font-size:.85rem;color:var(--muted)">
             <strong style="color:var(--text)">⚠️ Regla de oro:</strong> Reemplaza siempre los campos entre [corchetes] antes de enviar. Un mensaje con corchetes vacíos destruye la credibilidad.
@@ -2126,7 +2126,7 @@ Ahorras $264.000 vs pagar sesión por sesión 🎉
           <div class="card">
             <div class="card-title">Opción A — Guión profesional con seguimiento <span style="font-size:.75rem;font-weight:400;color:#0F6E56">(Recomendada)</span></div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Úsalo: 4-8 semanas después de la última sesión</div>
-            <pre id="gMsg-rec1a" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:280px;overflow-y:auto">Hola [Nombre], te habla [Nombre auxiliar] del equipo de Jessica Ocampo Fisioterapeuta 👋
+            <textarea id="gMsg-rec1a" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">Hola [Nombre], te habla [Nombre auxiliar] del equipo de Jessica Ocampo Fisioterapeuta 👋
 
 Revisando tu proceso de evolución, vemos que han pasado [X semanas/meses] desde tu última sesión de [Descarga / Readaptación].
 
@@ -2138,14 +2138,14 @@ Por eso, esta semana estamos habilitando agendas de *Mantenimiento Preventivo*.
 
 Tenemos un espacio disponible el [Día] a las [Hora]. Si agendas hoy, incluimos un *tip personalizado de movilidad* para tu oficina o rutina de entrenamiento — sin costo adicional 😊
 
-¿Te lo reservamos?</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec1a',this)">📋 Copiar mensaje</button>
+¿Te lo reservamos?</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-rec1a',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec1a',this)">📋 Copiar mensaje</button>
           </div>
 
           <div class="card">
             <div class="card-title">Opción B — Versión cálida y breve</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Úsalo: cuando hay confianza con el paciente</div>
-            <pre id="gMsg-rec1b" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:280px;overflow-y:auto">¡Hola [Nombre]! 😊 Soy [Nombre auxiliar], del equipo de Jessica Ocampo.
+            <textarea id="gMsg-rec1b" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola [Nombre]! 😊 Soy [Nombre auxiliar], del equipo de Jessica Ocampo.
 
 ¿Cómo has estado desde tu última sesión? Queríamos saber cómo sigue el cuerpo 💙
 
@@ -2153,14 +2153,14 @@ Muchos pacientes que terminan su proceso con nosotros se sienten muy bien al ini
 
 Mantenerlo así de bien es mucho más fácil que recuperarse cuando ya todo duele 😊
 
-¿Te agendamos una sesión de mantenimiento esta semana? Tenemos disponibilidad y con gusto te guardamos el espacio.</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec1b',this)">📋 Copiar mensaje</button>
+¿Te agendamos una sesión de mantenimiento esta semana? Tenemos disponibilidad y con gusto te guardamos el espacio.</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-rec1b',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec1b',this)">📋 Copiar mensaje</button>
           </div>
 
           <div class="card">
             <div class="card-title">Opción C — Con oferta de membresía anual</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Úsalo: cuando quieres convertirlo en miembro</div>
-            <pre id="gMsg-rec1c" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:280px;overflow-y:auto">Hola [Nombre], te habla [Nombre auxiliar] del equipo de Jessica Ocampo 👋
+            <textarea id="gMsg-rec1c" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">Hola [Nombre], te habla [Nombre auxiliar] del equipo de Jessica Ocampo 👋
 
 ¡Qué bueno que tu recuperación fue tan rápida! Eso dice mucho de tu disciplina y de tu cuerpo 💪
 
@@ -2175,8 +2175,8 @@ Queríamos contarte que lanzamos nuestra *Membresía Anual de Mantenimiento* —
 ✅ Cupo fijo reservado todo el año
 ✅ Solo en sitio · No acumulable · Intransferible
 
-¿Quieres que te contemos más? Con gusto te ayudamos a elegir la que mejor se adapta a ti 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec1c',this)">📋 Copiar mensaje</button>
+¿Quieres que te contemos más? Con gusto te ayudamos a elegir la que mejor se adapta a ti 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-rec1c',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec1c',this)">📋 Copiar mensaje</button>
           </div>
 
           <!-- GUIÓN 2 -->
@@ -2188,7 +2188,7 @@ Queríamos contarte que lanzamos nuestra *Membresía Anual de Mantenimiento* —
           <div class="card">
             <div class="card-title">Opción A — Guión profesional con seguimiento <span style="font-size:.75rem;font-weight:400;color:#185FA5">(Recomendada)</span></div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Úsalo: cuando lleva 2-4 meses sin venir</div>
-            <pre id="gMsg-rec2a" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:280px;overflow-y:auto">Hola [Nombre], te habla [Nombre auxiliar] del equipo de Jessica Ocampo Fisioterapeuta 👋
+            <textarea id="gMsg-rec2a" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">Hola [Nombre], te habla [Nombre auxiliar] del equipo de Jessica Ocampo Fisioterapeuta 👋
 
 Revisando tu historial, vemos que han pasado [X meses] desde tu última sesión de [Descarga / Readaptación / Valoración].
 
@@ -2200,14 +2200,14 @@ Esta semana estamos habilitando agendas de *Reactivación* especialmente para pa
 
 Tenemos un espacio el [Día] a las [Hora]. Si agendas hoy, incluimos un *tip personalizado de movilidad* para tu rutina actual — sin costo adicional 😊
 
-¿Te lo reservamos?</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec2a',this)">📋 Copiar mensaje</button>
+¿Te lo reservamos?</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-rec2a',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec2a',this)">📋 Copiar mensaje</button>
           </div>
 
           <div class="card">
             <div class="card-title">Opción B — Versión con pregunta activadora</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Úsalo: cuando lleva más de 3 meses sin venir</div>
-            <pre id="gMsg-rec2b" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:280px;overflow-y:auto">¡Hola [Nombre]! 😊 Soy [Nombre auxiliar], del equipo de Jessica Ocampo.
+            <textarea id="gMsg-rec2b" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">¡Hola [Nombre]! 😊 Soy [Nombre auxiliar], del equipo de Jessica Ocampo.
 
 Llevamos un tiempo sin verte por acá y queríamos saber cómo estás 💙
 
@@ -2215,14 +2215,14 @@ Llevamos un tiempo sin verte por acá y queríamos saber cómo estás 💙
 
 Si sientes que ya es hora de volverte a dar ese espacio, aquí estamos. Tenemos disponibilidad esta semana y con gusto te agendamos.
 
-¿Qué días tienes disponibles? 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec2b',this)">📋 Copiar mensaje</button>
+¿Qué días tienes disponibles? 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-rec2b',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec2b',this)">📋 Copiar mensaje</button>
           </div>
 
           <div class="card">
             <div class="card-title">Opción C — Con paquete de reactivación</div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">Úsalo: cuando lleva muchos meses y necesita un punto de reentrada con precio concreto</div>
-            <pre id="gMsg-rec2c" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;max-height:280px;overflow-y:auto">Hola [Nombre], te habla [Nombre auxiliar] del equipo de Jessica Ocampo 👋
+            <textarea id="gMsg-rec2c" style="white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);font-size:.88rem;background:var(--s2);border-radius:8px;padding:12px;border:1px solid var(--border);line-height:1.7;overflow:hidden;resize:none;cursor:default" oninput="gAutoGuardar(this.id)" readonly spellcheck="false">Hola [Nombre], te habla [Nombre auxiliar] del equipo de Jessica Ocampo 👋
 
 ¡Hace rato no sabemos de ti! Esperamos que estés muy bien 😊
 
@@ -2236,8 +2236,8 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
 💰 *Presencial: $229.000* (precio normal: $260.000)
 ⏱ Válido por 60 días
 
-¿Te interesa? Tenemos espacio el [Día] a las [Hora] 😊</pre>
-            <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec2c',this)">📋 Copiar mensaje</button>
+¿Te interesa? Tenemos espacio el [Día] a las [Hora] 😊</textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;margin-right:6px" onclick="gEditarToggle('gMsg-rec2c',this)">✏️ Editar</button><button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="gCopiar('gMsg-rec2c',this)">📋 Copiar mensaje</button>
           </div>
 
         </div>
@@ -5386,6 +5386,12 @@ function showView(v) {
   if (fab) fab.style.display = v === 'nueva' ? 'none' : 'flex';
   // Mobile bottom nav: sincronizar activo
   _syncMobileNav(v);
+
+  if (v === 'guioneswa') {
+    requestAnimationFrame(() => {
+      document.querySelectorAll('textarea[id^="gMsg-"]').forEach(gFitHeight);
+    });
+  }
 
   if (v === 'agenda') {
     const _saved = sessionStorage.getItem('agendaFilters');
@@ -15711,6 +15717,51 @@ function copiarMensajePre(id) {
 }
 
 // ── GUIONES WA ──
+function gEditarToggle(id, btn) {
+  const ta = document.getElementById(id);
+  if (!ta) return;
+  const editing = ta.readOnly;
+  if (editing) {
+    ta.readOnly = false;
+    ta.style.background = 'var(--bg, #fff)';
+    ta.style.cursor = 'text';
+    ta.style.border = '2px solid var(--primary, #0ea5e9)';
+    ta.style.outline = 'none';
+    btn.textContent = '✕ Cerrar edición';
+    btn.classList.remove('btn-ghost');
+    btn.classList.add('btn-teal');
+    ta.focus();
+  } else {
+    ta.readOnly = true;
+    ta.style.background = 'var(--s2)';
+    ta.style.cursor = 'default';
+    ta.style.border = '1px solid var(--border)';
+    btn.textContent = '✏️ Editar';
+    btn.classList.remove('btn-teal');
+    btn.classList.add('btn-ghost');
+    gAutoGuardar(id);
+  }
+}
+
+function gAutoGuardar(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  gFitHeight(el);
+  localStorage.setItem('gMsg_' + id, el.value);
+}
+function gFitHeight(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+}
+function gCargarGuardados() {
+  document.querySelectorAll('textarea[id^="gMsg-"]').forEach(el => {
+    const saved = localStorage.getItem('gMsg_' + el.id);
+    if (saved !== null) el.value = saved;
+    gFitHeight(el);
+  });
+}
+document.addEventListener('DOMContentLoaded', gCargarGuardados);
+
 function gTabSwitch(tab) {
   ['servicios','paquetes','membresias','recuperacion'].forEach(t => {
     const el = document.getElementById('gTab-' + t);
@@ -15722,7 +15773,7 @@ function gTabSwitch(tab) {
   });
 }
 function gCopiar(id, btn) {
-  const txt = document.getElementById(id).innerText;
+  const el = document.getElementById(id); const txt = el.tagName === "TEXTAREA" ? el.value : el.innerText;
   navigator.clipboard.writeText(txt).then(() => {
     const orig = btn.textContent;
     btn.textContent = '✅ Copiado';
