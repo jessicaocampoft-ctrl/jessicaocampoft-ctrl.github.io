@@ -6104,7 +6104,7 @@ function waLink(tel, nombre, fecha, hora, serv, precio, modalidad) {
     ? '*' + serv + '* — ' + ordinalES(infoSes.numero) + ' sesion de ' + infoSes.total
     : '*' + serv + '*';
   const lines = [
-    'Hola ' + waNombre(nombre) + '! Tu cita esta confirmada \u2705',
+    'Hola ' + waNombre(nombre) + '! Te escribo para confirmar tu cita \ud83d\udccb',
     '',
     servLine,
     '' + waFechaES(fecha) + ' · ' + waAmPm(hora),
@@ -6124,8 +6124,11 @@ function waLink(tel, nombre, fecha, hora, serv, precio, modalidad) {
   }
   lines.push(
     '',
-    'Cualquier duda me avisas. Hasta pronto! \uD83D\uDE0A',
-    '— Jessica Ocampo Fisioterapeuta'
+    'Respóndeme:',
+    '✅ *1* — Sí confirmo mi asistencia',
+    '❌ *2* — Necesito cancelar o cambiar el horario',
+    '',
+    'Gracias! — Jessica Ocampo Fisioterapeuta'
   );
   return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(lines.join('\n'));
 }
@@ -15582,7 +15585,7 @@ function _setMensajesPre(arr) { kvSet('mensajes_pre', JSON.stringify(arr)); }
 
 const _MSG_DEFAULTS = [
   { id:'def1', cat:'recordatorio',   titulo:'Confirmación de cita',
-    texto:'Hola {nombre}! Tu cita está confirmada ✅\n\n*{servicio}*\n{fecha} · {hora}\n📍 En sitio\n\nCualquier duda me avisas. Hasta pronto! 😊\n— Jessica Ocampo Fisioterapeuta', created:0 },
+    texto:'Hola {nombre}! Te escribo para confirmar tu cita 📋\n\n*{servicio}*\n{fecha} · {hora}\n📍 En sitio\n\nResponde:\n✅ *1* — Sí confirmo mi asistencia\n❌ *2* — Necesito cancelar o cambiar el horario\n\nGracias! — Jessica Ocampo Fisioterapeuta', created:0 },
   { id:'def2', cat:'recordatorio',   titulo:'Recordatorio de cita (día anterior)',
     texto:'Hola {nombre}! 👋 Te recuerdo tu cita de *{servicio}* mañana {fecha} a las {hora}. Recuerda llegar unos minutos antes con ropa cómoda. 💪\n\nCualquier duda me avisas. — Jessica Ocampo Fisioterapeuta', created:0 },
   { id:'def3', cat:'seguimiento',    titulo:'Post-sesión — Descarga muscular',
