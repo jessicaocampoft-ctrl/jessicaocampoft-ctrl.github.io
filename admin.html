@@ -3493,7 +3493,7 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
             <div class="gk-kpi-name">KPI 1 — Volumen de Pacientes Atendidos</div>
             <div class="gk-kpi-summary">Cuántas sesiones reales se hacen por día, semana y mes. Solo cuentan las atendidas (NO canceladas ni "no asistió").</div>
           </div>
-          <div class="gk-kpi-meta">Meta: ≥24/semana</div>
+          <div class="gk-kpi-meta">Meta: ≥30/semana</div>
           <div class="gk-kpi-toggle">▼</div>
         </div>
         <div class="gk-kpi-body">
@@ -3501,16 +3501,16 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
           <div class="gk-formula">Diario: cuenta de citas atendidas hoy
 Semanal: suma de citas atendidas lunes a domingo
 Mensual: suma del 1 al último día del mes</div>
-          <h5>Por qué la meta es 24 sesiones/semana</h5>
-          <p>Es el <strong>punto de equilibrio operativo</strong>: por debajo de eso, la clínica pierde plata. El cálculo viene de: 104 sesiones/mes ÷ 4.3 semanas ≈ 24/semana.</p>
+          <h5>Por qué la meta es 30 sesiones/semana</h5>
+          <p>Es el <strong>punto de equilibrio operativo</strong>: por debajo de eso, la clínica pierde plata. El cálculo viene de: 129 sesiones/mes ÷ 4.3 semanas ≈ 30/semana.</p>
           <h5>Cómo se lee</h5>
           <div class="gk-semaforo">
-            <div class="gk-sem-item verde">🟢 ≥24 — Operación sostenible</div>
-            <div class="gk-sem-item amarillo">🟡 18–23 — Alerta</div>
-            <div class="gk-sem-item rojo">🔴 &lt;18 — Semana floja</div>
+            <div class="gk-sem-item verde">🟢 ≥30 — Operación sostenible</div>
+            <div class="gk-sem-item amarillo">🟡 24–29 — Alerta</div>
+            <div class="gk-sem-item rojo">🔴 &lt;24 — Semana floja</div>
           </div>
           <h5>Ejemplo</h5>
-          <div class="gk-ejemplo">Si esta semana atendiste <strong>18 sesiones</strong>, el indicador se pone amarillo. Aún puedes corregir: <strong>activa el plan de referidos, pauta extra, recontacta pacientes inactivos.</strong></div>
+          <div class="gk-ejemplo">Si esta semana atendiste <strong>25 sesiones</strong>, el indicador se pone amarillo. Aún puedes corregir: <strong>activa el plan de referidos, pauta extra, recontacta pacientes inactivos.</strong></div>
         </div>
       </div>
 
@@ -3845,7 +3845,7 @@ Notas 1–3  →  DETRACTORES  — Tuvieron una mala experiencia</div>
               <span class="em-carr">▼</span>
             </div>
             <div class="em-card-body" id="emBody_sesiones">
-              <div class="em-symptom">💡 Agenda floja — la clínica no llega al punto de equilibrio operativo. Por debajo de 18 sesiones/semana el margen financiero se erosiona rápidamente.</div>
+              <div class="em-symptom">💡 Agenda floja — la clínica no llega al punto de equilibrio operativo. Por debajo de 24 sesiones/semana el margen financiero se erosiona rápidamente.</div>
               <div class="em-prog-meta" id="emPM_sesiones">0 de 4 pasos completados</div>
               <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_sesiones" style="width:0%"></div></div>
               <div class="em-steps">
@@ -12882,8 +12882,8 @@ function renderEstructuraFinanciera() {
       </div>
       <div style="padding:12px;background:var(--s2);border-radius:10px">
         <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-m)">Punto equilibrio en sesiones</div>
-        <div style="font-size:1.1rem;font-weight:700;font-family:var(--font-h)">104 sesiones/mes</div>
-        <div style="font-size:.72rem;color:var(--muted)">~24/sem · Ticket prom. $83.000</div>
+        <div style="font-size:1.1rem;font-weight:700;font-family:var(--font-h)">129 sesiones/mes</div>
+        <div style="font-size:.72rem;color:var(--muted)">~30/sem · Ticket prom. $83.000</div>
       </div>
     </div>
   </div>`;
