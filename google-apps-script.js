@@ -1793,7 +1793,7 @@ function getEncuestaStats_() {
       promotores:  promotores,
       pasivos:     pasivos,
       detractores: detractores,
-      nps: total > 0 ? Math.round((promotores / total - detractores / total) * 100) : null,
+      nps: (npsItem && total > 0) ? Math.round((promotores / total - detractores / total) * 100) : null,
       npsItemEncontrado: npsItem ? npsItem.getTitle() : 'NO ENCONTRADO'
     };
   } catch(e) { return { ok: false, error: e.toString() }; }

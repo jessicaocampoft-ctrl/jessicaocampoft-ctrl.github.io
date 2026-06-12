@@ -12212,8 +12212,14 @@ function renderKPIGuia() {
   html += _kpiCardGuia('📣', 'Leads este mes',          leadsShow || '—',                         40,              '',   true,  '40–50 leads',             undefined, 'gkKpi3');
   html += _kpiCardGuia('🎯', 'Tasa de conversión',      tasaConv !== null ? tasaConv+'%' : '—',   25,              '%',  true,  '25–35%',                  undefined, 'gkKpi4');
   html += _kpiCardGuia('💰', esMesActual ? 'Ventas mes actual' : 'Ventas del mes', fmtPeso(ventasMes), META_VENTAS_MES, '', true, fmtPeso(META_VENTAS_MES), undefined, 'gkKpi5');
-  html += _kpiCardGuia('📋', 'Encuestas realizadas',    encuestas !== null ? encuestas+'%' : '—', META_ENCUESTAS,  '%',  true,  `>${META_ENCUESTAS}%`,     undefined, 'gkKpi6');
-  html += _kpiCardGuia('⭐', 'NPS último mes',          nps !== null ? nps : '—',                 META_NPS,        '',   true,  `>${META_NPS}`,            undefined, 'gkKpi7');
+  const _encMetaGuia = _encStatsG.totalRespuestas !== undefined
+    ? `${_encStatsG.totalRespuestas} resp. / ${_encStatsG.citasMes} citas`
+    : `>${META_ENCUESTAS}%`;
+  html += _kpiCardGuia('📋', 'Encuestas realizadas',    encuestas !== null ? encuestas+'%' : '—', META_ENCUESTAS,  '%',  true,  _encMetaGuia,              undefined, 'gkKpi6');
+  const _npsMetaGuia = (_encStatsG.promotores !== undefined && nps !== null)
+    ? `${_encStatsG.promotores}P · ${_encStatsG.pasivos}Pa · ${_encStatsG.detractores}D`
+    : `>${META_NPS}`;
+  html += _kpiCardGuia('⭐', 'NPS último mes',          nps !== null ? nps : '—',                 META_NPS,        '',   true,  _npsMetaGuia,              undefined, 'gkKpi7');
   const _bdLabel = _bdGuia ? `${_bdGuia.completos}/${_bdGuia.total}` : '—';
   html += _kpiCardGuia('🗄️', `BD actualizada (${_bdLabel} pac.)`, bd + '%', 100, '%', true, '100%',              undefined, 'gkKpi8');
   html += _kpiCardGuia('❌', 'Cancelaciones mes',       tasaCancel + '%',                         META_CANCELACION_PCT, '%', false, `<${META_CANCELACION_PCT}%`, undefined, 'gkKpi4b');
@@ -12506,7 +12512,7 @@ async function loadEncuestaStats() {
         return +cm===m && +cy===y;
       }).length;
       const encPct  = citasMes > 0 ? Math.round((d.totalMes / citasMes) * 100) : 0;
-      const npsVal  = d.nps !== null ? d.nps : 0;
+      const npsVal  = (d.nps !== null && d.nps !== undefined) ? d.nps : null;
       const stats   = {
         nps: npsVal, encuestas: encPct,
         totalRespuestas: d.totalMes, citasMes,
@@ -12516,12 +12522,12 @@ async function loadEncuestaStats() {
       kvSet('encuestaStats', JSON.stringify(stats));
       // Actualizar inputs ocultos y guardar
       const sv = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
-      sv('kpiNPS', npsVal); sv('kpiEncuestas', encPct);
+      sv('kpiNPS', npsVal !== null ? npsVal : ''); sv('kpiEncuestas', encPct);
       guardarKPIManual();
       _renderEncuestaStatsUI(stats);
       renderKPITablero();
       renderKPIGuia();
-      toast(`✅ NPS: ${npsVal} · Encuestas: ${encPct}% · ${d.totalMes} respuestas este mes`, 'ok');
+      toast(`✅ NPS: ${npsVal !== null ? npsVal : '—'} · Encuestas: ${encPct}% · ${d.totalMes} respuestas este mes`, 'ok');
     } else {
       toast('Error al leer el formulario: ' + (d.error || 'verifica el GAS'), 'err');
     }
@@ -12530,14 +12536,16 @@ async function loadEncuestaStats() {
 }
 
 function _renderEncuestaStatsUI(stats) {
-  if (!stats || stats.nps === undefined) return;
-  const colorNPS  = stats.nps  >= META_NPS       ? 'var(--ok)' : stats.nps  >= 70 ? '#f59e0b' : '#ef4444';
+  if (!stats || (stats.nps === undefined && stats.encuestas === undefined)) return;
+  const npsOk     = stats.nps !== null && stats.nps !== undefined;
+  const colorNPS  = npsOk ? (stats.nps >= META_NPS ? 'var(--ok)' : stats.nps >= 70 ? '#f59e0b' : '#ef4444') : 'var(--muted)';
   const colorEnc  = stats.encuestas >= META_ENCUESTAS ? 'var(--ok)' : '#f59e0b';
   const npsEl     = document.getElementById('kpiNPSAutoTag');
   const encEl     = document.getElementById('kpiEncuestasAutoTag');
-  if (npsEl) npsEl.innerHTML =
-    `<span style="font-size:1rem;font-weight:700;color:${colorNPS}">${stats.nps}</span>`+
-    ` <span style="color:var(--muted);font-size:.75rem">· ${stats.promotores}P / ${stats.pasivos}Pa / ${stats.detractores}D</span>`;
+  if (npsEl) npsEl.innerHTML = npsOk
+    ? `<span style="font-size:1rem;font-weight:700;color:${colorNPS}">${stats.nps}</span>`+
+      ` <span style="color:var(--muted);font-size:.75rem">· ${stats.promotores}P / ${stats.pasivos}Pa / ${stats.detractores}D</span>`
+    : `<span style="font-size:.88rem;color:var(--muted)">Sin respuestas este mes · ${stats.totalRespuestas || 0} resp.</span>`;
   if (encEl) encEl.innerHTML =
     `<span style="font-size:1rem;font-weight:700;color:${colorEnc}">${stats.encuestas}%</span>`+
     ` <span style="color:var(--muted);font-size:.75rem">· ${stats.totalRespuestas} resp. / ${stats.citasMes} citas</span>`;
