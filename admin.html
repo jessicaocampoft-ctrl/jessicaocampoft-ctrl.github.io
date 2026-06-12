@@ -3810,6 +3810,48 @@ Notas 0–3    →  DETRACTORES  — Tuvieron una mala experiencia</div>
         </div>
       </div>
 
+      <div class="gk-kpi-card" id="gkKpi9" onclick="toggleKPICard(this)">
+        <div class="gk-kpi-header">
+          <div class="gk-kpi-left">
+            <div class="gk-kpi-name">KPI 9 — Retención 60 Días</div>
+            <div class="gk-kpi-summary">De los pacientes atendidos en los últimos 60 días, cuántos volvieron al menos una segunda vez. <strong>Es el indicador de fidelización real.</strong></div>
+          </div>
+          <div class="gk-kpi-meta">Meta: &gt;60%</div>
+          <div class="gk-kpi-toggle">▼</div>
+        </div>
+        <div class="gk-kpi-body">
+          <h5>Cómo se calcula</h5>
+          <div class="gk-formula">Retención 60 días = (Pacientes con ≥2 sesiones en ventana 60 días ÷ Total pacientes atendidos en esa ventana) × 100</div>
+          <h5>Por qué la meta es &gt;60%</h5>
+          <p>En fisioterapia, la mayoría de los tratamientos requieren múltiples sesiones para generar resultados clínicos. Si más del 40% de los pacientes solo asiste <strong>una vez y no vuelve</strong>, el negocio está perdiendo ingresos recurrentes y el paciente está perdiendo su proceso de recuperación.</p>
+          <p>Una retención por encima del 60% indica que los pacientes confían en el tratamiento, perciben resultados y mantienen el compromiso. Por debajo del 40%, es señal de que algo falla: precio, expectativa, experiencia o seguimiento post-sesión.</p>
+          <h5>Qué cuenta como "retención"</h5>
+          <div class="gk-ejemplo">✅ Un paciente que tuvo sesión el 10 de abril y volvió el 28 de abril → <strong>SÍ retiene</strong>
+✅ Un paciente con paquete que usa múltiples citas → <strong>SÍ retiene</strong>
+❌ Un paciente que vino una sola vez en 60 días → <strong>NO retiene</strong>
+❌ Un lead que nunca llegó a cita → <strong>No aplica</strong></div>
+          <h5>Por qué 60 días y no 30</h5>
+          <p>Los tratamientos de recuperación física suelen tener una duración de 4 a 12 semanas. Una ventana de 60 días captura el ciclo completo sin excluir pacientes que agendan con menor frecuencia (quincenal o mensual).</p>
+          <h5>Cómo se lee</h5>
+          <div class="gk-semaforo">
+            <div class="gk-sem-item verde">🟢 ≥60% — Fidelización sana, los pacientes completan su tratamiento</div>
+            <div class="gk-sem-item amarillo">🟡 40–59% — Riesgo de abandono, reforzar seguimiento post-sesión</div>
+            <div class="gk-sem-item rojo">🔴 &lt;40% — Abandono masivo: revisar experiencia, precio o proceso de agendamiento</div>
+          </div>
+          <h5>Ejemplo</h5>
+          <div class="gk-ejemplo">En los últimos 60 días se atendieron <strong>24 pacientes únicos</strong>.
+De esos, <strong>10 tuvieron ≥2 sesiones</strong>.
+Retención = 10 ÷ 24 × 100 = <strong>42%</strong> → 🟡 Alerta
+
+Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una vez.</div>
+          <h5>Qué hacer cuando está en rojo o amarillo</h5>
+          <div class="gk-ejemplo">1. Identificar qué pacientes solo vinieron una vez → usar la lista "Solo 1 sesión" del tablero
+2. Enviar mensaje personalizado desde Guiones WA → Recuperación de pacientes
+3. Revisar si el plan de tratamiento quedó claro al final de la sesión
+4. Preguntar: ¿el paciente sintió mejoría en la primera sesión? Si no, revisar protocolo</div>
+        </div>
+      </div>
+
       <!-- MANUAL DE EMERGENCIA -->
       <div class="gk-section-title">🚨 Manual de Emergencia: ¿Qué hago si...?</div>
       <p style="font-size:.9rem;color:var(--muted);margin-bottom:14px">Cuando un KPI sale rojo, no entres en pánico. <strong>Los semáforos son en tiempo real</strong> — conectados a tus datos. Abre la dimensión con alertas y ejecuta los pasos uno por uno.</p>
@@ -11959,7 +12001,7 @@ function renderKPIGuia() {
   const _bdLabel = _bdGuia ? `${_bdGuia.completos}/${_bdGuia.total}` : '—';
   html += _kpiCardGuia('🗄️', `BD actualizada (${_bdLabel} pac.)`, bd + '%', 100, '%', true, '100%',              undefined, 'gkKpi8');
   html += _kpiCardGuia('❌', 'Cancelaciones mes',       tasaCancel + '%',                         META_CANCELACION_PCT, '%', false, `<${META_CANCELACION_PCT}%`, undefined, 'gkKpi4b');
-  html += _kpiCardGuia('🔁', 'Retención 60 días',       tasaRet + '%',                            META_RETENCION_PCT,   '%', true,  `>${META_RETENCION_PCT}%`,   undefined, 'gkKpi1');
+  html += _kpiCardGuia('🔁', 'Retención 60 días',       tasaRet + '%',                            META_RETENCION_PCT,   '%', true,  `>${META_RETENCION_PCT}%`,   undefined, 'gkKpi9');
   const _mkPacList = (id, icon, label, count, lista, color) => {
     const items = lista.map(n => `<div style="font-size:.75rem;color:var(--text);padding:3px 0;border-bottom:1px solid var(--border)">${n}</div>`).join('');
     return `<div style="padding:14px 16px;background:var(--s2);border-radius:12px;border:1px solid ${color}33;border-left:3px solid ${color}">
