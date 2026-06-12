@@ -1470,6 +1470,11 @@ tr:last-child td{ border-bottom: none; }
       Guiones WA
     </button>
 
+    <button class="sb-link" id="sb-recuperacion" data-tooltip="Recuperación de Pacientes" onclick="showView('recuperacion')" style="color:#f59e0b;font-weight:600">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      Recuperación
+    </button>
+
     <div class="sb-sep"></div>
 
     <a class="sb-link" href="evaluacion.html" target="_blank" style="color:#7c3aed">
@@ -4786,6 +4791,132 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
 
     </section>
 
+    <!-- ══ RECUPERACIÓN DE PACIENTES ══ -->
+    <section id="vRecuperacion" style="display:none">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Recuperación de <em>Pacientes</em></h1>
+          <p class="page-sub">Rastrea las ventas generadas al recuperar pacientes inactivos — comisión del 5% para la auxiliar</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <select id="recMesFiltro" onchange="renderRecuperaciones()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;padding:8px 12px;outline:none;cursor:pointer"></select>
+        </div>
+      </div>
+
+      <!-- Resumen del mes -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:20px">
+        <div style="background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Recuperaciones</div>
+          <div id="recResTotal" style="font-size:1.7rem;font-family:var(--font-h);font-weight:700;color:var(--primary)">0</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px">pacientes este mes</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Ventas recuperadas</div>
+          <div id="recResVentas" style="font-size:1.7rem;font-family:var(--font-h);font-weight:700;color:var(--text)">$0</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px">ingresos recuperados</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Comisión ganada (5%)</div>
+          <div id="recResComision" style="font-size:1.7rem;font-family:var(--font-h);font-weight:700;color:#10b981">$0</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px">para la auxiliar</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Pendiente de pago</div>
+          <div id="recResPendiente" style="font-size:1.7rem;font-family:var(--font-h);font-weight:700;color:#f59e0b">$0</div>
+          <button id="recBtnPagarTodo" onclick="pagarTodasComisiones()" style="margin-top:6px;padding:4px 12px;background:#f59e0b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.72rem;font-family:var(--font-b);display:none">✓ Marcar todo pagado</button>
+        </div>
+      </div>
+
+      <!-- Explicación -->
+      <div style="background:linear-gradient(135deg,#fef3c7,#fde68a20);border:1px solid #fde68a;border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:.83rem;color:var(--text);line-height:1.55">
+        <strong>¿Cómo funciona?</strong> Cuando la auxiliar contacta a un paciente que no ha vuelto en 2–3 meses y logra que agende una cita, se registra aquí la venta. La auxiliar gana el <strong>5%</strong> de cada venta recuperada. Jessica marca el pago como realizado una vez lo haga efectivo.
+      </div>
+
+      <!-- Formulario de registro -->
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:24px">
+        <div style="font-family:var(--font-h);font-size:1rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+          <span style="width:28px;height:28px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem">+</span>
+          Registrar recuperación
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px">
+          <div>
+            <label style="font-size:.74rem;color:var(--muted);font-family:var(--font-m);display:block;margin-bottom:4px">Nombre del paciente *</label>
+            <input id="recInpPaciente" type="text" placeholder="Ej: María López" style="width:100%;box-sizing:border-box;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;outline:none">
+          </div>
+          <div>
+            <label style="font-size:.74rem;color:var(--muted);font-family:var(--font-m);display:block;margin-bottom:4px">Fecha de la cita recuperada *</label>
+            <input id="recInpFecha" type="date" style="width:100%;box-sizing:border-box;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;outline:none">
+          </div>
+          <div>
+            <label style="font-size:.74rem;color:var(--muted);font-family:var(--font-m);display:block;margin-bottom:4px">Servicio *</label>
+            <select id="recInpServicio" style="width:100%;box-sizing:border-box;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;outline:none;cursor:pointer">
+              <option value="">Seleccionar...</option>
+              <option value="Express Cuello">Express Cuello</option>
+              <option value="Express Piernas">Express Piernas</option>
+              <option value="Express Completa">Express Completa</option>
+              <option value="Full">Full (1.5h)</option>
+              <option value="Valoración">Valoración Postural</option>
+              <option value="Readaptación">Readaptación Funcional</option>
+              <option value="Pack 3 sesiones">Pack 3 sesiones</option>
+              <option value="Pack 6 sesiones">Pack 6 sesiones</option>
+              <option value="Pack 10 sesiones">Pack 10 sesiones</option>
+              <option value="Membresía">Membresía</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:.74rem;color:var(--muted);font-family:var(--font-m);display:block;margin-bottom:4px">Valor de la venta * ($)</label>
+            <input id="recInpVenta" type="number" placeholder="110000" min="0" step="1000" style="width:100%;box-sizing:border-box;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;outline:none">
+          </div>
+          <div>
+            <label style="font-size:.74rem;color:var(--muted);font-family:var(--font-m);display:block;margin-bottom:4px">Comisión (5%)</label>
+            <input id="recInpComisionCalc" type="text" disabled value="$0" style="width:100%;box-sizing:border-box;padding:9px 12px;background:var(--s3,var(--bg));border:1px solid var(--border);border-radius:8px;color:#10b981;font-family:var(--font-h);font-size:.95rem;font-weight:700;outline:none;cursor:not-allowed">
+          </div>
+          <div>
+            <label style="font-size:.74rem;color:var(--muted);font-family:var(--font-m);display:block;margin-bottom:4px">Nota (opcional)</label>
+            <input id="recInpNota" type="text" placeholder="Ej: Paciente inactivo 3 meses, cuello" style="width:100%;box-sizing:border-box;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.85rem;outline:none">
+          </div>
+        </div>
+        <button onclick="registrarRecuperacion()" style="padding:10px 24px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.88rem;font-weight:600">✓ Guardar recuperación</button>
+        <span id="recGuardadoMsg" style="font-size:.78rem;color:var(--ok);margin-left:12px;display:none">✓ Registrado correctamente</span>
+      </div>
+
+      <!-- Historial -->
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div style="font-family:var(--font-h);font-size:.95rem;font-weight:700">Historial de recuperaciones</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="recBuscar" type="text" placeholder="Buscar paciente..." oninput="renderRecuperaciones()" style="padding:7px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.82rem;outline:none;width:170px">
+            <select id="recFiltroEstado" onchange="renderRecuperaciones()" style="padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.82rem;outline:none;cursor:pointer">
+              <option value="todos">Todos</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="pagado">Pagados</option>
+            </select>
+          </div>
+        </div>
+        <div id="recHistorial" style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:.83rem">
+            <thead>
+              <tr style="background:var(--s3,var(--bg));text-align:left">
+                <th style="padding:10px 16px;font-family:var(--font-m);color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Fecha</th>
+                <th style="padding:10px 16px;font-family:var(--font-m);color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em">Paciente</th>
+                <th style="padding:10px 16px;font-family:var(--font-m);color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em">Servicio</th>
+                <th style="padding:10px 16px;font-family:var(--font-m);color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;text-align:right">Venta</th>
+                <th style="padding:10px 16px;font-family:var(--font-m);color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;text-align:right">Comisión 5%</th>
+                <th style="padding:10px 16px;font-family:var(--font-m);color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;text-align:center">Estado</th>
+                <th style="padding:10px 16px;font-family:var(--font-m);color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;text-align:center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="recTablaBody">
+              <tr><td colspan="7" style="padding:40px;text-align:center;color:var(--muted)">No hay recuperaciones registradas aún</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="recTotalesPie" style="padding:12px 20px;border-top:1px solid var(--border);display:none;justify-content:flex-end;gap:24px;font-size:.82rem;font-family:var(--font-m)"></div>
+      </div>
+
+    </section>
+
     <!-- ── MENSAJES PREDETERMINADOS ── -->
     <section id="vMensajes" style="display:none">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
@@ -5476,7 +5607,7 @@ function openEvalExpress() {
 
 // ── SIDEBAR / NAV ──
 function showView(v) {
-  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa'].forEach(id => {
+  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa','recuperacion'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -5533,6 +5664,7 @@ function showView(v) {
   if (v === 'guiakpis')       { renderKPIGuia(); actualizarContadorLeads(); loadRutinaChecks(); }
   if (v === 'presupuesto')    { renderPresupuestoMetas(); }
   if (v === 'comisiones')     renderComisiones();
+  if (v === 'recuperacion')   renderRecuperaciones();
   if (v === 'dashboard')      actualizarContadorLeads();
 }
 
@@ -15925,6 +16057,227 @@ function gCopiar(id, btn) {
     setTimeout(() => { btn.textContent = orig; }, 2000);
   });
 }
+</script>
+
+<script>
+// ══════════════════════════════════════════
+//  RECUPERACIÓN DE PACIENTES
+// ══════════════════════════════════════════
+const REC_KEY = 'recuperaciones_v1';
+const REC_PCT = 0.05;
+
+function _loadRec() {
+  try { return JSON.parse(localStorage.getItem(REC_KEY) || '[]'); } catch(e) { return []; }
+}
+function _saveRec(arr) {
+  localStorage.setItem(REC_KEY, JSON.stringify(arr));
+}
+
+function _fmtCLP(n) {
+  return '$' + Math.round(n).toLocaleString('es-CO');
+}
+
+function _recMesActual() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+}
+
+function _initRecMesSel() {
+  const sel = document.getElementById('recMesFiltro');
+  if (!sel) return;
+  const all = _loadRec();
+  const meses = [...new Set(all.map(r => r.fecha.slice(0,7)))].sort().reverse();
+  const actual = _recMesActual();
+  if (!meses.includes(actual)) meses.unshift(actual);
+  const cur = sel.value || actual;
+  sel.innerHTML = meses.map(m => {
+    const [y,mo] = m.split('-');
+    const label = new Date(y, mo-1, 1).toLocaleDateString('es-CO', {month:'long', year:'numeric'});
+    return `<option value="${m}" ${m===cur?'selected':''}>${label.charAt(0).toUpperCase()+label.slice(1)}</option>`;
+  }).join('');
+}
+
+function renderRecuperaciones() {
+  _initRecMesSel();
+  const mes   = document.getElementById('recMesFiltro')?.value || _recMesActual();
+  const busq  = (document.getElementById('recBuscar')?.value || '').toLowerCase().trim();
+  const estFl = document.getElementById('recFiltroEstado')?.value || 'todos';
+
+  const all = _loadRec();
+
+  // --- resumen del mes seleccionado (sin filtros de búsqueda) ---
+  const desMes = all.filter(r => r.fecha.startsWith(mes));
+  const totalVentas   = desMes.reduce((s,r) => s + r.venta, 0);
+  const totalComision = desMes.reduce((s,r) => s + r.comision, 0);
+  const totalPendiente= desMes.filter(r => !r.pagado).reduce((s,r) => s + r.comision, 0);
+
+  const elTotal    = document.getElementById('recResTotal');
+  const elVentas   = document.getElementById('recResVentas');
+  const elComision = document.getElementById('recResComision');
+  const elPendiente= document.getElementById('recResPendiente');
+  const elBtnPagar = document.getElementById('recBtnPagarTodo');
+
+  if (elTotal)     elTotal.textContent     = desMes.length;
+  if (elVentas)    elVentas.textContent    = _fmtCLP(totalVentas);
+  if (elComision)  elComision.textContent  = _fmtCLP(totalComision);
+  if (elPendiente) elPendiente.textContent = _fmtCLP(totalPendiente);
+  if (elBtnPagar)  elBtnPagar.style.display = totalPendiente > 0 ? 'inline-block' : 'none';
+
+  // --- tabla con filtros ---
+  let filas = all.filter(r => r.fecha.startsWith(mes));
+  if (busq)           filas = filas.filter(r => r.paciente.toLowerCase().includes(busq));
+  if (estFl !== 'todos') filas = filas.filter(r => estFl === 'pagado' ? r.pagado : !r.pagado);
+  filas.sort((a,b) => b.fecha.localeCompare(a.fecha));
+
+  const tbody = document.getElementById('recTablaBody');
+  const pie   = document.getElementById('recTotalesPie');
+  if (!tbody) return;
+
+  if (filas.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--muted)">No hay recuperaciones para este período</td></tr>`;
+    if (pie) pie.style.display = 'none';
+    return;
+  }
+
+  const totalFilVenta  = filas.reduce((s,r) => s + r.venta, 0);
+  const totalFilComis  = filas.reduce((s,r) => s + r.comision, 0);
+  const totalFilPend   = filas.filter(r=>!r.pagado).reduce((s,r)=>s+r.comision,0);
+
+  tbody.innerHTML = filas.map(r => {
+    const fechaFmt = new Date(r.fecha + 'T12:00:00').toLocaleDateString('es-CO', {day:'2-digit',month:'short',year:'numeric'});
+    const badge = r.pagado
+      ? `<span style="background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:20px;font-size:.72rem;font-family:var(--font-m);white-space:nowrap">✓ Pagado</span>`
+      : `<span style="background:#fef3c7;color:#92400e;padding:3px 10px;border-radius:20px;font-size:.72rem;font-family:var(--font-m);white-space:nowrap">⏳ Pendiente</span>`;
+    const btnPagar = r.pagado
+      ? `<button onclick="desmarcarPago('${r.id}')" title="Desmarcar pago" style="padding:4px 10px;background:var(--s2);color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.73rem">↺</button>`
+      : `<button onclick="marcarPagado('${r.id}')" style="padding:4px 10px;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.73rem;white-space:nowrap">✓ Pagar</button>`;
+    const btnDel = `<button onclick="eliminarRecuperacion('${r.id}')" title="Eliminar" style="padding:4px 8px;background:var(--s2);color:var(--err,#ef4444);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.73rem;margin-left:4px">✕</button>`;
+    const notaTxt = r.nota ? `<div style="font-size:.72rem;color:var(--muted);margin-top:2px">${r.nota}</div>` : '';
+    return `<tr style="border-top:1px solid var(--border)">
+      <td style="padding:10px 16px;white-space:nowrap;font-size:.82rem">${fechaFmt}</td>
+      <td style="padding:10px 16px"><div style="font-weight:600">${r.paciente}</div>${notaTxt}</td>
+      <td style="padding:10px 16px;color:var(--muted)">${r.servicio}</td>
+      <td style="padding:10px 16px;text-align:right;font-family:var(--font-m);white-space:nowrap">${_fmtCLP(r.venta)}</td>
+      <td style="padding:10px 16px;text-align:right;font-family:var(--font-m);color:#10b981;font-weight:600;white-space:nowrap">${_fmtCLP(r.comision)}</td>
+      <td style="padding:10px 16px;text-align:center">${badge}</td>
+      <td style="padding:10px 16px;text-align:center;white-space:nowrap">${btnPagar}${btnDel}</td>
+    </tr>`;
+  }).join('');
+
+  if (pie) {
+    pie.style.display = 'flex';
+    pie.innerHTML = `
+      <span style="color:var(--muted)">Ventas filtradas: <strong style="color:var(--text)">${_fmtCLP(totalFilVenta)}</strong></span>
+      <span style="color:var(--muted)">Comisión total: <strong style="color:#10b981">${_fmtCLP(totalFilComis)}</strong></span>
+      ${totalFilPend > 0 ? `<span style="color:var(--muted)">Pendiente: <strong style="color:#f59e0b">${_fmtCLP(totalFilPend)}</strong></span>` : ''}
+    `;
+  }
+}
+
+function registrarRecuperacion() {
+  const paciente = document.getElementById('recInpPaciente')?.value.trim();
+  const fecha    = document.getElementById('recInpFecha')?.value;
+  const servicio = document.getElementById('recInpServicio')?.value;
+  const venta    = parseFloat(document.getElementById('recInpVenta')?.value || '0');
+  const nota     = document.getElementById('recInpNota')?.value.trim() || '';
+
+  if (!paciente) { alert('Ingresa el nombre del paciente'); return; }
+  if (!fecha)    { alert('Selecciona la fecha de la cita'); return; }
+  if (!servicio) { alert('Selecciona el servicio'); return; }
+  if (!venta || venta <= 0) { alert('Ingresa el valor de la venta'); return; }
+
+  const comision = Math.round(venta * REC_PCT);
+  const rec = {
+    id: Date.now().toString(),
+    fecha,
+    paciente,
+    servicio,
+    venta,
+    comision,
+    nota,
+    pagado: false,
+    pagadoFecha: null
+  };
+
+  const all = _loadRec();
+  all.push(rec);
+  _saveRec(all);
+
+  // Limpiar formulario
+  document.getElementById('recInpPaciente').value = '';
+  document.getElementById('recInpFecha').value    = '';
+  document.getElementById('recInpServicio').value = '';
+  document.getElementById('recInpVenta').value    = '';
+  document.getElementById('recInpNota').value     = '';
+  document.getElementById('recInpComisionCalc').value = '$0';
+
+  const msg = document.getElementById('recGuardadoMsg');
+  if (msg) { msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; }, 2500); }
+
+  renderRecuperaciones();
+  if (typeof toast === 'function') toast(`Recuperación registrada — comisión: ${_fmtCLP(comision)}`, 'ok');
+}
+
+function marcarPagado(id) {
+  const all = _loadRec();
+  const rec = all.find(r => r.id === id);
+  if (!rec) return;
+  rec.pagado = true;
+  rec.pagadoFecha = today();
+  _saveRec(all);
+  renderRecuperaciones();
+  if (typeof toast === 'function') toast(`Comisión ${_fmtCLP(rec.comision)} marcada como pagada`, 'ok');
+}
+
+function desmarcarPago(id) {
+  const all = _loadRec();
+  const rec = all.find(r => r.id === id);
+  if (!rec) return;
+  rec.pagado = false;
+  rec.pagadoFecha = null;
+  _saveRec(all);
+  renderRecuperaciones();
+}
+
+function eliminarRecuperacion(id) {
+  if (!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+  const all = _loadRec().filter(r => r.id !== id);
+  _saveRec(all);
+  renderRecuperaciones();
+  if (typeof toast === 'function') toast('Registro eliminado', 'ok');
+}
+
+function pagarTodasComisiones() {
+  const mes = document.getElementById('recMesFiltro')?.value || _recMesActual();
+  const all = _loadRec();
+  let cnt = 0;
+  all.forEach(r => {
+    if (r.fecha.startsWith(mes) && !r.pagado) {
+      r.pagado = true;
+      r.pagadoFecha = today();
+      cnt++;
+    }
+  });
+  if (cnt === 0) return;
+  _saveRec(all);
+  renderRecuperaciones();
+  if (typeof toast === 'function') toast(`${cnt} comisión${cnt>1?'es':''} marcada${cnt>1?'s':''} como pagada${cnt>1?'s':''}`, 'ok');
+}
+
+// Calcular comisión en tiempo real mientras se escribe el valor de venta
+document.addEventListener('DOMContentLoaded', () => {
+  const ventaInp = document.getElementById('recInpVenta');
+  if (ventaInp) {
+    ventaInp.addEventListener('input', () => {
+      const v = parseFloat(ventaInp.value || '0');
+      const comEl = document.getElementById('recInpComisionCalc');
+      if (comEl) comEl.value = v > 0 ? _fmtCLP(v * REC_PCT) : '$0';
+    });
+  }
+  // Setear fecha de hoy por defecto al entrar
+  const fechaInp = document.getElementById('recInpFecha');
+  if (fechaInp && !fechaInp.value) fechaInp.value = today();
+});
 </script>
 </body>
 </html>
