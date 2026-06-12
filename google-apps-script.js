@@ -1775,6 +1775,18 @@ function getEncuestaStats_() {
         for (var j = 0; j < ir.length; j++) {
           if (ir[j].getItem().getId() === npsId) {
             var score = parseInt(('' + ir[j].getResponse()).trim(), 10);
+            // Si parseInt falla (opciones son texto puro sin número), mapear por etiqueta
+            if (isNaN(score)) {
+              var txt = ('' + ir[j].getResponse()).toLowerCase()
+                .replace(/[áàâ]/g,'a').replace(/[éèê]/g,'e')
+                .replace(/[íìî]/g,'i').replace(/[óòô]/g,'o').replace(/[úùû]/g,'u');
+              if (txt.indexOf('totalmente') > -1)      score = 5;
+              else if (txt.indexOf('muy') > -1)         score = 4;
+              else if (txt.indexOf('medianamente') > -1) score = 2;
+              else if (txt.indexOf('poco') > -1)        score = 1;
+              else if (txt.indexOf('nada') > -1)        score = 0;
+              else if (txt.trim() === 'probable')       score = 3;
+            }
             if (!isNaN(score)) {
               if (score === 5)      promotores++;
               else if (score === 4) pasivos++;
