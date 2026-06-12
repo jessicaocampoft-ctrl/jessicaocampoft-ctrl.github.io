@@ -3891,22 +3891,25 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
               <div class="em-dot gris" id="emDot_sesiones"></div>
               <span class="em-card-title">Sesiones semana &lt;18<br><small style="font-weight:400;font-size:.75em;color:var(--muted)">sin compensación de eventos</small></span>
               <span class="em-sev c">🔴 Crítico</span>
-              <span class="em-card-time">⏱ 20 min</span>
+              <span class="em-card-time">⏱ 30 min</span>
               <span class="em-carr">▼</span>
             </div>
             <div class="em-card-body" id="emBody_sesiones">
-              <div class="em-symptom">💡 Agenda floja — la clínica no llega al punto de equilibrio operativo. Por debajo de 24 sesiones/semana el margen financiero se erosiona rápidamente.</div>
-              <div class="em-prog-meta" id="emPM_sesiones">0 de 4 pasos completados</div>
+              <div class="em-symptom">💡 <strong>Agenda floja.</strong> Por debajo de 18 sesiones/semana la clínica no cubre costos fijos. Primero diagnostica <em>por qué</em> está vacía antes de actuar: ¿fue una semana de cancelaciones masivas? ¿No hay leads nuevos? ¿La pauta paró? El tratamiento cambia según la causa.</div>
+              <div class="em-prog-meta" id="emPM_sesiones">0 de 7 pasos completados</div>
               <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_sesiones" style="width:0%"></div></div>
               <div class="em-steps">
-                <label class="em-step" id="emS_sesiones_0" onclick="handleEmStep(event,'sesiones',0)"><input type="checkbox" id="emCk_sesiones_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Revisar KPI 4B — ¿hubo cancelaciones inusuales esta semana?</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 4B →</button></label>
-                <label class="em-step" id="emS_sesiones_1" onclick="handleEmStep(event,'sesiones',1)"><input type="checkbox" id="emCk_sesiones_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Recontactar pacientes inactivos de los últimos 3 meses por WhatsApp desde Recordatorios</span><button class="em-goto" onclick="event.stopPropagation();showView('recordatorios')">Recordatorios →</button></label>
-                <label class="em-step" id="emS_sesiones_2" onclick="handleEmStep(event,'sesiones',2)"><input type="checkbox" id="emCk_sesiones_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Publicar historia en redes con disponibilidad u oferta ese mismo día</span></label>
-                <label class="em-step" id="emS_sesiones_3" onclick="handleEmStep(event,'sesiones',3)"><input type="checkbox" id="emCk_sesiones_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Si el hueco es mayor a 2 días: activar pauta extra en redes sociales</span></label>
+                <label class="em-step" id="emS_sesiones_0" onclick="handleEmStep(event,'sesiones',0)"><input type="checkbox" id="emCk_sesiones_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text"><strong>Diagnosticar causa:</strong> revisar KPI 4B — ¿hubo cancelaciones inusuales esta semana? Si la tasa de cancelación subió, ese es el problema raíz.</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 4B →</button></label>
+                <label class="em-step" id="emS_sesiones_1" onclick="handleEmStep(event,'sesiones',1)"><input type="checkbox" id="emCk_sesiones_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text"><strong>Ver huecos reales:</strong> abrir la agenda y contar cuántos horarios están libres hoy y mañana. Si hay más de 3 huecos en las próximas 48h, actuar inmediatamente.</span><button class="em-goto" onclick="event.stopPropagation();showView('agenda')">Ver agenda →</button></label>
+                <label class="em-step" id="emS_sesiones_2" onclick="handleEmStep(event,'sesiones',2)"><input type="checkbox" id="emCk_sesiones_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text"><strong>Reactivar pacientes inactivos:</strong> desde Recordatorios, enviar WhatsApp personalizado a quienes no han vuelto en 30–60 días. Guión: <em>"Hola [nombre], ¿cómo has estado? Te escribo porque llevas un tiempo sin descargarte — tu cuerpo probablemente ya lo está pidiendo 😊 ¿Te agendamos esta semana?"</em></span><button class="em-goto" onclick="event.stopPropagation();showView('recordatorios')">Recordatorios →</button></label>
+                <label class="em-step" id="emS_sesiones_3" onclick="handleEmStep(event,'sesiones',3)"><input type="checkbox" id="emCk_sesiones_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text"><strong>Historia urgente en redes:</strong> publicar historia con disponibilidad inmediata — ejemplo: <em>"Tengo 2 espacios disponibles esta tarde 🕐 ¿Quién necesita descargarse hoy?"</em>. La disponibilidad real convierte mejor que cualquier oferta.</span></label>
+                <label class="em-step" id="emS_sesiones_4" onclick="handleEmStep(event,'sesiones',4)"><input type="checkbox" id="emCk_sesiones_4" onclick="event.stopPropagation()"><span class="em-step-n">05</span><span class="em-step-text"><strong>Ofrecer upsell a pacientes activos:</strong> contactar pacientes que ya tienen cita esta semana y ofrecerles agendar una sesión adicional con un incentivo — <em>"Si agendas la próxima sesión hoy, te guardo el mismo horario de tu preferencia."</em></span></label>
+                <label class="em-step" id="emS_sesiones_5" onclick="handleEmStep(event,'sesiones',5)"><input type="checkbox" id="emCk_sesiones_5" onclick="event.stopPropagation()"><span class="em-step-n">06</span><span class="em-step-text"><strong>Activar pauta extra:</strong> si el hueco persiste más de 2 días, aumentar presupuesto de pauta ese día con creatividad de urgencia y CTA directo a WhatsApp.</span></label>
+                <label class="em-step" id="emS_sesiones_6" onclick="handleEmStep(event,'sesiones',6)"><input type="checkbox" id="emCk_sesiones_6" onclick="event.stopPropagation()"><span class="em-step-n">07</span><span class="em-step-text"><strong>Plan de recuperación semanal:</strong> calcular cuántas sesiones faltan para llegar a 30 y dividirlas entre los días restantes. Si faltan 8 sesiones y quedan 3 días, necesitas 3 sesiones extra por día — es el número concreto que debes perseguir.</span></label>
               </div>
               <div class="em-card-footer">
-                <button class="em-done-btn" id="emDB_sesiones" onclick="markEmDone('sesiones',4)">✓ Plan ejecutado</button>
-                <button class="em-reset-btn" onclick="resetEmSteps('sesiones',4)">↺ Reiniciar</button>
+                <button class="em-done-btn" id="emDB_sesiones" onclick="markEmDone('sesiones',7)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('sesiones',7)">↺ Reiniciar</button>
               </div>
             </div>
           </div>
@@ -3917,21 +3920,23 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
               <div class="em-dot gris" id="emDot_mixfull"></div>
               <span class="em-card-title">Mix Full &gt;40%</span>
               <span class="em-sev u">🟠 Urgente</span>
-              <span class="em-card-time">⏱ 15 min</span>
+              <span class="em-card-time">⏱ 20 min</span>
               <span class="em-carr">▼</span>
             </div>
             <div class="em-card-body" id="emBody_mixfull">
-              <div class="em-symptom">💡 Pérdida silenciosa de margen — Full rinde ~$73k/h vs ~$90k/h de Express. Cada 10% de exceso en Full equivale a dejar ~$70k–$100k/semana sobre la mesa.</div>
-              <div class="em-prog-meta" id="emPM_mixfull">0 de 3 pasos completados</div>
+              <div class="em-symptom">💡 <strong>Pérdida silenciosa de margen.</strong> Full rinde ~$73k/h vs ~$90k/h de Express. Cada 10% de exceso en Full equivale a dejar entre $70k y $100k/semana sobre la mesa. El problema suele estar en cómo la auxiliar presenta las opciones al paciente — no en el paciente mismo.</div>
+              <div class="em-prog-meta" id="emPM_mixfull">0 de 5 pasos completados</div>
               <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_mixfull" style="width:0%"></div></div>
               <div class="em-steps">
-                <label class="em-step" id="emS_mixfull_0" onclick="handleEmStep(event,'mixfull',0)"><input type="checkbox" id="emCk_mixfull_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Reunión con auxiliar: ofrecer Express por defecto al agendar. Full solo si el paciente lo pide o hay justificación clínica</span></label>
-                <label class="em-step" id="emS_mixfull_1" onclick="handleEmStep(event,'mixfull',1)"><input type="checkbox" id="emCk_mixfull_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Revisar si hay citas Full activas que pueden migrar a Express + Readaptación sin afectar la evolución clínica</span><button class="em-goto" onclick="event.stopPropagation();showView('citas')">Ver citas →</button></label>
-                <label class="em-step" id="emS_mixfull_2" onclick="handleEmStep(event,'mixfull',2)"><input type="checkbox" id="emCk_mixfull_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Hacer seguimiento al mix la próxima semana — meta: no superar 30% Full en el mes corriente</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 2 →</button></label>
+                <label class="em-step" id="emS_mixfull_0" onclick="handleEmStep(event,'mixfull',0)"><input type="checkbox" id="emCk_mixfull_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text"><strong>Ver el breakdown actual:</strong> ¿qué porcentaje exacto son Full esta semana? ¿Es un problema puntual o viene subiendo varios meses?</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 2 →</button></label>
+                <label class="em-step" id="emS_mixfull_1" onclick="handleEmStep(event,'mixfull',1)"><input type="checkbox" id="emCk_mixfull_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text"><strong>Reunión con auxiliar — cambiar el guión de agendamiento:</strong> la regla es ofrecer Express por defecto. Guión exacto: <em>"La Descarga Express cubre cuello, espalda o piernas en 50 min — ¿cuál zona necesitas trabajar?"</em>. Full solo si el paciente lo pide explícitamente o hay justificación clínica de Jessica.</span></label>
+                <label class="em-step" id="emS_mixfull_2" onclick="handleEmStep(event,'mixfull',2)"><input type="checkbox" id="emCk_mixfull_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text"><strong>Revisar citas Full activas:</strong> ¿hay pacientes en plan Full que podrían migrar a Express + Readaptación sin afectar su evolución clínica? Coordinar con Jessica antes de cambiar.</span><button class="em-goto" onclick="event.stopPropagation();showView('citas')">Ver citas →</button></label>
+                <label class="em-step" id="emS_mixfull_3" onclick="handleEmStep(event,'mixfull',3)"><input type="checkbox" id="emCk_mixfull_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text"><strong>Empujar Readaptación en contenido:</strong> publicar esta semana un reel o historia explicando qué es la Readaptación Funcional y para quién es — es el servicio más ignorado y el de mejor margen por hora para sesiones largas.</span></label>
+                <label class="em-step" id="emS_mixfull_4" onclick="handleEmStep(event,'mixfull',4)"><input type="checkbox" id="emCk_mixfull_4" onclick="event.stopPropagation()"><span class="em-step-n">05</span><span class="em-step-text"><strong>Seguimiento la próxima semana:</strong> revisar si el mix bajó. Si en 2 semanas sigue >35%, el problema es estructural — revisar si los paquetes activos tienen demasiado peso en Full.</span></label>
               </div>
               <div class="em-card-footer">
-                <button class="em-done-btn" id="emDB_mixfull" onclick="markEmDone('mixfull',3)">✓ Plan ejecutado</button>
-                <button class="em-reset-btn" onclick="resetEmSteps('mixfull',3)">↺ Reiniciar</button>
+                <button class="em-done-btn" id="emDB_mixfull" onclick="markEmDone('mixfull',5)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('mixfull',5)">↺ Reiniciar</button>
               </div>
             </div>
           </div>
@@ -3942,22 +3947,24 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
               <div class="em-dot gris" id="emDot_cancel"></div>
               <span class="em-card-title">Cancelaciones &gt;20%<br><small style="font-weight:400;font-size:.75em;color:var(--muted)">KPI 4B</small></span>
               <span class="em-sev u">🟠 Urgente</span>
-              <span class="em-card-time">⏱ 25 min</span>
+              <span class="em-card-time">⏱ 30 min</span>
               <span class="em-carr">▼</span>
             </div>
             <div class="em-card-body" id="emBody_cancel">
-              <div class="em-symptom">💡 Patrón de cancelación — cada una es ingreso y tiempo perdido. La meta es &lt;20%; por encima de eso hay un patrón identificable que se puede cortar.</div>
-              <div class="em-prog-meta" id="emPM_cancel">0 de 4 pasos completados</div>
+              <div class="em-symptom">💡 <strong>Patrón de cancelación.</strong> Cada cancelación es ingreso y tiempo perdido. Más del 20% indica un problema sistemático, no casos aislados. Los 3 culpables más comunes: (1) no hay recordatorio 24h antes, (2) un día o servicio específico concentra todo, (3) pacientes nuevos que nunca tuvieron intención real de asistir.</div>
+              <div class="em-prog-meta" id="emPM_cancel">0 de 6 pasos completados</div>
               <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_cancel" style="width:0%"></div></div>
               <div class="em-steps">
-                <label class="em-step" id="emS_cancel_0" onclick="handleEmStep(event,'cancel',0)"><input type="checkbox" id="emCk_cancel_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Abrir KPI 4B y ver el breakdown: ¿qué servicio y qué día concentra las cancelaciones?</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 4B →</button></label>
-                <label class="em-step" id="emS_cancel_1" onclick="handleEmStep(event,'cancel',1)"><input type="checkbox" id="emCk_cancel_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Si hay un día con muchas: reforzar el recordatorio de WhatsApp 24h antes a todos los pacientes de ese día</span></label>
-                <label class="em-step" id="emS_cancel_2" onclick="handleEmStep(event,'cancel',2)"><input type="checkbox" id="emCk_cancel_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Si hay un servicio con muchas: revisar precio, duración o expectativa del paciente con ese servicio</span></label>
-                <label class="em-step" id="emS_cancel_3" onclick="handleEmStep(event,'cancel',3)"><input type="checkbox" id="emCk_cancel_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Registrar el motivo de cada cancelación en la cita — el patrón se detecta mucho más rápido con datos</span><button class="em-goto" onclick="event.stopPropagation();showView('citas')">Ir a citas →</button></label>
+                <label class="em-step" id="emS_cancel_0" onclick="handleEmStep(event,'cancel',0)"><input type="checkbox" id="emCk_cancel_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text"><strong>Abrir KPI 4B y hacer el diagnóstico completo:</strong> ¿qué servicio cancela más? ¿Qué día de la semana? ¿Son pacientes nuevos o recurrentes? La respuesta a estas 3 preguntas determina todo lo siguiente.</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 4B →</button></label>
+                <label class="em-step" id="emS_cancel_1" onclick="handleEmStep(event,'cancel',1)"><input type="checkbox" id="emCk_cancel_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text"><strong>Reforzar el recordatorio 24h antes:</strong> si no se está enviando confirmación por WhatsApp el día anterior, implementarlo desde hoy. Guión: <em>"Hola [nombre]! Te confirmo tu cita mañana 📋 [servicio] · [hora] · [modalidad]. Respóndeme: ✅ 1 — Sí confirmo · ❌ 2 — Necesito cancelar."</em></span></label>
+                <label class="em-step" id="emS_cancel_2" onclick="handleEmStep(event,'cancel',2)"><input type="checkbox" id="emCk_cancel_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text"><strong>Si hay un día con muchas cancelaciones:</strong> agregar un segundo recordatorio 2 horas antes de la cita ese día específico. Los lunes y viernes suelen concentrar más cancelaciones por reuniones de trabajo o planes del fin de semana.</span></label>
+                <label class="em-step" id="emS_cancel_3" onclick="handleEmStep(event,'cancel',3)"><input type="checkbox" id="emCk_cancel_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text"><strong>Si hay un servicio con muchas cancelaciones:</strong> revisar si el precio, la duración o la expectativa del paciente no están alineados. Por ejemplo, si Full cancela mucho, puede ser que 90 min sea demasiado tiempo para agendar con anticipación.</span></label>
+                <label class="em-step" id="emS_cancel_4" onclick="handleEmStep(event,'cancel',4)"><input type="checkbox" id="emCk_cancel_4" onclick="event.stopPropagation()"><span class="em-step-n">05</span><span class="em-step-text"><strong>Ofrecer reagendamiento inmediato:</strong> cuando un paciente cancela, el mensaje de respuesta debe siempre terminar con una fecha alternativa. Nunca dejar el chat abierto sin proponer otra opción: <em>"¡Sin problema! ¿Te queda bien el [día X] a las [hora Y]?"</em></span></label>
+                <label class="em-step" id="emS_cancel_5" onclick="handleEmStep(event,'cancel',5)"><input type="checkbox" id="emCk_cancel_5" onclick="event.stopPropagation()"><span class="em-step-n">06</span><span class="em-step-text"><strong>Registrar el motivo de cada cancelación:</strong> en el campo "Nota Admin" de la cita — sin este dato el patrón es invisible. En 2 semanas los datos mostrarán si es un problema de horario, precio, salud o simplemente leads mal calificados.</span><button class="em-goto" onclick="event.stopPropagation();showView('citas')">Ir a citas →</button></label>
               </div>
               <div class="em-card-footer">
-                <button class="em-done-btn" id="emDB_cancel" onclick="markEmDone('cancel',4)">✓ Plan ejecutado</button>
-                <button class="em-reset-btn" onclick="resetEmSteps('cancel',4)">↺ Reiniciar</button>
+                <button class="em-done-btn" id="emDB_cancel" onclick="markEmDone('cancel',6)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('cancel',6)">↺ Reiniciar</button>
               </div>
             </div>
           </div>
@@ -3980,22 +3987,24 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
               <div class="em-dot gris" id="emDot_leads"></div>
               <span class="em-card-title">Leads mes &lt;40</span>
               <span class="em-sev u">🟠 Urgente</span>
-              <span class="em-card-time">⏱ 30 min</span>
+              <span class="em-card-time">⏱ 45 min</span>
               <span class="em-carr">▼</span>
             </div>
             <div class="em-card-body" id="emBody_leads">
-              <div class="em-symptom">💡 El marketing no está atrayendo suficiente interés — la inversión en pauta no genera leads. Sin leads nuevos, la agenda crece solo con pacientes existentes y la clínica no escala.</div>
-              <div class="em-prog-meta" id="emPM_leads">0 de 4 pasos completados</div>
+              <div class="em-symptom">💡 <strong>El marketing no está atrayendo suficiente interés.</strong> Sin leads nuevos, la agenda solo crece con pacientes existentes y la clínica no escala. Primero identifica si el problema es de <em>alcance</em> (pocos ojos ven el contenido) o de <em>relevancia</em> (lo ven pero no les interesa). Son soluciones muy distintas.</div>
+              <div class="em-prog-meta" id="emPM_leads">0 de 6 pasos completados</div>
               <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_leads" style="width:0%"></div></div>
               <div class="em-steps">
-                <label class="em-step" id="emS_leads_0" onclick="handleEmStep(event,'leads',0)"><input type="checkbox" id="emCk_leads_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Verificar que la pauta en redes está activa y corriendo correctamente</span></label>
-                <label class="em-step" id="emS_leads_1" onclick="handleEmStep(event,'leads',1)"><input type="checkbox" id="emCk_leads_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Publicar una historia con oferta, testimonio real o demostración ese mismo día</span></label>
-                <label class="em-step" id="emS_leads_2" onclick="handleEmStep(event,'leads',2)"><input type="checkbox" id="emCk_leads_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Revisar si el contenido de la semana habló del dolor/problema del paciente — no solo del servicio</span></label>
-                <label class="em-step" id="emS_leads_3" onclick="handleEmStep(event,'leads',3)"><input type="checkbox" id="emCk_leads_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Pedir a 3–5 pacientes satisfechos que compartan el perfil de Instagram o refieran a alguien</span></label>
+                <label class="em-step" id="emS_leads_0" onclick="handleEmStep(event,'leads',0)"><input type="checkbox" id="emCk_leads_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text"><strong>Verificar el estado de la pauta:</strong> entrar a Meta Ads o la plataforma que se usa y confirmar que la campaña está activa, el presupuesto no se agotó y el anuncio no fue rechazado. Un anuncio pausado puede pasar semanas sin que nadie lo note.</span></label>
+                <label class="em-step" id="emS_leads_1" onclick="handleEmStep(event,'leads',1)"><input type="checkbox" id="emCk_leads_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text"><strong>Auditar el contenido de la última semana:</strong> ¿habló del dolor/problema del paciente o solo mostró el servicio? El contenido que genera leads describe el problema que resuelves, no el servicio que vendes. Ejemplo que no funciona: "Ofrecemos descargas musculares." Ejemplo que sí: "¿Te duele el cuello todas las tardes después del trabajo? Esto te está pasando porque..."</span></label>
+                <label class="em-step" id="emS_leads_2" onclick="handleEmStep(event,'leads',2)"><input type="checkbox" id="emCk_leads_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text"><strong>Publicar historia de alta conversión hoy:</strong> mostrar disponibilidad real con horario visible + testimonio de un paciente real (con permiso). Las historias con nombres y resultados reales convierten 3–4× más que las de diseño genérico.</span></label>
+                <label class="em-step" id="emS_leads_3" onclick="handleEmStep(event,'leads',3)"><input type="checkbox" id="emCk_leads_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text"><strong>Activar programa de referidos:</strong> contactar 5 pacientes satisfechos de los últimos 30 días y pedirles que recomienden. Guión: <em>"[Nombre], me alegra que hayas mejorado tanto. Si conoces alguien con dolor de [zona], te agradecería que me recomendaras — les puedo dar una valoración con descuento por ser tu referido."</em></span></label>
+                <label class="em-step" id="emS_leads_4" onclick="handleEmStep(event,'leads',4)"><input type="checkbox" id="emCk_leads_4" onclick="event.stopPropagation()"><span class="em-step-n">05</span><span class="em-step-text"><strong>Revisar el CTA de todos los perfiles:</strong> ¿el link en bio de Instagram va directo a WhatsApp? ¿El mensaje de bienvenida automático de WhatsApp Business está activo? Cada punto de fricción reduce los leads a la mitad.</span></label>
+                <label class="em-step" id="emS_leads_5" onclick="handleEmStep(event,'leads',5)"><input type="checkbox" id="emCk_leads_5" onclick="event.stopPropagation()"><span class="em-step-n">06</span><span class="em-step-text"><strong>Publicar video de problema-solución esta semana:</strong> el formato más efectivo es: 3 seg de gancho (el dolor), 15 seg de explicación (por qué pasa), 5 seg de CTA (cómo resolverlo con Jessica). Sin edición elaborada — el teléfono y la autenticidad bastan.</span></label>
               </div>
               <div class="em-card-footer">
-                <button class="em-done-btn" id="emDB_leads" onclick="markEmDone('leads',4)">✓ Plan ejecutado</button>
-                <button class="em-reset-btn" onclick="resetEmSteps('leads',4)">↺ Reiniciar</button>
+                <button class="em-done-btn" id="emDB_leads" onclick="markEmDone('leads',6)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('leads',6)">↺ Reiniciar</button>
               </div>
             </div>
           </div>
@@ -4006,22 +4015,24 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
               <div class="em-dot gris" id="emDot_conv"></div>
               <span class="em-card-title">Conversión &lt;25%</span>
               <span class="em-sev c">🔴 Crítico</span>
-              <span class="em-card-time">⏱ 45 min</span>
+              <span class="em-card-time">⏱ 1 hora</span>
               <span class="em-carr">▼</span>
             </div>
             <div class="em-card-body" id="emBody_conv">
-              <div class="em-symptom">💡 Fugas en el embudo — los leads entran pero no agendan. El problema está en la velocidad de respuesta, el argumento de venta o el precio mal gestionado.</div>
-              <div class="em-prog-meta" id="emPM_conv">0 de 4 pasos completados</div>
+              <div class="em-symptom">💡 <strong>Fugas en el embudo.</strong> Los leads entran pero no agendan. Esto es más costoso que tener pocos leads, porque ya gastaste en atraerlos. Las 4 causas más frecuentes: (1) respuesta lenta >30 min, (2) precio dado antes de crear valor, (3) falta de seguimiento al lead que no respondió, (4) guión de ventas débil o inexistente.</div>
+              <div class="em-prog-meta" id="emPM_conv">0 de 6 pasos completados</div>
               <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_conv" style="width:0%"></div></div>
               <div class="em-steps">
-                <label class="em-step" id="emS_conv_0" onclick="handleEmStep(event,'conv',0)"><input type="checkbox" id="emCk_conv_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Auditar las últimas 10 conversaciones de WhatsApp: identificar en qué momento exacto se cae el lead</span></label>
-                <label class="em-step" id="emS_conv_1" onclick="handleEmStep(event,'conv',1)"><input type="checkbox" id="emCk_conv_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Medir el tiempo de respuesta — si supera 30 minutos, el lead ya buscó otra opción</span></label>
-                <label class="em-step" id="emS_conv_2" onclick="handleEmStep(event,'conv',2)"><input type="checkbox" id="emCk_conv_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Regla de oro: nunca enviar el precio sin preguntar primero el caso clínico del paciente</span></label>
-                <label class="em-step" id="emS_conv_3" onclick="handleEmStep(event,'conv',3)"><input type="checkbox" id="emCk_conv_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Practicar el guión de cierre: pregunta → empatía → valor → precio → cierre (en ese orden)</span></label>
+                <label class="em-step" id="emS_conv_0" onclick="handleEmStep(event,'conv',0)"><input type="checkbox" id="emCk_conv_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text"><strong>Auditar las últimas 10 conversaciones:</strong> leer cada chat completo e identificar exactamente dónde se cae — ¿después del precio? ¿Después de dar el horario? ¿El lead no volvió a responder? El patrón aparece en las primeras 5 chats.</span></label>
+                <label class="em-step" id="emS_conv_1" onclick="handleEmStep(event,'conv',1)"><input type="checkbox" id="emCk_conv_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text"><strong>Medir el tiempo de respuesta:</strong> revisar las horas de los mensajes entrantes y las respuestas salientes. Si el promedio supera 30 minutos, ese es el problema principal — el lead ya buscó otra opción. Activar notificaciones de WhatsApp Business en prioridad máxima.</span></label>
+                <label class="em-step" id="emS_conv_2" onclick="handleEmStep(event,'conv',2)"><input type="checkbox" id="emCk_conv_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text"><strong>Corregir el orden del guión:</strong> la secuencia correcta es (1) saludo cálido y personalizado, (2) preguntar el caso clínico antes de cualquier precio, (3) mostrar empatía y explicar el valor del servicio para ese caso específico, (4) dar el precio con confianza, (5) proponer fecha y hora concretas. Nunca saltarse el paso 2.</span></label>
+                <label class="em-step" id="emS_conv_3" onclick="handleEmStep(event,'conv',3)"><input type="checkbox" id="emCk_conv_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text"><strong>Seguimiento a leads que no respondieron:</strong> revisar chats donde el lead preguntó pero no agendó. Si tiene más de 24h sin respuesta, enviar: <em>"Hola [nombre]! Te escribo para saber si pudiste revisar la info que te mandé. ¿Tienes alguna pregunta sobre [servicio]? 😊"</em>. El 20–30% de los leads recuperables están aquí.</span></label>
+                <label class="em-step" id="emS_conv_4" onclick="handleEmStep(event,'conv',4)"><input type="checkbox" id="emCk_conv_4" onclick="event.stopPropagation()"><span class="em-step-n">05</span><span class="em-step-text"><strong>Usar los Guiones WA como base:</strong> abrir la sección de Guiones y practicar con la auxiliar la respuesta para los servicios que más leads generan. El guión no es un script robótico — es la estructura mínima para no improvisar en momentos clave.</span><button class="em-goto" onclick="event.stopPropagation();showView('guioneswa')">Ver Guiones WA →</button></label>
+                <label class="em-step" id="emS_conv_5" onclick="handleEmStep(event,'conv',5)"><input type="checkbox" id="emCk_conv_5" onclick="event.stopPropagation()"><span class="em-step-n">06</span><span class="em-step-text"><strong>Medir la tasa semana a semana:</strong> si en 2 semanas no mejora después de ejecutar los pasos anteriores, el problema puede ser de calidad del lead (el contenido atrae personas que nunca van a pagar). Revisar la segmentación de pauta.</span></label>
               </div>
               <div class="em-card-footer">
-                <button class="em-done-btn" id="emDB_conv" onclick="markEmDone('conv',4)">✓ Plan ejecutado</button>
-                <button class="em-reset-btn" onclick="resetEmSteps('conv',4)">↺ Reiniciar</button>
+                <button class="em-done-btn" id="emDB_conv" onclick="markEmDone('conv',6)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('conv',6)">↺ Reiniciar</button>
               </div>
             </div>
           </div>
@@ -4044,21 +4055,23 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
               <div class="em-dot gris" id="emDot_ventas_sem"></div>
               <span class="em-card-title">Ventas semana &lt;84% meta<br><small style="font-weight:400;font-size:.75em;color:var(--muted)">&lt;<span class="kpi-ref" data-ref="meta_ventas_semana">$2.566.250</span></small></span>
               <span class="em-sev u">🟠 Urgente</span>
-              <span class="em-card-time">⏱ 20 min</span>
+              <span class="em-card-time">⏱ 25 min</span>
               <span class="em-carr">▼</span>
             </div>
             <div class="em-card-body" id="emBody_ventas_sem">
-              <div class="em-symptom">💡 Semana financieramente débil — aún hay tiempo de corregir antes de que cierre el mes. Actuar esta semana evita que el problema se acumule.</div>
-              <div class="em-prog-meta" id="emPM_ventas_sem">0 de 3 pasos completados</div>
+              <div class="em-symptom">💡 <strong>Semana financieramente débil.</strong> Aún hay tiempo de corregir antes de que cierre el mes — actuar esta semana evita que el problema se acumule. Primero verifica que no sea un error de registro (citas atendidas sin precio ingresado) antes de asumir que las ventas realmente bajaron.</div>
+              <div class="em-prog-meta" id="emPM_ventas_sem">0 de 5 pasos completados</div>
               <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_ventas_sem" style="width:0%"></div></div>
               <div class="em-steps">
-                <label class="em-step" id="emS_ventas_sem_0" onclick="handleEmStep(event,'ventas_sem',0)"><input type="checkbox" id="emCk_ventas_sem_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Revisar si hay citas sin cobro registrado en el módulo de Finanzas</span><button class="em-goto" onclick="event.stopPropagation();showView('finanzas')">Ver Finanzas →</button></label>
-                <label class="em-step" id="emS_ventas_sem_1" onclick="handleEmStep(event,'ventas_sem',1)"><input type="checkbox" id="emCk_ventas_sem_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Ofrecer combo o paquete a pacientes que ya están en tratamiento activo</span></label>
-                <label class="em-step" id="emS_ventas_sem_2" onclick="handleEmStep(event,'ventas_sem',2)"><input type="checkbox" id="emCk_ventas_sem_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Recontactar 3–5 pacientes inactivos con mensaje personalizado de WhatsApp</span><button class="em-goto" onclick="event.stopPropagation();showView('recordatorios')">Recordatorios →</button></label>
+                <label class="em-step" id="emS_ventas_sem_0" onclick="handleEmStep(event,'ventas_sem',0)"><input type="checkbox" id="emCk_ventas_sem_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text"><strong>Verificar integridad del registro:</strong> abrir Finanzas y revisar que todas las citas atendidas esta semana tienen precio registrado. A veces las ventas están "perdidas" simplemente porque la cita no tiene valor ingresado — eso es un problema de registro, no de ventas.</span><button class="em-goto" onclick="event.stopPropagation();showView('finanzas')">Ver Finanzas →</button></label>
+                <label class="em-step" id="emS_ventas_sem_1" onclick="handleEmStep(event,'ventas_sem',1)"><input type="checkbox" id="emCk_ventas_sem_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text"><strong>Calcular el gap exacto:</strong> ¿cuánto falta para llegar a la meta semanal? ¿Cuántas citas adicionales necesitas a precio promedio para cerrar ese gap? Ese es el número concreto que persigues hoy.</span></label>
+                <label class="em-step" id="emS_ventas_sem_2" onclick="handleEmStep(event,'ventas_sem',2)"><input type="checkbox" id="emCk_ventas_sem_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text"><strong>Ofrecer paquete a pacientes en sesión suelta:</strong> cuando un paciente viene a una cita individual, la auxiliar debe siempre mencionar el paquete equivalente: <em>"¿Sabías que si agendas 3 sesiones juntas ahorras $27.000? ¿Te lo separo con el mismo horario?"</em> El upgrade en el momento de la cita tiene 40–60% de cierre.</span></label>
+                <label class="em-step" id="emS_ventas_sem_3" onclick="handleEmStep(event,'ventas_sem',3)"><input type="checkbox" id="emCk_ventas_sem_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text"><strong>Reactivar pacientes inactivos con WhatsApp personalizado:</strong> desde Recordatorios, contactar 3–5 pacientes que no han vuelto en 30–60 días. Un paciente que ya confió en ti convierte 5× más fácil que uno nuevo.</span><button class="em-goto" onclick="event.stopPropagation();showView('recordatorios')">Recordatorios →</button></label>
+                <label class="em-step" id="emS_ventas_sem_4" onclick="handleEmStep(event,'ventas_sem',4)"><input type="checkbox" id="emCk_ventas_sem_4" onclick="event.stopPropagation()"><span class="em-step-n">05</span><span class="em-step-text"><strong>Historia de urgencia en redes:</strong> publicar disponibilidad real para esta semana con CTA directo. No una oferta de descuento — solo mostrar los horarios disponibles genera urgencia genuina sin devaluar el servicio.</span></label>
               </div>
               <div class="em-card-footer">
-                <button class="em-done-btn" id="emDB_ventas_sem" onclick="markEmDone('ventas_sem',3)">✓ Plan ejecutado</button>
-                <button class="em-reset-btn" onclick="resetEmSteps('ventas_sem',3)">↺ Reiniciar</button>
+                <button class="em-done-btn" id="emDB_ventas_sem" onclick="markEmDone('ventas_sem',5)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('ventas_sem',5)">↺ Reiniciar</button>
               </div>
             </div>
           </div>
@@ -4069,22 +4082,24 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
               <div class="em-dot gris" id="emDot_ventas_mes"></div>
               <span class="em-card-title">Ventas mes &lt;80% meta<br><small style="font-weight:400;font-size:.75em;color:var(--muted)">&lt;<span class="kpi-ref" data-ref="meta_ventas_mes">$10.265.000</span></small></span>
               <span class="em-sev c">🔴 Crítico</span>
-              <span class="em-card-time">⏱ 30 min</span>
+              <span class="em-card-time">⏱ 45 min</span>
               <span class="em-carr">▼</span>
             </div>
             <div class="em-card-body" id="emBody_ventas_mes">
-              <div class="em-symptom">💡 El mes está comprometido — ya no alcanza con citas normales. Se necesita una acción extraordinaria para recuperar el gap antes del cierre.</div>
-              <div class="em-prog-meta" id="emPM_ventas_mes">0 de 4 pasos completados</div>
+              <div class="em-symptom">💡 <strong>El mes está comprometido.</strong> Por debajo del 80% de la meta ya no alcanza con citas normales — se necesita una acción extraordinaria. La clave es calcular primero cuánto falta y cuántos días quedan, para saber si el gap es recuperable con citas extra, paquetes, o si hay que activar un plan de contingencia.</div>
+              <div class="em-prog-meta" id="emPM_ventas_mes">0 de 6 pasos completados</div>
               <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_ventas_mes" style="width:0%"></div></div>
               <div class="em-steps">
-                <label class="em-step" id="emS_ventas_mes_0" onclick="handleEmStep(event,'ventas_mes',0)"><input type="checkbox" id="emCk_ventas_mes_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Activar promoción de cierre de mes con fecha límite visible — la urgencia real convierte</span></label>
-                <label class="em-step" id="emS_ventas_mes_1" onclick="handleEmStep(event,'ventas_mes',1)"><input type="checkbox" id="emCk_ventas_mes_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Ofrecer paquetes con descuento por pago adelantado a pacientes activos</span></label>
-                <label class="em-step" id="emS_ventas_mes_2" onclick="handleEmStep(event,'ventas_mes',2)"><input type="checkbox" id="emCk_ventas_mes_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Revisar la proyección a fin de mes en Finanzas y calcular el gap exacto que hay que cerrar</span><button class="em-goto" onclick="event.stopPropagation();showView('finanzas')">Ver proyección →</button></label>
-                <label class="em-step" id="emS_ventas_mes_3" onclick="handleEmStep(event,'ventas_mes',3)"><input type="checkbox" id="emCk_ventas_mes_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Evaluar si se pueden agregar eventos corporativos o grupales para compensar el gap</span></label>
+                <label class="em-step" id="emS_ventas_mes_0" onclick="handleEmStep(event,'ventas_mes',0)"><input type="checkbox" id="emCk_ventas_mes_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text"><strong>Calcular el gap real:</strong> abrir Finanzas, ver cuánto se ha facturado y cuánto falta. Dividirlo entre los días hábiles restantes del mes — ese es el ingreso diario necesario. Si son más de $600k/día extra, el plan de citas no es suficiente solo.</span><button class="em-goto" onclick="event.stopPropagation();showView('finanzas')">Ver Finanzas →</button></label>
+                <label class="em-step" id="emS_ventas_mes_1" onclick="handleEmStep(event,'ventas_mes',1)"><input type="checkbox" id="emCk_ventas_sem_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text"><strong>Campaña de paquetes con fecha límite:</strong> ofrecer a pacientes activos paquetes pre-pagados con vigencia de 60 días. El pago adelantado ingresa al mes actual aunque las citas se usen después — es la palanca más rápida para cerrar el gap.</span></label>
+                <label class="em-step" id="emS_ventas_mes_2" onclick="handleEmStep(event,'ventas_mes',2)"><input type="checkbox" id="emCk_ventas_mes_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text"><strong>Evento corporativo o grupal de emergencia:</strong> si hay contactos en empresas, gimnasios o equipos deportivos de la zona, ofrecer una jornada de valoraciones express (20–30 min c/u). 10 valoraciones a $80k = $800k en un día, sin costo de adquisición.</span></label>
+                <label class="em-step" id="emS_ventas_mes_3" onclick="handleEmStep(event,'ventas_mes',3)"><input type="checkbox" id="emCk_ventas_mes_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text"><strong>Campaña de referidos urgente:</strong> contactar a los 10 mejores pacientes del mes y pedirles que refieran a alguien. Ofrecer la primera sesión del referido con descuento — el ingreso parcial es mejor que el espacio vacío.</span></label>
+                <label class="em-step" id="emS_ventas_mes_4" onclick="handleEmStep(event,'ventas_mes',4)"><input type="checkbox" id="emCk_ventas_mes_4" onclick="event.stopPropagation()"><span class="em-step-n">05</span><span class="em-step-text"><strong>Pauta de cierre de mes:</strong> publicar un anuncio de 3–5 días con los horarios disponibles del mes y CTA urgente. El mensaje de escasez real ("quedan X espacios este mes") convierte mejor que cualquier descuento.</span></label>
+                <label class="em-step" id="emS_ventas_mes_5" onclick="handleEmStep(event,'ventas_mes',5)"><input type="checkbox" id="emCk_ventas_mes_5" onclick="event.stopPropagation()"><span class="em-step-n">06</span><span class="em-step-text"><strong>Revisar si hay membresías o paquetes vencidos:</strong> pacientes con paquetes expirados son los más fáciles de reconvertir. Guión: <em>"[Nombre], veo que tu paquete venció — ¿quieres renovarlo? Puedo guardarte el mismo horario que tenías."</em></span></label>
               </div>
               <div class="em-card-footer">
-                <button class="em-done-btn" id="emDB_ventas_mes" onclick="markEmDone('ventas_mes',4)">✓ Plan ejecutado</button>
-                <button class="em-reset-btn" onclick="resetEmSteps('ventas_mes',4)">↺ Reiniciar</button>
+                <button class="em-done-btn" id="emDB_ventas_mes" onclick="markEmDone('ventas_mes',6)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('ventas_mes',6)">↺ Reiniciar</button>
               </div>
             </div>
           </div>
@@ -4111,18 +4126,20 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
               <span class="em-carr">▼</span>
             </div>
             <div class="em-card-body" id="emBody_nps">
-              <div class="em-symptom">💡 Pacientes insatisfechos — el boca a boca está fallando. Un detractor recuperado se convierte en promotor; uno ignorado habla mal con 10 personas.</div>
-              <div class="em-prog-meta" id="emPM_nps">0 de 4 pasos completados</div>
+              <div class="em-symptom">💡 <strong>Pacientes insatisfechos.</strong> Un NPS bajo no es un problema de percepción — es un problema real de experiencia. Un detractor recuperado se convierte en promotor activo; uno ignorado habla mal con 10 personas en promedio. Actuar en menos de 48h es crítico porque la mala experiencia se consolida rápido en la memoria.</div>
+              <div class="em-prog-meta" id="emPM_nps">0 de 6 pasos completados</div>
               <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_nps" style="width:0%"></div></div>
               <div class="em-steps">
-                <label class="em-step" id="emS_nps_0" onclick="handleEmStep(event,'nps',0)"><input type="checkbox" id="emCk_nps_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Cargar encuestas del formulario y ver quiénes dieron nota 1–3 (detractores)</span><button class="em-goto" onclick="event.stopPropagation();showView('finanzas')">Cargar encuestas →</button></label>
-                <label class="em-step" id="emS_nps_1" onclick="handleEmStep(event,'nps',1)"><input type="checkbox" id="emCk_nps_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Llamar a TODOS los detractores en menos de 48h — no para discutir, sino para escuchar activamente</span></label>
-                <label class="em-step" id="emS_nps_2" onclick="handleEmStep(event,'nps',2)"><input type="checkbox" id="emCk_nps_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Reunión de equipo: ¿hay un patrón en las quejas? ¿Es el mismo servicio o el mismo día de la semana?</span></label>
-                <label class="em-step" id="emS_nps_3" onclick="handleEmStep(event,'nps',3)"><input type="checkbox" id="emCk_nps_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Ofrecer sesión de compensación al detractor como gesto de calidad — sin presionar a cambiar su nota</span></label>
+                <label class="em-step" id="emS_nps_0" onclick="handleEmStep(event,'nps',0)"><input type="checkbox" id="emCk_nps_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text"><strong>Cargar encuestas e identificar detractores:</strong> presionar "Cargar encuestas" en el tablero y revisar en el formulario de Google quiénes respondieron con nota 0–3. Anotar nombre, servicio y fecha de la sesión.</span><button class="em-goto" onclick="event.stopPropagation();document.getElementById('kpiLoadBtn') && document.getElementById('kpiLoadBtn').click()">Cargar encuestas →</button></label>
+                <label class="em-step" id="emS_nps_1" onclick="handleEmStep(event,'nps',1)"><input type="checkbox" id="emCk_nps_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text"><strong>Llamar a cada detractor en menos de 48h:</strong> no WhatsApp — llamada de voz. Guión de apertura: <em>"Hola [nombre], soy Jessica. Vi que tu experiencia no fue lo que esperabas y quería llamarte personalmente para entender qué pasó. No es para defenderme — es para aprender."</em> Escuchar el doble de lo que hablas.</span></label>
+                <label class="em-step" id="emS_nps_2" onclick="handleEmStep(event,'nps',2)"><input type="checkbox" id="emCk_nps_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text"><strong>Ofrecer sesión de compensación sin condiciones:</strong> al final de la llamada, si la queja es válida, ofrecer una sesión gratuita o con descuento significativo. No pedirle que cambie la nota — solo demostrar que la calidad importa. Muchos detractores se convierten en los pacientes más leales después de una recuperación bien manejada.</span></label>
+                <label class="em-step" id="emS_nps_3" onclick="handleEmStep(event,'nps',3)"><input type="checkbox" id="emCk_nps_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text"><strong>Analizar el patrón de quejas:</strong> ¿todos los detractores tuvieron el mismo servicio? ¿El mismo día de la semana? ¿Coinciden en horario o auxiliar? Si hay un patrón claro, el problema es sistémico — no individual. Corregirlo en el proceso, no culpar a casos aislados.</span></label>
+                <label class="em-step" id="emS_nps_4" onclick="handleEmStep(event,'nps',4)"><input type="checkbox" id="emCk_nps_4" onclick="event.stopPropagation()"><span class="em-step-n">05</span><span class="em-step-text"><strong>Revisar si los pasivos (nota 4) se pueden convertir:</strong> los pasivos no bajan el NPS pero tampoco lo suben. Contactarlos con: <em>"Hola [nombre], gracias por tu evaluación. ¿Hay algo específico que podríamos mejorar para que tu próxima experiencia sea perfecta?"</em> El que responde con una sugerencia ya está comprometido.</span></label>
+                <label class="em-step" id="emS_nps_5" onclick="handleEmStep(event,'nps',5)"><input type="checkbox" id="emCk_nps_5" onclick="event.stopPropagation()"><span class="em-step-n">06</span><span class="em-step-text"><strong>Plan de mejora documentado:</strong> registrar en una nota los cambios concretos que se van a hacer (protocolo de bienvenida, comunicación de precios, tiempo de espera, etc.) y revisarlos al mes siguiente. Sin documentar, el problema se repite.</span></label>
               </div>
               <div class="em-card-footer">
-                <button class="em-done-btn" id="emDB_nps" onclick="markEmDone('nps',4)">✓ Plan ejecutado</button>
-                <button class="em-reset-btn" onclick="resetEmSteps('nps',4)">↺ Reiniciar</button>
+                <button class="em-done-btn" id="emDB_nps" onclick="markEmDone('nps',6)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('nps',6)">↺ Reiniciar</button>
               </div>
             </div>
           </div>
@@ -4133,22 +4150,23 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
               <div class="em-dot gris" id="emDot_enc"></div>
               <span class="em-card-title">Encuestas realizadas &lt;50%</span>
               <span class="em-sev m">🔵 Monitorear</span>
-              <span class="em-card-time">⏱ 10 min</span>
+              <span class="em-card-time">⏱ 15 min</span>
               <span class="em-carr">▼</span>
             </div>
             <div class="em-card-body" id="emBody_enc">
-              <div class="em-symptom">💡 Sin datos confiables — el NPS que ves está sesgado hacia los pacientes más motivados. Meta mínima: 7 de cada 10 pacientes deben contestar.</div>
-              <div class="em-prog-meta" id="emPM_enc">0 de 4 pasos completados</div>
+              <div class="em-symptom">💡 <strong>NPS sesgado — sin datos confiables.</strong> Si solo el 30% de los pacientes responde, el NPS refleja solo a los más motivados (generalmente los satisfechos). La meta mínima es 70%: 7 de cada 10 deben contestar para que el número sea estadísticamente válido. El problema casi siempre está en <em>cuándo</em> y <em>cómo</em> se pide la encuesta.</div>
+              <div class="em-prog-meta" id="emPM_enc">0 de 5 pasos completados</div>
               <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_enc" style="width:0%"></div></div>
               <div class="em-steps">
-                <label class="em-step" id="emS_enc_0" onclick="handleEmStep(event,'enc',0)"><input type="checkbox" id="emCk_enc_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Cambiar el momento de envío: mandar el link justo cuando el paciente sale, no al día siguiente</span></label>
-                <label class="em-step" id="emS_enc_1" onclick="handleEmStep(event,'enc',1)"><input type="checkbox" id="emCk_enc_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Enviar mensaje personalizado por WhatsApp ese mismo día con el link de la encuesta</span></label>
-                <label class="em-step" id="emS_enc_2" onclick="handleEmStep(event,'enc',2)"><input type="checkbox" id="emCk_enc_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Recordatorio al tercer día si no respondió — solo una vez, no más</span></label>
-                <label class="em-step" id="emS_enc_3" onclick="handleEmStep(event,'enc',3)"><input type="checkbox" id="emCk_enc_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Agregar el link de la encuesta en la firma de WhatsApp de Jessica para máxima exposición</span></label>
+                <label class="em-step" id="emS_enc_0" onclick="handleEmStep(event,'enc',0)"><input type="checkbox" id="emCk_enc_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text"><strong>Cambiar el momento del envío:</strong> el mejor momento es justo cuando el paciente sale — mientras aún está físicamente en la clínica o en el carro de regreso. La tasa de respuesta cae a la mitad si se manda al día siguiente. Regla: encuesta antes de las 2 horas post-sesión.</span></label>
+                <label class="em-step" id="emS_enc_1" onclick="handleEmStep(event,'enc',1)"><input type="checkbox" id="emCk_enc_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text"><strong>Personalizar el mensaje de envío:</strong> no mandar solo el link — agregar contexto. Guión: <em>"Hola [nombre]! Un gusto haberte atendido hoy 🙌 Tu opinión nos ayuda a mejorar — ¿puedes tomarte 30 segundos para responder estas 3 preguntas? [link]"</em>. El 30 segundos reduce la resistencia a responder.</span></label>
+                <label class="em-step" id="emS_enc_2" onclick="handleEmStep(event,'enc',2)"><input type="checkbox" id="emCk_enc_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text"><strong>Recordatorio al tercer día si no respondió:</strong> un único recordatorio — no más. Guión: <em>"Hola [nombre], te quedó pendiente la encuesta de satisfacción. Son solo 3 preguntas 😊 [link]"</em>. Después del tercer día la tasa de respuesta cae a menos del 5%, no vale la pena insistir.</span></label>
+                <label class="em-step" id="emS_enc_3" onclick="handleEmStep(event,'enc',3)"><input type="checkbox" id="emCk_enc_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text"><strong>Verificar que la auxiliar lo está ejecutando:</strong> revisar la última semana — ¿cuántas citas hubo y cuántas encuestas se enviaron? Si la diferencia es grande, el problema es operativo, no de diseño. Agregar el envío de encuesta como paso fijo en el checklist post-cita.</span></label>
+                <label class="em-step" id="emS_enc_4" onclick="handleEmStep(event,'enc',4)"><input type="checkbox" id="emCk_enc_4" onclick="event.stopPropagation()"><span class="em-step-n">05</span><span class="em-step-text"><strong>Ofrecer incentivo de participación:</strong> comunicar a los pacientes que sus respuestas generan mejoras reales en el servicio — los pacientes responden más cuando sienten que su opinión cambia algo. También se puede agregar al final del formulario: "Al completar esta encuesta entras en el sorteo mensual de una sesión gratuita."</span></label>
               </div>
               <div class="em-card-footer">
-                <button class="em-done-btn" id="emDB_enc" onclick="markEmDone('enc',4)">✓ Plan ejecutado</button>
-                <button class="em-reset-btn" onclick="resetEmSteps('enc',4)">↺ Reiniciar</button>
+                <button class="em-done-btn" id="emDB_enc" onclick="markEmDone('enc',5)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('enc',5)">↺ Reiniciar</button>
               </div>
             </div>
           </div>
@@ -4159,22 +4177,51 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
               <div class="em-dot gris" id="emDot_bd"></div>
               <span class="em-card-title">BD actualizada &lt;90%<br><small style="font-weight:400;font-size:.75em;color:var(--muted)">teléfono + email</small></span>
               <span class="em-sev u">🟠 Urgente</span>
-              <span class="em-card-time">⏱ 15 min</span>
+              <span class="em-card-time">⏱ 20 min</span>
               <span class="em-carr">▼</span>
             </div>
             <div class="em-card-body" id="emBody_bd">
-              <div class="em-symptom">💡 Pacientes "fantasma" — sin datos completos no hay campañas de re-enganche ni recordatorios automáticos. Cada paciente sin ficha es una oportunidad perdida.</div>
-              <div class="em-prog-meta" id="emPM_bd">0 de 4 pasos completados</div>
+              <div class="em-symptom">💡 <strong>Pacientes "fantasma" en la base de datos.</strong> Sin datos completos no hay campañas de re-enganche, ni recordatorios automáticos, ni seguimiento post-sesión. Cada paciente sin ficha representa entre $70k y $150k en ingresos recurrentes que no se van a poder recuperar porque no hay forma de contactarlos.</div>
+              <div class="em-prog-meta" id="emPM_bd">0 de 5 pasos completados</div>
               <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_bd" style="width:0%"></div></div>
               <div class="em-steps">
-                <label class="em-step" id="emS_bd_0" onclick="handleEmStep(event,'bd',0)"><input type="checkbox" id="emCk_bd_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text">Abrir KPI 8 y ver el breakdown: ¿qué falta más, teléfono o email?</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 8 →</button></label>
-                <label class="em-step" id="emS_bd_1" onclick="handleEmStep(event,'bd',1)"><input type="checkbox" id="emCk_bd_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text">Regla de oro: ningún paciente sale de la clínica sin ficha completa — implementar desde hoy</span></label>
-                <label class="em-step" id="emS_bd_2" onclick="handleEmStep(event,'bd',2)"><input type="checkbox" id="emCk_bd_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text">Auxiliar revisa y completa los datos faltantes antes del cierre del día</span><button class="em-goto" onclick="event.stopPropagation();showView('pacientes')">Ver pacientes →</button></label>
-                <label class="em-step" id="emS_bd_3" onclick="handleEmStep(event,'bd',3)"><input type="checkbox" id="emCk_bd_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text">Llamar a los pacientes del mes sin email para completar el registro telefónicamente</span></label>
+                <label class="em-step" id="emS_bd_0" onclick="handleEmStep(event,'bd',0)"><input type="checkbox" id="emCk_bd_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text"><strong>Ver el breakdown del KPI 8:</strong> ¿qué dato falta más — teléfono o email? Si falta teléfono, el problema es en el agendamiento (pacientes agendados manualmente sin capturar el dato). Si falta email, el problema es en el protocolo de bienvenida.</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver KPI 8 →</button></label>
+                <label class="em-step" id="emS_bd_1" onclick="handleEmStep(event,'bd',1)"><input type="checkbox" id="emCk_bd_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text"><strong>Implementar la regla de oro desde hoy:</strong> ningún paciente sale de la clínica sin que su ficha esté completa. Si agendaron por Instagram o teléfono, el primer contacto en clínica debe incluir: "Voy a completar tu ficha para enviarte los recordatorios — ¿me das tu email?"</span></label>
+                <label class="em-step" id="emS_bd_2" onclick="handleEmStep(event,'bd',2)"><input type="checkbox" id="emCk_bd_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text"><strong>Auxiliar completa fichas pendientes hoy:</strong> revisar en Base de datos los pacientes del mes sin email — llamarlos o escribirles por WhatsApp para completar el registro. Guión: <em>"Hola [nombre]! Para enviarte los recordatorios de tus citas y tu encuesta de satisfacción, ¿me puedes confirmar tu email?"</em></span><button class="em-goto" onclick="event.stopPropagation();showView('pacientes')">Ver pacientes →</button></label>
+                <label class="em-step" id="emS_bd_3" onclick="handleEmStep(event,'bd',3)"><input type="checkbox" id="emCk_bd_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text"><strong>Agregar el formulario de registro al flujo de agendamiento:</strong> si los pacientes agendan por el formulario web, los datos quedan automáticos. Si agendan por WhatsApp, la auxiliar debe capturar nombre completo, teléfono y email antes de confirmar la cita — no después.</span></label>
+                <label class="em-step" id="emS_bd_4" onclick="handleEmStep(event,'bd',4)"><input type="checkbox" id="emCk_bd_4" onclick="event.stopPropagation()"><span class="em-step-n">05</span><span class="em-step-text"><strong>Revisar en 2 semanas:</strong> si el porcentaje no sube al 95%+ después de los cambios, el problema es de proceso — la auxiliar necesita un recordatorio visual en la clínica (un cartel o una nota en el computador que diga "¿ficha completa?") antes de confirmar cada cita.</span></label>
               </div>
               <div class="em-card-footer">
-                <button class="em-done-btn" id="emDB_bd" onclick="markEmDone('bd',4)">✓ Plan ejecutado</button>
-                <button class="em-reset-btn" onclick="resetEmSteps('bd',4)">↺ Reiniciar</button>
+                <button class="em-done-btn" id="emDB_bd" onclick="markEmDone('bd',5)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('bd',5)">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI: Retención 60 días -->
+          <div class="em-card" id="emCard_retencion">
+            <div class="em-card-hdr" onclick="toggleEmCard('retencion')">
+              <div class="em-dot gris" id="emDot_retencion"></div>
+              <span class="em-card-title">Retención 60 días &lt;40%</span>
+              <span class="em-sev u">🟠 Urgente</span>
+              <span class="em-card-time">⏱ 35 min</span>
+              <span class="em-carr">▼</span>
+            </div>
+            <div class="em-card-body" id="emBody_retencion">
+              <div class="em-symptom">💡 <strong>Abandono masivo de pacientes.</strong> Más del 60% de los pacientes que atiendes no vuelven en 60 días — eso significa que el costo de adquisición se gasta en pacientes de una sola sesión. Las causas más frecuentes: (1) el paciente no entendió que necesitaba más sesiones, (2) no recibió seguimiento post-sesión, (3) la primera sesión no generó suficiente resultado percibido.</div>
+              <div class="em-prog-meta" id="emPM_retencion">0 de 6 pasos completados</div>
+              <div class="em-prog-wrap"><div class="em-prog-fill" id="emPF_retencion" style="width:0%"></div></div>
+              <div class="em-steps">
+                <label class="em-step" id="emS_retencion_0" onclick="handleEmStep(event,'retencion',0)"><input type="checkbox" id="emCk_retencion_0" onclick="event.stopPropagation()"><span class="em-step-n">01</span><span class="em-step-text"><strong>Identificar quiénes solo vinieron una vez:</strong> en el tablero de Indicadores, usar la lista "Solo 1 sesión · no han vuelto (+3 meses)". Estos son los pacientes perdidos — cada uno representa entre $70k y $110k de ingreso potencial.</span><button class="em-goto" onclick="event.stopPropagation();showView('guiakpis')">Ver tablero →</button></label>
+                <label class="em-step" id="emS_retencion_1" onclick="handleEmStep(event,'retencion',1)"><input type="checkbox" id="emCk_retencion_1" onclick="event.stopPropagation()"><span class="em-step-n">02</span><span class="em-step-text"><strong>Campaña de reenganche personalizado:</strong> desde Guiones WA → Recuperación, enviar mensaje personalizado a los pacientes de la lista. El mensaje debe mencionar el servicio específico que recibieron y mostrar que se recuerda su caso. Los mensajes genéricos tienen menos del 5% de respuesta.</span><button class="em-goto" onclick="event.stopPropagation();showView('guioneswa')">Guiones WA →</button></label>
+                <label class="em-step" id="emS_retencion_2" onclick="handleEmStep(event,'retencion',2)"><input type="checkbox" id="emCk_retencion_2" onclick="event.stopPropagation()"><span class="em-step-n">03</span><span class="em-step-text"><strong>Revisar el protocolo de cierre de sesión:</strong> al terminar cada cita, ¿la auxiliar o Jessica explican cuántas sesiones más se recomiendan y por qué? Si el paciente sale sin un plan claro, no tiene razón para volver. El plan verbal de tratamiento debe incluir: próxima sesión recomendada + fecha tentativa + qué pasa si no la hace.</span></label>
+                <label class="em-step" id="emS_retencion_3" onclick="handleEmStep(event,'retencion',3)"><input type="checkbox" id="emCk_retencion_3" onclick="event.stopPropagation()"><span class="em-step-n">04</span><span class="em-step-text"><strong>Implementar seguimiento post-sesión en las primeras 48h:</strong> el mensaje de seguimiento no es para vender — es para saber cómo está el paciente. Guión: <em>"Hola [nombre], ¿cómo amaneciste hoy después de la sesión de ayer? 😊"</em>. Los pacientes que reciben seguimiento regresan 2× más que los que no.</span></label>
+                <label class="em-step" id="emS_retencion_4" onclick="handleEmStep(event,'retencion',4)"><input type="checkbox" id="emCk_retencion_4" onclick="event.stopPropagation()"><span class="em-step-n">05</span><span class="em-step-text"><strong>Ofrecer paquete al finalizar la primera sesión:</strong> el momento de mayor disposición a comprar es justo cuando el paciente está en la camilla o saliendo — acaba de experimentar el valor. Guión: <em>"Para que no pierdas el progreso de hoy, te recomiendo [X] sesiones más. Si las agendas juntas hoy, te sale $[descuento] menos que pagando sueltas."</em></span></label>
+                <label class="em-step" id="emS_retencion_5" onclick="handleEmStep(event,'retencion',5)"><input type="checkbox" id="emCk_retencion_5" onclick="event.stopPropagation()"><span class="em-step-n">06</span><span class="em-step-text"><strong>Medir en 30 días:</strong> después de implementar los cambios, revisar la retención del siguiente período. Si no mejora, el problema puede ser de expectativas del paciente vs. resultados clínicos reales — revisar el protocolo de tratamiento con Jessica.</span></label>
+              </div>
+              <div class="em-card-footer">
+                <button class="em-done-btn" id="emDB_retencion" onclick="markEmDone('retencion',6)">✓ Plan ejecutado</button>
+                <button class="em-reset-btn" onclick="resetEmSteps('retencion',6)">↺ Reiniciar</button>
               </div>
             </div>
           </div>
@@ -11837,7 +11884,7 @@ function _updateEmProgress(kpi) {
 }
 
 function loadAllEmSteps() {
-  ['sesiones','mixfull','cancel','leads','conv','ventas_sem','ventas_mes','nps','enc','bd'].forEach(kpi => {
+  ['sesiones','mixfull','cancel','leads','conv','ventas_sem','ventas_mes','nps','enc','bd','retencion'].forEach(kpi => {
     let state = [];
     try { state = JSON.parse(kvGet('em_steps_' + kpi) || '[]'); } catch(e) {}
     state.forEach((checked, idx) => {
