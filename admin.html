@@ -12528,12 +12528,7 @@ async function loadEncuestaStats() {
       renderKPITablero();
       renderKPIGuia();
       toast(`✅ NPS: ${npsVal !== null ? npsVal : '—'} · Encuestas: ${encPct}% · ${d.totalMes} respuestas este mes`, 'ok');
-      // Diagnóstico temporal: muestra qué texto devuelve el formulario
-      if (d.rawSample && d.rawSample.length > 0) {
-        setTimeout(() => alert('📋 DIAGNÓSTICO NPS\n\nPregunta encontrada:\n"' + (d.npsItemEncontrado||'?') + '"\n\nRespuestas reales del formulario:\n' + d.rawSample.map((r,i)=>(i+1)+'. "'+r+'"').join('\n') + '\n\nPromotor=5 · Pasivo=4 · Detractor=0-3\n' + d.promotores + 'P · ' + d.pasivos + 'Pa · ' + d.detractores + 'D'), 500);
-      } else if (d.npsItemEncontrado) {
-        setTimeout(() => alert('📋 DIAGNÓSTICO NPS\n\nPregunta: "' + d.npsItemEncontrado + '"\nRespuestas este mes: ' + d.totalMes + '\nrawSample vacío — ninguna respuesta encontró la pregunta NPS'), 500);
-      }
+      setTimeout(() => alert('DIAGNÓSTICO GAS:\n\n' + JSON.stringify(d, null, 2)), 400);
     } else {
       toast('Error al leer el formulario: ' + (d.error || 'verifica el GAS'), 'err');
     }
