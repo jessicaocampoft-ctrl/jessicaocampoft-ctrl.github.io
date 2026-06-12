@@ -4829,7 +4829,24 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
 
       <!-- Explicación -->
       <div style="background:linear-gradient(135deg,#fef3c7,#fde68a20);border:1px solid #fde68a;border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:.83rem;color:var(--text);line-height:1.55">
-        <strong>¿Cómo funciona?</strong> Cuando la auxiliar contacta a un paciente que no ha vuelto en 2–3 meses y logra que agende una cita, se registra aquí la venta. La auxiliar gana el <strong>5%</strong> de cada venta recuperada. Jessica marca el pago como realizado una vez lo haga efectivo.
+        <strong>¿Cómo funciona?</strong> Abajo ves los pacientes que no han vuelto en 3+ meses. La auxiliar los contacta, los recupera, y cuando agendan una cita se registra aquí la venta. La auxiliar gana el <strong>5%</strong> de cada venta recuperada. Jessica marca el pago como realizado una vez lo haga efectivo.
+      </div>
+
+      <!-- Panel: Pacientes inactivos 3+ meses -->
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-family:var(--font-h);font-size:.95rem;font-weight:700">Pacientes a recuperar</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Sin sesión desde hace 3 meses o más · desde la base de datos</div>
+          </div>
+          <button id="recBtnCargar" onclick="cargarInactivos()" style="padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.83rem;display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+            Cargar pacientes
+          </button>
+        </div>
+        <div id="recInactivosPanel" style="padding:20px">
+          <div style="text-align:center;color:var(--muted);font-size:.85rem;padding:20px 0">Presiona "Cargar pacientes" para ver la lista desde la base de datos</div>
+        </div>
       </div>
 
       <!-- Formulario de registro -->
@@ -16262,6 +16279,117 @@ function pagarTodasComisiones() {
   _saveRec(all);
   renderRecuperaciones();
   if (typeof toast === 'function') toast(`${cnt} comisión${cnt>1?'es':''} marcada${cnt>1?'s':''} como pagada${cnt>1?'s':''}`, 'ok');
+}
+
+// ── Carga pacientes inactivos 3+ meses desde GAS ──
+async function cargarInactivos() {
+  const panel = document.getElementById('recInactivosPanel');
+  const btn   = document.getElementById('recBtnCargar');
+  if (!panel) return;
+  panel.innerHTML = '<div style="text-align:center;padding:30px"><div class="spinner"></div><div style="margin-top:10px;color:var(--muted);font-size:.83rem">Consultando base de datos...</div></div>';
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=getInactivos&token=${encodeURIComponent(TOKEN)}`);
+    const d = await r.json();
+    if (!d.ok) { panel.innerHTML = `<div style="color:var(--err,#ef4444);padding:20px">Error: ${d.error||'Sin respuesta del servidor'}</div>`; return; }
+    renderInactivos(d.inactivos || []);
+  } catch(e) {
+    panel.innerHTML = '<div style="color:var(--err,#ef4444);padding:20px">Error de conexión. Verifica que el GAS esté actualizado y vuelve a intentarlo.</div>';
+  } finally {
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  }
+}
+
+function renderInactivos(lista) {
+  const panel = document.getElementById('recInactivosPanel');
+  if (!panel) return;
+
+  if (lista.length === 0) {
+    panel.innerHTML = '<div style="text-align:center;color:var(--ok,#10b981);padding:30px;font-size:.9rem">✅ No hay pacientes inactivos de 3+ meses en la base de datos</div>';
+    return;
+  }
+
+  const grupos = {};
+  lista.forEach(p => {
+    const g = p.dias >= 180 ? '6m+' : p.dias >= 120 ? '4-6m' : '3-4m';
+    if (!grupos[g]) grupos[g] = [];
+    grupos[g].push(p);
+  });
+
+  const gCfg = [
+    { key:'6m+',  label:'Más de 6 meses sin sesión', color:'#ef4444', bg:'#fef2f2', border:'#fecaca' },
+    { key:'4-6m', label:'Entre 4 y 6 meses sin sesión', color:'#f59e0b', bg:'#fffbeb', border:'#fde68a' },
+    { key:'3-4m', label:'Entre 3 y 4 meses sin sesión', color:'#3b82f6', bg:'#eff6ff', border:'#bfdbfe' },
+  ];
+
+  let html = `<div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">${lista.length} paciente${lista.length!==1?'s':''} sin sesión desde hace 3+ meses</div>`;
+
+  gCfg.forEach(gc => {
+    const ps = grupos[gc.key];
+    if (!ps || ps.length === 0) return;
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:.75rem;font-family:var(--font-m);color:${gc.color};text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:600">${gc.label} · ${ps.length} paciente${ps.length!==1?'s':''}</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${ps.map(p => _recInactivoCard(p, gc)).join('')}
+      </div>
+    </div>`;
+  });
+
+  panel.innerHTML = html;
+}
+
+function _recInactivoCard(p, gc) {
+  const nombre1 = p.nombre.split(' ')[0];
+  const t = (p.telefono||'').replace(/\D/g,'');
+  const phone = t.length <= 10 && t.length >= 7 ? '57'+t : t;
+  const meses = Math.round(p.dias / 30);
+  const fechaFmt = p.lastFecha ? new Date(p.lastFecha+'T12:00:00').toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+
+  const msgWA = encodeURIComponent(`Hola ${nombre1}! 👋 Soy del consultorio de Jessica Ocampo Fisioterapeuta. Hace ${meses} ${meses===1?'mes':'meses'} que no te vemos por aquí — ¿cómo has estado? Te escribimos porque sabemos que el cuerpo lo agradece cuando mantiene la rutina de descarga. ¿Quieres agendar una sesión esta semana? 💪`);
+  const waUrl = phone.length >= 9 ? `https://wa.me/${phone}?text=${msgWA}` : '';
+
+  const waBtn = waUrl
+    ? `<a href="${waUrl}" target="_blank" style="padding:6px 12px;background:#25D366;color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:.75rem;font-family:var(--font-b);text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:4px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.12 1.533 5.845L0 24l6.335-1.524A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.659-.511-5.18-1.401l-.37-.221-3.762.905.955-3.667-.24-.377A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        WA
+      </a>`
+    : `<span style="font-size:.72rem;color:var(--muted)">Sin tel.</span>`;
+
+  const preNombre   = p.nombre.replace(/'/g,"\\'");
+  const preServicio = (p.lastServicio||'').replace(/'/g,"\\'");
+  const registrarBtn = `<button onclick="preRellenaRecuperacion('${preNombre}','${preServicio}')" style="padding:6px 12px;background:var(--primary);color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:.75rem;font-family:var(--font-b);white-space:nowrap">✓ Registrar</button>`;
+
+  return `<div style="background:${gc.bg};border:1px solid ${gc.border};border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div style="width:36px;height:36px;border-radius:50%;background:${gc.color};color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-weight:700;font-size:.85rem;flex-shrink:0">${p.nombre.charAt(0).toUpperCase()}</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:700;font-size:.88rem;color:var(--text)">${p.nombre}</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:1px">${p.lastServicio||'—'} · última: ${fechaFmt}</div>
+      <div style="font-size:.75rem;font-weight:600;color:${gc.color};margin-top:2px">${p.dias} días sin sesión (${meses} ${meses===1?'mes':'meses'})</div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+      ${waBtn}
+      ${registrarBtn}
+    </div>
+  </div>`;
+}
+
+function preRellenaRecuperacion(nombre, servicio) {
+  const inpNombre = document.getElementById('recInpPaciente');
+  const inpServ   = document.getElementById('recInpServicio');
+  const inpFecha  = document.getElementById('recInpFecha');
+  if (inpNombre) inpNombre.value = nombre;
+  if (inpFecha && !inpFecha.value) inpFecha.value = today();
+  // Intentar hacer match del servicio en el select
+  if (inpServ && servicio) {
+    const opts = Array.from(inpServ.options);
+    const srv  = servicio.toLowerCase();
+    const match = opts.find(o => srv.includes(o.value.toLowerCase()) || o.value.toLowerCase().includes(srv.split(' ')[0].toLowerCase()));
+    if (match) inpServ.value = match.value;
+  }
+  // Scroll suave al formulario
+  const form = document.getElementById('recInpVenta');
+  if (form) { form.scrollIntoView({ behavior:'smooth', block:'center' }); form.focus(); }
+  if (typeof toast === 'function') toast(`Formulario pre-llenado para ${nombre}`, 'ok');
 }
 
 // Calcular comisión en tiempo real mientras se escribe el valor de venta

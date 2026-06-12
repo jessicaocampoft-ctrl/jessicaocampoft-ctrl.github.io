@@ -90,6 +90,7 @@ function doGet(e) {
   if (p.action === 'cleanCitasSinHora') return js(cleanCitasSinHora());
   if (p.action === 'getReminders')   return js(getRemindersData());
   if (p.action === 'sendReminders')  return js(sendEmailReminders());
+  if (p.action === 'getInactivos')   return js(getInactivosData());
   if (p.action === 'generateEval')   return js(generateEvalReport(JSON.parse(decodeURIComponent(p.data))));
   if (p.action === 'updatePago')     return js(doUpdatePago(p));
   if (p.action === 'getAdminKV')     return js(getAdminKV());
@@ -1257,6 +1258,51 @@ function getRemindersData() {
   semana4.sort(function(a,b){ return a.dias - b.dias; });
   semana5.sort(function(a,b){ return a.dias - b.dias; });
   return { ok: true, semana4: semana4, semana5: semana5 };
+}
+
+// Devuelve pacientes cuya última cita fue hace 90+ días (3 meses o más)
+function getInactivosData() {
+  var ss   = getOrCreateSheet();
+  var rows = ss.getSheetByName('Citas').getDataRange().getValues();
+
+  var map = {};
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    var nombre   = (r[2] || '').toString().trim();
+    var fecha    = (r[0] || '').toString().trim();
+    var servicio = (r[4] || '').toString().trim();
+    var telefono = (r[6] || '').toString().trim();
+    var email    = (r[7] || '').toString().trim();
+    var estado   = (r[10] || '').toString().trim().toLowerCase();
+    if (!nombre || !fecha || estado === 'cancelado') continue;
+    // Normalizar fecha a YYYY-MM-DD
+    var fd = null;
+    if (fecha.indexOf('/') > -1) {
+      var parts = fecha.split('/');
+      if (parts.length === 3) fd = parts[2]+'-'+parts[1].padStart(2,'0')+'-'+parts[0].padStart(2,'0');
+    } else if (fecha.indexOf('-') > -1) {
+      fd = fecha.slice(0, 10);
+    }
+    if (!fd) continue;
+    var key = nombre.toLowerCase();
+    if (!map[key] || fd > map[key].lastFecha) {
+      map[key] = { nombre: nombre, telefono: telefono, email: email, lastServicio: servicio, lastFecha: fd };
+    }
+  }
+
+  var now = new Date(); now.setHours(0,0,0,0);
+  var inactivos = [];
+  for (var k in map) {
+    var p  = map[k];
+    var dp = p.lastFecha.split('-');
+    var lastDate = new Date(+dp[0], +dp[1]-1, +dp[2]);
+    var dias = Math.floor((now - lastDate) / 86400000);
+    if (dias >= 90) {
+      inactivos.push({ nombre: p.nombre, telefono: p.telefono, email: p.email, lastServicio: p.lastServicio, lastFecha: p.lastFecha, dias: dias });
+    }
+  }
+  inactivos.sort(function(a,b){ return b.dias - a.dias; });
+  return { ok: true, inactivos: inactivos };
 }
 
 // Envía emails a todos los pacientes con email registrado que están en semana 4 o 5+
