@@ -1706,19 +1706,27 @@ function getEncuestaStats_() {
       return d.getFullYear() === year && d.getMonth() === month;
     });
 
-    // Busca la pregunta NPS: soporta LINEAR_SCALE y MULTIPLE_CHOICE (radio buttons 0-5)
+    // Busca la pregunta NPS: busca en TODOS los items el que tenga opciones numéricas 0-5
+    // (no asume que es el primero — puede haber otras preguntas de selección antes)
     var items = form.getItems();
     var npsItem = null;
+
     for (var i = 0; i < items.length; i++) {
       var t = items[i].getType();
-      if (t === FormApp.ItemType.LINEAR_SCALE ||
-          t === FormApp.ItemType.MULTIPLE_CHOICE) {
-        npsItem = items[i]; break;
+      if (t === FormApp.ItemType.LINEAR_SCALE) {
+        npsItem = items[i]; break; // Linear scale siempre es NPS
+      }
+      if (t === FormApp.ItemType.MULTIPLE_CHOICE) {
+        // Verifica que las opciones sean numéricas (0-5)
+        var choices = items[i].asMultipleChoiceItem().getChoices();
+        var esNumerica = choices.length > 0 && choices.every(function(c) {
+          return !isNaN(parseInt(c.getValue(), 10));
+        });
+        if (esNumerica) { npsItem = items[i]; break; }
       }
     }
 
     // Escala 0-5: 5=Promotor, 4=Pasivo, 0-3=Detractor
-    // parseInt maneja tanto "5" como "5 Totalmente probable"
     var promotores = 0, pasivos = 0, detractores = 0;
     if (npsItem) {
       var npsId = npsItem.getId();
@@ -1730,7 +1738,7 @@ function getEncuestaStats_() {
             if (!isNaN(score)) {
               if (score === 5)      promotores++;
               else if (score === 4) pasivos++;
-              else                  detractores++; // 0, 1, 2, 3
+              else                  detractores++;
             }
             break;
           }
@@ -1745,8 +1753,21 @@ function getEncuestaStats_() {
       promotores:  promotores,
       pasivos:     pasivos,
       detractores: detractores,
-      nps: total > 0 ? Math.round((promotores / total - detractores / total) * 100) : null
+      nps: total > 0 ? Math.round((promotores / total - detractores / total) * 100) : null,
+      npsItemEncontrado: npsItem ? npsItem.getTitle() : 'NO ENCONTRADO'
     };
   } catch(e) { return { ok: false, error: e.toString() }; }
+}
+
+// Ejecuta esta función en GAS para diagnosticar — el resultado aparece en "Resultado de ejecución"
+function debugEncuesta() {
+  var result = getEncuestaStats_();
+  var FORM_ID = '1UxoEq1x4GXaG9ghBQJO_C85p3ZPU3T7zeKhy0Ij-UA4';
+  var form = FormApp.openById(FORM_ID);
+  var items = form.getItems();
+  var itemInfo = items.map(function(it) {
+    return { title: it.getTitle(), type: it.getType().toString() };
+  });
+  return { stats: result, formItems: itemInfo };
 }
 
