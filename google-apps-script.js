@@ -1759,15 +1759,15 @@ function getEncuestaStats_() {
   } catch(e) { return { ok: false, error: e.toString() }; }
 }
 
-// Ejecuta esta función en GAS para diagnosticar — el resultado aparece en "Resultado de ejecución"
+// Ejecuta esta función en GAS para diagnosticar — el resultado aparece en "Registro de ejecución"
 function debugEncuesta() {
   var result = getEncuestaStats_();
   var FORM_ID = '1UxoEq1x4GXaG9ghBQJO_C85p3ZPU3T7zeKhy0Ij-UA4';
   var form = FormApp.openById(FORM_ID);
   var items = form.getItems();
-  var itemInfo = items.map(function(it) {
-    return { title: it.getTitle(), type: it.getType().toString() };
+  items.forEach(function(it) {
+    console.log('Item: ' + it.getTitle() + ' | Tipo: ' + it.getType().toString());
   });
-  return { stats: result, formItems: itemInfo };
+  console.log('Stats: ' + JSON.stringify(result));
 }
 
