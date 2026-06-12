@@ -1799,6 +1799,22 @@ function getEncuestaStats_() {
     }
 
     var total = mesRes.length;
+
+    // Recolectar muestra de respuestas reales para diagnóstico
+    var rawSample = [];
+    if (npsItem && mesRes.length > 0) {
+      var npsIdS = npsItem.getId();
+      for (var s = 0; s < Math.min(3, mesRes.length); s++) {
+        var irS = mesRes[s].getItemResponses();
+        for (var q = 0; q < irS.length; q++) {
+          if (irS[q].getItem().getId() === npsIdS) {
+            rawSample.push('' + irS[q].getResponse());
+            break;
+          }
+        }
+      }
+    }
+
     return {
       ok: true,
       totalMes:    total,
@@ -1806,7 +1822,8 @@ function getEncuestaStats_() {
       pasivos:     pasivos,
       detractores: detractores,
       nps: (npsItem && total > 0) ? Math.round((promotores / total - detractores / total) * 100) : null,
-      npsItemEncontrado: npsItem ? npsItem.getTitle() : 'NO ENCONTRADO'
+      npsItemEncontrado: npsItem ? npsItem.getTitle() : 'NO ENCONTRADO',
+      rawSample: rawSample
     };
   } catch(e) { return { ok: false, error: e.toString() }; }
 }
