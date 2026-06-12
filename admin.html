@@ -4184,14 +4184,16 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
 
       <!-- RUTINA -->
       <div class="gk-section-title">📅 Rutina de medición</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+      <div style="margin-bottom:12px">
         <p style="font-size:.9rem;color:var(--muted);margin:0">Checklist diario para la auxiliar administrativa. Se reinicia automáticamente cada día.</p>
-        <button onclick="resetRutina()" style="font-size:.73rem;padding:5px 12px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-family:var(--font-b)">↺ Reiniciar checklist</button>
       </div>
       <div class="gk-rutina" id="rutinaChecklist">
 
         <div class="gk-rutina-grupo">
-          <div class="gk-rutina-titulo">☀️ DIARIO (5 minutos al final del día)</div>
+          <div class="gk-rutina-titulo" style="display:flex;justify-content:space-between;align-items:center">
+            <span>☀️ DIARIO (5 minutos al final del día)</span>
+            <button onclick="resetRutinaGrupo('d')" style="font-size:.68rem;padding:3px 10px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;cursor:pointer;font-family:var(--font-b)">↺ Reiniciar</button>
+          </div>
           <label class="gk-check-item" onclick="toggleRutinaCheck('d3')">
             <input type="checkbox" id="rck_d3" onchange="toggleRutinaCheck('d3')">
             <span>Sumar los leads desde Indicadores de Gestión (botón ➕ Lead WhatsApp o ➕ Lead Instagram)</span>
@@ -4212,10 +4214,17 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
             <input type="checkbox" id="rck_d8" onchange="toggleRutinaCheck('d8')">
             <span>Enviar mensajes de seguimiento según servicio — <strong>en especial a pacientes nuevos</strong>: Valoración Funcional (1 día después) · Descarga Muscular (2 días después) · Readaptación Funcional (1 día después) — cuando el paciente responda, enviar la encuesta de satisfacción</span>
           </label>
+          <label class="gk-check-item" onclick="toggleRutinaCheck('d10')">
+            <input type="checkbox" id="rck_d10" onchange="toggleRutinaCheck('d10')">
+            <span>Subir 1 video a redes sociales (Instagram Reels o TikTok) — puede ser una tip de fisioterapia, un antes/después, o un detrás de cámaras de la clínica</span>
+          </label>
         </div>
 
         <div class="gk-rutina-grupo">
-          <div class="gk-rutina-titulo">📆 SEMANAL (15 minutos los lunes en la mañana)</div>
+          <div class="gk-rutina-titulo" style="display:flex;justify-content:space-between;align-items:center">
+            <span>📆 SEMANAL (15 minutos los lunes en la mañana)</span>
+            <button onclick="resetRutinaGrupo('s')" style="font-size:.68rem;padding:3px 10px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;cursor:pointer;font-family:var(--font-b)">↺ Reiniciar</button>
+          </div>
           <label class="gk-check-item" onclick="toggleRutinaCheck('s1')">
             <input type="checkbox" id="rck_s1" onchange="toggleRutinaCheck('s1')">
             <span>Revisar sesiones de la semana (citas + eventos) vs meta de <span class="kpi-ref" data-ref="meta_sesiones">30</span></span>
@@ -4247,7 +4256,10 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
         </div>
 
         <div class="gk-rutina-grupo">
-          <div class="gk-rutina-titulo">🗓️ MENSUAL (1 hora el primer lunes del mes)</div>
+          <div class="gk-rutina-titulo" style="display:flex;justify-content:space-between;align-items:center">
+            <span>🗓️ MENSUAL (1 hora el primer lunes del mes)</span>
+            <button onclick="resetRutinaGrupo('m')" style="font-size:.68rem;padding:3px 10px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;cursor:pointer;font-family:var(--font-b)">↺ Reiniciar</button>
+          </div>
           <label class="gk-check-item" onclick="toggleRutinaCheck('m1')">
             <input type="checkbox" id="rck_m1" onchange="toggleRutinaCheck('m1')">
             <span>Presionar <strong>🔄 Cargar encuestas</strong> para calcular NPS y % de respuestas automáticamente</span>
@@ -12336,7 +12348,7 @@ function _renderEncuestaStatsUI(stats) {
 }
 
 // ── RUTINA DE MEDICIÓN — checklist tachable con reinicio diario ──
-const RUTINA_IDS = ['d3','d6','d7','d8','d9','s1','s2','s3','s4','s5','s6','s7','m1','m3','m4','m5','m6'];
+const RUTINA_IDS = ['d3','d6','d7','d8','d9','d10','s1','s2','s3','s4','s5','s6','s7','m1','m3','m4','m5','m6'];
 
 function _rutinaKey() {
   const d = new Date();
@@ -12378,6 +12390,23 @@ function resetRutina() {
   kvRemove(_rutinaKey());
   loadRutinaChecks();
   toast('Checklist reiniciado', 'ok');
+}
+
+function resetRutinaGrupo(prefix) {
+  const today = _rutinaKey();
+  let checked = [];
+  try { checked = JSON.parse(kvGet(today) || '[]'); } catch {}
+  checked = checked.filter(id => !id.startsWith(prefix));
+  kvSet(today, JSON.stringify(checked));
+  RUTINA_IDS.filter(id => id.startsWith(prefix)).forEach(id => {
+    const cb  = document.getElementById('rck_' + id);
+    const lbl = cb ? cb.closest('.gk-check-item') : null;
+    if (!cb || !lbl) return;
+    cb.checked = false;
+    lbl.classList.remove('done');
+  });
+  const nombre = prefix === 'd' ? 'Diario' : prefix === 's' ? 'Semanal' : 'Mensual';
+  toast('Checklist ' + nombre + ' reiniciado', 'ok');
 }
 
 function _renderBDBreakdown() {
