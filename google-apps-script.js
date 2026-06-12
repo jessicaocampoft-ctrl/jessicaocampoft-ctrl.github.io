@@ -1706,26 +1706,34 @@ function getEncuestaStats_() {
       return d.getFullYear() === year && d.getMonth() === month;
     });
 
-    // Busca la primera pregunta de escala (la del 1-5)
+    // Busca la pregunta NPS: soporta LINEAR_SCALE y MULTIPLE_CHOICE (radio buttons 0-5)
     var items = form.getItems();
-    var npsIdx = -1;
+    var npsItem = null;
     for (var i = 0; i < items.length; i++) {
       var t = items[i].getType();
-      if (t === FormApp.ItemType.LINEAR_SCALE || t === FormApp.ItemType.SCALE) {
-        npsIdx = i; break;
+      if (t === FormApp.ItemType.LINEAR_SCALE ||
+          t === FormApp.ItemType.MULTIPLE_CHOICE) {
+        npsItem = items[i]; break;
       }
     }
 
-    // Escala 1-5: 5=Promotor, 4=Pasivo, 1-3=Detractor
+    // Escala 0-5: 5=Promotor, 4=Pasivo, 0-3=Detractor
+    // parseInt maneja tanto "5" como "5 Totalmente probable"
     var promotores = 0, pasivos = 0, detractores = 0;
-    if (npsIdx >= 0) {
+    if (npsItem) {
+      var npsId = npsItem.getId();
       mesRes.forEach(function(r) {
         var ir = r.getItemResponses();
-        if (ir[npsIdx]) {
-          var score = parseInt(ir[npsIdx].getResponse(), 10);
-          if (score === 5)      promotores++;
-          else if (score === 4) pasivos++;
-          else if (score >= 1)  detractores++;
+        for (var j = 0; j < ir.length; j++) {
+          if (ir[j].getItem().getId() === npsId) {
+            var score = parseInt(('' + ir[j].getResponse()).trim(), 10);
+            if (!isNaN(score)) {
+              if (score === 5)      promotores++;
+              else if (score === 4) pasivos++;
+              else                  detractores++; // 0, 1, 2, 3
+            }
+            break;
+          }
         }
       });
     }
