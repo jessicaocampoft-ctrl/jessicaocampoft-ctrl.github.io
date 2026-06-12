@@ -1706,23 +1706,19 @@ function getEncuestaStats_() {
       return d.getFullYear() === year && d.getMonth() === month;
     });
 
-    // Busca la pregunta NPS: busca en TODOS los items el que tenga opciones numéricas 0-5
-    // (no asume que es el primero — puede haber otras preguntas de selección antes)
+    // Busca la pregunta NPS por palabras clave en el título (recomiendes/probable)
+    // para no confundirla con otras preguntas de calificación del formulario
     var items = form.getItems();
     var npsItem = null;
 
     for (var i = 0; i < items.length; i++) {
+      var titulo = items[i].getTitle().toLowerCase();
+      var esNPS = titulo.indexOf('recomiendes') > -1 || titulo.indexOf('recomiend') > -1 ||
+                  titulo.indexOf('probable') > -1 || titulo.indexOf('nps') > -1;
+      if (!esNPS) continue;
       var t = items[i].getType();
-      if (t === FormApp.ItemType.LINEAR_SCALE) {
-        npsItem = items[i]; break; // Linear scale siempre es NPS
-      }
-      if (t === FormApp.ItemType.MULTIPLE_CHOICE) {
-        // Verifica que las opciones sean numéricas (0-5)
-        var choices = items[i].asMultipleChoiceItem().getChoices();
-        var esNumerica = choices.length > 0 && choices.every(function(c) {
-          return !isNaN(parseInt(c.getValue(), 10));
-        });
-        if (esNumerica) { npsItem = items[i]; break; }
+      if (t === FormApp.ItemType.LINEAR_SCALE || t === FormApp.ItemType.MULTIPLE_CHOICE) {
+        npsItem = items[i]; break;
       }
     }
 
