@@ -1292,7 +1292,7 @@ function getInactivosData() {
       var dp = p.lastFecha.split('-');
       var lastDate = new Date(+dp[0], +dp[1]-1, +dp[2]);
       var dias = Math.floor((now - lastDate) / 86400000);
-      if (dias >= 90) {
+      if (dias >= 60) {
         inactivos.push({ nombre: p.nombre, telefono: p.telefono, email: p.email, lastServicio: p.lastServicio, lastFecha: p.lastFecha, dias: dias });
       }
     }

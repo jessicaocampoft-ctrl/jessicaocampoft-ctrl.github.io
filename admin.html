@@ -4829,7 +4829,7 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
 
       <!-- Explicación -->
       <div style="background:linear-gradient(135deg,#fef3c7,#fde68a20);border:1px solid #fde68a;border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:.83rem;color:var(--text);line-height:1.55">
-        <strong>¿Cómo funciona?</strong> Abajo ves los pacientes que no han vuelto en 3+ meses. La auxiliar los contacta, los recupera, y cuando agendan una cita se registra aquí la venta. La auxiliar gana el <strong>5%</strong> de cada venta recuperada. Jessica marca el pago como realizado una vez lo haga efectivo.
+        <strong>¿Cómo funciona?</strong> Abajo ves los pacientes que no han vuelto en 2+ meses. La auxiliar los contacta, los recupera, y cuando agendan una cita se registra aquí la venta. La auxiliar gana el <strong>5%</strong> de cada venta recuperada. Jessica marca el pago como realizado una vez lo haga efectivo.
       </div>
 
       <!-- Panel: Pacientes inactivos 3+ meses -->
@@ -4837,7 +4837,7 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
         <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
           <div>
             <div style="font-family:var(--font-h);font-size:.95rem;font-weight:700">Pacientes a recuperar</div>
-            <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Sin sesión desde hace 3 meses o más · desde la base de datos</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Sin sesión desde hace 2 meses o más · desde la base de datos</div>
           </div>
           <button id="recBtnCargar" onclick="cargarInactivos()" style="padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.83rem;display:flex;align-items:center;gap:6px">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
@@ -15455,7 +15455,7 @@ function _comisReactivaciones(citas, year, month) {
     if (!before.length) continue;
     const lastB = before.reduce((a,b) => normDate(a.fecha)>normDate(b.fecha)?a:b);
     const dias  = Math.round((mS - new Date(normDate(lastB.fecha)+'T12:00')) / 86400000);
-    if (dias >= 90) {
+    if (dias >= 60) {
       const firstSes = [...thisMon].sort((a,b) => normDate(a.fecha).localeCompare(normDate(b.fecha)))[0];
       const precio = parseInt((firstSes?.precio||'0').toString().replace(/\D/g,''), 10) || 0;
       result.push({ nombre: p.nombre, lastFecha: normDate(lastB.fecha), dias, precio });
@@ -16313,7 +16313,7 @@ function renderInactivos(lista) {
   if (!panel) return;
 
   if (lista.length === 0) {
-    panel.innerHTML = '<div style="text-align:center;color:var(--ok,#10b981);padding:30px;font-size:.9rem">✅ No hay pacientes inactivos de 3+ meses en la base de datos</div>';
+    panel.innerHTML = '<div style="text-align:center;color:var(--ok,#10b981);padding:30px;font-size:.9rem">✅ No hay pacientes inactivos de 2+ meses en la base de datos</div>';
     return;
   }
 
@@ -16330,7 +16330,7 @@ function renderInactivos(lista) {
     { key:'3-4m', label:'Entre 3 y 4 meses sin sesión', color:'#3b82f6', bg:'#eff6ff', border:'#bfdbfe' },
   ];
 
-  let html = `<div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">${lista.length} paciente${lista.length!==1?'s':''} sin sesión desde hace 3+ meses</div>`;
+  let html = `<div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">${lista.length} paciente${lista.length!==1?'s':''} sin sesión desde hace 2+ meses</div>`;
 
   gCfg.forEach(gc => {
     const ps = grupos[gc.key];
