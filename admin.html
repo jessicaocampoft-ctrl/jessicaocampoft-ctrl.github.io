@@ -12528,7 +12528,6 @@ async function loadEncuestaStats() {
       renderKPITablero();
       renderKPIGuia();
       toast(`✅ NPS: ${npsVal !== null ? npsVal : '—'} · Encuestas: ${encPct}% · ${d.totalMes} respuestas este mes`, 'ok');
-      setTimeout(() => alert('DIAGNÓSTICO GAS:\n\n' + JSON.stringify(d, null, 2)), 400);
     } else {
       toast('Error al leer el formulario: ' + (d.error || 'verifica el GAS'), 'err');
     }
