@@ -16328,9 +16328,56 @@ async function cargarInactivos() {
   }
 }
 
+let _recCurrentLista = [];
+let _recMsgTipo = 0;
+
+const _recMensajes = [
+  {
+    label: 'Chequeo amigable',
+    desc:  'Pregunta cómo está, sin presionar',
+    fn: (nombre1, meses) =>
+      `Hola ${nombre1}! 👋 Soy del consultorio de Jessica Ocampo Fisioterapeuta. Hace ${meses} ${meses===1?'mes':'meses'} que no te vemos por aquí — ¿cómo has estado? Te escribimos porque sabemos que el cuerpo lo agradece cuando mantiene la rutina de descarga. ¿Quieres agendar una sesión esta semana? 💪`
+  },
+  {
+    label: 'Recordatorio de resultados',
+    desc:  'Recuerda cómo se sentía después de la sesión',
+    fn: (nombre1, meses) =>
+      `Hola ${nombre1}! 💙 Te escribe el equipo de Jessica Ocampo Fisioterapeuta.\n\n¿Recuerdas cómo te sentiste después de tu última sesión? Ese alivio y esa ligereza que notaste... el cuerpo lo puede volver a tener.\n\nHace ${meses} ${meses===1?'mes':'meses'} que no tienes una descarga — y cuando la tensión se acumula, cuesta más recuperarla. ¿Te agendamos esta semana? 🙌`
+  },
+  {
+    label: 'Directo con fecha',
+    desc:  'Propone agendar sin rodeos',
+    fn: (nombre1, meses) =>
+      `Hola ${nombre1}! Soy del equipo de Jessica Ocampo Fisioterapeuta. Llevas ${meses} ${meses===1?'mes':'meses'} sin sesión y quería avisarte que tenemos disponibilidad esta semana.\n\n¿Te puedo apartar un espacio? Solo dime qué día te queda mejor. 📅`
+  },
+  {
+    label: 'Bienestar y cuidado',
+    desc:  'Tono empático, centrado en la salud',
+    fn: (nombre1, meses) =>
+      `Hola ${nombre1}! 🌿 Te saluda el consultorio de Jessica Ocampo Fisioterapeuta.\n\nSabemos que la vida se pone ocupada — han pasado ${meses} ${meses===1?'mes':'meses'} desde tu última visita. Solo queríamos recordarte que cuidarte no es un lujo, es una necesidad.\n\nWhen estés lista/o para retomar, aquí estamos. ¿Cómo estás? 💚`
+  }
+];
+
+function _renderRecMsgSelector() {
+  return `<div style="margin-bottom:16px;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px">
+    <div style="font-size:.75rem;color:var(--muted);font-family:var(--font-m);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Mensaje para enviar por WA</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${_recMensajes.map((m, i) => `
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:8px 10px;border-radius:8px;border:1px solid ${_recMsgTipo===i?'var(--primary)':'var(--border)'};background:${_recMsgTipo===i?'rgba(13,148,136,.06)':'transparent'};transition:all .15s" onclick="_recMsgTipo=${i};renderInactivos(_recCurrentLista)">
+          <input type="radio" name="recMsg" ${_recMsgTipo===i?'checked':''} style="margin-top:2px;accent-color:var(--primary);flex-shrink:0">
+          <div>
+            <div style="font-size:.82rem;font-weight:600;color:var(--text)">${m.label}</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:1px">${m.desc}</div>
+          </div>
+        </label>`).join('')}
+    </div>
+  </div>`;
+}
+
 function renderInactivos(lista) {
   const panel = document.getElementById('recInactivosPanel');
   if (!panel) return;
+  _recCurrentLista = lista;
 
   if (lista.length === 0) {
     panel.innerHTML = '<div style="text-align:center;color:var(--ok,#10b981);padding:30px;font-size:.9rem">✅ No hay pacientes inactivos de 2+ meses en la base de datos</div>';
@@ -16351,7 +16398,8 @@ function renderInactivos(lista) {
     { key:'2-3m', label:'Entre 2 y 3 meses sin sesión', color:'#8b5cf6', bg:'#f5f3ff', border:'#ddd6fe' },
   ];
 
-  let html = `<div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">${lista.length} paciente${lista.length!==1?'s':''} sin sesión desde hace 2+ meses</div>`;
+  let html = _renderRecMsgSelector();
+  html += `<div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">${lista.length} paciente${lista.length!==1?'s':''} sin sesión desde hace 2+ meses</div>`;
 
   gCfg.forEach(gc => {
     const ps = grupos[gc.key];
@@ -16374,7 +16422,7 @@ function _recInactivoCard(p, gc) {
   const meses = Math.round(p.dias / 30);
   const fechaFmt = p.lastFecha ? new Date(p.lastFecha+'T12:00:00').toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) : '—';
 
-  const msgWA = encodeURIComponent(`Hola ${nombre1}! 👋 Soy del consultorio de Jessica Ocampo Fisioterapeuta. Hace ${meses} ${meses===1?'mes':'meses'} que no te vemos por aquí — ¿cómo has estado? Te escribimos porque sabemos que el cuerpo lo agradece cuando mantiene la rutina de descarga. ¿Quieres agendar una sesión esta semana? 💪`);
+  const msgWA = encodeURIComponent(_recMensajes[_recMsgTipo].fn(nombre1, meses));
   const waUrl = phone.length >= 9 ? `https://wa.me/${phone}?text=${msgWA}` : '';
 
   const waBtn = waUrl
