@@ -4932,6 +4932,26 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
         <div id="recTotalesPie" style="padding:12px 20px;border-top:1px solid var(--border);display:none;justify-content:flex-end;gap:24px;font-size:.82rem;font-family:var(--font-m)"></div>
       </div>
 
+      <!-- ── CAMPAÑA DE REFERIDOS DEL MES ── -->
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-family:var(--font-h);font-size:.95rem;font-weight:700">Campaña de Referidos del Mes</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Pacientes que asistieron este mes · envíales su código de referido personalizado</div>
+          </div>
+          <button onclick="cargarCampañaReferidos()" style="padding:8px 16px;background:#8b5cf6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-b);font-size:.83rem;display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Cargar pacientes del mes
+          </button>
+        </div>
+        <div style="padding:14px 16px;background:linear-gradient(135deg,#f5f3ff,#ede9fe20);border-bottom:1px solid var(--border);font-size:.82rem;color:var(--text);line-height:1.55">
+          <strong>¿Cómo funciona?</strong> Se listan los pacientes que vinieron este mes. Cada uno recibe un código REF único por WhatsApp. Cuando ese código lo usa un amigo al agendar, tú registras la referencia en la sección Códigos. Tu NPS de 100 significa que <strong>todos tus pacientes actuales son promotores potenciales</strong> — solo hay que activarlos.
+        </div>
+        <div id="refCampañaPanel" style="padding:20px">
+          <div style="text-align:center;color:var(--muted);padding:30px;font-size:.88rem">Haz clic en "Cargar pacientes del mes" para ver la lista</div>
+        </div>
+      </div>
+
     </section>
 
     <!-- ── MENSAJES PREDETERMINADOS ── -->
@@ -16399,6 +16419,77 @@ function preRellenaRecuperacion(nombre, servicio) {
   const form = document.getElementById('recInpVenta');
   if (form) { form.scrollIntoView({ behavior:'smooth', block:'center' }); form.focus(); }
   if (typeof toast === 'function') toast(`Formulario pre-llenado para ${nombre}`, 'ok');
+}
+
+// ── CAMPAÑA DE REFERIDOS DEL MES ──
+function cargarCampañaReferidos() {
+  const panel = document.getElementById('refCampañaPanel');
+  if (!panel) return;
+
+  const now   = new Date();
+  const mes   = now.getMonth();
+  const anio  = now.getFullYear();
+  const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  const mesStr = MESES[mes];
+
+  // Pacientes únicos que asistieron este mes (excluir canceladas y registros)
+  const citas = (allData.citas || []).filter(c => {
+    if (!c.fecha || c.estado === 'Cancelada' || esRegistroServ(c.servicio)) return false;
+    const [y, m] = c.fecha.split('-');
+    return +y === anio && +m === (mes + 1);
+  });
+
+  const vistos = {};
+  const pacientes = [];
+  citas.forEach(c => {
+    const key = (c.nombre || '').toLowerCase().trim();
+    if (!key || vistos[key]) return;
+    vistos[key] = true;
+    pacientes.push({ nombre: c.nombre, telefono: c.telefono || '', servicio: c.servicio || '' });
+  });
+
+  if (!pacientes.length) {
+    panel.innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px;font-size:.88rem">No hay pacientes con sesiones registradas este mes</div>';
+    return;
+  }
+
+  let html = `<div style="font-size:.8rem;color:var(--muted);margin-bottom:14px">${pacientes.length} paciente${pacientes.length!==1?'s':''} atendido${pacientes.length!==1?'s':''} este mes · haz clic en "Enviar REF" para mandar su código por WhatsApp</div>`;
+  html += '<div style="display:flex;flex-direction:column;gap:8px">';
+
+  pacientes.forEach(p => {
+    const iniciales = p.nombre.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    const num       = Math.abs(p.nombre.split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % 900 + 100;
+    const codigo    = `REF-${mesStr}-${iniciales}${num}`;
+    const tel       = (p.telefono || '').replace(/\D/g, '');
+    const phone     = tel.length <= 10 && tel.length >= 7 ? '57' + tel : tel;
+    const nombre1   = p.nombre.split(' ')[0];
+
+    const msg = encodeURIComponent(
+      `Hola ${nombre1}! 💙 Gracias por confiar en Jessica Ocampo Fisioterapeuta.\n\n` +
+      `Como uno de nuestros pacientes especiales, tienes un código de referido personal: *${codigo}*\n\n` +
+      `Compártelo con un amigo o familiar que necesite fisioterapia — cuando agenda mencionando tu código, ` +
+      `recibe un beneficio especial en su primera sesión.\n\n` +
+      `¡Gracias por recomendarnos! 🙏`
+    );
+    const waUrl = phone.length >= 9 ? `https://wa.me/${phone}?text=${msg}` : '';
+
+    html += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="width:36px;height:36px;border-radius:50%;background:#8b5cf6;color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-weight:700;font-size:.85rem;flex-shrink:0">${p.nombre.charAt(0).toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.88rem;color:var(--text)">${p.nombre}</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:1px">${p.servicio}</div>
+        <div style="font-size:.75rem;font-weight:600;color:#8b5cf6;margin-top:2px;font-family:var(--font-m)">${codigo}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+        ${waUrl
+          ? `<a href="${waUrl}" target="_blank" style="padding:6px 14px;background:#8b5cf6;color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:.75rem;font-family:var(--font-b);text-decoration:none;white-space:nowrap">Enviar REF</a>`
+          : `<span style="font-size:.72rem;color:var(--muted)">Sin tel.</span>`}
+      </div>
+    </div>`;
+  });
+
+  html += '</div>';
+  panel.innerHTML = html;
 }
 
 // Calcular comisión en tiempo real mientras se escribe el valor de venta
