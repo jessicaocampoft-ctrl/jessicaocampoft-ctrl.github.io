@@ -16331,30 +16331,49 @@ async function cargarInactivos() {
 let _recCurrentLista = [];
 let _recMsgTipo = 0;
 
+function _recPreguntaDolencia(servicio) {
+  const s = (servicio || '').toLowerCase();
+  if (s.includes('cuello') || s.includes('espalda'))  return '¿cómo sigues del cuello y la espalda?';
+  if (s.includes('pierna'))                            return '¿cómo sigues de las piernas?';
+  if (s.includes('completa'))                          return '¿cómo sigues con la tensión muscular?';
+  if (s.includes('valorac'))                           return '¿cómo sigues con tu proceso?';
+  if (s.includes('readapt'))                           return '¿cómo sigues con tu readaptación?';
+  if (s.includes('recuper') || s.includes('full'))     return '¿cómo sigues con tu recuperación?';
+  return '¿cómo sigues de salud?';
+}
+
 const _recMensajes = [
   {
     label: 'Chequeo amigable',
-    desc:  'Pregunta cómo está, sin presionar',
-    fn: (nombre1, meses) =>
-      `Hola ${nombre1}! 👋 Soy del consultorio de Jessica Ocampo Fisioterapeuta. Hace ${meses} ${meses===1?'mes':'meses'} que no te vemos por aquí — ¿cómo has estado? Te escribimos porque sabemos que el cuerpo lo agradece cuando mantiene la rutina de descarga. ¿Quieres agendar una sesión esta semana? 💪`
+    desc:  'Pregunta por la dolencia, sin presionar',
+    fn: (nombre1, meses, servicio) => {
+      const q = _recPreguntaDolencia(servicio);
+      return `Hola ${nombre1}! Te escribe el equipo de Jessica Ocampo Fisioterapeuta 👋 ${q} Hace ${meses} ${meses===1?'mes':'meses'} que no te vemos por aquí — te escribimos porque sabemos que el cuerpo lo agradece cuando mantiene la rutina de descarga. ¿Quieres agendar una sesión esta semana? 💪`;
+    }
   },
   {
     label: 'Recordatorio de resultados',
     desc:  'Recuerda cómo se sentía después de la sesión',
-    fn: (nombre1, meses) =>
-      `Hola ${nombre1}! 💙 Te escribe el equipo de Jessica Ocampo Fisioterapeuta.\n\n¿Recuerdas cómo te sentiste después de tu última sesión? Ese alivio y esa ligereza que notaste... el cuerpo lo puede volver a tener.\n\nHace ${meses} ${meses===1?'mes':'meses'} que no tienes una descarga — y cuando la tensión se acumula, cuesta más recuperarla. ¿Te agendamos esta semana? 🙌`
+    fn: (nombre1, meses, servicio) => {
+      const q = _recPreguntaDolencia(servicio);
+      return `Hola ${nombre1}! Te escribe el equipo de Jessica Ocampo Fisioterapeuta 💙 ${q}\n\n¿Recuerdas cómo te sentiste después de tu última sesión? Ese alivio y esa ligereza que notaste... el cuerpo lo puede volver a tener.\n\nHace ${meses} ${meses===1?'mes':'meses'} que no tienes una descarga — cuando la tensión se acumula, cuesta más recuperarla. ¿Te agendamos esta semana? 🙌`;
+    }
   },
   {
     label: 'Directo con fecha',
     desc:  'Propone agendar sin rodeos',
-    fn: (nombre1, meses) =>
-      `Hola ${nombre1}! Soy del equipo de Jessica Ocampo Fisioterapeuta. Llevas ${meses} ${meses===1?'mes':'meses'} sin sesión y quería avisarte que tenemos disponibilidad esta semana.\n\n¿Te puedo apartar un espacio? Solo dime qué día te queda mejor. 📅`
+    fn: (nombre1, meses, servicio) => {
+      const q = _recPreguntaDolencia(servicio);
+      return `Hola ${nombre1}! Te escribe el equipo de Jessica Ocampo Fisioterapeuta. ${q} Llevas ${meses} ${meses===1?'mes':'meses'} sin sesión y quería avisarte que tenemos disponibilidad esta semana.\n\n¿Te puedo apartar un espacio? Solo dime qué día te queda mejor. 📅`;
+    }
   },
   {
     label: 'Bienestar y cuidado',
     desc:  'Tono empático, centrado en la salud',
-    fn: (nombre1, meses) =>
-      `Hola ${nombre1}! 🌿 Te saluda el consultorio de Jessica Ocampo Fisioterapeuta.\n\nSabemos que la vida se pone ocupada — han pasado ${meses} ${meses===1?'mes':'meses'} desde tu última visita. Solo queríamos recordarte que cuidarte no es un lujo, es una necesidad.\n\nWhen estés lista/o para retomar, aquí estamos. ¿Cómo estás? 💚`
+    fn: (nombre1, meses, servicio) => {
+      const q = _recPreguntaDolencia(servicio);
+      return `Hola ${nombre1}! Te escribe el equipo de Jessica Ocampo Fisioterapeuta 🌿 ${q}\n\nSabemos que la vida se pone ocupada — han pasado ${meses} ${meses===1?'mes':'meses'} desde tu última visita. Solo queríamos recordarte que cuidarte no es un lujo, es una necesidad. Cuando estés listo para retomar, aquí estamos 💚`;
+    }
   }
 ];
 
@@ -16432,7 +16451,7 @@ function _recInactivoCard(p, gc) {
   const etiquetas = ['👋 Chequeo','💆 Resultados','📅 Directo','🌿 Bienestar'];
   const waBtns = phone.length >= 9
     ? _recMensajes.map((m, i) => {
-        const url = `https://wa.me/${phone}?text=${encodeURIComponent(m.fn(nombre1, meses))}`;
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(m.fn(nombre1, meses, p.lastServicio))}`;
         return `<a href="${url}" target="_blank" title="${m.label}" style="padding:5px 9px;background:#25D366;color:#fff;border-radius:6px;font-size:.7rem;font-family:var(--font-b);text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:3px">${_waIconSvg()} ${etiquetas[i]}</a>`;
       }).join('')
     : `<span style="font-size:.72rem;color:var(--muted)">Sin tel.</span>`;
