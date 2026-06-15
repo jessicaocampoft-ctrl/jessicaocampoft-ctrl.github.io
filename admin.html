@@ -16398,8 +16398,7 @@ function renderInactivos(lista) {
     { key:'2-3m', label:'Entre 2 y 3 meses sin sesión', color:'#8b5cf6', bg:'#f5f3ff', border:'#ddd6fe' },
   ];
 
-  let html = _renderRecMsgSelector();
-  html += `<div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">${lista.length} paciente${lista.length!==1?'s':''} sin sesión desde hace 2+ meses</div>`;
+  let html = `<div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">${lista.length} paciente${lista.length!==1?'s':''} sin sesión desde hace 2+ meses</div>`;
 
   gCfg.forEach(gc => {
     const ps = grupos[gc.key];
@@ -16415,6 +16414,10 @@ function renderInactivos(lista) {
   panel.innerHTML = html;
 }
 
+function _waIconSvg() {
+  return `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.12 1.533 5.845L0 24l6.335-1.524A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.659-.511-5.18-1.401l-.37-.221-3.762.905.955-3.667-.24-.377A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>`;
+}
+
 function _recInactivoCard(p, gc) {
   const nombre1 = p.nombre.split(' ')[0];
   const t = (p.telefono||'').replace(/\D/g,'');
@@ -16422,30 +16425,31 @@ function _recInactivoCard(p, gc) {
   const meses = Math.round(p.dias / 30);
   const fechaFmt = p.lastFecha ? new Date(p.lastFecha+'T12:00:00').toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) : '—';
 
-  const msgWA = encodeURIComponent(_recMensajes[_recMsgTipo].fn(nombre1, meses));
-  const waUrl = phone.length >= 9 ? `https://wa.me/${phone}?text=${msgWA}` : '';
-
-  const waBtn = waUrl
-    ? `<a href="${waUrl}" target="_blank" style="padding:6px 12px;background:#25D366;color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:.75rem;font-family:var(--font-b);text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:4px">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.12 1.533 5.845L0 24l6.335-1.524A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.659-.511-5.18-1.401l-.37-.221-3.762.905.955-3.667-.24-.377A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-        WA
-      </a>`
-    : `<span style="font-size:.72rem;color:var(--muted)">Sin tel.</span>`;
-
   const preNombre   = p.nombre.replace(/'/g,"\\'");
   const preServicio = (p.lastServicio||'').replace(/'/g,"\\'");
-  const registrarBtn = `<button onclick="preRellenaRecuperacion('${preNombre}','${preServicio}')" style="padding:6px 12px;background:var(--primary);color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:.75rem;font-family:var(--font-b);white-space:nowrap">✓ Registrar</button>`;
+  const registrarBtn = `<button onclick="preRellenaRecuperacion('${preNombre}','${preServicio}')" style="padding:5px 10px;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.72rem;font-family:var(--font-b);white-space:nowrap">✓ Registrar</button>`;
 
-  return `<div style="background:${gc.bg};border:1px solid ${gc.border};border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <div style="width:36px;height:36px;border-radius:50%;background:${gc.color};color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-weight:700;font-size:.85rem;flex-shrink:0">${p.nombre.charAt(0).toUpperCase()}</div>
-    <div style="flex:1;min-width:0">
-      <div style="font-weight:700;font-size:.88rem;color:var(--text)">${p.nombre}</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-top:1px">${p.lastServicio||'—'} · última: ${fechaFmt}</div>
-      <div style="font-size:.75rem;font-weight:600;color:${gc.color};margin-top:2px">${p.dias} días sin sesión (${meses} ${meses===1?'mes':'meses'})</div>
+  const etiquetas = ['👋 Chequeo','💆 Resultados','📅 Directo','🌿 Bienestar'];
+  const waBtns = phone.length >= 9
+    ? _recMensajes.map((m, i) => {
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(m.fn(nombre1, meses))}`;
+        return `<a href="${url}" target="_blank" title="${m.label}" style="padding:5px 9px;background:#25D366;color:#fff;border-radius:6px;font-size:.7rem;font-family:var(--font-b);text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:3px">${_waIconSvg()} ${etiquetas[i]}</a>`;
+      }).join('')
+    : `<span style="font-size:.72rem;color:var(--muted)">Sin tel.</span>`;
+
+  return `<div style="background:${gc.bg};border:1px solid ${gc.border};border-radius:10px;padding:12px 14px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="width:36px;height:36px;border-radius:50%;background:${gc.color};color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-weight:700;font-size:.85rem;flex-shrink:0">${p.nombre.charAt(0).toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.88rem;color:var(--text)">${p.nombre}</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:1px">${p.lastServicio||'—'} · última: ${fechaFmt}</div>
+        <div style="font-size:.75rem;font-weight:600;color:${gc.color};margin-top:2px">${p.dias} días sin sesión (${meses} ${meses===1?'mes':'meses'})</div>
+      </div>
+      <div style="flex-shrink:0">${registrarBtn}</div>
     </div>
-    <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
-      ${waBtn}
-      ${registrarBtn}
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid ${gc.border};display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);white-space:nowrap">Enviar por WA:</span>
+      ${waBtns}
     </div>
   </div>`;
 }
