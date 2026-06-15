@@ -16427,10 +16427,10 @@ function _refKey(mesStr, anio, nombre) {
   return `refCamp_${mesStr}${anio}_${(nombre||'').toLowerCase().trim().replace(/\s+/g,'_')}`;
 }
 function _refGetEstado(mesStr, anio, nombre) {
-  return localStorage.getItem(_refKey(mesStr, anio, nombre)) || 'pendiente';
+  return kvGet(_refKey(mesStr, anio, nombre)) || 'pendiente';
 }
 function _refSetEstado(mesStr, anio, nombre, estado) {
-  localStorage.setItem(_refKey(mesStr, anio, nombre), estado);
+  kvSet(_refKey(mesStr, anio, nombre), estado);
 }
 
 function marcarRefEstado(mesStr, anio, nombre, estado) {
