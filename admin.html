@@ -16422,6 +16422,22 @@ function preRellenaRecuperacion(nombre, servicio) {
 }
 
 // ── CAMPAÑA DE REFERIDOS DEL MES ──
+// ── helpers de estado por paciente (persisten en localStorage) ──
+function _refKey(mesStr, anio, nombre) {
+  return `refCamp_${mesStr}${anio}_${(nombre||'').toLowerCase().trim().replace(/\s+/g,'_')}`;
+}
+function _refGetEstado(mesStr, anio, nombre) {
+  return localStorage.getItem(_refKey(mesStr, anio, nombre)) || 'pendiente';
+}
+function _refSetEstado(mesStr, anio, nombre, estado) {
+  localStorage.setItem(_refKey(mesStr, anio, nombre), estado);
+}
+
+function marcarRefEstado(mesStr, anio, nombre, estado) {
+  _refSetEstado(mesStr, anio, nombre, estado);
+  cargarCampañaReferidos();
+}
+
 function cargarCampañaReferidos() {
   const panel = document.getElementById('refCampañaPanel');
   if (!panel) return;
@@ -16432,7 +16448,6 @@ function cargarCampañaReferidos() {
   const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
   const mesStr = MESES[mes];
 
-  // Pacientes únicos que asistieron este mes (excluir canceladas y registros)
   const citas = (allData.citas || []).filter(c => {
     if (!c.fecha || c.estado === 'Cancelada' || esRegistroServ(c.servicio)) return false;
     const [y, m] = c.fecha.split('-');
@@ -16453,16 +16468,46 @@ function cargarCampañaReferidos() {
     return;
   }
 
-  let html = `<div style="font-size:.8rem;color:var(--muted);margin-bottom:14px">${pacientes.length} paciente${pacientes.length!==1?'s':''} atendido${pacientes.length!==1?'s':''} este mes · haz clic en "Enviar REF" para mandar su código por WhatsApp</div>`;
+  // Resumen de estados
+  let nContactados = 0, nAgendo = 0, nNoAgendo = 0;
+  pacientes.forEach(p => {
+    const e = _refGetEstado(mesStr, anio, p.nombre);
+    if (e === 'contactado' || e === 'agendo' || e === 'no_agendo') nContactados++;
+    if (e === 'agendo')    nAgendo++;
+    if (e === 'no_agendo') nNoAgendo++;
+  });
+  const nPendientes = pacientes.length - nContactados;
+
+  let html = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px">
+    <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:1.4rem;font-weight:700;color:#8b5cf6;font-family:var(--font-h)">${pacientes.length}</div>
+      <div style="font-size:.72rem;color:#7c3aed;margin-top:2px">Total este mes</div>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:1.4rem;font-weight:700;color:#16a34a;font-family:var(--font-h)">${nAgendo}</div>
+      <div style="font-size:.72rem;color:#15803d;margin-top:2px">Agendaron</div>
+    </div>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:1.4rem;font-weight:700;color:#dc2626;font-family:var(--font-h)">${nNoAgendo}</div>
+      <div style="font-size:.72rem;color:#b91c1c;margin-top:2px">No agendaron</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:1.4rem;font-weight:700;color:var(--muted);font-family:var(--font-h)">${nPendientes}</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Sin contactar</div>
+    </div>
+  </div>`;
+
   html += '<div style="display:flex;flex-direction:column;gap:8px">';
 
   pacientes.forEach(p => {
+    const estado    = _refGetEstado(mesStr, anio, p.nombre);
     const iniciales = p.nombre.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
     const num       = Math.abs(p.nombre.split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % 900 + 100;
     const codigo    = `REF-${mesStr}-${iniciales}${num}`;
     const tel       = (p.telefono || '').replace(/\D/g, '');
     const phone     = tel.length <= 10 && tel.length >= 7 ? '57' + tel : tel;
     const nombre1   = p.nombre.split(' ')[0];
+    const nombreEsc = p.nombre.replace(/'/g, "\\'");
 
     const msg = encodeURIComponent(
       `Hola ${nombre1}! 💙 Gracias por confiar en Jessica Ocampo Fisioterapeuta.\n\n` +
@@ -16473,17 +16518,46 @@ function cargarCampañaReferidos() {
     );
     const waUrl = phone.length >= 9 ? `https://wa.me/${phone}?text=${msg}` : '';
 
-    html += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    // Colores y chip según estado
+    let borderColor = 'var(--border)', bgColor = 'var(--bg)', chipHtml = '';
+    if (estado === 'agendo') {
+      borderColor = '#86efac'; bgColor = '#f0fdf4';
+      chipHtml = '<span style="font-size:.7rem;font-family:var(--font-m);background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:20px;padding:2px 8px;white-space:nowrap">✓ Agendó</span>';
+    } else if (estado === 'no_agendo') {
+      borderColor = '#fca5a5'; bgColor = '#fef2f2';
+      chipHtml = '<span style="font-size:.7rem;font-family:var(--font-m);background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:20px;padding:2px 8px;white-space:nowrap">✗ No agendó</span>';
+    } else if (estado === 'contactado') {
+      borderColor = '#93c5fd'; bgColor = '#eff6ff';
+      chipHtml = '<span style="font-size:.7rem;font-family:var(--font-m);background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;border-radius:20px;padding:2px 8px;white-space:nowrap">Enviado · esperando</span>';
+    }
+
+    // Botones según estado actual
+    let botonesHtml = '';
+    if (estado === 'pendiente') {
+      botonesHtml = waUrl
+        ? `<a href="${waUrl}" target="_blank" onclick="setTimeout(()=>marcarRefEstado('${mesStr}',${anio},'${nombreEsc}','contactado'),1000)" style="padding:6px 14px;background:#8b5cf6;color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:.75rem;font-family:var(--font-b);text-decoration:none;white-space:nowrap">Enviar WA</a>`
+        : `<span style="font-size:.72rem;color:var(--muted)">Sin tel.</span>`;
+    } else if (estado === 'contactado') {
+      botonesHtml = `
+        <button onclick="marcarRefEstado('${mesStr}',${anio},'${nombreEsc}','agendo')" style="padding:6px 12px;background:#16a34a;color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:.75rem;font-family:var(--font-b);white-space:nowrap">✓ Agendó</button>
+        <button onclick="marcarRefEstado('${mesStr}',${anio},'${nombreEsc}','no_agendo')" style="padding:6px 12px;background:#dc2626;color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:.75rem;font-family:var(--font-b);white-space:nowrap">✗ No agendó</button>`;
+    } else {
+      // agendo o no_agendo → permitir reenviar o revertir
+      botonesHtml = `<button onclick="marcarRefEstado('${mesStr}',${anio},'${nombreEsc}','pendiente')" style="padding:6px 10px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:.72rem;font-family:var(--font-b);white-space:nowrap">Resetear</button>`;
+    }
+
+    html += `<div style="background:${bgColor};border:1px solid ${borderColor};border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;transition:background .2s">
       <div style="width:36px;height:36px;border-radius:50%;background:#8b5cf6;color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-weight:700;font-size:.85rem;flex-shrink:0">${p.nombre.charAt(0).toUpperCase()}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:.88rem;color:var(--text)">${p.nombre}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-weight:700;font-size:.88rem;color:var(--text)">${p.nombre}</span>
+          ${chipHtml}
+        </div>
         <div style="font-size:.75rem;color:var(--muted);margin-top:1px">${p.servicio}</div>
         <div style="font-size:.75rem;font-weight:600;color:#8b5cf6;margin-top:2px;font-family:var(--font-m)">${codigo}</div>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
-        ${waUrl
-          ? `<a href="${waUrl}" target="_blank" style="padding:6px 14px;background:#8b5cf6;color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:.75rem;font-family:var(--font-b);text-decoration:none;white-space:nowrap">Enviar REF</a>`
-          : `<span style="font-size:.72rem;color:var(--muted)">Sin tel.</span>`}
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap">
+        ${botonesHtml}
       </div>
     </div>`;
   });
