@@ -16319,15 +16319,16 @@ function renderInactivos(lista) {
 
   const grupos = {};
   lista.forEach(p => {
-    const g = p.dias >= 180 ? '6m+' : p.dias >= 120 ? '4-6m' : '3-4m';
+    const g = p.dias >= 180 ? '6m+' : p.dias >= 120 ? '4-6m' : p.dias >= 90 ? '3-4m' : '2-3m';
     if (!grupos[g]) grupos[g] = [];
     grupos[g].push(p);
   });
 
   const gCfg = [
-    { key:'6m+',  label:'Más de 6 meses sin sesión', color:'#ef4444', bg:'#fef2f2', border:'#fecaca' },
+    { key:'6m+',  label:'Más de 6 meses sin sesión',    color:'#ef4444', bg:'#fef2f2', border:'#fecaca' },
     { key:'4-6m', label:'Entre 4 y 6 meses sin sesión', color:'#f59e0b', bg:'#fffbeb', border:'#fde68a' },
     { key:'3-4m', label:'Entre 3 y 4 meses sin sesión', color:'#3b82f6', bg:'#eff6ff', border:'#bfdbfe' },
+    { key:'2-3m', label:'Entre 2 y 3 meses sin sesión', color:'#8b5cf6', bg:'#f5f3ff', border:'#ddd6fe' },
   ];
 
   let html = `<div style="font-size:.8rem;color:var(--muted);margin-bottom:16px">${lista.length} paciente${lista.length!==1?'s':''} sin sesión desde hace 2+ meses</div>`;

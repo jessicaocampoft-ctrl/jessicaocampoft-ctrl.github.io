@@ -1273,12 +1273,14 @@ function getInactivosData() {
       var r      = rows[i];
       var estado = ('' + (r[10] || '')).trim();
       if (estado === 'Cancelada') continue;
+      if (estado === 'Registro') continue;
+      var serv   = ('' + (r[5] || '')).trim();
+      if (esRegistro(serv)) continue;
       var nombre = ('' + (r[2] || '')).trim();
       var fecha  = sd(r[7]);
       if (!nombre || !fecha) continue;
       var phone  = ('' + (r[3] || '')).replace(/\D/g, '');
       var email  = ('' + (r[4] || '')).trim();
-      var serv   = ('' + (r[5] || '')).trim();
       var key    = nombre.toLowerCase();
       if (!map[key] || fecha > map[key].lastFecha) {
         map[key] = { nombre: nombre, telefono: phone, email: email, lastServicio: serv, lastFecha: fecha };
