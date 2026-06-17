@@ -2526,7 +2526,7 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
               </div>
               <div class="field">
                 <label>Hora *</label>
-                <input type="time" id="ncTime" class="nc-input" style="width:100%" oninput="checkTimeConflict()" onchange="checkTimeConflict()">
+                <input type="time" id="ncTime" class="nc-input" style="width:100%" oninput="checkTimeConflict(); _updateDuoTime()" onchange="checkTimeConflict(); _updateDuoTime()">
                 <div id="ncConflictWarn" style="display:none;margin-top:6px;padding:8px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:8px;font-size:.82rem;color:#991b1b"></div>
               </div>
             </div>
@@ -2709,6 +2709,74 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
           <input type="text" id="ncParaQuien" placeholder="Ej: tu esposo, tu mamá, tu hijo... (dejar en blanco si es para quien llama)" style="margin-top:6px;background:transparent;border:none;border-bottom:1px solid rgba(251,191,36,.3);border-radius:0;padding:4px 0;width:100%;outline:none;font-family:var(--font-b);font-size:.88rem;color:var(--text)">
           <div style="font-size:.72rem;color:#a16207;margin-top:5px">Si pones algo aquí, el mensaje de seguimiento dirá "¿Cómo le fue a tu esposo?" en lugar de "¿Cómo te fue?"</div>
         </div>
+        <!-- ── SEGUNDA PERSONA (pareja / familiar) ── -->
+        <div style="margin-top:14px">
+          <button type="button" id="ncDuoBtn" onclick="toggleSegundaPersona()"
+            style="display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:10px;font-size:.82rem;font-family:var(--font-b);cursor:pointer;border:1px dashed rgba(139,92,246,.4);background:rgba(139,92,246,.06);color:#7c3aed;transition:var(--tr);width:100%;justify-content:center">
+            👫 Agendar segunda persona (pareja / familiar)
+          </button>
+        </div>
+        <div id="ncDuoPanel" style="display:none;margin-top:14px;padding:16px;background:rgba(139,92,246,.04);border:1px solid rgba(139,92,246,.18);border-radius:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <span style="font-size:.82rem;font-weight:700;color:#7c3aed;font-family:var(--font-m)">👤 Segunda persona</span>
+            <button type="button" onclick="toggleSegundaPersona()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem">×</button>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Nombre *</label>
+              <input type="text" id="nc2Name" placeholder="Nombre completo">
+            </div>
+            <div class="field">
+              <label>Teléfono</label>
+              <input type="tel" id="nc2Phone" placeholder="+57 300 000 0000">
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input type="email" id="nc2Email" placeholder="correo@email.com">
+            </div>
+            <div class="field">
+              <label>Servicio *</label>
+              <select id="nc2Service" onchange="_onDuo2ServiceChange()">
+                <option value="">Selecciona un servicio</option>
+                <option value="Descarga Muscular — Cuello y Espalda">Descarga Muscular — Cuello y Espalda</option>
+                <option value="Descarga Muscular — Piernas">Descarga Muscular — Piernas</option>
+                <option value="Descarga Muscular Completa">Descarga Muscular Completa</option>
+                <option value="Valoración Funcional">Valoración Funcional</option>
+                <option value="Readaptación Funcional">Readaptación Funcional</option>
+                <optgroup label="── Combos ──">
+                  <option value="Combo Diagnóstico Pro">Combo Diagnóstico Pro</option>
+                  <option value="Combo Bienvenida">Combo Bienvenida (Referidos)</option>
+                </optgroup>
+                <optgroup label="── Paquetes ──">
+                  <option value="Paquete Recuperación Full">Paquete Recuperación Full (3 Full)</option>
+                  <option value="Paquete Readaptación Inicio">Paquete Readaptación Inicio (6 ses)</option>
+                  <option value="Paquete Readaptación Avance">Paquete Readaptación Avance (8 ses)</option>
+                  <option value="Paquete Readaptación Total">Paquete Readaptación Total (10 ses)</option>
+                </optgroup>
+                <optgroup label="── Planes ──">
+                  <option value="Plan Activo">Plan Activo (2 Express/mes)</option>
+                  <option value="Plan Pro">Plan Pro (1 Full + 2 Express/mes)</option>
+                  <option value="Mini-sesión Familiar 20 min">Mini-sesión Familiar 20 min</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          <!-- Hora calculada automáticamente -->
+          <div id="ncDuoTimeWrap" style="display:none;margin-top:10px;padding:10px 14px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px">
+            <div style="font-size:.75rem;color:#7c3aed;font-family:var(--font-m);margin-bottom:6px">🕐 Hora calculada automáticamente (justo después del primer turno)</div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <span id="ncDuoTimeDisplay" style="font-size:1.1rem;font-weight:700;color:#7c3aed;font-family:var(--font-h)">--:--</span>
+              <span style="font-size:.78rem;color:var(--muted)">— puedes ajustar si hay pausa</span>
+              <input type="time" id="nc2Time" style="padding:5px 10px;border:1px solid rgba(139,92,246,.3);border-radius:8px;background:var(--bg);color:var(--text);font-family:var(--font-b);font-size:.85rem;outline:none" oninput="_syncDuoTimeDisplay()">
+            </div>
+          </div>
+          <!-- Precio persona 2 -->
+          <div style="margin-top:10px">
+            <label style="font-size:.78rem;color:var(--muted);font-family:var(--font-m)">Precio (persona 2)</label>
+            <input type="text" id="nc2Price" placeholder="Se llena automáticamente" style="margin-top:4px;width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:.88rem;padding:9px 12px;outline:none">
+          </div>
+        </div>
+
         <!-- ── Mantener ncRecurring y ncSessions ocultos para compatibilidad ── -->
         <input type="hidden" id="ncRecurring" value="false">
         <input type="hidden" id="ncSessions" value="1">
@@ -6221,6 +6289,33 @@ async function submitAdminBookingMulti() {
     ...gimnasioData
   };
 
+  // Validar segunda persona si está activa
+  let duoData = null;
+  if (_duoActive) {
+    const name2  = (document.getElementById('nc2Name').value||'').trim();
+    const serv2  = document.getElementById('nc2Service').value;
+    const time2  = document.getElementById('nc2Time').value;
+    if (!name2 || !serv2 || !time2) {
+      toast('Completa nombre, servicio y hora de la segunda persona', 'err');
+      _submittingBooking = false; btn.disabled = false;
+      document.getElementById('ncSubmitLabel').textContent = origLabel;
+      return;
+    }
+    duoData = {
+      name:      name2,
+      phone:     (document.getElementById('nc2Phone').value||'').trim(),
+      email:     (document.getElementById('nc2Email').value||'').trim(),
+      service:   serv2,
+      modality:  mod,
+      priceP:    document.getElementById('nc2Price').value || 'A convenir',
+      priceD:    document.getElementById('nc2Price').value || 'A convenir',
+      address:   document.getElementById('ncAddress').value.trim(),
+      notes:     document.getElementById('ncNotes').value.trim(),
+      notaAdmin: '[PAREJA DE ' + name + ']',
+      canal:     document.getElementById('nuevaCitaCanal').value || 'Directo',
+    };
+  }
+
   let creadas = 0, errores = 0;
   for (let i = 0; i < fechas.length; i++) {
     document.getElementById('ncSubmitLabel').textContent = `Creando ${i+1}/${fechas.length}...`;
@@ -6230,6 +6325,18 @@ async function submitAdminBookingMulti() {
       const d = await r.json();
       if (d.ok) creadas++; else errores++;
     } catch(e) { errores++; }
+
+    // Segunda persona: usa la misma fecha pero la hora calculada
+    if (_duoActive && duoData) {
+      const time2  = document.getElementById('nc2Time').value;
+      const data2  = { ...duoData, date: fechas[i].date, time: time2 };
+      document.getElementById('ncSubmitLabel').textContent = `Creando turno 2/${fechas.length}...`;
+      try {
+        const r2 = await fetch(`${APPS_SCRIPT_URL}?action=adminBook&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(data2))}`);
+        const d2 = await r2.json();
+        if (d2.ok) creadas++; else errores++;
+      } catch(e) { errores++; }
+    }
   }
 
   _submittingBooking = false;
@@ -6239,8 +6346,9 @@ async function submitAdminBookingMulti() {
   if (errores > 0) {
     toast(`${creadas} cita${creadas!==1?'s':''} creada${creadas!==1?'s':''} · ${errores} error${errores!==1?'es':''}`, 'warn');
   } else {
-    toast(`✓ ${creadas} cita${creadas!==1?'s':''} creada${creadas!==1?'s':''} correctamente`, 'ok');
-    logChange('Nueva cita', `${name} · ${serv} · ${creadas} sesión${creadas!==1?'es':''}`);
+    const personas = _duoActive ? ' (2 personas)' : '';
+    toast(`✓ ${creadas} cita${creadas!==1?'s':''} creada${creadas!==1?'s':''} correctamente${personas}`, 'ok');
+    logChange('Nueva cita', `${name}${_duoActive ? ' + '+duoData.name : ''} · ${serv} · ${creadas} turno${creadas!==1?'s':''}`);
     await reload();
     renderAgenda(); initDashboard();
     if (_scheduleMode !== 'unica') { _multiDates = []; _renderMultiChips(); }
@@ -7377,6 +7485,7 @@ function _addToServiceChips(val) {
   autoFillPrice();
   updateSesionesInfo();
   checkDomicilioWarn();
+  _updateDuoTime();
 }
 
 function _removeServiceChip(idx) {
@@ -7386,6 +7495,7 @@ function _removeServiceChip(idx) {
   autoFillPrice();
   updateSesionesInfo();
   checkDomicilioWarn();
+  _updateDuoTime();
 }
 
 function _renderServiceChips() {
@@ -7407,10 +7517,94 @@ function _renderServiceChips() {
 }
 
 function _triggerAddService() {
-  // Mostrar el selector principal para que elija otro servicio
   document.getElementById('ncServiceMain').selectedIndex = 0;
   document.getElementById('ncServiceMain').focus();
   toast('Selecciona el servicio adicional en el menú de arriba', 'warn');
+}
+
+// ══════════════════════════════════════
+// SEGUNDA PERSONA (duo)
+// ══════════════════════════════════════
+let _duoActive = false;
+
+function toggleSegundaPersona() {
+  _duoActive = !_duoActive;
+  const panel = document.getElementById('ncDuoPanel');
+  const btn   = document.getElementById('ncDuoBtn');
+  panel.style.display = _duoActive ? 'block' : 'none';
+  btn.style.background   = _duoActive ? 'rgba(139,92,246,.14)' : 'rgba(139,92,246,.06)';
+  btn.style.borderStyle  = _duoActive ? 'solid' : 'dashed';
+  if (_duoActive) _updateDuoTime();
+}
+
+// Espejo del getServiceDuration del GAS para calcular en el frontend
+function _getServiceDurationJS(service) {
+  if (!service) return 60;
+  if (service.indexOf(' + ') !== -1)
+    return service.split(' + ').reduce((sum, s) => sum + _getServiceDurationJS(s.trim()), 0);
+  const s = service.toLowerCase()
+    .replace(/[áàâ]/g,'a').replace(/[éèê]/g,'e')
+    .replace(/[íìî]/g,'i').replace(/[óòô]/g,'o').replace(/[úùû]/g,'u');
+  if (s.includes('mini'))           return 20;
+  if (s.includes('completa'))       return 80;
+  if (s.includes('full'))           return 80;
+  if (s.includes('plan pro'))       return 80;
+  if (s.includes('paquete readap')) return 45;
+  if (s.includes('readaptacion'))   return 50;
+  if (s.includes('valoracion'))     return 50;
+  if (s.includes('piernas'))        return 50;
+  if (s.includes('cuello'))         return 50;
+  if (s.includes('plan activo'))    return 50;
+  if (s.includes('combo'))          return 50;
+  return 60;
+}
+
+function _updateDuoTime() {
+  if (!_duoActive) return;
+  const time1 = document.getElementById('ncTime').value;
+  const serv1 = document.getElementById('ncService').value;
+  const mod1  = document.getElementById('ncMod').value;
+  const wrap  = document.getElementById('ncDuoTimeWrap');
+  if (!time1 || !serv1) { if (wrap) wrap.style.display = 'none'; return; }
+
+  const durMins = _getServiceDurationJS(serv1) + (mod1 === 'Domicilio' ? 30 : 0);
+  const [h, m] = time1.split(':').map(Number);
+  const total   = h * 60 + m + durMins;
+  const h2 = Math.floor(total / 60) % 24;
+  const m2 = total % 60;
+  const t2 = `${String(h2).padStart(2,'0')}:${String(m2).padStart(2,'0')}`;
+
+  document.getElementById('nc2Time').value = t2;
+  document.getElementById('ncDuoTimeDisplay').textContent = t2;
+  if (wrap) wrap.style.display = 'block';
+}
+
+function _syncDuoTimeDisplay() {
+  const t = document.getElementById('nc2Time').value;
+  const disp = document.getElementById('ncDuoTimeDisplay');
+  if (disp && t) disp.textContent = t;
+}
+
+function _onDuo2ServiceChange() {
+  const serv = document.getElementById('nc2Service').value;
+  const mod  = document.getElementById('ncMod').value;
+  if (!serv) return;
+  const precio = _getPrecioServicio(serv, mod);
+  document.getElementById('nc2Price').value = precio ? '$' + precio.toLocaleString('es-CO') : '';
+}
+
+function _clearDuo() {
+  _duoActive = false;
+  const panel = document.getElementById('ncDuoPanel');
+  const btn   = document.getElementById('ncDuoBtn');
+  if (panel) panel.style.display = 'none';
+  if (btn)   { btn.style.background = 'rgba(139,92,246,.06)'; btn.style.borderStyle = 'dashed'; }
+  ['nc2Name','nc2Phone','nc2Email','nc2Price'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const s = document.getElementById('nc2Service'); if (s) s.selectedIndex = 0;
+  const t = document.getElementById('nc2Time');    if (t) t.value = '';
+  const w = document.getElementById('ncDuoTimeWrap'); if (w) w.style.display = 'none';
 }
 
 // ── DATOS DE CONVENIOS Y COSTOS ──
@@ -8128,6 +8322,7 @@ function clearNuevaCita() {
   document.getElementById('ncServiceMain').selectedIndex=0;
   _selectedServices = [];
   _renderServiceChips();
+  _clearDuo();
   document.getElementById('ncAbonoCheck').checked = false;
   document.getElementById('ncAbonoMonto').value   = '';
   document.getElementById('ncAbonoFecha').value   = '';
