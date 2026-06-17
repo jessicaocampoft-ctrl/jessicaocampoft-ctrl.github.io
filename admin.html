@@ -2490,11 +2490,19 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
           </div>
           <div class="field">
             <label>Modalidad *</label>
-            <select id="ncMod" onchange="toggleNcAddress(); autoFillPrice(); checkDomicilioWarn()">
+            <select id="ncMod" onchange="toggleNcAddress(); autoFillPrice(); checkDomicilioWarn(); toggleDesplazamientoBtn()">
               <option value="Presencial">Presencial</option>
               <option value="Domicilio">Domicilio</option>
               <option value="Virtual">Virtual</option>
             </select>
+            <!-- Toggle cobro de desplazamiento (solo aparece en Domicilio) -->
+            <div id="ncDesplazamientoWrap" style="display:none;margin-top:8px">
+              <button type="button" id="ncDesplazamientoBtn" onclick="toggleCobrarDesplazamiento()"
+                style="display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:8px;font-size:.78rem;font-family:var(--font-b);cursor:pointer;border:1px solid rgba(27,191,176,.4);background:rgba(27,191,176,.1);color:var(--teal);transition:var(--tr)">
+                <span id="ncDesplazamientoIcon">🚗</span>
+                <span id="ncDesplazamientoLabel">Cobrar desplazamiento</span>
+              </button>
+            </div>
             <div id="ncDomicilioWarn" style="display:none;margin-top:6px;padding:7px 11px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.3);border-radius:8px;font-size:.80rem;color:#d97706">
               ⚠️ Este servicio solo está disponible de forma presencial (en consultorio).
             </div>
@@ -7452,6 +7460,48 @@ function checkDomicilioWarn() {
   if (warn) warn.style.display = (mod === 'Domicilio' && soloPresencial.includes(serv)) ? 'block' : 'none';
 }
 
+// Estado del toggle de desplazamiento (true = se cobra)
+let _cobrarDesplazamiento = true;
+
+function toggleDesplazamientoBtn() {
+  const mod  = document.getElementById('ncMod').value;
+  const wrap = document.getElementById('ncDesplazamientoWrap');
+  if (!wrap) return;
+  if (mod === 'Domicilio') {
+    wrap.style.display = 'block';
+    _cobrarDesplazamiento = true;   // reset a "sí cobrar" cada vez que cambia a domicilio
+    _renderDesplazamientoBtn();
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+function toggleCobrarDesplazamiento() {
+  _cobrarDesplazamiento = !_cobrarDesplazamiento;
+  _renderDesplazamientoBtn();
+  autoFillPrice();
+}
+
+function _renderDesplazamientoBtn() {
+  const btn   = document.getElementById('ncDesplazamientoBtn');
+  const icon  = document.getElementById('ncDesplazamientoIcon');
+  const label = document.getElementById('ncDesplazamientoLabel');
+  if (!btn) return;
+  if (_cobrarDesplazamiento) {
+    btn.style.background = 'rgba(27,191,176,.12)';
+    btn.style.borderColor = 'rgba(27,191,176,.4)';
+    btn.style.color = 'var(--teal)';
+    icon.textContent  = '🚗';
+    label.textContent = 'Cobrar desplazamiento';
+  } else {
+    btn.style.background = 'rgba(107,114,128,.1)';
+    btn.style.borderColor = 'rgba(107,114,128,.3)';
+    btn.style.color = 'var(--muted)';
+    icon.textContent  = '🚫';
+    label.textContent = 'Sin cobro de desplazamiento';
+  }
+}
+
 function updateSesionesInfo() {
   const serv   = document.getElementById('ncService').value;
   const nombre = (document.getElementById('ncName').value||'').trim().toLowerCase();
@@ -7658,13 +7708,15 @@ const _precios = {
 };
 
 function _getPrecioServicio(serv, mod) {
+  // Si el domicilio está marcado como "sin cobro", usar precio presencial
+  const modEfectivo = (mod === 'Domicilio' && !_cobrarDesplazamiento) ? 'Presencial' : mod;
   if (window._preciosOverride && window._preciosOverride[serv]) {
-    const v = window._preciosOverride[serv][mod] || window._preciosOverride[serv]['Presencial'];
+    const v = window._preciosOverride[serv][modEfectivo] || window._preciosOverride[serv]['Presencial'];
     return v ? parseInt(v.replace(/[^0-9]/g, '')) || 0 : 0;
   }
   const entry = _precios[serv];
   if (!entry) return 0;
-  return entry[mod] || entry['Presencial'] || 0;
+  return entry[modEfectivo] || entry['Presencial'] || 0;
 }
 
 function autoFillPrice() {
@@ -8084,6 +8136,9 @@ function clearNuevaCita() {
   const planSel = document.getElementById('ncServicePlan');
   planSel.selectedIndex=0; planSel.style.display='none';
   document.getElementById('ncMod').value='Presencial';
+  _cobrarDesplazamiento = true;
+  const _dWrap = document.getElementById('ncDesplazamientoWrap');
+  if (_dWrap) _dWrap.style.display = 'none';
   document.getElementById('ncDate').value='';
   document.getElementById('ncTime').value='';
   document.getElementById('ncAddrWrap').style.display='none';
