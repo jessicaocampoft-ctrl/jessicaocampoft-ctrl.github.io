@@ -2724,7 +2724,7 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
           <div class="form-grid">
             <div class="field">
               <label>Nombre *</label>
-              <input type="text" id="nc2Name" placeholder="Nombre completo">
+              <input type="text" id="nc2Name" placeholder="Dejar vacío para usar el nombre de la primera persona">
             </div>
             <div class="field">
               <label>Teléfono</label>
@@ -6292,11 +6292,11 @@ async function submitAdminBookingMulti() {
   // Validar segunda persona si está activa
   let duoData = null;
   if (_duoActive) {
-    const name2  = (document.getElementById('nc2Name').value||'').trim();
+    const name2  = (document.getElementById('nc2Name').value||'').trim() || name;
     const serv2  = document.getElementById('nc2Service').value;
     const time2  = document.getElementById('nc2Time').value;
-    if (!name2 || !serv2 || !time2) {
-      toast('Completa nombre, servicio y hora de la segunda persona', 'err');
+    if (!serv2 || !time2) {
+      toast('Completa servicio y hora de la segunda persona', 'err');
       _submittingBooking = false; btn.disabled = false;
       document.getElementById('ncSubmitLabel').textContent = origLabel;
       return;
