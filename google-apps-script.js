@@ -958,6 +958,10 @@ function upsertPaciente(nombre, telefono, email) {
 }
 
 function getServiceDuration(service) {
+  // Servicios combinados: "Descarga + Readaptación" → suma de duraciones
+  if (service && service.indexOf(' + ') !== -1) {
+    return service.split(' + ').reduce(function(sum, s) { return sum + getServiceDuration(s.trim()); }, 0);
+  }
   var s = (service || '').toLowerCase()
     .replace(/[áàâ]/g,'a').replace(/[éèê]/g,'e')
     .replace(/[íìî]/g,'i').replace(/[óòô]/g,'o').replace(/[úùû]/g,'u');

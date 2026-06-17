@@ -2474,6 +2474,9 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
             </select>
             <!-- Campo oculto que guarda el valor final del servicio -->
             <input type="hidden" id="ncService">
+            <!-- Chips de servicios seleccionados (multi-servicio) -->
+            <div id="ncServiceChips" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
+            <button type="button" id="ncAddServiceBtn" onclick="_triggerAddService()" style="display:none;margin-top:8px;font-size:.78rem;color:var(--teal);background:rgba(27,191,176,.08);border:1px dashed rgba(27,191,176,.4);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--font-b)">➕ Agregar otro servicio</button>
             <div id="ncSesionesInfo" style="display:none;margin-top:5px;padding:6px 10px;background:rgba(27,191,176,.06);border-radius:6px;font-size:.78rem;color:var(--muted)"></div>
           </div>
           <div class="field">
@@ -6038,8 +6041,9 @@ function toggleRecurringPanel() {
 // ══════════════════════════════════════════════════
 // ── SISTEMA DE AGENDAMIENTO MÚLTIPLE ──
 // ══════════════════════════════════════════════════
-let _scheduleMode = 'unica';   // 'unica' | 'multiple' | 'recurrente'
-let _multiDates   = [];        // [{date, time}, ...]
+let _scheduleMode    = 'unica';   // 'unica' | 'multiple' | 'recurrente'
+let _multiDates      = [];        // [{date, time}, ...]
+let _selectedServices = [];       // ['Descarga Muscular — Cuello y Espalda', 'Readaptación Funcional', ...]
 
 function switchScheduleMode(mode) {
   _scheduleMode = mode;
@@ -7334,21 +7338,71 @@ function onServiceMainChange() {
   if (val === '__planes__') {
     planSel.style.display = 'block';
     planSel.selectedIndex = 0;
-    document.getElementById('ncService').value = '';
-    updateSesionesInfo();
     checkDomicilioWarn();
-  } else {
+  } else if (val) {
     planSel.style.display = 'none';
-    document.getElementById('ncService').value = val;
-    autoFillPrice();
+    _addToServiceChips(val);
+    // Reset selector para permitir agregar otro
+    document.getElementById('ncServiceMain').selectedIndex = 0;
   }
 }
 
 function onServicePlanChange() {
   const val = document.getElementById('ncServicePlan').value;
-  document.getElementById('ncService').value = val;
+  if (!val) return;
+  _addToServiceChips(val);
+  // Ocultar selector de planes y resetear
+  const planSel = document.getElementById('ncServicePlan');
+  planSel.selectedIndex = 0;
+  planSel.style.display = 'none';
+  document.getElementById('ncServiceMain').selectedIndex = 0;
+}
+
+function _addToServiceChips(val) {
+  if (!val || val === '__planes__') return;
+  if (_selectedServices.includes(val)) {
+    toast('Ese servicio ya fue agregado', 'warn'); return;
+  }
+  _selectedServices.push(val);
+  _renderServiceChips();
+  document.getElementById('ncService').value = _selectedServices.join(' + ');
   autoFillPrice();
   updateSesionesInfo();
+  checkDomicilioWarn();
+}
+
+function _removeServiceChip(idx) {
+  _selectedServices.splice(idx, 1);
+  _renderServiceChips();
+  document.getElementById('ncService').value = _selectedServices.join(' + ');
+  autoFillPrice();
+  updateSesionesInfo();
+  checkDomicilioWarn();
+}
+
+function _renderServiceChips() {
+  const wrap = document.getElementById('ncServiceChips');
+  const btn  = document.getElementById('ncAddServiceBtn');
+  if (!wrap) return;
+  if (_selectedServices.length === 0) {
+    wrap.innerHTML = '';
+    if (btn) btn.style.display = 'none';
+    return;
+  }
+  wrap.innerHTML = _selectedServices.map((s, i) => `
+    <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(27,191,176,.12);border:1px solid rgba(27,191,176,.35);border-radius:20px;padding:4px 10px;font-size:.78rem;color:var(--teal);font-family:var(--font-m)">
+      ${s}
+      <button type="button" onclick="_removeServiceChip(${i})" style="background:none;border:none;cursor:pointer;color:var(--teal);font-size:.9rem;line-height:1;padding:0;opacity:.7" title="Quitar">×</button>
+    </span>
+  `).join('');
+  if (btn) btn.style.display = 'block';
+}
+
+function _triggerAddService() {
+  // Mostrar el selector principal para que elija otro servicio
+  document.getElementById('ncServiceMain').selectedIndex = 0;
+  document.getElementById('ncServiceMain').focus();
+  toast('Selecciona el servicio adicional en el menú de arriba', 'warn');
 }
 
 // ── DATOS DE CONVENIOS Y COSTOS ──
@@ -7586,41 +7640,50 @@ function renderConveniosReport() {
   el.innerHTML = html;
 }
 
-function autoFillPrice() {
-  const serv = document.getElementById('ncService').value;
-  const mod  = document.getElementById('ncMod').value;
-  if (!serv) return;
+const _precios = {
+  'Descarga Muscular — Cuello y Espalda': { Presencial: 75000,  Domicilio: 90000 },
+  'Descarga Muscular — Piernas':          { Presencial: 75000,  Domicilio: 90000 },
+  'Descarga Muscular Completa':           { Presencial: 110000, Domicilio: 125000 },
+  'Valoración Funcional':                 { Presencial: 80000,  Domicilio: 95000 },
+  'Readaptación Funcional':               { Presencial: 70000,  Domicilio: 85000 },
+  'Combo Diagnóstico Pro':                { Presencial: 160000, Domicilio: 185000 },
+  'Combo Bienvenida':                     { Presencial: 120000, Domicilio: 120000 },
+  'Mini-sesión Familiar 20 min':          { Presencial: 40000,  Domicilio: 40000 },
+  'Paquete Recuperación Full':            { Presencial: 264000, Domicilio: 264000 },
+  'Paquete Readaptación Inicio':          { Presencial: 378000, Domicilio: 469000 },
+  'Paquete Readaptación Avance':          { Presencial: 476000, Domicilio: 598000 },
+  'Paquete Readaptación Total':           { Presencial: 560000, Domicilio: 722000 },
+  'Plan Activo':                          { Presencial: 135000, Domicilio: 165000 },
+  'Plan Pro':                             { Presencial: 230000, Domicilio: 275000 },
+};
 
-  // Si el usuario guardó precios desde Presupuesto y Metas, usar esos
+function _getPrecioServicio(serv, mod) {
   if (window._preciosOverride && window._preciosOverride[serv]) {
-    const precio = window._preciosOverride[serv][mod] || window._preciosOverride[serv]['Presencial'];
-    if (precio) document.getElementById('ncPrice').value = precio;
-    checkDomicilioWarn();
-    updateSesionesInfo();
-    calcConvenio();
-    if (document.getElementById('ncAbonoCheck').checked) calcAbono();
-    return;
+    const v = window._preciosOverride[serv][mod] || window._preciosOverride[serv]['Presencial'];
+    return v ? parseInt(v.replace(/[^0-9]/g, '')) || 0 : 0;
+  }
+  const entry = _precios[serv];
+  if (!entry) return 0;
+  return entry[mod] || entry['Presencial'] || 0;
+}
+
+function autoFillPrice() {
+  const mod   = document.getElementById('ncMod').value;
+  const servs = _selectedServices.length > 0 ? _selectedServices : [document.getElementById('ncService').value];
+  if (!servs[0]) return;
+
+  if (_selectedServices.length > 1) {
+    // Sumar precios de todos los servicios
+    const total = servs.reduce((sum, s) => sum + _getPrecioServicio(s, mod), 0);
+    if (total > 0) {
+      document.getElementById('ncPrice').value = '$' + total.toLocaleString('es-CO');
+    }
+  } else {
+    const serv  = servs[0];
+    const total = _getPrecioServicio(serv, mod);
+    if (total > 0) document.getElementById('ncPrice').value = '$' + total.toLocaleString('es-CO');
   }
 
-  const precios = {
-    'Descarga Muscular — Cuello y Espalda': { Presencial:'$75.000',  Domicilio:'$90.000' },
-    'Descarga Muscular — Piernas':          { Presencial:'$75.000',  Domicilio:'$90.000' },
-    'Descarga Muscular Completa':           { Presencial:'$110.000', Domicilio:'$125.000' },
-    'Valoración Funcional':                 { Presencial:'$80.000',  Domicilio:'$95.000' },
-    'Readaptación Funcional':               { Presencial:'$70.000',  Domicilio:'$85.000' },
-    'Combo Diagnóstico Pro':                { Presencial:'$160.000', Domicilio:'$185.000' },
-    'Combo Bienvenida':                     { Presencial:'$120.000', Domicilio:'$120.000' },
-    'Mini-sesión Familiar 20 min':          { Presencial:'$40.000',  Domicilio:'$40.000' },
-    'Paquete Recuperación Full':            { Presencial:'$264.000', Domicilio:'$264.000' },
-    'Paquete Readaptación Inicio':          { Presencial:'$378.000', Domicilio:'$469.000' },
-    'Paquete Readaptación Avance':          { Presencial:'$476.000', Domicilio:'$598.000' },
-    'Paquete Readaptación Total':           { Presencial:'$560.000', Domicilio:'$722.000' },
-    'Plan Activo':                          { Presencial:'$135.000', Domicilio:'$165.000' },
-    'Plan Pro':                             { Presencial:'$230.000', Domicilio:'$275.000' },
-  };
-
-  const precio = precios[serv] ? (precios[serv][mod] || precios[serv]['Presencial']) : '';
-  if (precio) document.getElementById('ncPrice').value = precio;
   checkDomicilioWarn();
   updateSesionesInfo();
   calcConvenio();
@@ -8011,6 +8074,8 @@ function clearNuevaCita() {
   });
   document.getElementById('ncService').value='';
   document.getElementById('ncServiceMain').selectedIndex=0;
+  _selectedServices = [];
+  _renderServiceChips();
   document.getElementById('ncAbonoCheck').checked = false;
   document.getElementById('ncAbonoMonto').value   = '';
   document.getElementById('ncAbonoFecha').value   = '';
