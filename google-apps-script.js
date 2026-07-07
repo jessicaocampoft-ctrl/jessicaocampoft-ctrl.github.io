@@ -9,7 +9,8 @@
 //   ADMIN_TOKEN   → tu contraseña admin (ej: una cadena larga aleatoria)
 //   GEMINI_API_KEY → tu clave de Gemini AI Studio
 var _props        = PropertiesService.getScriptProperties();
-var ADMIN_TOKEN   = _props.getProperty('ADMIN_TOKEN')   || 'JESSICA2026';
+// Sin contraseña de respaldo en código: ADMIN_TOKEN debe existir en Propiedades del script.
+var ADMIN_TOKEN   = _props.getProperty('ADMIN_TOKEN')   || '';
 var GEMINI_API_KEY = _props.getProperty('GEMINI_API_KEY') || '';
 
 // ── SESIONES ── token UUID almacenado en CacheService (TTL 4 horas)
@@ -103,6 +104,16 @@ function doGet(e) {
   if (p.action === 'eliminarEvento') return js(eliminarEvento(p));
   if (p.action === 'getEncuestaStats')    return js(getEncuestaStats_());
   if (p.action === 'autoMarcarAtendidas') return js(autoMarcarAtendidas());
+  if (p.action === 'automationStatus')     return js(getAutomationStatus());
+  if (p.action === 'automationSave')       return js(saveAutomationConfig(p.data));
+  if (p.action === 'automationSetup')      return js(setupAllAutomations());
+  if (p.action === 'automationRun')        return js(runAutomationNow(p.job || 'morning'));
+  if (p.action === 'automationQueue')      return js(getAutomationQueue(p.status || 'pending'));
+  if (p.action === 'automationQueueDone')  return js(markAutomationQueueDone(p.id));
+  if (p.action === 'getKPIHistory')        return js(getKPIHistory_());
+  if (p.action === 'getWaitlist')          return js(getWaitlist());
+  if (p.action === 'addWaitlist')          return js(addWaitlist(p.data));
+  if (p.action === 'removeWaitlist')       return js(removeWaitlist(p.id));
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -497,7 +508,11 @@ function doCancelBooking(id) {
       }
     } catch(x) {}
   }
-  return {ok: true};
+  var queued = 0;
+  if (booking) {
+    try { queued = queueWaitlistMatch_({id:id,nombre:booking[2],servicio:booking[5],fecha:sd(booking[7]),hora:st(booking[8])}); } catch(qx) {}
+  }
+  return {ok: true, waitlistQueued: queued};
 }
 
 // Edita una cita existente en Sheets y actualiza el evento del Calendar
@@ -802,10 +817,10 @@ function sendReminders() {
     }
 
     if (fecha === tomorrow) {
+      var dp = fecha.split('-');
+      var fObj = new Date(+dp[0], +dp[1]-1, +dp[2]);
+      var fechaLegible = diasSemana[fObj.getDay()] + ' ' + +dp[2] + ' de ' + meses[+dp[1]-1];
       if (email && email.indexOf('@') > 0) {
-        var dp = fecha.split('-');
-        var fObj = new Date(+dp[0], +dp[1]-1, +dp[2]);
-        var fechaLegible = diasSemana[fObj.getDay()] + ' ' + +dp[2] + ' de ' + meses[+dp[1]-1];
         GmailApp.sendEmail(
           email,
           'Recordatorio: mañana tienes cita — Jessica Ocampo Fisioterapeuta',
@@ -816,13 +831,14 @@ function sendReminders() {
       }
       var msg1 = mensajePlanWA(nombre, serv, hora, mod, fechaLegible, plan, sesionActual, false);
       linksMañana.push(nombre + ' (' + hora + '): https://wa.me/' + phone + '?text=' + encodeURIComponent(msg1));
+      try { queueAutomationMessage_('Recordatorio', nombre, phone, msg1, 'Cita mañana ' + hora, r[0], 'appt-tomorrow|' + r[0] + '|' + today); } catch(q1) {}
     }
 
     if (fecha === today) {
+      var dp2 = fecha.split('-');
+      var fObj2 = new Date(+dp2[0], +dp2[1]-1, +dp2[2]);
+      var fechaLegible2 = diasSemana[fObj2.getDay()] + ' ' + +dp2[2] + ' de ' + meses[+dp2[1]-1];
       if (email && email.indexOf('@') > 0) {
-        var dp2 = fecha.split('-');
-        var fObj2 = new Date(+dp2[0], +dp2[1]-1, +dp2[2]);
-        var fechaLegible2 = diasSemana[fObj2.getDay()] + ' ' + +dp2[2] + ' de ' + meses[+dp2[1]-1];
         GmailApp.sendEmail(
           email,
           '⏰ Hoy tienes cita — Jessica Ocampo Fisioterapeuta',
@@ -833,6 +849,7 @@ function sendReminders() {
       }
       var msg2 = mensajePlanWA(nombre, serv, hora, mod, fechaLegible2, plan, sesionActual, true);
       linksHoy.push(nombre + ' (' + hora + '): https://wa.me/' + phone + '?text=' + encodeURIComponent(msg2));
+      try { queueAutomationMessage_('Recordatorio', nombre, phone, msg2, 'Cita hoy ' + hora, r[0], 'appt-today|' + r[0] + '|' + today); } catch(q2) {}
     }
   }
 
@@ -1844,5 +1861,271 @@ function debugEncuesta() {
     console.log('Item: ' + it.getTitle() + ' | Tipo: ' + it.getType().toString());
   });
   console.log('Stats: ' + JSON.stringify(result));
+}
+
+// =============================================================
+//  MOTOR CENTRAL DE AUTOMATIZACIONES
+// =============================================================
+
+var AUTOMATION_DEFAULTS = {
+  emailReminders: true,
+  whatsappQueue: true,
+  followups: true,
+  autoFollowupEmail: false,
+  inactivePatients: true,
+  paymentAlerts: true,
+  dataQuality: true,
+  weeklyReport: true,
+  backups: true,
+  kpiSnapshots: true,
+  waitlistMatching: true
+};
+
+function getAutomationConfig() {
+  var raw = PropertiesService.getScriptProperties().getProperty('AUTOMATION_CONFIG');
+  var saved = {};
+  try { saved = raw ? JSON.parse(raw) : {}; } catch(e) {}
+  var cfg = {};
+  for (var k in AUTOMATION_DEFAULTS) cfg[k] = saved[k] === undefined ? AUTOMATION_DEFAULTS[k] : !!saved[k];
+  return cfg;
+}
+
+function saveAutomationConfig(data) {
+  try {
+    var incoming = JSON.parse(decodeURIComponent(data || '{}'));
+    var cfg = getAutomationConfig();
+    for (var k in AUTOMATION_DEFAULTS) if (incoming[k] !== undefined) cfg[k] = !!incoming[k];
+    PropertiesService.getScriptProperties().setProperty('AUTOMATION_CONFIG', JSON.stringify(cfg));
+    automationLog_('config', 'Configuración actualizada', 'ok');
+    return {ok:true, config:cfg};
+  } catch(e) { return {ok:false, error:e.message}; }
+}
+
+function getAutomationSheet_(name, headers) {
+  var ss = getOrCreateSheet();
+  var sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+    sh.appendRow(headers);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function automationLog_(job, detail, status) {
+  try {
+    getAutomationSheet_('AutomationLog', ['timestamp','job','detail','status'])
+      .appendRow([new Date(), job, detail, status || 'ok']);
+  } catch(e) { Logger.log('automationLog: ' + e.message); }
+}
+
+function automationQueueSheet_() {
+  return getAutomationSheet_('ColaMensajes', ['id','tipo','nombre','telefono','mensaje','motivo','estado','creado','relacionado']);
+}
+
+function queueAutomationMessage_(type, name, phone, message, reason, relatedId, uniqueKey) {
+  if (!getAutomationConfig().whatsappQueue) return false;
+  var sh = automationQueueSheet_();
+  var rows = sh.getDataRange().getValues();
+  var key = uniqueKey || [type, relatedId, fmtDate(new Date())].join('|');
+  for (var i=1;i<rows.length;i++) if ((''+rows[i][8]) === key) return false;
+  var cleanPhone = (''+(phone||'')).replace(/\D/g,'');
+  if (cleanPhone && cleanPhone.length <= 10) cleanPhone = '57' + cleanPhone;
+  sh.appendRow(['MSG-'+new Date().getTime()+'-'+Math.floor(Math.random()*999), type, name||'', cleanPhone, message||'', reason||'', 'Pendiente', new Date(), key]);
+  return true;
+}
+
+function getAutomationQueue(status) {
+  var rows = automationQueueSheet_().getDataRange().getValues();
+  var out = [];
+  for (var i=1;i<rows.length;i++) {
+    if (!rows[i][0]) continue;
+    var item = {id:''+rows[i][0],type:''+rows[i][1],nombre:''+rows[i][2],telefono:''+rows[i][3],mensaje:''+rows[i][4],motivo:''+rows[i][5],estado:''+rows[i][6],creado:rows[i][7] instanceof Date?rows[i][7].toISOString():''+rows[i][7]};
+    if (!status || status === 'all' || item.estado.toLowerCase() === status.toLowerCase() || (status === 'pending' && item.estado === 'Pendiente')) out.push(item);
+  }
+  return {ok:true, items:out.reverse().slice(0,200)};
+}
+
+function markAutomationQueueDone(id) {
+  var sh = automationQueueSheet_(), rows = sh.getDataRange().getValues();
+  for (var i=1;i<rows.length;i++) if ((''+rows[i][0]) === (''+id)) { sh.getRange(i+1,7).setValue('Enviado'); return {ok:true}; }
+  return {ok:false,error:'Mensaje no encontrado'};
+}
+
+function setupAllAutomations() {
+  var handlers = ['runAutomationMorning','runAutomationNight','runAutomationWeekly'];
+  ScriptApp.getProjectTriggers().forEach(function(t){ if (handlers.indexOf(t.getHandlerFunction())>=0 || ['sendReminders','autoMarcarAtendidas','autoSendReminders'].indexOf(t.getHandlerFunction())>=0) ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('runAutomationMorning').timeBased().everyDays(1).atHour(7).inTimezone('America/Bogota').create();
+  ScriptApp.newTrigger('runAutomationNight').timeBased().everyDays(1).atHour(22).inTimezone('America/Bogota').create();
+  ScriptApp.newTrigger('runAutomationWeekly').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(8).inTimezone('America/Bogota').create();
+  automationLog_('setup','Triggers instalados: diario 7am, diario 10pm y lunes 8am','ok');
+  return getAutomationStatus();
+}
+
+function getAutomationStatus() {
+  var triggers = ScriptApp.getProjectTriggers().map(function(t){ return t.getHandlerFunction(); });
+  var logRows = getAutomationSheet_('AutomationLog', ['timestamp','job','detail','status']).getDataRange().getValues();
+  var logs=[];
+  for(var i=Math.max(1,logRows.length-15);i<logRows.length;i++) logs.push({timestamp:logRows[i][0] instanceof Date?logRows[i][0].toISOString():''+logRows[i][0],job:''+logRows[i][1],detail:''+logRows[i][2],status:''+logRows[i][3]});
+  var pending = getAutomationQueue('pending').items.length;
+  return {ok:true,config:getAutomationConfig(),triggers:triggers,active:triggers.indexOf('runAutomationMorning')>=0&&triggers.indexOf('runAutomationNight')>=0,pending:pending,logs:logs.reverse()};
+}
+
+function runAutomationNow(job) {
+  if (job === 'night') return runAutomationNight();
+  if (job === 'weekly') return runAutomationWeekly();
+  if (job === 'snapshot') return saveKPISnapshot_();
+  if (job === 'backup') return createSpreadsheetBackup_();
+  return runAutomationMorning();
+}
+
+function runAutomationMorning() {
+  var cfg=getAutomationConfig(), results={ok:true,job:'morning'};
+  var props=PropertiesService.getScriptProperties(), todayKey=fmtDate(new Date());
+  if(props.getProperty('AUTO_LAST_MORNING')===todayKey)return{ok:true,job:'morning',skipped:true,reason:'Ya se ejecutó hoy'};
+  try { if(cfg.emailReminders) { sendReminders(); results.reminders=true; } } catch(e) { results.remindersError=e.message; }
+  try { if(cfg.followups) results.followups=queuePostSessionFollowups_(); } catch(e2) { results.followupsError=e2.message; }
+  try { if(cfg.paymentAlerts) results.paymentAlerts=sendPendingPaymentsSummary_(); } catch(e3) { results.paymentError=e3.message; }
+  automationLog_('morning',JSON.stringify(results),results.remindersError?'error':'ok');
+  props.setProperty('AUTO_LAST_MORNING',todayKey);
+  return results;
+}
+
+function runAutomationNight() {
+  var cfg=getAutomationConfig(), results={ok:true,job:'night'};
+  try { results.attended=autoMarcarAtendidas(); } catch(e) { results.attendedError=e.message; }
+  try { if(cfg.kpiSnapshots) results.snapshot=saveKPISnapshot_(); } catch(e2) { results.snapshotError=e2.message; }
+  automationLog_('night',JSON.stringify(results),results.attendedError?'error':'ok');
+  return results;
+}
+
+function runAutomationWeekly() {
+  var cfg=getAutomationConfig(), results={ok:true,job:'weekly'};
+  var props=PropertiesService.getScriptProperties(), now=new Date(), weekKey=now.getFullYear()+'-W'+Math.ceil((((now-new Date(now.getFullYear(),0,1))/86400000)+new Date(now.getFullYear(),0,1).getDay()+1)/7);
+  if(props.getProperty('AUTO_LAST_WEEKLY')===weekKey)return{ok:true,job:'weekly',skipped:true,reason:'Ya se ejecutó esta semana'};
+  try { if(cfg.inactivePatients) { results.inactive=sendEmailReminders(); results.inactiveQueue=queueInactiveReminders_(); } } catch(e) { results.inactiveError=e.message; }
+  try { if(cfg.weeklyReport) results.report=sendWeeklyManagementReport_(); } catch(e2) { results.reportError=e2.message; }
+  try { if(cfg.backups) results.backup=createSpreadsheetBackup_(); } catch(e3) { results.backupError=e3.message; }
+  try { if(cfg.dataQuality) results.quality=sendDataQualitySummary_(); } catch(e4) { results.qualityError=e4.message; }
+  automationLog_('weekly',JSON.stringify(results),(results.reportError||results.backupError)?'error':'ok');
+  props.setProperty('AUTO_LAST_WEEKLY',weekKey);
+  return results;
+}
+
+function queuePostSessionFollowups_() {
+  var rows=getOrCreateSheet().getSheetByName('Citas').getDataRange().getValues();
+  var today=new Date(), queued=0, cfg=getAutomationConfig();
+  for(var i=1;i<rows.length;i++) {
+    var r=rows[i], status=(''+(r[10]||'')).toLowerCase();
+    if(status!=='atendida') continue;
+    var date=r[7] instanceof Date?r[7]:new Date((''+r[7]).split('T')[0]+'T12:00:00');
+    var days=Math.floor((new Date(today.getFullYear(),today.getMonth(),today.getDate())-new Date(date.getFullYear(),date.getMonth(),date.getDate()))/86400000);
+    var service=''+(r[5]||''), targetDays=service.toLowerCase().indexOf('descarga')>=0?2:1;
+    if(days!==targetDays) continue;
+    var first=(''+r[2]).trim().split(' ')[0];
+    var msg='Hola '+first+', ¿cómo te has sentido después de tu sesión de '+service+'? Queremos acompañar tu evolución. Si tienes alguna molestia o cambio, cuéntanos por aquí.';
+    if(queueAutomationMessage_('Seguimiento',r[2],r[3],msg,'Seguimiento '+targetDays+' día(s) después',r[0],'followup|'+r[0])) queued++;
+    if(cfg.autoFollowupEmail && r[4] && (''+r[4]).indexOf('@')>0) GmailApp.sendEmail(r[4],'¿Cómo sigues después de tu sesión?',msg,{name:'Jessica Ocampo Fisioterapeuta'});
+  }
+  return {queued:queued};
+}
+
+function queueInactiveReminders_() {
+  var data=getRemindersData();if(!data.ok)return{queued:0,error:data.error};
+  var list=data.semana4.concat(data.semana5),queued=0,now=new Date();
+  var weekKey=now.getFullYear()+'-'+Math.ceil((((now-new Date(now.getFullYear(),0,1))/86400000)+1)/7);
+  for(var i=0;i<list.length;i++){
+    var p=list[i],first=p.nombre.split(' ')[0];
+    var msg='Hola '+first+', ¿cómo te has sentido? Han pasado '+p.dias+' días desde tu última sesión de '+p.lastServicio+'. Si quieres retomar tu proceso, tenemos horarios disponibles esta semana.';
+    if(queueAutomationMessage_('Reactivación',p.nombre,p.telefono,msg,'Paciente sin regresar',p.nombre,'inactive|'+p.nombre.toLowerCase()+'|'+weekKey))queued++;
+  }
+  return{queued:queued};
+}
+
+function getPendingPayments_() {
+  var rows=getOrCreateSheet().getSheetByName('Citas').getDataRange().getValues(), today=fmtDate(new Date()), out=[];
+  for(var i=1;i<rows.length;i++) {
+    var r=rows[i], date=r[7] instanceof Date?fmtDate(r[7]):(''+(r[7]||'')).split('T')[0];
+    if(date<today && (''+r[10]).toLowerCase()!=='cancelada' && !(''+(r[14]||'')).trim()) out.push({id:r[0],nombre:r[2],fecha:date,precio:r[9]});
+  }
+  return out;
+}
+
+function sendPendingPaymentsSummary_() {
+  var items=getPendingPayments_();
+  if(!items.length) return {count:0};
+  var body='Cobros pendientes detectados automáticamente:\n\n'+items.slice(0,30).map(function(x){return '• '+x.nombre+' · '+x.fecha+' · '+x.precio;}).join('\n')+'\n\nAbre el panel → Centro de acciones para gestionarlos.';
+  GmailApp.sendEmail(JESSICA_EMAIL,'Cobros pendientes — '+items.length,body);
+  return {count:items.length};
+}
+
+function sendWeeklyManagementReport_() {
+  var rows=getOrCreateSheet().getSheetByName('Citas').getDataRange().getValues(), now=new Date(), start=new Date(now);start.setDate(now.getDate()-7);
+  var sessions=0,cancel=0,revenue=0,newPatients={};
+  for(var i=1;i<rows.length;i++) {
+    var r=rows[i],d=r[7] instanceof Date?r[7]:new Date((''+r[7]).split('T')[0]+'T12:00:00');
+    if(d<start||d>now)continue;
+    if((''+r[10]).toLowerCase()==='cancelada')cancel++;else{sessions++;newPatients[(''+r[2]).toLowerCase()]=1;revenue+=parseMoney_(r[9]);}
+  }
+  var pending=getPendingPayments_().length;
+  var body='RESUMEN AUTOMÁTICO SEMANAL\n\nSesiones: '+sessions+'\nPacientes únicos: '+Object.keys(newPatients).length+'\nCancelaciones: '+cancel+'\nVentas registradas: $'+revenue.toLocaleString('es-CO')+'\nCobros pendientes: '+pending+'\n\nRevisa Indicadores de Gestión para tendencias y acciones.';
+  GmailApp.sendEmail(JESSICA_EMAIL,'Resumen semanal de gestión',body);
+  return {sessions:sessions,cancelled:cancel,revenue:revenue,pending:pending};
+}
+
+function sendDataQualitySummary_() {
+  var rows=getOrCreateSheet().getSheetByName('Pacientes').getDataRange().getValues(), missing=[];
+  for(var i=1;i<rows.length;i++){var miss=[];if(!rows[i][1])miss.push('teléfono');if(!rows[i][2])miss.push('email');if(miss.length)missing.push(rows[i][0]+' ('+miss.join(', ')+')');}
+  if(missing.length) GmailApp.sendEmail(JESSICA_EMAIL,'Fichas de pacientes incompletas — '+missing.length,'Completar esta semana:\n\n'+missing.slice(0,50).join('\n'));
+  return {incomplete:missing.length};
+}
+
+function parseMoney_(v) { return parseInt((''+(v||0)).replace(/\D/g,''),10)||0; }
+
+function saveKPISnapshot_() {
+  var ss=getOrCreateSheet(), rows=ss.getSheetByName('Citas').getDataRange().getValues(), now=new Date(), month=Utilities.formatDate(now,'America/Bogota','yyyy-MM');
+  var sessions=0,cancelled=0,revenue=0,paid=0,patients={};
+  for(var i=1;i<rows.length;i++){
+    var r=rows[i],d=r[7] instanceof Date?fmtDate(r[7]):(''+(r[7]||'')).split('T')[0];if(d.slice(0,7)!==month)continue;
+    if((''+r[10]).toLowerCase()==='cancelada')cancelled++;else{sessions++;revenue+=parseMoney_(r[9]);patients[(''+r[2]).toLowerCase()]=1;if((''+(r[14]||'')).trim())paid+=parseMoney_(r[9]);}
+  }
+  var survey={};try{survey=getEncuestaStats_();}catch(e){}
+  var sh=getAutomationSheet_('KPIHistory',['month','updated','sessions','cancelled','revenue','paid','patients','nps','surveyResponses']);
+  var data=sh.getDataRange().getValues(), row=0;for(var j=1;j<data.length;j++)if((''+data[j][0])===month){row=j+1;break;}
+  var values=[month,new Date(),sessions,cancelled,revenue,paid,Object.keys(patients).length,survey.nps===undefined?'':survey.nps,survey.totalMes||0];
+  if(row)sh.getRange(row,1,1,values.length).setValues([values]);else sh.appendRow(values);
+  return {month:month,sessions:sessions,revenue:revenue};
+}
+
+function getKPIHistory_() {
+  var sh=getAutomationSheet_('KPIHistory',['month','updated','sessions','cancelled','revenue','paid','patients','nps','surveyResponses']);
+  var rows=sh.getDataRange().getValues(),items=[];
+  for(var i=1;i<rows.length;i++)if(rows[i][0])items.push({month:''+rows[i][0],sessions:+rows[i][2]||0,cancelled:+rows[i][3]||0,revenue:+rows[i][4]||0,paid:+rows[i][5]||0,patients:+rows[i][6]||0,nps:rows[i][7]===''?null:+rows[i][7],surveyResponses:+rows[i][8]||0});
+  return{ok:true,items:items.slice(-24)};
+}
+
+function createSpreadsheetBackup_() {
+  var ss=getOrCreateSheet(), file=DriveApp.getFileById(ss.getId()), stamp=Utilities.formatDate(new Date(),'America/Bogota','yyyy-MM-dd_HHmm');
+  var copy=file.makeCopy('BACKUP '+SS_NAME+' '+stamp);
+  return {ok:true,name:copy.getName(),id:copy.getId()};
+}
+
+// -------------------------------------------------------------
+// LISTA DE ESPERA SINCRONIZADA
+// -------------------------------------------------------------
+function waitlistSheet_(){return getAutomationSheet_('ListaEspera',['id','nombre','telefono','servicio','preferencia','estado','creado']);}
+function getWaitlist(){var rows=waitlistSheet_().getDataRange().getValues(),items=[];for(var i=1;i<rows.length;i++)if(rows[i][0]&&(''+rows[i][5])!=='Retirado')items.push({id:''+rows[i][0],nombre:''+rows[i][1],telefono:''+rows[i][2],servicio:''+rows[i][3],preferencia:''+rows[i][4],estado:''+rows[i][5],creado:rows[i][6] instanceof Date?rows[i][6].toISOString():''+rows[i][6]});return{ok:true,items:items.reverse()};}
+function addWaitlist(data){try{var p=JSON.parse(decodeURIComponent(data||'{}'));if(!p.nombre||!p.telefono)return{ok:false,error:'Nombre y teléfono son obligatorios'};var id='WAIT-'+new Date().getTime();waitlistSheet_().appendRow([id,p.nombre,p.telefono,p.servicio||'',p.preferencia||'','Esperando',new Date()]);return{ok:true,id:id};}catch(e){return{ok:false,error:e.message};}}
+function removeWaitlist(id){var sh=waitlistSheet_(),rows=sh.getDataRange().getValues();for(var i=1;i<rows.length;i++)if((''+rows[i][0])===(''+id)){sh.getRange(i+1,6).setValue('Retirado');return{ok:true};}return{ok:false,error:'Paciente no encontrado'};}
+
+function queueWaitlistMatch_(booking) {
+  if(!getAutomationConfig().waitlistMatching)return 0;
+  var list=getWaitlist().items,queued=0;
+  for(var i=0;i<list.length;i++){
+    var p=list[i];if(p.servicio&&booking.servicio&&p.servicio.toLowerCase().indexOf((''+booking.servicio).toLowerCase())<0&&(''+booking.servicio).toLowerCase().indexOf(p.servicio.toLowerCase())<0)continue;
+    var msg='Hola '+p.nombre.split(' ')[0]+', se liberó un horario el '+booking.fecha+' a las '+booking.hora+' para '+booking.servicio+'. ¿Te gustaría tomarlo?';
+    if(queueAutomationMessage_('Lista de espera',p.nombre,p.telefono,msg,'Horario liberado',booking.id,'wait|'+booking.id+'|'+p.id))queued++;
+  }
+  return queued;
 }
 

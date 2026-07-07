@@ -1243,6 +1243,128 @@ tr:last-child td{ border-bottom: none; }
   #modalDisp .disp-box{border-radius:16px;max-height:88vh}
   @keyframes dispSlideUp{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 }
+
+/* ══════════════════════════════════════
+   ADMIN UX 2026 — navegación, prioridad y accesibilidad
+══════════════════════════════════════ */
+.sb-tools-toggle{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  width:100%;padding:10px 14px;margin:3px 0;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:var(--s2);color:var(--text);
+  font:600 .82rem var(--font-b);cursor:pointer;transition:var(--tr-fast);
+}
+.sb-tools-toggle:hover{border-color:var(--primary);color:var(--primary)}
+.sb-tools-toggle svg{transition:transform var(--tr-fast)}
+.sb-tools-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+#sidebar:not(.tools-open) .sb-secondary{display:none}
+#sidebar.sb-collapsed .sb-tools-toggle{padding:10px;justify-content:center}
+#sidebar.sb-collapsed .sb-tools-toggle span{display:none}
+.dashboard-more-toggle{
+  width:100%;margin:20px 0 0;padding:12px 16px;border:1px solid var(--border);
+  border-radius:var(--radius-md);background:var(--s1);color:var(--muted);
+  font:600 .84rem var(--font-b);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:8px;transition:var(--tr-fast);
+}
+.dashboard-more-toggle:hover{border-color:var(--primary);color:var(--primary);background:var(--s2)}
+.dashboard-more-toggle svg{transition:transform var(--tr-fast)}
+.dashboard-more-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+.dashboard-secondary{display:none}
+.dashboard-secondary.open{display:block}
+.dashboard-section-label{
+  margin:22px 0 10px;font:600 .72rem var(--font-m);letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted)
+}
+.ops-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.ops-stat{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:16px}
+.ops-stat strong{display:block;font:700 1.65rem var(--font-h);color:var(--primary)}
+.ops-stat span{font-size:.76rem;color:var(--muted)}
+.ops-list{display:flex;flex-direction:column;gap:10px}
+.ops-item{display:flex;align-items:center;gap:14px;background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.ops-item[data-level="high"]{border-left:4px solid var(--err)}
+.ops-item[data-level="medium"]{border-left:4px solid var(--warn)}
+.ops-item[data-level="normal"]{border-left:4px solid var(--primary)}
+.ops-icon{width:36px;height:36px;border-radius:10px;background:var(--s2);display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0}
+.ops-copy{flex:1;min-width:0}.ops-title{font-weight:650;font-size:.9rem}.ops-sub{font-size:.78rem;color:var(--muted);margin-top:3px}
+.ops-actions{display:flex;gap:7px;flex-wrap:wrap}
+.wait-form{display:grid;grid-template-columns:1.2fr 1fr 1fr 1.2fr auto;gap:10px;align-items:end}
+.wait-form label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:4px;font-family:var(--font-m)}
+.wait-form input,.wait-form select{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font:400 .85rem var(--font-b);padding:9px 11px;min-height:42px}
+.wait-card{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--s1);border:1px solid var(--border);border-radius:12px}
+.wait-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(27,191,176,.12);color:var(--primary);font-weight:700;flex-shrink:0}
+.wait-info{flex:1;min-width:0}.wait-name{font-weight:650}.wait-meta{font-size:.77rem;color:var(--muted);margin-top:3px}
+.empty-compact{text-align:center;color:var(--muted);padding:36px 16px;background:var(--s1);border:1px dashed var(--border);border-radius:12px;font-size:.86rem}
+.kpi-live-card{position:relative;min-height:116px;display:flex;flex-direction:column;justify-content:center}
+.kpi-live-card:hover{transform:translateY(-2px)}
+.kpi-live-card.is-favorite{order:-1;box-shadow:0 0 0 2px rgba(245,158,11,.25)}
+.kpi-fav-btn{position:absolute;top:8px;right:8px;width:30px;height:30px;border:0;background:transparent;color:var(--muted);cursor:pointer;border-radius:8px;font-size:1rem;z-index:2}
+.kpi-fav-btn:hover,.kpi-fav-btn.active{background:rgba(245,158,11,.12);color:#d97706}
+#kpiExplorer{display:none;position:fixed;inset:0;background:rgba(15,17,23,.55);z-index:10000;align-items:center;justify-content:center;padding:20px}
+#kpiExplorer.open{display:flex}
+.kpi-explorer-box{width:min(720px,96vw);max-height:90vh;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-lg);padding:24px}
+.kpi-explorer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}
+.kpi-explorer-title{font:700 1.35rem var(--font-h)}
+.kpi-explorer-sub{font-size:.78rem;color:var(--muted);margin-top:3px}
+.kpi-close{width:40px;height:40px;border:1px solid var(--border);background:var(--s1);color:var(--muted);border-radius:10px;cursor:pointer;font-size:1.25rem}
+.kpi-compare-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.kpi-compare{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px}
+.kpi-compare span{display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px}.kpi-compare strong{font:700 1.2rem var(--font-h)}
+.kpi-trend{height:180px;display:flex;align-items:flex-end;gap:10px;padding:28px 10px 0;background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:18px}
+.kpi-trend-col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;min-width:0}
+.kpi-trend-val{font-size:.62rem;color:var(--muted);white-space:nowrap}.kpi-trend-bar{width:min(38px,80%);min-height:3px;background:linear-gradient(180deg,var(--primary),#6366f1);border-radius:6px 6px 2px 2px;transition:height .25s ease}.kpi-trend-label{font-size:.64rem;color:var(--muted)}
+.kpi-note{width:100%;min-height:78px;resize:vertical;background:var(--s1);border:1px solid var(--border);border-radius:10px;color:var(--text);font:400 .85rem/1.5 var(--font-b);padding:10px 12px}
+.kpi-explorer-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.auto-status{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--s1);margin-bottom:18px}
+.auto-dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex-shrink:0}.auto-dot.on{background:var(--ok);box-shadow:0 0 0 4px rgba(22,163,74,.12)}
+.auto-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.auto-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid var(--border);border-radius:10px;background:var(--s1)}
+.auto-toggle-copy strong{display:block;font-size:.86rem}.auto-toggle-copy span{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
+.switch{position:relative;width:42px;height:24px;flex-shrink:0}.switch input{opacity:0;width:0;height:0}.switch-slider{position:absolute;inset:0;background:var(--s3);border-radius:99px;cursor:pointer;transition:.2s}.switch-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:.2s}.switch input:checked+.switch-slider{background:var(--primary)}.switch input:checked+.switch-slider::before{transform:translateX(18px)}
+.queue-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border)}.queue-item:last-child{border-bottom:0}.queue-copy{flex:1;min-width:0}.queue-name{font-weight:650;font-size:.86rem}.queue-reason{font-size:.72rem;color:var(--muted);margin-top:2px}.queue-msg{font-size:.78rem;margin-top:7px;line-height:1.5;color:var(--text)}
+.auto-log{font-size:.75rem;padding:7px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:12px}.auto-log:last-child{border:0}.auto-log span{color:var(--muted)}
+
+/* Foco perceptible para navegación por teclado */
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{
+  outline:3px solid rgba(27,191,176,.38);outline-offset:2px;
+}
+button:disabled{cursor:not-allowed;opacity:.58}
+.sr-only{
+  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;
+  margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;border:0!important;
+}
+
+/* La tabla conserva desplazamiento en pantallas estrechas */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl-wrap table{min-width:max-content}
+
+@media(max-width:700px){
+  #mainContent{padding-left:14px;padding-right:14px}
+  .page-title{font-size:1.65rem}
+  .card{padding:18px}
+  .stats-grid,.stats-grid[style]{grid-template-columns:1fr 1fr!important;gap:10px!important}
+  .stat-card{padding:16px}
+  .stat-val{font-size:1.55rem!important}
+  .btn,.sb-link,.mob-nav-btn{min-height:44px}
+  .filter-bar .btn,.filter-bar input,.filter-bar select{width:100%}
+  #fabAgendar{right:16px}
+  #fabDisp{right:19px}
+  .ops-summary{grid-template-columns:1fr 1fr}
+  .ops-item,.wait-card{align-items:flex-start;flex-wrap:wrap}
+  .ops-actions{width:100%}.ops-actions .btn{flex:1}
+  .wait-form{grid-template-columns:1fr}
+  .kpi-compare-grid{grid-template-columns:1fr}
+  .kpi-explorer-box{padding:18px}
+  .auto-grid{grid-template-columns:1fr}
+  .auto-panels{grid-template-columns:1fr!important}
+}
+@media(max-width:420px){
+  .stats-grid,.stats-grid[style]{grid-template-columns:1fr!important}
+  .mob-nav-btn{padding:5px 7px;min-width:48px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;
+    animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
@@ -1323,7 +1445,8 @@ tr:last-child td{ border-bottom: none; }
     <img src="Logo/3.png" height="44" alt="Jessica Ocampo Fisioterapeuta">
     <h1>Panel de Administración</h1>
     <p>Acceso exclusivo para Jessica Ocampo Fisioterapeuta</p>
-    <input class="login-input" type="password" id="pwInput" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+    <label class="sr-only" for="pwInput">Contraseña de administración</label>
+    <input class="login-input" type="password" id="pwInput" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" id="loginBtn" onclick="doLogin()">Ingresar</button>
     <p class="login-err" id="loginErr">Contraseña incorrecta. Inténtalo de nuevo.</p>
   </div>
@@ -5480,6 +5603,7 @@ window.addEventListener('beforeunload', () => {
 let TOKEN  = sessionStorage.getItem('adminToken') || '';
 let allData = {citas: [], bloqueos: [], eventos: []};
 let _kpiViewMonth = null; // {m, y} o null = mes actual
+let _kpiServerHistory = {};
 
 // Escapa HTML para prevenir XSS en innerHTML
 function esc(s) {
@@ -5583,6 +5707,7 @@ document.addEventListener('visibilitychange', async () => {
 
 // Auto-login si tiene sesión guardada
 window.addEventListener('DOMContentLoaded', async () => {
+  initAdminUX2026();
   document.getElementById('dashDate').textContent = new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   if (TOKEN) {
     const btn = document.getElementById('loginBtn');
@@ -5722,8 +5847,287 @@ function openEvalExpress() {
 }
 
 // ── SIDEBAR / NAV ──
+function initAdminUX2026() {
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar || sidebar.dataset.uxReady) return;
+  sidebar.dataset.uxReady = '1';
+
+  // Seis destinos cotidianos visibles; el resto queda disponible sin saturar el menú.
+  const principales = new Set(['sb-dashboard','sb-tareas','sb-agenda','sb-nueva','sb-pacientes','sb-finanzas']);
+  sidebar.querySelectorAll(':scope > .sb-link').forEach(link => {
+    if (!principales.has(link.id) && link.id !== 'darkModeBtn' && !link.classList.contains('sb-signout')) {
+      link.classList.add('sb-secondary');
+    }
+  });
+
+  const finanzas = document.getElementById('sb-finanzas');
+  if (finanzas && !document.getElementById('sbToolsToggle')) {
+    const toggle = document.createElement('button');
+    toggle.id = 'sbToolsToggle';
+    toggle.type = 'button';
+    toggle.className = 'sb-tools-toggle';
+    toggle.setAttribute('aria-expanded','false');
+    toggle.setAttribute('aria-controls','sidebar');
+    toggle.innerHTML = '<span>Más herramientas</span><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+    toggle.addEventListener('click', () => {
+      const abierto = sidebar.classList.toggle('tools-open');
+      toggle.setAttribute('aria-expanded', String(abierto));
+      toggle.querySelector('span').textContent = abierto ? 'Ocultar herramientas' : 'Más herramientas';
+    });
+    finanzas.insertAdjacentElement('afterend', toggle);
+  }
+
+  // Contenido secundario del dashboard bajo demanda.
+  const dashboard = document.getElementById('vDashboard');
+  const weekCard = document.getElementById('weekGrid')?.closest('.card');
+  const notesCard = document.querySelector('#vDashboard .notas-card');
+  const leadsGrid = document.getElementById('leadsHoyDash')?.closest('.stats-grid');
+  if (dashboard && weekCard && !document.getElementById('dashboardMore')) {
+    const btn = document.createElement('button');
+    btn.id = 'dashboardMore';
+    btn.type = 'button';
+    btn.className = 'dashboard-more-toggle';
+    btn.setAttribute('aria-expanded','false');
+    btn.setAttribute('aria-controls','dashboardSecondary');
+    btn.innerHTML = 'Ver análisis y notas <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+    const more = document.createElement('div');
+    more.id = 'dashboardSecondary';
+    more.className = 'dashboard-secondary';
+    const label = document.createElement('div');
+    label.className = 'dashboard-section-label';
+    label.textContent = 'Análisis complementario';
+    more.append(label, weekCard);
+    if (notesCard) more.append(notesCard);
+    if (leadsGrid) more.append(leadsGrid);
+    dashboard.append(btn, more);
+    btn.addEventListener('click', () => {
+      const abierto = more.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(abierto));
+      btn.firstChild.textContent = abierto ? 'Ocultar análisis y notas ' : 'Ver análisis y notas ';
+    });
+  }
+
+  initFunctionalModules2026();
+
+  // Accesibilidad incremental para controles existentes.
+  document.querySelectorAll('svg').forEach(svg => svg.setAttribute('aria-hidden','true'));
+  document.querySelectorAll('.modal,.disp-box,.pago-modal-box').forEach(modal => {
+    modal.setAttribute('role','dialog');
+    modal.setAttribute('aria-modal','true');
+  });
+  document.querySelectorAll('button').forEach(btn => {
+    const text = btn.textContent.replace(/\s+/g,' ').trim();
+    if (!text && btn.title) btn.setAttribute('aria-label', btn.title);
+  });
+  document.getElementById('menuBtn')?.setAttribute('aria-label','Abrir menú principal');
+  document.getElementById('mobileBottomNav')?.setAttribute('aria-label','Navegación principal móvil');
+  document.querySelectorAll('.stat-card.clickable,[onclick].stat-card').forEach(card => {
+    card.tabIndex = 0;
+    card.setAttribute('role','button');
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+    });
+  });
+}
+
+function initFunctionalModules2026() {
+  if (document.getElementById('vAcciones')) return;
+  const sidebar = document.getElementById('sidebar');
+  const toolsToggle = document.getElementById('sbToolsToggle');
+  const makeLink = (id, label, icon) => {
+    const b = document.createElement('button');
+    b.className = 'sb-link sb-secondary'; b.id = 'sb-' + id; b.dataset.tooltip = label;
+    b.innerHTML = icon + '<span>' + label + '</span>';
+    b.onclick = () => showView(id);
+    return b;
+  };
+  const iconActions = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+  const iconWait = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a6 6 0 0 1 12 0v2"/><path d="M19 8v6M16 11h6"/></svg>';
+  const iconAuto = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>';
+  const accionesLink = makeLink('acciones','Centro de acciones',iconActions);
+  const esperaLink = makeLink('espera','Lista de espera',iconWait);
+  const autoLink = makeLink('automatizaciones','Automatizaciones',iconAuto);
+  accionesLink.classList.remove('sb-secondary');
+  toolsToggle.insertAdjacentElement('afterend', esperaLink);
+  toolsToggle.insertAdjacentElement('afterend', autoLink);
+  document.getElementById('sb-dashboard').insertAdjacentElement('beforebegin', accionesLink);
+
+  const main = document.getElementById('mainContent');
+  const acciones = document.createElement('section');
+  acciones.id = 'vAcciones'; acciones.style.display = 'none';
+  acciones.innerHTML = `
+    <div class="page-header"><h1 class="page-title">Centro de <em>acciones</em></h1><p class="page-sub">Pendientes priorizados a partir de citas, pagos y pacientes</p></div>
+    <div class="ops-summary">
+      <div class="ops-stat"><strong id="opsHoy">0</strong><span>Citas pendientes hoy</span></div>
+      <div class="ops-stat"><strong id="opsCobros">0</strong><span>Cobros atrasados</span></div>
+      <div class="ops-stat"><strong id="opsInactivos">0</strong><span>Pacientes inactivos</span></div>
+      <div class="ops-stat"><strong id="opsDatos">0</strong><span>Fichas incompletas</span></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="card-title" style="margin:0">Prioridades recomendadas</div>
+      <button class="btn btn-ghost btn-sm" onclick="renderCentroAcciones()">Actualizar</button>
+    </div>
+    <div class="ops-list" id="opsList"></div>`;
+  main.appendChild(acciones);
+
+  const espera = document.createElement('section');
+  espera.id = 'vEspera'; espera.style.display = 'none';
+  espera.innerHTML = `
+    <div class="page-header"><h1 class="page-title">Lista de <em>espera</em></h1><p class="page-sub">Pacientes disponibles para cubrir cancelaciones y horarios libres</p></div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Agregar paciente</div>
+      <div class="wait-form">
+        <div><label for="waitNombre">Nombre *</label><input id="waitNombre" autocomplete="off" placeholder="Nombre del paciente"></div>
+        <div><label for="waitTelefono">Teléfono *</label><input id="waitTelefono" inputmode="tel" placeholder="300 000 0000"></div>
+        <div><label for="waitServicio">Servicio</label><input id="waitServicio" placeholder="Descarga, valoración..."></div>
+        <div><label for="waitPreferencia">Disponibilidad</label><input id="waitPreferencia" placeholder="Mañanas, martes, cualquier hora..."></div>
+        <button class="btn btn-teal" onclick="addWaitPatient()">Agregar</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="card-title" style="margin:0">Pacientes esperando <span class="chip chip-info" id="waitCount">0</span></div>
+      <input id="waitSearch" oninput="renderWaitList()" placeholder="Buscar..." style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-family:var(--font-b)">
+    </div>
+    <div class="ops-list" id="waitList"></div>`;
+  main.appendChild(espera);
+
+  const auto = document.createElement('section');
+  auto.id = 'vAutomatizaciones'; auto.style.display = 'none';
+  const toggleDefs = [
+    ['emailReminders','Recordatorios de citas','Correos diarios para citas de hoy y mañana'],
+    ['whatsappQueue','Cola de WhatsApp','Prepara mensajes con envío en un clic'],
+    ['followups','Seguimiento posconsulta','Contacta 1–2 días después de la sesión'],
+    ['inactivePatients','Reactivación de pacientes','Detecta y contacta pacientes inactivos'],
+    ['paymentAlerts','Alertas de cobro','Resumen diario de pagos pendientes'],
+    ['dataQuality','Calidad de datos','Alerta sobre fichas incompletas'],
+    ['weeklyReport','Reporte semanal','Envía resultados cada lunes'],
+    ['backups','Copias de seguridad','Crea un respaldo semanal en Drive'],
+    ['kpiSnapshots','Historial de indicadores','Guarda el cierre mensual automáticamente'],
+    ['waitlistMatching','Lista de espera automática','Sugiere pacientes cuando se cancela una cita']
+  ];
+  auto.innerHTML = `<div class="page-header"><h1 class="page-title"><em>Automatizaciones</em></h1><p class="page-sub">Control central de tareas programadas, mensajes y respaldos</p></div>
+    <div class="auto-status"><span class="auto-dot" id="autoStatusDot"></span><div style="flex:1"><strong id="autoStatusTitle">Consultando estado...</strong><div style="font-size:.75rem;color:var(--muted);margin-top:2px" id="autoStatusSub"></div></div><button class="btn btn-teal btn-sm" onclick="setupAutomations()">Activar programación</button></div>
+    <div class="card" style="margin-bottom:18px"><div class="card-title">Qué debe ejecutar el sistema</div><div class="auto-grid">${toggleDefs.map(d=>`<div class="auto-toggle"><div class="auto-toggle-copy"><strong>${d[1]}</strong><span>${d[2]}</span></div><label class="switch"><input type="checkbox" data-auto-key="${d[0]}" onchange="saveAutomationSettings()"><span class="switch-slider"></span></label></div>`).join('')}</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px"><button class="btn btn-teal" onclick="runAutomationJob('morning')">Ejecutar tareas diarias</button><button class="btn btn-ghost" onclick="runAutomationJob('weekly')">Generar reporte semanal</button><button class="btn btn-ghost" onclick="runAutomationJob('backup')">Crear respaldo ahora</button><button class="btn btn-ghost" onclick="loadAutomationCenter()">Actualizar estado</button></div>
+    <div style="display:grid;grid-template-columns:1.2fr .8fr;gap:18px" class="auto-panels"><div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px"><div class="card-title" style="margin:0">Mensajes pendientes</div><span class="chip chip-warn" id="autoQueueCount">0</span></div><div id="autoQueue"><div class="loading-wrap"><div class="spinner"></div></div></div></div><div class="card"><div class="card-title">Actividad reciente</div><div id="autoLogs"></div></div></div>`;
+  main.appendChild(auto);
+  initKPIExplorer();
+}
+
+function initKPIExplorer() {
+  if (document.getElementById('kpiExplorer')) return;
+  const modal = document.createElement('div');
+  modal.id = 'kpiExplorer';
+  modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
+  modal.onclick = e => { if (e.target === modal) closeKPIExplorer(); };
+  modal.innerHTML = `<div class="kpi-explorer-box">
+    <div class="kpi-explorer-head"><div><div class="kpi-explorer-title" id="kpiExplorerTitle">Indicador</div><div class="kpi-explorer-sub" id="kpiExplorerSub"></div></div><button class="kpi-close" onclick="closeKPIExplorer()" aria-label="Cerrar">×</button></div>
+    <div class="kpi-compare-grid"><div class="kpi-compare"><span>Periodo actual</span><strong id="kpiExCurrent">—</strong></div><div class="kpi-compare"><span>Periodo anterior</span><strong id="kpiExPrevious">—</strong></div><div class="kpi-compare"><span>Variación</span><strong id="kpiExVariation">—</strong></div></div>
+    <div style="font:600 .72rem var(--font-m);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Tendencia · últimos 6 meses</div>
+    <div class="kpi-trend" id="kpiTrend"></div>
+    <label for="kpiNote" style="display:block;font:600 .72rem var(--font-m);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:7px">Nota de gestión</label>
+    <textarea class="kpi-note" id="kpiNote" placeholder="Qué ocurrió, qué decisión tomaste y qué revisarás después..."></textarea>
+    <div class="kpi-explorer-actions"><button class="btn btn-teal" id="kpiActionBtn">Tomar acción</button><button class="btn btn-ghost" id="kpiExplainBtn">Ver explicación completa</button><button class="btn btn-ghost" id="kpiSaveNote" onclick="saveKPINote()">Guardar nota</button></div>
+  </div>`;
+  document.body.appendChild(modal);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeKPIExplorer(); });
+}
+
+const KPI_INTERACTIVE = {
+  gkKpi1:{label:'Sesiones realizadas',action:'agenda',actionLabel:'Revisar agenda',type:'number'},
+  gkKpi2:{label:'Mix de servicios Full',action:'finanzas',actionLabel:'Revisar servicios',type:'pct'},
+  gkKpi3:{label:'Leads generados',action:'finanzas',actionLabel:'Registrar leads',type:'number'},
+  gkKpi4:{label:'Tasa de conversión',action:'finanzas',actionLabel:'Revisar conversión',type:'pct'},
+  gkKpi5:{label:'Ventas brutas',action:'finanzas',actionLabel:'Abrir finanzas',type:'money'},
+  gkKpi6:{label:'Encuestas realizadas',action:'finanzas',actionLabel:'Cargar encuestas',type:'pct'},
+  gkKpi7:{label:'NPS',action:'finanzas',actionLabel:'Revisar encuestas',type:'number'},
+  gkKpi8:{label:'Base de datos actualizada',action:'basedatos',actionLabel:'Completar fichas',type:'pct'},
+  gkKpi4b:{label:'Tasa de cancelación',action:'agenda',actionLabel:'Revisar cancelaciones',type:'pct'},
+  gkKpi9:{label:'Retención a 60 días',action:'recuperacion',actionLabel:'Recuperar pacientes',type:'pct'}
+};
+let _activeKPIExplorer = null;
+
+function _kpiSnapshot(m,y) {
+  const citas = citasReales();
+  const mes = citas.filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y; });
+  const mixFull = mes.filter(c => esSesionFull(c.servicio)).length;
+  const leads = getLeadsMes(m,y);
+  const todas = (allData.citas||[]).filter(c => { const [cy,cm]=normDate(c.fecha).split('-'); return +cm===m && +cy===y && !esRegistroServ(c.servicio); });
+  const motivos = getCancelMotivos();
+  const cancel = todas.filter(c => (c.estado||'').toLowerCase().includes('cancel') && !esCancelExcluida(motivos[c.id])).length;
+  const ref = new Date(y,m,0), start = new Date(ref); start.setDate(ref.getDate()-VENTANA_RETENCION);
+  const cuenta = {};
+  citas.filter(c => { const d=new Date(normDate(c.fecha)+'T12:00:00'); return d>=start&&d<=ref; }).forEach(c=>{const k=_normStr(c.nombre);if(k)cuenta[k]=(cuenta[k]||0)+1;});
+  const retTotal=Object.keys(cuenta).length, bd=calcBDActualizada(m,y);
+  const snapshot = {
+    gkKpi1:mes.length,
+    gkKpi2:mes.length?Math.round(mixFull/mes.length*100):0,
+    gkKpi3:leads,
+    gkKpi4:leads?Math.round(mes.length/leads*100):null,
+    gkKpi5:calcCobradoMes(m,y),
+    gkKpi6:null,gkKpi7:null,
+    gkKpi8:bd?bd.pct:null,
+    gkKpi4b:todas.length?Math.round(cancel/todas.length*100):0,
+    gkKpi9:retTotal?Math.round(Object.values(cuenta).filter(n=>n>=2).length/retTotal*100):0
+  };
+  const saved = _kpiServerHistory[`${y}-${String(m).padStart(2,'0')}`];
+  if (saved) {
+    if (saved.nps !== null) snapshot.gkKpi7 = saved.nps;
+    if (saved.sessions) snapshot.gkKpi6 = Math.round((saved.surveyResponses||0) / saved.sessions * 100);
+  }
+  return snapshot;
+}
+
+async function loadKPIHistoryFromServer() {
+  try {
+    const d=await fetch(`${APPS_SCRIPT_URL}?action=getKPIHistory&token=${encodeURIComponent(TOKEN)}`).then(r=>r.json());
+    if(d.ok){_kpiServerHistory={};(d.items||[]).forEach(x=>_kpiServerHistory[x.month]=x);}
+  } catch(e) {}
+}
+
+function _formatKPIValue(v,type) {
+  if (v === null || v === undefined || Number.isNaN(v)) return 'Sin datos';
+  if (type === 'money') return fmtPeso(Math.round(v));
+  if (type === 'pct') return Math.round(v) + '%';
+  return Math.round(v).toLocaleString('es-CO');
+}
+
+function openKPIExplorer(id, card) {
+  const cfg = KPI_INTERACTIVE[id]; if (!cfg) return;
+  _activeKPIExplorer = id;
+  const base = _kpiViewMonth ? new Date(_kpiViewMonth.y,_kpiViewMonth.m-1,1) : new Date();
+  const points=[];
+  for(let i=5;i>=0;i--){const d=new Date(base.getFullYear(),base.getMonth()-i,1);points.push({m:d.getMonth()+1,y:d.getFullYear(),label:d.toLocaleDateString('es-CO',{month:'short'}),value:_kpiSnapshot(d.getMonth()+1,d.getFullYear())[id]});}
+  let current = points[5].value;
+  const raw = Number(card?.dataset.value);
+  if ((id==='gkKpi6'||id==='gkKpi7') && Number.isFinite(raw)) current=raw;
+  const previous=points[4].value;
+  const variation=(previous!==null&&previous!==0&&current!==null)?((current-previous)/Math.abs(previous)*100):null;
+  document.getElementById('kpiExplorerTitle').textContent=cfg.label;
+  document.getElementById('kpiExplorerSub').textContent='Explora la tendencia, registra decisiones y actúa sin salir del indicador.';
+  document.getElementById('kpiExCurrent').textContent=_formatKPIValue(current,cfg.type);
+  document.getElementById('kpiExPrevious').textContent=_formatKPIValue(previous,cfg.type);
+  const varEl=document.getElementById('kpiExVariation');
+  varEl.textContent=variation===null?'Sin comparación':`${variation>=0?'↑':'↓'} ${Math.abs(variation).toFixed(1)}%`;
+  const lowerIsBetter = id === 'gkKpi2' || id === 'gkKpi4b';
+  const improves = variation === null ? null : (lowerIsBetter ? variation <= 0 : variation >= 0);
+  varEl.style.color=improves===null?'var(--muted)':improves?'var(--ok)':'var(--err)';
+  const values=points.map(p=>p.value||0),max=Math.max(...values,1);
+  document.getElementById('kpiTrend').innerHTML=points.map(p=>`<div class="kpi-trend-col"><span class="kpi-trend-val">${p.value===null?'—':_formatKPIValue(p.value,cfg.type)}</span><div class="kpi-trend-bar" style="height:${p.value===null?2:Math.max(4,Math.round(p.value/max*105))}px"></div><span class="kpi-trend-label">${p.label}</span></div>`).join('');
+  document.getElementById('kpiNote').value=localStorage.getItem('kpiNote_'+id)||'';
+  const action=document.getElementById('kpiActionBtn');action.textContent=cfg.actionLabel;action.onclick=()=>{closeKPIExplorer();showView(cfg.action)};
+  document.getElementById('kpiExplainBtn').onclick=()=>{closeKPIExplorer();scrollToKPICard(id)};
+  const modal=document.getElementById('kpiExplorer');modal.classList.add('open');
+  setTimeout(()=>modal.querySelector('.kpi-close').focus(),20);
+}
+
+function closeKPIExplorer(){document.getElementById('kpiExplorer')?.classList.remove('open')}
+function saveKPINote(){if(!_activeKPIExplorer)return;localStorage.setItem('kpiNote_'+_activeKPIExplorer,document.getElementById('kpiNote').value.trim());toast('Nota del indicador guardada')}
+function toggleKPIFavorite(e,id){e.stopPropagation();const fav=JSON.parse(localStorage.getItem('kpiFavorites')||'[]');const ix=fav.indexOf(id);if(ix>=0)fav.splice(ix,1);else fav.push(id);localStorage.setItem('kpiFavorites',JSON.stringify(fav));applyKPIFavorites()}
+function applyKPIFavorites(){let fav=[];try{fav=JSON.parse(localStorage.getItem('kpiFavorites')||'[]')}catch(e){}document.querySelectorAll('.kpi-live-card').forEach(c=>{const on=fav.includes(c.dataset.kpi);c.classList.toggle('is-favorite',on);const b=c.querySelector('.kpi-fav-btn');if(b){b.classList.toggle('active',on);b.textContent=on?'★':'☆';b.setAttribute('aria-label',on?'Quitar de favoritos':'Agregar a favoritos')}})}
+
 function showView(v) {
-  ['dashboard','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa','recuperacion'].forEach(id => {
+  ['dashboard','acciones','espera','automatizaciones','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa','recuperacion'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -5735,7 +6139,15 @@ function showView(v) {
   void _sec.offsetWidth;
   _sec.classList.add('view-fadein');
   const _sbActive = document.getElementById('sb-' + v);
-  if (_sbActive) _sbActive.classList.add('active');
+  if (_sbActive) {
+    _sbActive.classList.add('active');
+    if (_sbActive.classList.contains('sb-secondary')) {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.add('tools-open');
+      const toolsToggle = document.getElementById('sbToolsToggle');
+      if (toolsToggle) toolsToggle.setAttribute('aria-expanded','true');
+    }
+  }
   document.getElementById('sidebar').classList.remove('open');
   // FAB: ocultar en vista nueva (ya estás ahí) y mostrar en las demás
   const fab = document.getElementById('fabAgendar');
@@ -5777,11 +6189,228 @@ function showView(v) {
   if (v === 'mensajes')       renderMensajes();
   if (v === 'empresas')       renderEmpresas();
   if (v === 'codigos')        renderCodigos();
-  if (v === 'guiakpis')       { renderKPIGuia(); actualizarContadorLeads(); loadRutinaChecks(); }
+  if (v === 'guiakpis')       { renderKPIGuia(); actualizarContadorLeads(); loadRutinaChecks(); loadKPIHistoryFromServer(); }
   if (v === 'presupuesto')    { renderPresupuestoMetas(); }
   if (v === 'comisiones')     renderComisiones();
   if (v === 'recuperacion')   renderRecuperaciones();
+  if (v === 'acciones')       renderCentroAcciones();
+  if (v === 'espera')         renderWaitList();
+  if (v === 'automatizaciones') loadAutomationCenter();
   if (v === 'dashboard')      actualizarContadorLeads();
+}
+
+// ── CENTRO DE ACCIONES ──
+function _daysSince(dateStr) {
+  const normalized = normDate(dateStr);
+  if (!normalized) return 0;
+  const d = new Date(normalized + 'T12:00:00');
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+
+function _actionIcon(type) {
+  const icons = {
+    cita:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+    pago:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    paciente:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg>',
+    datos:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg>'
+  };
+  return icons[type] || icons.paciente;
+}
+
+function _opsItem({level='normal',type='paciente',title,sub,actions=''}) {
+  return `<div class="ops-item" data-level="${level}"><div class="ops-icon">${_actionIcon(type)}</div><div class="ops-copy"><div class="ops-title">${title}</div><div class="ops-sub">${sub}</div></div><div class="ops-actions">${actions}</div></div>`;
+}
+
+function renderCentroAcciones() {
+  const list = document.getElementById('opsList');
+  if (!list) return;
+  const hoy = today();
+  const citas = (allData.citas || []).filter(c => !esRegistroServ(c.servicio));
+  const citasHoy = citas.filter(c => normDate(c.fecha) === hoy && c.estado !== 'Cancelada' && c.estado !== 'Atendida');
+  const cobros = citas.filter(c => normDate(c.fecha) < hoy && c.estado !== 'Cancelada' && !isPagada(c.id));
+
+  const pacientesMap = new Map();
+  citas.filter(c => c.estado !== 'Cancelada' && normDate(c.fecha) <= hoy).forEach(c => {
+    const key = _normStr(c.nombre);
+    if (!key) return;
+    const prev = pacientesMap.get(key);
+    if (!prev || normDate(c.fecha) > normDate(prev.fecha)) pacientesMap.set(key, c);
+  });
+  const inactivos = [...pacientesMap.values()].filter(c => _daysSince(c.fecha) >= 60);
+
+  const fuentePacientes = (allData.pacientes && allData.pacientes.length)
+    ? allData.pacientes
+    : [...pacientesMap.values()];
+  const vistos = new Set();
+  const incompletos = fuentePacientes.filter(p => {
+    const key = _normStr(p.nombre); if (!key || vistos.has(key)) return false; vistos.add(key);
+    return !(p.telefono || '').trim() || !(p.email || '').trim();
+  });
+
+  document.getElementById('opsHoy').textContent = citasHoy.length;
+  document.getElementById('opsCobros').textContent = cobros.length;
+  document.getElementById('opsInactivos').textContent = inactivos.length;
+  document.getElementById('opsDatos').textContent = incompletos.length;
+
+  const items = [];
+  citasHoy.slice(0,6).forEach(c => items.push(_opsItem({
+    level:'normal',type:'cita',title:`Confirmar cita de ${esc(c.nombre)}`,
+    sub:`Hoy ${esc(c.hora || '')} · ${esc(c.servicio || 'Servicio')}`,
+    actions:`<button class="btn btn-ghost btn-sm" onclick="goAgendaPatient('${encodeURIComponent(c.nombre||'')}')">Ver cita</button>`
+  })));
+  cobros.slice(0,6).forEach(c => items.push(_opsItem({
+    level:'high',type:'pago',title:`Cobro pendiente · ${esc(c.nombre)}`,
+    sub:`${esc(c.fecha || '')} · ${esc(c.precio || 'Valor sin registrar')}`,
+    actions:`<button class="btn btn-ghost btn-sm" onclick="goAgendaPatient('${encodeURIComponent(c.nombre||'')}')">Registrar pago</button>`
+  })));
+  inactivos.slice(0,6).forEach(c => {
+    const phone = String(c.telefono||'').replace(/\D/g,'');
+    const wa = phone ? `https://wa.me/57${phone.replace(/^57/,'')}?text=${encodeURIComponent(`Hola ${c.nombre}, ¿cómo has estado desde tu última sesión? Tenemos horarios disponibles si deseas continuar tu proceso.`)}` : '';
+    items.push(_opsItem({level:'medium',type:'paciente',title:`Reactivar a ${esc(c.nombre)}`,
+      sub:`${_daysSince(c.fecha)} días sin sesión · última: ${esc(c.servicio||'—')}`,
+      actions: wa ? `<a class="btn btn-wa btn-sm" href="${wa}" target="_blank" rel="noopener">Enviar WhatsApp</a>` : `<button class="btn btn-ghost btn-sm" onclick="showView('pacientes')">Ver ficha</button>`}));
+  });
+  incompletos.slice(0,5).forEach(p => {
+    const faltan = [!(p.telefono||'').trim()?'teléfono':'', !(p.email||'').trim()?'email':''].filter(Boolean).join(' y ');
+    items.push(_opsItem({level:'medium',type:'datos',title:`Completar ficha de ${esc(p.nombre||'Paciente')}`,
+      sub:`Falta ${faltan}`,
+      actions:`<button class="btn btn-ghost btn-sm" onclick="showView('basedatos')">Completar datos</button>`}));
+  });
+  list.innerHTML = items.length ? items.join('') : '<div class="empty-compact">No hay pendientes prioritarios. Todo está al día.</div>';
+}
+
+function goAgendaPatient(encodedName) {
+  const name = decodeURIComponent(encodedName || '');
+  showView('agenda');
+  const search = document.getElementById('fSearch');
+  if (search) { search.value = name; renderAgenda(); search.focus(); }
+}
+
+// ── LISTA DE ESPERA (sincronizada con Google Sheets; fallback local) ──
+function _getWaitList() {
+  try { return JSON.parse(localStorage.getItem('adminWaitList') || '[]'); }
+  catch(e) { return []; }
+}
+function _saveWaitList(list) { localStorage.setItem('adminWaitList', JSON.stringify(list)); }
+let _waitLoaded = false;
+
+async function _syncWaitList() {
+  try {
+    const d = await fetch(`${APPS_SCRIPT_URL}?action=getWaitlist&token=${encodeURIComponent(TOKEN)}`).then(r=>r.json());
+    if (d.ok) { _saveWaitList(d.items || []); _waitLoaded = true; return true; }
+  } catch(e) {}
+  return false;
+}
+
+async function addWaitPatient() {
+  const nombre = document.getElementById('waitNombre').value.trim();
+  const telefono = document.getElementById('waitTelefono').value.trim();
+  const servicio = document.getElementById('waitServicio').value.trim();
+  const preferencia = document.getElementById('waitPreferencia').value.trim();
+  if (!nombre || !telefono) { toast('Nombre y teléfono son obligatorios','err'); return; }
+  const item = {id:'w'+Date.now(),nombre,telefono,servicio,preferencia,creado:new Date().toISOString()};
+  try {
+    const d = await fetch(`${APPS_SCRIPT_URL}?action=addWaitlist&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(item))}`).then(r=>r.json());
+    if (!d.ok) throw new Error(d.error||'No se pudo sincronizar');
+    item.id = d.id || item.id;
+  } catch(e) { toast('Guardado localmente; se sincronizará cuando actualices el servidor','warn'); }
+  const list = _getWaitList(); list.unshift(item); _saveWaitList(list); _waitLoaded = true;
+  ['waitNombre','waitTelefono','waitServicio','waitPreferencia'].forEach(id => document.getElementById(id).value='');
+  renderWaitList(); toast('Paciente agregado a la lista de espera');
+}
+
+async function removeWaitPatient(id) {
+  try { await fetch(`${APPS_SCRIPT_URL}?action=removeWaitlist&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(id)}`).then(r=>r.json()); } catch(e) {}
+  _saveWaitList(_getWaitList().filter(p => p.id !== id));
+  renderWaitList(); toast('Paciente retirado de la lista');
+}
+
+function bookWaitPatient(id) {
+  const p = _getWaitList().find(x => x.id === id); if (!p) return;
+  showView('nueva');
+  document.getElementById('ncName').value = p.nombre;
+  document.getElementById('ncPhone').value = p.telefono;
+  if (p.servicio) document.getElementById('ncService').value = p.servicio;
+  toast('Datos cargados. Completa fecha, hora y servicio.');
+}
+
+async function renderWaitList(force=false) {
+  const el = document.getElementById('waitList'); if (!el) return;
+  if (!_waitLoaded || force) await _syncWaitList();
+  const q = _normStr(document.getElementById('waitSearch')?.value || '');
+  const all = _getWaitList();
+  const list = all.filter(p => !q || _normStr(`${p.nombre} ${p.servicio} ${p.preferencia}`).includes(q));
+  document.getElementById('waitCount').textContent = all.length;
+  if (!list.length) { el.innerHTML = '<div class="empty-compact">No hay pacientes en espera. Agrega el primero cuando alguien solicite un horario ocupado.</div>'; return; }
+  el.innerHTML = list.map(p => {
+    const phone = String(p.telefono||'').replace(/\D/g,'');
+    const wa = `https://wa.me/57${phone.replace(/^57/,'')}?text=${encodeURIComponent(`Hola ${p.nombre}, se liberó un horario en nuestra agenda. ¿Te gustaría tomarlo?`)}`;
+    const fecha = new Date(p.creado).toLocaleDateString('es-CO',{day:'numeric',month:'short'});
+    return `<div class="wait-card"><div class="wait-avatar">${esc((p.nombre||'?').charAt(0).toUpperCase())}</div><div class="wait-info"><div class="wait-name">${esc(p.nombre)}</div><div class="wait-meta">${esc(p.servicio||'Cualquier servicio')} · ${esc(p.preferencia||'Sin preferencia')} · desde ${fecha}</div></div><div class="ops-actions"><a class="btn btn-wa btn-sm" href="${wa}" target="_blank" rel="noopener">WhatsApp</a><button class="btn btn-teal btn-sm" onclick="bookWaitPatient('${p.id}')">Agendar</button><button class="btn btn-err btn-sm" onclick="removeWaitPatient('${p.id}')" aria-label="Retirar a ${esc(p.nombre)}">Retirar</button></div></div>`;
+  }).join('');
+}
+
+// ── CENTRO DE AUTOMATIZACIONES ──
+async function loadAutomationCenter() {
+  const title=document.getElementById('autoStatusTitle'); if(!title)return;
+  title.textContent='Consultando estado...';
+  try {
+    const [status,queue]=await Promise.all([
+      fetch(`${APPS_SCRIPT_URL}?action=automationStatus&token=${encodeURIComponent(TOKEN)}`).then(r=>r.json()),
+      fetch(`${APPS_SCRIPT_URL}?action=automationQueue&status=pending&token=${encodeURIComponent(TOKEN)}`).then(r=>r.json())
+    ]);
+    if(!status.ok)throw new Error(status.error||'Actualiza la implementación de Apps Script');
+    document.getElementById('autoStatusDot').classList.toggle('on',!!status.active);
+    title.textContent=status.active?'Automatizaciones activas':'Programación pendiente de activar';
+    document.getElementById('autoStatusSub').textContent=status.active?'El sistema trabaja a las 7am, 10pm y los lunes a las 8am.':'Pulsa “Activar programación” una vez después de actualizar Apps Script.';
+    document.querySelectorAll('[data-auto-key]').forEach(i=>i.checked=!!status.config[i.dataset.autoKey]);
+    renderAutomationQueue(queue.items||[]);
+    renderAutomationLogs(status.logs||[]);
+  } catch(e) {
+    title.textContent='El servidor aún no tiene el motor actualizado';
+    document.getElementById('autoStatusSub').textContent='Copia y vuelve a implementar google-apps-script.js para activar estas funciones.';
+    document.getElementById('autoStatusDot').classList.remove('on');
+  }
+}
+
+async function saveAutomationSettings() {
+  const config={};document.querySelectorAll('[data-auto-key]').forEach(i=>config[i.dataset.autoKey]=i.checked);
+  try {
+    const d=await fetch(`${APPS_SCRIPT_URL}?action=automationSave&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(config))}`).then(r=>r.json());
+    if(!d.ok)throw new Error(d.error);toast('Configuración de automatizaciones guardada');
+  } catch(e){toast('No se pudo guardar: actualiza Apps Script','err')}
+}
+
+async function setupAutomations() {
+  try {
+    toast('Activando tareas programadas...');
+    const d=await fetch(`${APPS_SCRIPT_URL}?action=automationSetup&token=${encodeURIComponent(TOKEN)}`).then(r=>r.json());
+    if(!d.ok)throw new Error(d.error);toast('Automatizaciones activadas');loadAutomationCenter();
+  } catch(e){toast('No se pudieron activar: '+(e.message||'revisa permisos'),'err')}
+}
+
+async function runAutomationJob(job) {
+  try {
+    toast('Ejecutando automatización...');
+    const d=await fetch(`${APPS_SCRIPT_URL}?action=automationRun&job=${encodeURIComponent(job)}&token=${encodeURIComponent(TOKEN)}`).then(r=>r.json());
+    if(!d.ok)throw new Error(d.error);toast('Automatización completada');loadAutomationCenter();
+  } catch(e){toast('Error al ejecutar: '+(e.message||'revisa el servidor'),'err')}
+}
+
+function renderAutomationQueue(items) {
+  const el=document.getElementById('autoQueue');if(!el)return;document.getElementById('autoQueueCount').textContent=items.length;
+  if(!items.length){el.innerHTML='<div class="empty-compact">No hay mensajes pendientes.</div>';return;}
+  el.innerHTML=items.slice(0,30).map(m=>{const phone=String(m.telefono||'').replace(/\D/g,'');const url=`https://wa.me/${phone}?text=${encodeURIComponent(m.mensaje||'')}`;return `<div class="queue-item"><div class="queue-copy"><div class="queue-name">${esc(m.nombre||m.type)}</div><div class="queue-reason">${esc(m.type)} · ${esc(m.motivo||'')}</div><div class="queue-msg">${esc(m.mensaje||'')}</div></div><a class="btn btn-wa btn-sm" href="${url}" target="_blank" rel="noopener" onclick="markAutomationMessage('${esc(m.id)}')">Enviar</a></div>`}).join('');
+}
+
+function renderAutomationLogs(logs) {
+  const el=document.getElementById('autoLogs');if(!el)return;
+  if(!logs.length){el.innerHTML='<div class="empty-compact">Todavía no hay ejecuciones.</div>';return;}
+  el.innerHTML=logs.map(l=>`<div class="auto-log"><div><strong>${esc(l.job)}</strong><div style="font-size:.68rem;color:var(--muted);margin-top:2px">${esc((l.detail||'').slice(0,90))}</div></div><span>${new Date(l.timestamp).toLocaleDateString('es-CO',{day:'numeric',month:'short'})}</span></div>`).join('');
+}
+
+async function markAutomationMessage(id) {
+  setTimeout(async()=>{try{await fetch(`${APPS_SCRIPT_URL}?action=automationQueueDone&id=${encodeURIComponent(id)}&token=${encodeURIComponent(TOKEN)}`).then(r=>r.json());loadAutomationCenter()}catch(e){}},700);
 }
 
 function toggleSidebar() {
@@ -12202,14 +12831,15 @@ function _kpiCardGuia(icon, label, valor, meta, unidad, altoEsMejor, metaTxt, ev
   }
   const baseStyle = `padding:14px 16px;background:${bg};border-radius:12px;border:1px solid ${color}33;border-left:3px solid ${color}`;
   const attrs = targetId
-    ? `onclick="scrollToKPICard('${targetId}')" title="Ver explicación completa ↓" style="${baseStyle};cursor:pointer;transition:box-shadow .15s" onmouseenter="this.style.boxShadow='0 0 0 2px ${color}66'" onmouseleave="this.style.boxShadow='none'"`
+    ? `class="kpi-live-card" data-kpi="${targetId}" data-value="${isNaN(numVal)?'':numVal}" role="button" tabindex="0" onclick="openKPIExplorer('${targetId}',this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openKPIExplorer('${targetId}',this)}" title="Explorar indicador" style="${baseStyle};cursor:pointer;transition:box-shadow .15s,transform .15s" onmouseenter="this.style.boxShadow='0 0 0 2px ${color}66'" onmouseleave="this.style.boxShadow=''"`
     : `style="${baseStyle}"`;
   return `<div ${attrs}>
+    ${targetId ? `<button class="kpi-fav-btn" onclick="toggleKPIFavorite(event,'${targetId}')" aria-label="Agregar a favoritos">☆</button>` : ''}
     <div style="font-size:.7rem;color:var(--muted);font-family:var(--font-m);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
-      <span>${icon} ${label}</span><span style="font-size:.85rem">${semaforo}</span>
+      <span>${icon} ${label}</span><span style="font-size:.85rem;margin-right:${targetId?'25px':'0'}">${semaforo}</span>
     </div>
     <div style="font-family:var(--font-h);font-size:1.15rem;font-weight:700;color:${color}">${valor}${unidad || ''}</div>
-    <div style="font-size:.68rem;color:var(--muted);margin-top:4px">Meta: ${metaTxt || (meta + (unidad || ''))}${targetId ? ' <span style="opacity:.4">· clic ↓</span>' : ''}</div>
+    <div style="font-size:.68rem;color:var(--muted);margin-top:4px">Meta: ${metaTxt || (meta + (unidad || ''))}${targetId ? ' <span style="opacity:.55">· explorar</span>' : ''}</div>
   </div>`;
 }
 
@@ -12546,7 +13176,7 @@ function renderKPIGuia() {
   html += _kpiCardGuia('🔄', 'Mix Full este mes', totalMix > 0 ? fullPct : '—', 30, totalMix > 0 ? '%' : '', false, totalMix > 0 ? '≤30% Full' : 'Sin sesiones aún', totalMix > 0 ? fullPct : 0, 'gkKpi2');
   html += _kpiCardGuia('📣', 'Leads este mes',          leadsShow || '—',                         40,              '',   true,  '40–50 leads',             undefined, 'gkKpi3');
   html += _kpiCardGuia('🎯', 'Tasa de conversión',      tasaConv !== null ? tasaConv+'%' : '—',   25,              '%',  true,  '25–35%',                  undefined, 'gkKpi4');
-  html += _kpiCardGuia('💰', esMesActual ? 'Ventas mes actual' : 'Ventas del mes', fmtPeso(ventasMes), META_VENTAS_MES, '', true, fmtPeso(META_VENTAS_MES), undefined, 'gkKpi5');
+  html += _kpiCardGuia('💰', esMesActual ? 'Ventas mes actual' : 'Ventas del mes', fmtPeso(ventasMes), META_VENTAS_MES, '', true, fmtPeso(META_VENTAS_MES), ventasMes, 'gkKpi5');
   const _encMetaGuia = _encStatsG.totalRespuestas !== undefined
     ? `${_encStatsG.totalRespuestas} resp. / ${_encStatsG.citasMes} citas`
     : `>${META_ENCUESTAS}%`;
@@ -12689,6 +13319,7 @@ function renderKPIGuia() {
   };
 
   el.innerHTML = html;
+  applyKPIFavorites();
   applyKPIRefSpans();
   _renderCancelBreakdown();
   _renderBDBreakdown();
