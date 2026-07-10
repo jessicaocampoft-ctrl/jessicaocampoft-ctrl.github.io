@@ -291,6 +291,71 @@ tr:hover td{background:rgba(126,221,208,.03)}
 .chip-info{background:rgba(96,165,250,.12);color:var(--info);border:1px solid rgba(96,165,250,.25)}
 .chip-no  {background:rgba(156,163,175,.15);color:#374151;border:1px solid rgba(156,163,175,.3)}
 
+/* ── INTELIGENCIA OPERATIVA ── */
+.smart-brief{
+  background:linear-gradient(135deg,rgba(27,191,176,.12),rgba(99,102,241,.08));
+  border:1px solid rgba(27,191,176,.28);border-radius:18px;padding:18px;
+  margin-bottom:18px;box-shadow:0 10px 30px rgba(27,191,176,.08);
+}
+.smart-brief-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px}
+.smart-eyebrow{font-family:var(--font-m);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px}
+.smart-title{font-family:var(--font-h);font-size:1.25rem;font-weight:700;color:var(--text)}
+.smart-sub{font-size:.84rem;color:var(--muted);margin-top:3px}
+.smart-score{min-width:96px;text-align:center;background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:10px 14px}
+.smart-score strong{display:block;font-family:var(--font-h);font-size:1.8rem;color:var(--primary);line-height:1}
+.smart-score span{display:block;font-size:.68rem;color:var(--muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.smart-actions-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.smart-action{
+  background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:12px;
+  display:flex;gap:10px;align-items:flex-start;min-height:92px;cursor:pointer;
+  transition:var(--tr);text-align:left;color:var(--text);
+}
+.smart-action:hover{border-color:var(--primary);box-shadow:0 8px 22px rgba(27,191,176,.13);transform:translateY(-1px)}
+.smart-action:focus-visible{outline:3px solid var(--glow);outline-offset:2px}
+.smart-icon{width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;background:rgba(27,191,176,.1);color:var(--primary)}
+.smart-action.warn .smart-icon{background:rgba(245,158,11,.13);color:#d97706}
+.smart-action.danger .smart-icon{background:rgba(248,113,113,.13);color:#dc2626}
+.smart-action.ok .smart-icon{background:rgba(34,197,94,.13);color:#16a34a}
+.smart-action.info .smart-icon{background:rgba(96,165,250,.13);color:#2563eb}
+.smart-action-title{font-size:.88rem;font-weight:700;margin-bottom:3px}
+.smart-action-desc{font-size:.76rem;color:var(--muted);line-height:1.35}
+.smart-cobros-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.smart-money-card{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px}
+.smart-money-card strong{display:block;font-family:var(--font-h);font-size:1.35rem;color:var(--primary)}
+.smart-money-card span{font-size:.72rem;color:var(--muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.06em}
+.smart-list{display:flex;flex-direction:column;gap:7px}
+.smart-list-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 11px;background:var(--s2);border:1px solid var(--border);border-radius:10px}
+.smart-list-row:hover{border-color:rgba(27,191,176,.35)}
+.smart-list-main{min-width:0}
+.smart-list-name{font-size:.84rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.smart-list-meta{font-size:.72rem;color:var(--muted);margin-top:2px}
+.smart-list-value{font-family:var(--font-m);font-size:.82rem;font-weight:700;color:#d97706;white-space:nowrap}
+tr.agenda-alert td{background:rgba(248,113,113,.045)}
+tr.agenda-warn td{background:rgba(245,158,11,.045)}
+tr.agenda-ok td{background:rgba(34,197,94,.035)}
+tr.agenda-info td{background:rgba(96,165,250,.035)}
+tr.agenda-alert td:first-child, tr.agenda-warn td:first-child, tr.agenda-ok td:first-child, tr.agenda-info td:first-child{border-left:4px solid var(--border)}
+tr.agenda-alert td:first-child{border-left-color:#ef4444}
+tr.agenda-warn td:first-child{border-left-color:#f59e0b}
+tr.agenda-ok td:first-child{border-left-color:#22c55e}
+tr.agenda-info td:first-child{border-left-color:#60a5fa}
+.tl-item.agenda-alert{border-left:4px solid #ef4444}
+.tl-item.agenda-warn{border-left:4px solid #f59e0b}
+.tl-item.agenda-ok{border-left:4px solid #22c55e}
+.tl-item.agenda-info{border-left:4px solid #60a5fa}
+.health-badge{display:inline-flex;align-items:center;gap:4px;margin-top:4px;padding:3px 8px;border-radius:999px;font-size:.68rem;font-family:var(--font-m);border:1px solid var(--border);color:var(--muted);background:var(--s2)}
+.health-badge.danger{border-color:rgba(248,113,113,.3);color:#dc2626;background:rgba(248,113,113,.08)}
+.health-badge.warn{border-color:rgba(245,158,11,.3);color:#d97706;background:rgba(245,158,11,.08)}
+.health-badge.ok{border-color:rgba(34,197,94,.3);color:#16a34a;background:rgba(34,197,94,.08)}
+.health-badge.info{border-color:rgba(96,165,250,.3);color:#2563eb;background:rgba(96,165,250,.08)}
+.patient-insight{border:1px solid rgba(27,191,176,.22);background:rgba(27,191,176,.055);border-radius:12px;padding:12px;margin-top:10px}
+.patient-insight-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.patient-insight-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:9px}
+.patient-insight-card strong{display:block;font-family:var(--font-h);font-size:1.15rem;color:var(--primary);line-height:1.1}
+.patient-insight-card span{font-size:.67rem;color:var(--muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.06em}
+@media(max-width:980px){.smart-actions-grid,.smart-cobros-grid{grid-template-columns:1fr 1fr}.patient-insight-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.smart-actions-grid,.smart-cobros-grid,.patient-insight-grid{grid-template-columns:1fr}.smart-brief{padding:14px}}
+
 /* ── ACTION BTNS ── */
 .btn{
   display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
@@ -1714,6 +1779,9 @@ button:disabled{cursor:not-allowed;opacity:.58}
         <button class="btn btn-sm" style="background:#d97706;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-b);cursor:pointer;white-space:nowrap" onclick="showView('codigos')">Ver Códigos →</button>
       </div>
 
+      <!-- Asistente operativo -->
+      <div id="smartBriefing" class="smart-brief" style="display:none"></div>
+
       <!-- Fila 1: Citas -->
       <div class="stats-grid" style="margin-bottom:12px">
         <div class="stat-card clickable" onclick="showView('agenda');filtrarHoy()" title="Ver citas de hoy">
@@ -1769,6 +1837,9 @@ button:disabled{cursor:not-allowed;opacity:.58}
           <div class="stat-desc" id="stPorCobrarDesc">citas futuras · clic para ver</div>
         </div>
       </div>
+
+      <!-- Centro inteligente de cobros -->
+      <div id="smartCobrosCenter" class="card" style="display:none;margin-bottom:18px"></div>
 
       <!-- Meta mensual -->
       <div class="meta-card card" id="metaCard">
@@ -6661,6 +6732,7 @@ async function confirmarPago(metodo) {
       if (c) c.pago = metodo;
       if (metodo) kvSet('pago_'+id, '1');
       else kvRemove('pago_'+id);
+      if (c) logChange(metodo ? 'Pago registrado' : 'Pago pendiente', `${c.nombre} · ${c.fecha} ${c.hora} · ${metodo || 'sin método'}`);
       toast(metodo ? 'Pago registrado: ' + metodo : 'Marcado como pendiente', 'ok');
       renderAgenda(); initDashboard(); renderFinanzas();
     } else toast('Error al guardar: ' + (r.error || ''), 'err');
@@ -7041,6 +7113,7 @@ async function confirmarReagendar(id) {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=editBooking&token=${encodeURIComponent(TOKEN)}&data=${data}`);
     const d = await r.json();
     if (d.ok) {
+      logChange('Cita reagendada', `${cita.nombre} · ${cita.fecha} ${cita.hora} → ${fecha} ${hora}`);
       await reload();
       toast('Cita reagendada: ' + fmtDate(fecha) + ' ' + hora);
       closeModal('modalDetalle');
@@ -7313,6 +7386,261 @@ function citasReales() {
   return result;
 }
 
+function smartPeso(v) {
+  const n = Number(v || 0);
+  return n > 0 ? '$' + n.toLocaleString('es-CO') : '—';
+}
+
+function smartDate(str) {
+  const [y,m,d] = normDate(str).split('-').map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+}
+
+function smartWeekBounds(base = new Date()) {
+  const start = new Date(base);
+  const dow = start.getDay();
+  start.setDate(start.getDate() - (dow === 0 ? 6 : dow - 1));
+  start.setHours(0,0,0,0);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23,59,59,999);
+  return { start, end, startStr:start.toLocalDateStr(), endStr:end.toLocalDateStr() };
+}
+
+function smartIsPaid(c) {
+  if (!c) return false;
+  return !!c.pago || kvGet('pago_' + c.id) === '1' || (typeof isPagada === 'function' && isPagada(c.id));
+}
+
+function smartIsActiveAppointment(c) {
+  return c && c.estado !== 'Cancelada' && c.estado !== 'Registro' && !esRegistroServ(c.servicio);
+}
+
+function smartPatientKey(c) {
+  return (c.telefono || c.email || c.nombre || '').toString().toLowerCase().trim();
+}
+
+function appointmentHealth(c) {
+  const f = normDate(c.fecha);
+  const hoy = today();
+  if (c.estado === 'Cancelada') return { rowClass:'agenda-alert', badge:'Cancelada', tone:'danger' };
+  if (c.estado === 'No asistió') return { rowClass:'agenda-alert', badge:'No asistió', tone:'danger' };
+  if (c.estado === 'Pendiente') return { rowClass:'agenda-warn', badge:'Confirmar', tone:'warn' };
+  if (f < hoy && !smartIsPaid(c)) return { rowClass:'agenda-warn', badge:'Cobro pendiente', tone:'warn' };
+  if (smartIsPaid(c) || c.estado === 'Atendida') return { rowClass:'agenda-ok', badge:smartIsPaid(c) ? 'Pagada' : 'Atendida', tone:'ok' };
+  if (f >= hoy && !smartIsPaid(c)) return { rowClass:'agenda-info', badge:'Programada', tone:'info' };
+  return { rowClass:'', badge:'Revisar', tone:'info' };
+}
+
+function smartAgendaFilter(kind) {
+  showView('agenda');
+  const hoy = today();
+  const wk = smartWeekBounds();
+  ['fSearch','fDesde','fHasta'].forEach(id => { const el=document.getElementById(id); if (el) el.value=''; });
+  ['fStatus','fMod','fService'].forEach(id => { const el=document.getElementById(id); if (el) el.selectedIndex=0; });
+  if (kind === 'hoy') {
+    document.getElementById('fDesde').value = hoy;
+    document.getElementById('fHasta').value = hoy;
+  } else if (kind === 'semana') {
+    document.getElementById('fDesde').value = wk.startStr;
+    document.getElementById('fHasta').value = wk.endStr;
+  } else if (kind === 'pendientes') {
+    document.getElementById('fStatus').value = 'Pendiente';
+  } else if (kind === 'vencidos') {
+    document.getElementById('fHasta').value = hoy;
+  }
+  renderAgenda();
+}
+
+function smartBriefingData() {
+  const hoy = today();
+  const wk = smartWeekBounds();
+  const citas = citasReales().filter(smartIsActiveAppointment);
+  const citasHoy = citas.filter(c => normDate(c.fecha) === hoy);
+  const pendientesConfirmar = citas.filter(c => normDate(c.fecha) >= hoy && c.estado === 'Pendiente');
+  const cobrosVencidos = citas.filter(c => normDate(c.fecha) < hoy && !smartIsPaid(c));
+  const porCobrarSemana = citas.filter(c => {
+    const f = normDate(c.fecha);
+    return f >= hoy && f >= wk.startStr && f <= wk.endStr && !smartIsPaid(c);
+  });
+  const semanaCitas = citas.filter(c => {
+    const f = normDate(c.fecha);
+    return f >= wk.startStr && f <= wk.endStr;
+  });
+  const pacientes = new Map();
+  citas.forEach(c => {
+    const key = smartPatientKey(c);
+    if (!key) return;
+    const bucket = pacientes.get(key) || { nombre:c.nombre, citas:[] };
+    bucket.citas.push(c);
+    pacientes.set(key, bucket);
+  });
+  const pacientesSinProxima = [...pacientes.values()].filter(p => {
+    const hist = p.citas.filter(c => normDate(c.fecha) <= hoy && c.estado !== 'Cancelada').sort((a,b)=>(normDate(b.fecha)+b.hora).localeCompare(normDate(a.fecha)+a.hora));
+    const fut = p.citas.some(c => normDate(c.fecha) > hoy && c.estado !== 'Cancelada');
+    if (!hist.length || fut) return false;
+    const dias = Math.floor((smartDate(hoy) - smartDate(hist[0].fecha)) / 86400000);
+    return dias >= 30;
+  });
+  const totalVencido = cobrosVencidos.reduce((s,c)=>s+parsePrecio(c.precio),0);
+  const totalSemana = porCobrarSemana.reduce((s,c)=>s+parsePrecio(c.precio),0);
+  const pctSesiones = META_SESIONES_SEMANA ? Math.round((semanaCitas.length / META_SESIONES_SEMANA) * 100) : 0;
+  const score = Math.max(0, Math.min(100,
+    100
+    - Math.min(35, cobrosVencidos.length * 8)
+    - Math.min(25, pendientesConfirmar.length * 5)
+    - Math.min(20, pacientesSinProxima.length * 2)
+    + (pctSesiones >= 100 ? 8 : 0)
+  ));
+  return { citasHoy, pendientesConfirmar, cobrosVencidos, porCobrarSemana, pacientesSinProxima, totalVencido, totalSemana, semanaCitas, pctSesiones, score };
+}
+
+function renderSmartBriefing() {
+  const box = document.getElementById('smartBriefing');
+  if (!box) return;
+  const d = smartBriefingData();
+  const actions = [
+    d.cobrosVencidos.length ? {
+      tone:'danger', icon:'$', title:`${d.cobrosVencidos.length} cobro(s) vencido(s)`,
+      desc:`Prioridad alta: ${smartPeso(d.totalVencido)} de citas ya realizadas.`,
+      click:"smartAgendaFilter('vencidos')"
+    } : {
+      tone:'ok', icon:'✓', title:'Cobros vencidos al día',
+      desc:'No aparecen sesiones pasadas sin pago registrado.',
+      click:"showView('finanzas')"
+    },
+    d.pendientesConfirmar.length ? {
+      tone:'warn', icon:'!', title:`${d.pendientesConfirmar.length} por confirmar`,
+      desc:'Conviene enviar WhatsApp antes de que se vuelvan huecos en agenda.',
+      click:"smartAgendaFilter('pendientes')"
+    } : {
+      tone:'ok', icon:'✓', title:'Agenda confirmada',
+      desc:'No hay citas futuras marcadas como pendientes.',
+      click:"smartAgendaFilter('semana')"
+    },
+    {
+      tone:d.porCobrarSemana.length ? 'info' : 'ok', icon:'$',
+      title:d.porCobrarSemana.length ? `${smartPeso(d.totalSemana)} por cobrar esta semana` : 'Semana sin cobros futuros',
+      desc:d.porCobrarSemana.length ? `${d.porCobrarSemana.length} cita(s) próximas sin pago marcado.` : 'Los próximos pagos de la semana están controlados.',
+      click:"_verCobrosPendientesSemana()"
+    },
+    d.pacientesSinProxima.length ? {
+      tone:'warn', icon:'↺', title:`${d.pacientesSinProxima.length} paciente(s) sin próxima cita`,
+      desc:'Pacientes con más de 30 días desde la última sesión.',
+      click:"showView('tareas')"
+    } : {
+      tone:'ok', icon:'↺', title:'Seguimiento sano',
+      desc:'No se detectan pacientes antiguos sin próxima cita urgente.',
+      click:"showView('pacientes')"
+    }
+  ];
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div class="smart-brief-head">
+      <div>
+        <div class="smart-eyebrow">Asistente operativo</div>
+        <div class="smart-title">Qué atender primero hoy</div>
+        <div class="smart-sub">${d.citasHoy.length} cita(s) hoy · semana al ${d.pctSesiones}% de la meta de sesiones</div>
+      </div>
+      <div class="smart-score"><strong>${d.score}</strong><span>salud del día</span></div>
+    </div>
+    <div class="smart-actions-grid">
+      ${actions.map(a => `
+        <button type="button" class="smart-action ${a.tone}" onclick="${a.click}">
+          <span class="smart-icon">${a.icon}</span>
+          <span>
+            <span class="smart-action-title">${esc(a.title)}</span>
+            <span class="smart-action-desc">${esc(a.desc)}</span>
+          </span>
+        </button>`).join('')}
+    </div>`;
+}
+
+function smartCobroWhatsApp(c) {
+  const url = waLink(c.telefono, c.nombre, c.fecha, c.hora, c.servicio, c.precio, c.modalidad);
+  return url ? `<a href="${url}" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>` : '';
+}
+
+function renderSmartCobrosCenter() {
+  const box = document.getElementById('smartCobrosCenter');
+  if (!box) return;
+  const hoy = today();
+  const now = new Date();
+  const m = now.getMonth() + 1, y = now.getFullYear();
+  const d = smartBriefingData();
+  const citas = citasReales().filter(smartIsActiveAppointment);
+  const mesPend = citas.filter(c => {
+    const [cy,cm] = normDate(c.fecha).split('-').map(Number);
+    return cy === y && cm === m && !smartIsPaid(c);
+  });
+  const totalMes = mesPend.reduce((s,c)=>s+parsePrecio(c.precio),0);
+  const prioridad = [...d.cobrosVencidos, ...d.porCobrarSemana]
+    .sort((a,b)=>(normDate(a.fecha)+a.hora).localeCompare(normDate(b.fecha)+b.hora))
+    .slice(0,5);
+  if (!prioridad.length && totalMes === 0) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <div>
+        <div class="card-title" style="margin-bottom:2px">Centro de cobros</div>
+        <div style="font-size:.82rem;color:var(--muted)">Separé vencidos, semana y mes para que el dinero no se pierda entre citas.</div>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="showView('finanzas')">Ver finanzas →</button>
+    </div>
+    <div class="smart-cobros-grid">
+      <div class="smart-money-card"><span>Vencido</span><strong>${smartPeso(d.totalVencido)}</strong><small style="color:var(--muted)">${d.cobrosVencidos.length} cita(s)</small></div>
+      <div class="smart-money-card"><span>Esta semana</span><strong>${smartPeso(d.totalSemana)}</strong><small style="color:var(--muted)">${d.porCobrarSemana.length} cita(s)</small></div>
+      <div class="smart-money-card"><span>Pendiente mes</span><strong>${smartPeso(totalMes)}</strong><small style="color:var(--muted)">${mesPend.length} cita(s)</small></div>
+    </div>
+    ${prioridad.length ? `<div class="smart-list">
+      ${prioridad.map(c => `
+        <div class="smart-list-row">
+          <div class="smart-list-main">
+            <div class="smart-list-name">${esc(c.nombre)} ${normDate(c.fecha) < hoy ? '<span class="health-badge warn">vencido</span>' : ''}</div>
+            <div class="smart-list-meta">${esc(fmtDate(c.fecha))} · ${esc(c.hora)} · ${esc(c.servicio)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+            <span class="smart-list-value">${esc(c.precio)}</span>
+            ${smartCobroWhatsApp(c)}
+            <button type="button" class="btn btn-ghost btn-sm" onclick="verDetalle('${esc(c.id)}')">Ver</button>
+          </div>
+        </div>`).join('')}
+    </div>` : ''}
+  `;
+}
+
+function patientInsightHtml(c) {
+  const key = smartPatientKey(c);
+  const lista = allData.citas
+    .filter(x => smartPatientKey(x) === key || (x.nombre || '').toLowerCase().trim() === (c.nombre || '').toLowerCase().trim())
+    .filter(smartIsActiveAppointment)
+    .sort((a,b)=>(normDate(b.fecha)+b.hora).localeCompare(normDate(a.fecha)+a.hora));
+  const hoy = today();
+  const futuras = lista.filter(x => normDate(x.fecha) > hoy && x.id !== c.id && x.estado !== 'Cancelada').sort((a,b)=>(normDate(a.fecha)+a.hora).localeCompare(normDate(b.fecha)+b.hora));
+  const realizadas = lista.filter(x => normDate(x.fecha) <= hoy && x.estado !== 'Cancelada');
+  const total = lista.reduce((s,x)=>s+parsePrecio(x.precio),0);
+  const pendiente = lista.filter(x => !smartIsPaid(x)).reduce((s,x)=>s+parsePrecio(x.precio),0);
+  let log = [];
+  try { log = JSON.parse(kvGet('adminChangeLog') || '[]'); } catch { log = []; }
+  const last = log.find(e => (e.detalle || '').toLowerCase().includes((c.nombre || '').toLowerCase().split(' ')[0] || '__'));
+  return `<div class="patient-insight">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap">
+      <div>
+        <div style="font-family:var(--font-m);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Resumen inteligente del paciente</div>
+        <div style="font-size:.86rem;color:var(--muted);margin-top:3px">${futuras[0] ? `Próxima: ${esc(fmtDate(futuras[0].fecha))} ${esc(futuras[0].hora)} · ${esc(futuras[0].servicio)}` : 'No tiene próxima cita adicional registrada.'}</div>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="verHistorial('${encodeURIComponent(c.nombre)}')">Ver historial completo</button>
+    </div>
+    <div class="patient-insight-grid">
+      <div class="patient-insight-card"><span>Citas totales</span><strong>${lista.length}</strong></div>
+      <div class="patient-insight-card"><span>Realizadas</span><strong>${realizadas.length}</strong></div>
+      <div class="patient-insight-card"><span>Valor histórico</span><strong style="font-size:1rem">${smartPeso(total)}</strong></div>
+      <div class="patient-insight-card"><span>Por marcar pago</span><strong style="font-size:1rem;color:${pendiente ? '#d97706' : 'var(--primary)'}">${smartPeso(pendiente)}</strong></div>
+    </div>
+    ${last ? `<div style="margin-top:9px;font-size:.76rem;color:var(--muted)">Último movimiento local: <strong>${esc(last.accion)}</strong> · ${esc(last.ts)}</div>` : ''}
+  </div>`;
+}
+
 // ── DASHBOARD ──
 function initDashboard() {
   const todayStr = today();
@@ -7387,6 +7715,8 @@ function initDashboard() {
   checkUpcomingAlerts();
   updateProfileCard();
   initQuickNotes();
+  renderSmartBriefing();
+  renderSmartCobrosCenter();
   setTimeout(_animateDashStats, 80);
   setTimeout(_updateMobBadge, 200);
   // Revisar alerta cada minuto
@@ -7399,11 +7729,13 @@ function initDashboard() {
   if (citasHoy.length === 0) {
     tlHoy.innerHTML = '<div class="empty"><p>No hay citas hoy</p></div>';
   } else {
-    tlHoy.innerHTML = citasHoy.map(c => `
-      <div class="tl-item">
+    tlHoy.innerHTML = citasHoy.map(c => {
+      const h = appointmentHealth(c);
+      return `
+      <div class="tl-item ${h.rowClass}">
         <div class="tl-time">${esc(c.hora)}</div>
         <div class="tl-body">
-          <div class="tl-name">${esc(c.nombre)} ${chipState(c.estado)}</div>
+          <div class="tl-name">${esc(c.nombre)} ${chipState(c.estado)} <span class="health-badge ${h.tone}">${esc(h.badge)}</span></div>
           <div class="tl-serv">${esc(c.servicio)} · ${esc(c.modalidad)} · ${esc(c.precio)}</div>
           <div class="tl-actions">
             ${waBtn(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,'WhatsApp',c.precio,c.modalidad)}
@@ -7412,7 +7744,8 @@ function initDashboard() {
             <button type="button" class="btn btn-ghost btn-sm" onclick="changeStatus('${esc(c.id)}','Atendida')">✓ Atendida</button>
           </div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   // Proximas citas (7 dias excluyendo hoy)
@@ -7429,11 +7762,12 @@ function initDashboard() {
   } else {
     tlP.innerHTML = proximas.map(c => {
       const waUrl = waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,c.precio,c.modalidad);
+      const h = appointmentHealth(c);
       return `
-      <div class="tl-item">
+      <div class="tl-item ${h.rowClass}">
         <div class="tl-time" style="min-width:80px">${esc(fmtDate(c.fecha))}<br><small style="color:var(--muted)">${esc(c.hora)}</small></div>
         <div class="tl-body">
-          <div class="tl-name">${esc(c.nombre)}</div>
+          <div class="tl-name">${esc(c.nombre)} <span class="health-badge ${h.tone}">${esc(h.badge)}</span></div>
           <div class="tl-serv">${esc(c.servicio)} · ${esc(c.modalidad)}</div>
           <div class="tl-actions">
             ${waUrl ? `<a href="${waUrl}" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>` : ''}
@@ -7447,6 +7781,8 @@ function initDashboard() {
   renderTareas();
   // Alerta semana floja en dashboard
   _checkAlertaSemanFloja(citasReales());
+  renderSmartBriefing();
+  renderSmartCobrosCenter();
 }
 
 // ── AGENDA ──
@@ -7623,14 +7959,15 @@ function renderAgenda(keepPage = false) {
         </td>
       </tr>`;
     }
-    return `<tr>
+    const h = appointmentHealth(c);
+    return `<tr class="${h.rowClass}">
       <td><span style="font-family:var(--font-m);font-size:.8rem">${esc(fmtDate(c.fecha))}</span><br><small style="color:var(--muted)">${esc(c.hora)}</small></td>
       <td>
         <strong>${esc(c.nombre)}</strong><br>
         <small style="color:var(--muted)">${esc(c.telefono||'')}</small><br>
         <button class="btn btn-ghost btn-sm" style="margin-top:3px;font-size:.7rem;padding:2px 7px" onclick="verHistorial('${encodeURIComponent(c.nombre)}')">📋 Historial</button>
       </td>
-      <td style="font-size:.82rem">${esc(c.servicio)}${sesionBadge(c.nombre, c.servicio)}</td>
+      <td style="font-size:.82rem">${esc(c.servicio)}${sesionBadge(c.nombre, c.servicio)}<br><span class="health-badge ${h.tone}">${esc(h.badge)}</span></td>
       <td><span class="chip ${c.modalidad==='Domicilio'?'chip-info':c.modalidad==='Virtual'?'chip-warn':'chip-ok'}" style="font-size:.7rem">${esc(c.modalidad)}</span></td>
       <td style="font-family:var(--font-m);color:var(--primary);font-size:.82rem">${esc(c.precio)}<br>${pagoBadge(c.id)}</td>
       <td>
@@ -7797,6 +8134,7 @@ function verDetalle(id) {
         ${c.notas ? row('Notas del paciente', esc(c.notas), true) : ''}
         ${row('ID cita', esc(c.id))}
       </div>
+      ${patientInsightHtml(c)}
       <!-- Nota interna editable -->
       <div style="margin-top:10px;padding:10px 12px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);border-radius:8px">
         <div style="font-size:.75rem;color:#92400e;font-family:var(--font-m);margin-bottom:8px">📝 Nota interna (solo tú la ves)</div>
@@ -7894,6 +8232,7 @@ async function confirmarCancelacion() {
       const cita = allData.citas.find(c => c.id === id);
       if (cita) { cita.estado = 'Cancelada'; cita.motivoCancelacion = motivo; }
       saveCancelMotivo(id, motivo);
+      if (cita) logChange('Cita cancelada', `${cita.nombre} · ${cita.fecha} ${cita.hora} · ${motivo}`);
       toast(esCancelExcluida(motivo) ? `🧪 Cita cancelada (${motivo} — no afecta KPIs)` : `Cita cancelada: ${motivo}`, 'ok');
       document.getElementById('modalCancelar').style.display = 'none';
       closeModal('modalDetalle');
@@ -8019,6 +8358,7 @@ function getPrecioFinalEdit() {
 // ── Guardar los cambios de la edición ──
 async function guardarEdicion() {
   const id       = document.getElementById('editId').value;
+  const anterior = allData.citas.find(c => c.id === id);
   const servicio = document.getElementById('editServicio').value;
   const modalidad= document.getElementById('editModalidad').value;
   const fecha    = document.getElementById('editFecha').value;
@@ -8033,6 +8373,7 @@ async function guardarEdicion() {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=editBooking&token=${encodeURIComponent(TOKEN)}&data=${data}`);
     const d = await r.json();
     if (d.ok) {
+      if (anterior) logChange('Cita editada', `${anterior.nombre} · ${anterior.fecha} ${anterior.hora} → ${fecha} ${hora} · ${servicio}`);
       await reload();
       toast('Cita actualizada correctamente');
       closeModal('modalEditar');
@@ -9088,6 +9429,11 @@ function renderChangeLog() {
     'Paciente editado':  { bg:'rgba(251,191,36,.12)', color:'#92400e', icon:'✏️' },
     'Paciente eliminado':{ bg:'rgba(239,68,68,.12)',  color:'#991b1b', icon:'🗑️' },
     'Estado cambiado':   { bg:'rgba(139,92,246,.12)', color:'#4c1d95', icon:'🔄' },
+    'Pago registrado':   { bg:'rgba(16,185,129,.12)', color:'#065f46', icon:'💳' },
+    'Pago pendiente':    { bg:'rgba(245,158,11,.12)', color:'#92400e', icon:'⏳' },
+    'Cita editada':      { bg:'rgba(59,130,246,.12)', color:'#1e3a8a', icon:'✏️' },
+    'Cita reagendada':   { bg:'rgba(99,102,241,.12)', color:'#3730a3', icon:'📅' },
+    'Cita cancelada':    { bg:'rgba(239,68,68,.12)',  color:'#991b1b', icon:'🚫' },
   };
   body.innerHTML = log.map(e => {
     const s = iconos[e.accion] || { bg:'var(--s2)', color:'var(--muted)', icon:'•' };
