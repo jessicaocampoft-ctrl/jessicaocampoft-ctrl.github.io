@@ -86,6 +86,7 @@ function doGet(e) {
   if (p.action === 'getCalEvents')  return js(getCalendarEvents(p.from, p.to));
   if (p.action === 'cancelBooking') return js(doCancelBooking(p.id));
   if (p.action === 'editBooking')   return js(doEditBooking(JSON.parse(p.data)));
+  if (p.action === 'repairRescheduledDuplicate') return js(doRepairRescheduledDuplicate(p));
   if (p.action === 'deletePatient')  return js(deletePatient(decodeURIComponent(p.nombre)));
   if (p.action === 'editPatient')    return js(editPatient(JSON.parse(p.data)));
   if (p.action === 'cleanCitasSinHora') return js(cleanCitasSinHora());
@@ -523,6 +524,11 @@ function doEditBooking(d) {
     if (rows[i][0] !== d.id) continue;
     var oldFecha = sd(rows[i][7]);
     var oldHora  = st(rows[i][8]);
+    var newServicio  = d.servicio  || rows[i][5];
+    var newModalidad = d.modalidad || rows[i][6];
+    var newFecha     = d.fecha     || oldFecha;
+    var newHora      = d.hora      || oldHora;
+    var newPrecio    = d.precio    || rows[i][9];
     if (d.servicio)           sheet.getRange(i+1, 6).setValue(d.servicio);
     if (d.modalidad)          sheet.getRange(i+1, 7).setValue(d.modalidad);
     if (d.fecha)              sheet.getRange(i+1, 8).setValue(d.fecha);
@@ -538,19 +544,110 @@ function doEditBooking(d) {
       for (var k = 0; k < calEvs.length; k++) {
         var t = calEvs[k].getTitle() || '';
         if (t.indexOf('[CITA]') === 0 && t.indexOf(rows[i][2]) > -1) {
-          var ns      = parseDT(d.fecha || oldFecha, d.hora || oldHora);
-          var newServ = d.servicio || rows[i][5];
-          var newMod  = d.modalidad || rows[i][6];
-          var newMins = getServiceDuration(newServ) + (newMod === 'Domicilio' ? 30 : 0);
+          var ns      = parseDT(newFecha, newHora);
+          var newMins = getServiceDuration(newServicio) + (newModalidad === 'Domicilio' ? 30 : 0);
           calEvs[k].setTime(ns, new Date(ns.getTime() + newMins * 60000));
-          if (d.servicio) calEvs[k].setTitle('[CITA] ' + d.servicio + ' - ' + rows[i][2]);
+          calEvs[k].setTitle('[CITA] ' + newServicio + ' - ' + rows[i][2]);
           break;
         }
       }
     } catch(x) {}
-    return {ok: true};
+    var dedupe = cancelDuplicateReschedules_(sheet, rows, i, {
+      id: d.id,
+      nombre: rows[i][2],
+      servicio: newServicio,
+      fecha: newFecha,
+      hora: newHora,
+      precio: newPrecio
+    });
+    return {ok: true, duplicatesCancelled: dedupe.cancelled, duplicateIds: dedupe.ids};
   }
   return {ok: false, error: 'Cita no encontrada'};
+}
+
+function normalizeBookingText_(v) {
+  return ('' + (v || '')).toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function bookingIsActive_(status, service) {
+  var st = normalizeBookingText_(status);
+  if (st === 'cancelada' || st === 'no asistio' || st === 'no asistió' || st === 'registro') return false;
+  return normalizeBookingText_(service).indexOf('registro') !== 0;
+}
+
+function sameBookingIdentity_(aName, aService, aHour, bName, bService, bHour) {
+  return normalizeBookingText_(aName) === normalizeBookingText_(bName)
+    && normalizeBookingText_(aService) === normalizeBookingText_(bService)
+    && st(aHour) === st(bHour);
+}
+
+function cancelDuplicateReschedules_(sheet, rows, keepIndex, keep) {
+  var cancelled = 0, ids = [];
+  for (var r = 1; r < rows.length; r++) {
+    if (r === keepIndex) continue;
+    var row = rows[r];
+    if (!bookingIsActive_(row[10], row[5])) continue;
+    if (!sameBookingIdentity_(row[2], row[5], row[8], keep.nombre, keep.servicio, keep.hora)) continue;
+    var rowFecha = sd(row[7]);
+    if (rowFecha !== keep.fecha) continue;
+    sheet.getRange(r+1, 11).setValue('Cancelada');
+    var note = ('' + (row[13] || '')).trim();
+    var add  = '[AUTO] Duplicada por reprogramación. Cita activa: ' + keep.fecha + ' ' + keep.hora + ' (' + keep.id + ').';
+    sheet.getRange(r+1, 14).setValue(note ? note + '\n' + add : add);
+    cancelled++;
+    ids.push(row[0]);
+  }
+  return {cancelled: cancelled, ids: ids};
+}
+
+function doRepairRescheduledDuplicate(p) {
+  var nombre = normalizeBookingText_(p.nombre || '');
+  if (!nombre) return {ok:false, error:'Falta nombre'};
+  var keepFecha = sd(p.keepFecha || p.fecha || '');
+  var keepHora  = st(p.keepHora || p.hora || '');
+  var servicioFiltro = normalizeBookingText_(p.servicio || '');
+  var ss = getOrCreateSheet();
+  var sheet = ss.getSheetByName('Citas');
+  var rows = sheet.getDataRange().getValues();
+  var matches = [];
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (!bookingIsActive_(r[10], r[5])) continue;
+    if (normalizeBookingText_(r[2]) !== nombre) continue;
+    if (servicioFiltro && normalizeBookingText_(r[5]) !== servicioFiltro) continue;
+    if (keepHora && st(r[8]) !== keepHora) continue;
+    matches.push({idx:i, id:r[0], fecha:sd(r[7]), hora:st(r[8]), servicio:r[5], nombre:r[2]});
+  }
+  if (matches.length < 2) return {ok:true, repaired:0, reason:'No hay duplicados activos para ese paciente'};
+
+  matches.sort(function(a,b){
+    var fa = a.fecha || '0000-00-00', fb = b.fecha || '0000-00-00';
+    if (fa !== fb) return fa.localeCompare(fb);
+    return (a.hora || '').localeCompare(b.hora || '');
+  });
+
+  var keep = null;
+  if (keepFecha) {
+    for (var k = matches.length - 1; k >= 0; k--) {
+      if (matches[k].fecha === keepFecha && (!keepHora || matches[k].hora === keepHora)) { keep = matches[k]; break; }
+    }
+  }
+  if (!keep) keep = matches[matches.length - 1];
+
+  var repaired = 0, cancelled = [];
+  for (var m = 0; m < matches.length; m++) {
+    var item = matches[m];
+    if (item.idx === keep.idx) continue;
+    var days = Math.abs((new Date(keep.fecha + 'T12:00:00') - new Date(item.fecha + 'T12:00:00')) / 86400000);
+    if (days > 7) continue;
+    sheet.getRange(item.idx+1, 11).setValue('Cancelada');
+    var oldNote = ('' + (rows[item.idx][13] || '')).trim();
+    var newNote = '[AUTO] Cancelada por reprogramación. Nueva cita activa: ' + keep.fecha + ' ' + keep.hora + ' (' + keep.id + ').';
+    sheet.getRange(item.idx+1, 14).setValue(oldNote ? oldNote + '\n' + newNote : newNote);
+    repaired++;
+    cancelled.push({id:item.id, fecha:item.fecha, hora:item.hora});
+  }
+  return {ok:true, repaired:repaired, kept:{id:keep.id, fecha:keep.fecha, hora:keep.hora}, cancelled:cancelled};
 }
 
 // Elimina todos los registros de un paciente en Citas y en Pacientes

@@ -5652,6 +5652,7 @@ async function doLogin() {
       reloadMetas();
       _initSidebarState();
       initDashboard();
+      await _runUrlRepairIfRequested();
     } else {
       _loginAttempts++;
       const errEl = document.getElementById('loginErr');
@@ -5723,12 +5724,41 @@ window.addEventListener('DOMContentLoaded', async () => {
         reloadMetas();
         _initSidebarState();
         initDashboard();
+        await _runUrlRepairIfRequested();
           return;
       }
     } catch(e) {}
     sessionStorage.removeItem('adminToken');
   }
 });
+
+async function _runUrlRepairIfRequested() {
+  const params = new URLSearchParams(location.search);
+  if (params.get('repair') !== 'reschedule' || !TOKEN) return;
+  const nombre = params.get('nombre') || '';
+  const keepFecha = params.get('keepFecha') || '';
+  const keepHora = params.get('keepHora') || '';
+  if (!nombre || !keepFecha || !keepHora) return;
+  try {
+    const url = `${APPS_SCRIPT_URL}?action=repairRescheduledDuplicate&token=${encodeURIComponent(TOKEN)}&nombre=${encodeURIComponent(nombre)}&keepFecha=${encodeURIComponent(keepFecha)}&keepHora=${encodeURIComponent(keepHora)}`;
+    const result = await fetch(url).then(r => r.json());
+    document.body.dataset.repairResult = JSON.stringify(result);
+    if (result.ok) {
+      toast(result.repaired > 0 ? `Reparación lista: ${result.repaired} cita duplicada cancelada.` : 'Revisión lista: no encontré duplicados activos.', result.repaired > 0 ? 'ok' : 'warn');
+      await reload();
+      initDashboard();
+      renderAgenda();
+      renderCalendar();
+      renderCitasResumen();
+      renderIngresosDetalle();
+    } else {
+      toast('No se pudo reparar: ' + (result.error || 'respuesta inválida'), 'err');
+    }
+  } catch(e) {
+    document.body.dataset.repairResult = JSON.stringify({ok:false,error:e.message});
+    toast('Error ejecutando reparación de reprogramación', 'err');
+  }
+}
 
 // ── PERFIL DEL ADMIN ──
 function updateProfileCard() {
@@ -7011,10 +7041,10 @@ async function confirmarReagendar(id) {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=editBooking&token=${encodeURIComponent(TOKEN)}&data=${data}`);
     const d = await r.json();
     if (d.ok) {
-      cita.fecha = fecha; cita.hora = hora;
+      await reload();
       toast('Cita reagendada: ' + fmtDate(fecha) + ' ' + hora);
       closeModal('modalDetalle');
-      initDashboard(); renderAgenda(); renderCalendar();
+      initDashboard(); renderAgenda(); renderCalendar(); renderIngresosDetalle(); renderCitasResumen();
     } else toast('Error: ' + (d.error || ''), 'err');
   } catch(e) { toast('Error de conexión', 'err'); }
 }
@@ -8003,13 +8033,14 @@ async function guardarEdicion() {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=editBooking&token=${encodeURIComponent(TOKEN)}&data=${data}`);
     const d = await r.json();
     if (d.ok) {
-      const cita = allData.citas.find(c => c.id === id);
-      if (cita) { cita.servicio=servicio; cita.modalidad=modalidad; cita.fecha=fecha; cita.hora=hora; cita.precio=precio; cita.notas=notas; }
+      await reload();
       toast('Cita actualizada correctamente');
       closeModal('modalEditar');
       initDashboard();
       renderAgenda();
       renderCalendar();
+      renderIngresosDetalle();
+      renderCitasResumen();
     } else toast('Error al guardar: ' + (d.error||''), 'err');
   } catch(e) { toast('Error de conexión', 'err'); }
   btn.textContent = 'Guardar cambios'; btn.disabled = false;
