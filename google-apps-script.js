@@ -176,6 +176,9 @@ function esRegistro(servicio) {
 }
 
 function createBooking(d, isAdmin) {
+  if (isMidnightBookingTime_(d.time)) {
+    return {ok: false, error: 'Ese horario es de medianoche (00:00-00:59). Para 12 del mediodia usa 12:00.'};
+  }
   if (!isAdmin) {
     var avail = checkAvailability(d.date, d.time, d.modality, d.service);
     if (!avail.available) return {ok: false, error: avail.reason};
@@ -297,6 +300,15 @@ function st(v) {
     return pad(h) + ':' + pad(m);
   }
   return '' + v;
+}
+
+function isMidnightBookingTime_(time) {
+  var value = st(time);
+  var parts = ('' + value).split(':');
+  if (parts.length < 2) return false;
+  var h = parseInt(parts[0], 10);
+  var m = parseInt(parts[1], 10);
+  return h === 0 && m >= 0 && m <= 59;
 }
 
 // -------------------------------------------------------------
@@ -518,6 +530,9 @@ function doCancelBooking(id) {
 
 // Edita una cita existente en Sheets y actualiza el evento del Calendar
 function doEditBooking(d) {
+  if (d.hora && isMidnightBookingTime_(d.hora)) {
+    return {ok: false, error: 'Ese horario es de medianoche (00:00-00:59). Para 12 del mediodia usa 12:00.'};
+  }
   var sheet = getOrCreateSheet().getSheetByName('Citas');
   var rows  = sheet.getDataRange().getValues();
   for (var i = 1; i < rows.length; i++) {
@@ -1740,10 +1755,8 @@ function cleanCitasSinHora() {
   var deleted = 0;
   for (var i = rows.length - 1; i >= 1; i--) {
     var hora = rows[i][8]; // columna Hora (índice 8)
-    var horaStr = (hora instanceof Date)
-      ? (hora.getHours() + ':' + hora.getMinutes())
-      : ('' + (hora || '')).trim();
-    if (!horaStr || horaStr === '0:0' || horaStr === '00:00') {
+    var horaStr = st(hora);
+    if (!horaStr || horaStr === '0:0' || isMidnightBookingTime_(horaStr)) {
       sheet.deleteRow(i + 1);
       deleted++;
     }

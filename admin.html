@@ -2729,7 +2729,7 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
               <div class="field">
                 <label>Hora *</label>
                 <input type="time" id="ncTime" class="nc-input" style="width:100%" oninput="checkTimeConflict(); _updateDuoTime(); updateTimeHelp('ncTime','ncTimeHelp')" onchange="checkTimeConflict(); _updateDuoTime(); updateTimeHelp('ncTime','ncTimeHelp')">
-                <div id="ncTimeHelp" class="time-help">Tip: 12 del mediodía es <strong>12:00</strong>. <strong>00:00</strong> es medianoche y no se guardará.</div>
+                <div id="ncTimeHelp" class="time-help">Tip: 12 del mediodía es <strong>12:00</strong>. La franja <strong>00:00–00:59</strong> es medianoche y no se guardará.</div>
                 <div id="ncConflictWarn" style="display:none;margin-top:6px;padding:8px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:8px;font-size:.82rem;color:#991b1b"></div>
               </div>
             </div>
@@ -2766,7 +2766,7 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
                 <div class="field" style="margin:0">
                   <label>Hora *</label>
                   <input type="time" id="recHora" oninput="_updateRecPreview(); updateTimeHelp('recHora','recTimeHelp')" onchange="_updateRecPreview(); updateTimeHelp('recHora','recTimeHelp')">
-                  <div id="recTimeHelp" class="time-help">12:00 = mediodía · 00:00 = medianoche</div>
+                  <div id="recTimeHelp" class="time-help">12:00 = mediodía · 00:00–00:59 = medianoche</div>
                 </div>
                 <div class="field" style="margin:0">
                   <label>Frecuencia</label>
@@ -3121,7 +3121,7 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="renderSeguimiento()">🔄 Actualizar</button>
-          <button class="btn btn-ghost btn-sm" id="btnLimpiarSinHora" onclick="limpiarCitasSinHora()" title="Elimina citas antiguas sin hora o guardadas a las 00:00 (medianoche)">🧹 Limpiar 00:00 / sin hora</button>
+          <button class="btn btn-ghost btn-sm" id="btnLimpiarSinHora" onclick="limpiarCitasSinHora()" title="Elimina citas antiguas sin hora o guardadas entre 00:00 y 00:59 (medianoche)">🧹 Limpiar medianoche / sin hora</button>
           <button class="fin-export-btn" onclick="exportarSeguimientoCSV()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Exportar CSV
@@ -6892,14 +6892,14 @@ function _updateSubmitLabel() {
 }
 
 function isMidnightTime(time) {
-  return String(time || '').trim() === '00:00';
+  return /^00:[0-5]\d$/.test(String(time || '').trim());
 }
 
 function timeHumanLabel(time) {
   const t = String(time || '').trim();
   if (!t) return '';
   if (t === '12:00') return '12:00 del mediodía';
-  if (t === '00:00') return '00:00 de medianoche';
+  if (isMidnightTime(t)) return `${t} de medianoche`;
   const [hh, mm] = t.split(':').map(Number);
   if (Number.isNaN(hh) || Number.isNaN(mm)) return t;
   if (hh < 12) return `${t} de la mañana`;
@@ -6914,12 +6914,12 @@ function updateTimeHelp(inputId, helpId) {
   const time = input.value;
   help.classList.remove('ok','warn');
   if (!time) {
-    help.innerHTML = 'Tip: 12 del mediodía es <strong>12:00</strong>. <strong>00:00</strong> es medianoche y no se guardará.';
+    help.innerHTML = 'Tip: 12 del mediodía es <strong>12:00</strong>. La franja <strong>00:00–00:59</strong> es medianoche y no se guardará.';
     return true;
   }
   if (isMidnightTime(time)) {
     help.classList.add('warn');
-    help.innerHTML = '⚠️ <strong>00:00 es medianoche.</strong> Si quieres 12 del mediodía, cambia la hora a <strong>12:00</strong>.';
+    help.innerHTML = '⚠️ <strong>Esta hora es medianoche.</strong> Si quieres 12 del mediodía, cambia la hora a <strong>12:00</strong>.';
     return false;
   }
   help.classList.add('ok');
@@ -6929,7 +6929,7 @@ function updateTimeHelp(inputId, helpId) {
 
 function validateNoMidnight(time, contexto='la cita') {
   if (!isMidnightTime(time)) return true;
-  toast(`00:00 es medianoche. Para ${contexto} al mediodía usa 12:00.`, 'err');
+  toast(`Esa hora es de medianoche. Para ${contexto} al mediodía usa 12:00.`, 'err');
   return false;
 }
 
@@ -7032,10 +7032,10 @@ async function submitAdminBookingMulti() {
     fechas = [{ date, time }];
   } else if (_scheduleMode === 'multiple') {
     if (_multiDates.length === 0) { toast('Agrega al menos una fecha', 'err'); return; }
-    if (_multiDates.some(d => isMidnightTime(d.time))) { toast('Hay una fecha con 00:00 (medianoche). Cámbiala a 12:00 si es mediodía.', 'err'); return; }
+    if (_multiDates.some(d => isMidnightTime(d.time))) { toast('Hay una fecha entre 00:00 y 00:59 (medianoche). Cámbiala a 12:00 si es mediodía.', 'err'); return; }
     fechas = [..._multiDates];
   } else {
-    if (isMidnightTime(document.getElementById('recHora')?.value)) { updateTimeHelp('recHora','recTimeHelp'); toast('00:00 es medianoche. Para citas al mediodía usa 12:00.', 'err'); return; }
+    if (isMidnightTime(document.getElementById('recHora')?.value)) { updateTimeHelp('recHora','recTimeHelp'); toast('Esa hora es de medianoche. Para citas al mediodía usa 12:00.', 'err'); return; }
     fechas = _calcRecDates();
     if (fechas.length === 0) { toast('Configura la recurrencia', 'err'); return; }
   }
@@ -7431,6 +7431,7 @@ function citasReales() {
   const seen = new Set();
   const result = allData.citas.filter(c => {
     if (c.estado === 'Cancelada' || c.estado === 'Registro' || esRegistroServ(c.servicio)) return false;
+    if (!c.hora || isMidnightTime(c.hora)) return false;
     const key = (c.nombre || '').toLowerCase().trim() + '|' + normDate(c.fecha) + '|' + (c.hora || '00:00');
     if (seen.has(key)) return false;
     seen.add(key);
@@ -9453,7 +9454,7 @@ function checkTimeConflict() {
   const warn = document.getElementById('ncConflictWarn');
   if (!date || !time) { warn.style.display = 'none'; return; }
   if (isMidnightTime(time)) {
-    warn.innerHTML = '⚠️ 00:00 es medianoche. Si la cita es a las 12 del mediodía, selecciona 12:00.';
+    warn.innerHTML = '⚠️ Esa hora está en la franja 00:00–00:59 (medianoche). Si la cita es a las 12 del mediodía, selecciona 12:00.';
     warn.style.display = 'block';
     return;
   }
@@ -11045,23 +11046,23 @@ function agendarDesdeSeg(encNombre, encTel, encEmail) {
 }
 
 async function limpiarCitasSinHora() {
-  const sinHora = (allData.citas || []).filter(c => (!c.hora || c.hora === '00:00') && c.estado !== 'Cancelada');
+  const sinHora = (allData.citas || []).filter(c => (!c.hora || isMidnightTime(c.hora)) && c.estado !== 'Cancelada');
   if (sinHora.length === 0) { toast('No hay citas a medianoche/sin hora — todo está limpio ✓', 'ok'); return; }
   const detalle = sinHora.map(c => `• ${c.nombre} — ${c.servicio} — ${c.fecha} — hora: ${c.hora || 'sin hora'} — estado: ${c.estado}`).join('\n');
-  if (!confirm(`Se encontraron ${sinHora.length} cita(s) guardadas a 00:00 o sin hora:\n\n${detalle}\n\nEsto elimina esas filas de la base de datos. ¿Continuar?`)) return;
+  if (!confirm(`Se encontraron ${sinHora.length} cita(s) guardadas entre 00:00 y 00:59 o sin hora:\n\n${detalle}\n\nEsto elimina esas filas de la base de datos. ¿Continuar?`)) return;
   const btn = document.getElementById('btnLimpiarSinHora');
   btn.textContent = 'Limpiando...'; btn.disabled = true;
   try {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=cleanCitasSinHora&token=${encodeURIComponent(TOKEN)}`);
     const d = await r.json();
     if (d.ok) {
-      toast(`✓ ${d.deleted} cita(s) a 00:00/sin hora eliminadas correctamente`, 'ok');
+      toast(`✓ ${d.deleted} cita(s) de medianoche/sin hora eliminadas correctamente`, 'ok');
       await reload();
     } else {
       toast('Error: ' + (d.error || ''), 'err');
     }
   } catch(e) { toast('Error de conexión', 'err'); }
-  finally { btn.textContent = '🧹 Limpiar 00:00 / sin hora'; btn.disabled = false; }
+  finally { btn.textContent = '🧹 Limpiar medianoche / sin hora'; btn.disabled = false; }
 }
 
 function exportarSeguimientoCSV() {
