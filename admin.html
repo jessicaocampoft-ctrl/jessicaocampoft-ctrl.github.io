@@ -207,6 +207,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
   font-size:.9rem;line-height:1;padding:0 1px;opacity:.6;
 }
 .multi-date-chip button:hover{opacity:1}
+.time-help{
+  margin-top:6px;font-size:.74rem;color:var(--muted);line-height:1.35;
+}
+.time-help.ok{color:#047857}
+.time-help.warn{
+  color:#991b1b;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);
+  border-radius:8px;padding:7px 9px;
+}
 
 /* ── RECURRENCE PREVIEW ── */
 .rec-preview-item{
@@ -2720,7 +2728,8 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
               </div>
               <div class="field">
                 <label>Hora *</label>
-                <input type="time" id="ncTime" class="nc-input" style="width:100%" oninput="checkTimeConflict(); _updateDuoTime()" onchange="checkTimeConflict(); _updateDuoTime()">
+                <input type="time" id="ncTime" class="nc-input" style="width:100%" oninput="checkTimeConflict(); _updateDuoTime(); updateTimeHelp('ncTime','ncTimeHelp')" onchange="checkTimeConflict(); _updateDuoTime(); updateTimeHelp('ncTime','ncTimeHelp')">
+                <div id="ncTimeHelp" class="time-help">Tip: 12 del mediodía es <strong>12:00</strong>. <strong>00:00</strong> es medianoche y no se guardará.</div>
                 <div id="ncConflictWarn" style="display:none;margin-top:6px;padding:8px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:8px;font-size:.82rem;color:#991b1b"></div>
               </div>
             </div>
@@ -2736,7 +2745,8 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
                 </div>
                 <div class="field" style="width:120px;margin:0">
                   <label>Hora</label>
-                  <input type="time" id="multiTime">
+                  <input type="time" id="multiTime" oninput="updateTimeHelp('multiTime','multiTimeHelp')" onchange="updateTimeHelp('multiTime','multiTimeHelp')">
+                  <div id="multiTimeHelp" class="time-help">12:00 = mediodía</div>
                 </div>
                 <button type="button" onclick="_addMultiDate()" class="btn btn-teal" style="padding:9px 16px;height:fit-content">+ Agregar</button>
               </div>
@@ -2755,7 +2765,8 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
                 </div>
                 <div class="field" style="margin:0">
                   <label>Hora *</label>
-                  <input type="time" id="recHora" oninput="_updateRecPreview()">
+                  <input type="time" id="recHora" oninput="_updateRecPreview(); updateTimeHelp('recHora','recTimeHelp')" onchange="_updateRecPreview(); updateTimeHelp('recHora','recTimeHelp')">
+                  <div id="recTimeHelp" class="time-help">12:00 = mediodía · 00:00 = medianoche</div>
                 </div>
                 <div class="field" style="margin:0">
                   <label>Frecuencia</label>
@@ -3110,7 +3121,7 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="renderSeguimiento()">🔄 Actualizar</button>
-          <button class="btn btn-ghost btn-sm" id="btnLimpiarSinHora" onclick="limpiarCitasSinHora()" title="Elimina citas antiguas que no tienen hora registrada">🧹 Limpiar citas sin hora</button>
+          <button class="btn btn-ghost btn-sm" id="btnLimpiarSinHora" onclick="limpiarCitasSinHora()" title="Elimina citas antiguas sin hora o guardadas a las 00:00 (medianoche)">🧹 Limpiar 00:00 / sin hora</button>
           <button class="fin-export-btn" onclick="exportarSeguimientoCSV()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Exportar CSV
@@ -6880,11 +6891,54 @@ function _updateSubmitLabel() {
   }
 }
 
+function isMidnightTime(time) {
+  return String(time || '').trim() === '00:00';
+}
+
+function timeHumanLabel(time) {
+  const t = String(time || '').trim();
+  if (!t) return '';
+  if (t === '12:00') return '12:00 del mediodía';
+  if (t === '00:00') return '00:00 de medianoche';
+  const [hh, mm] = t.split(':').map(Number);
+  if (Number.isNaN(hh) || Number.isNaN(mm)) return t;
+  if (hh < 12) return `${t} de la mañana`;
+  if (hh === 12) return `${t} del mediodía`;
+  return `${t} de la tarde`;
+}
+
+function updateTimeHelp(inputId, helpId) {
+  const input = document.getElementById(inputId);
+  const help  = document.getElementById(helpId);
+  if (!input || !help) return true;
+  const time = input.value;
+  help.classList.remove('ok','warn');
+  if (!time) {
+    help.innerHTML = 'Tip: 12 del mediodía es <strong>12:00</strong>. <strong>00:00</strong> es medianoche y no se guardará.';
+    return true;
+  }
+  if (isMidnightTime(time)) {
+    help.classList.add('warn');
+    help.innerHTML = '⚠️ <strong>00:00 es medianoche.</strong> Si quieres 12 del mediodía, cambia la hora a <strong>12:00</strong>.';
+    return false;
+  }
+  help.classList.add('ok');
+  help.innerHTML = `Hora seleccionada: <strong>${timeHumanLabel(time)}</strong>.`;
+  return true;
+}
+
+function validateNoMidnight(time, contexto='la cita') {
+  if (!isMidnightTime(time)) return true;
+  toast(`00:00 es medianoche. Para ${contexto} al mediodía usa 12:00.`, 'err');
+  return false;
+}
+
 function _addMultiDate() {
   const date = document.getElementById('multiDate').value;
   const time = document.getElementById('multiTime').value;
   if (!date) { toast('Selecciona una fecha', 'err'); return; }
   if (!time) { toast('Selecciona una hora', 'err'); return; }
+  if (!validateNoMidnight(time, 'agendar')) { updateTimeHelp('multiTime','multiTimeHelp'); return; }
   if (_multiDates.find(d => d.date === date && d.time === time)) {
     toast('Esa fecha y hora ya está en la lista', 'warn'); return;
   }
@@ -6923,6 +6977,7 @@ function _calcRecDates() {
   const time   = document.getElementById('recHora')?.value;
   const days   = parseInt(document.getElementById('recFrecuencia')?.value) || 7;
   const qty    = Math.min(parseInt(document.getElementById('recCantidad')?.value) || 4, 52);
+  if (isMidnightTime(time)) return [];
   if (!start || !time || qty < 1) return [];
   const dates = [];
   const cur   = new Date(start + 'T12:00:00');
@@ -6973,11 +7028,14 @@ async function submitAdminBookingMulti() {
     const date = document.getElementById('ncDate').value;
     const time = document.getElementById('ncTime').value;
     if (!date || !time) { toast('Selecciona fecha y hora', 'err'); return; }
+    if (!validateNoMidnight(time, 'agendar')) { updateTimeHelp('ncTime','ncTimeHelp'); return; }
     fechas = [{ date, time }];
   } else if (_scheduleMode === 'multiple') {
     if (_multiDates.length === 0) { toast('Agrega al menos una fecha', 'err'); return; }
+    if (_multiDates.some(d => isMidnightTime(d.time))) { toast('Hay una fecha con 00:00 (medianoche). Cámbiala a 12:00 si es mediodía.', 'err'); return; }
     fechas = [..._multiDates];
   } else {
+    if (isMidnightTime(document.getElementById('recHora')?.value)) { updateTimeHelp('recHora','recTimeHelp'); toast('00:00 es medianoche. Para citas al mediodía usa 12:00.', 'err'); return; }
     fechas = _calcRecDates();
     if (fechas.length === 0) { toast('Configura la recurrencia', 'err'); return; }
   }
@@ -7103,6 +7161,7 @@ async function confirmarReagendar(id) {
   const fecha = document.getElementById('rDate_' + id).value;
   const hora  = document.getElementById('rTime_' + id).value;
   if (!fecha || !hora) { toast('Selecciona fecha y hora', 'err'); return; }
+  if (!validateNoMidnight(hora, 'reagendar')) return;
   const cita = allData.citas.find(c => c.id === id);
   if (!cita) return;
   const data = encodeURIComponent(JSON.stringify({
@@ -8366,6 +8425,7 @@ async function guardarEdicion() {
   const precio   = getPrecioFinalEdit();
   const notas    = document.getElementById('editNotas').value.trim();
   if (!fecha) { toast('Selecciona una fecha', 'err'); return; }
+  if (!validateNoMidnight(hora, 'guardar la cita')) return;
   const btn = document.getElementById('editSaveBtn');
   btn.textContent = 'Guardando...'; btn.disabled = true;
   try {
@@ -9153,6 +9213,7 @@ async function submitAdminBooking() {
   const date  = document.getElementById('ncDate').value;
   const time  = document.getElementById('ncTime').value;
   if (!name||!serv||!date||!time) { toast('Completa los campos obligatorios (*)','err'); return; }
+  if (!validateNoMidnight(time, 'agendar')) { updateTimeHelp('ncTime','ncTimeHelp'); return; }
 
   _submittingBooking = true;
   const btn = document.getElementById('ncSubmitBtn');
@@ -9354,6 +9415,9 @@ function clearNuevaCita() {
   if (rFecha) rFecha.value = '';
   if (rHora)  rHora.value  = '';
   if (rCant)  rCant.value  = '4';
+  updateTimeHelp('ncTime','ncTimeHelp');
+  updateTimeHelp('multiTime','multiTimeHelp');
+  updateTimeHelp('recHora','recTimeHelp');
 }
 
 // ── INDICADOR DUPLICADO BASE DE DATOS ──
@@ -9388,6 +9452,11 @@ function checkTimeConflict() {
   const time = document.getElementById('ncTime').value;
   const warn = document.getElementById('ncConflictWarn');
   if (!date || !time) { warn.style.display = 'none'; return; }
+  if (isMidnightTime(time)) {
+    warn.innerHTML = '⚠️ 00:00 es medianoche. Si la cita es a las 12 del mediodía, selecciona 12:00.';
+    warn.style.display = 'block';
+    return;
+  }
 
   const conflicts = allData.citas.filter(c =>
     c.estado !== 'Cancelada' && !esRegistroServ(c.servicio) &&
@@ -10977,22 +11046,22 @@ function agendarDesdeSeg(encNombre, encTel, encEmail) {
 
 async function limpiarCitasSinHora() {
   const sinHora = (allData.citas || []).filter(c => (!c.hora || c.hora === '00:00') && c.estado !== 'Cancelada');
-  if (sinHora.length === 0) { toast('No hay citas sin hora — todo está limpio ✓', 'ok'); return; }
-  const detalle = sinHora.map(c => `• ${c.nombre} — ${c.servicio} — ${c.fecha} — estado: ${c.estado}`).join('\n');
-  if (!confirm(`Se encontraron ${sinHora.length} cita(s) sin hora registrada:\n\n${detalle}\n\n¿Eliminarlas de la base de datos?`)) return;
+  if (sinHora.length === 0) { toast('No hay citas a medianoche/sin hora — todo está limpio ✓', 'ok'); return; }
+  const detalle = sinHora.map(c => `• ${c.nombre} — ${c.servicio} — ${c.fecha} — hora: ${c.hora || 'sin hora'} — estado: ${c.estado}`).join('\n');
+  if (!confirm(`Se encontraron ${sinHora.length} cita(s) guardadas a 00:00 o sin hora:\n\n${detalle}\n\nEsto elimina esas filas de la base de datos. ¿Continuar?`)) return;
   const btn = document.getElementById('btnLimpiarSinHora');
   btn.textContent = 'Limpiando...'; btn.disabled = true;
   try {
     const r = await fetch(`${APPS_SCRIPT_URL}?action=cleanCitasSinHora&token=${encodeURIComponent(TOKEN)}`);
     const d = await r.json();
     if (d.ok) {
-      toast(`✓ ${d.deleted} cita(s) sin hora eliminadas correctamente`, 'ok');
+      toast(`✓ ${d.deleted} cita(s) a 00:00/sin hora eliminadas correctamente`, 'ok');
       await reload();
     } else {
       toast('Error: ' + (d.error || ''), 'err');
     }
   } catch(e) { toast('Error de conexión', 'err'); }
-  finally { btn.textContent = '🧹 Limpiar citas sin hora'; btn.disabled = false; }
+  finally { btn.textContent = '🧹 Limpiar 00:00 / sin hora'; btn.disabled = false; }
 }
 
 function exportarSeguimientoCSV() {
