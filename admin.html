@@ -1244,13 +1244,13 @@ tr:last-child td{ border-bottom: none; }
   -webkit-backdrop-filter:blur(12px);
 }
 .mob-nav-items{
-  display:flex;justify-content:space-around;align-items:center;max-width:500px;margin:0 auto;
+  display:flex;justify-content:space-between;align-items:center;gap:2px;max-width:540px;margin:0 auto;
 }
 .mob-nav-btn{
   display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:6px 12px;border:none;background:none;cursor:pointer;
+  padding:6px 8px;border:none;background:none;cursor:pointer;
   color:var(--muted);font-family:var(--font-b);font-size:.62rem;font-weight:500;
-  border-radius:10px;transition:all var(--tr-fast);min-width:52px;
+  border-radius:10px;transition:all var(--tr-fast);min-width:48px;
   position:relative;
 }
 .mob-nav-btn svg{ transition:transform var(--tr-fast); }
@@ -1432,7 +1432,7 @@ button:disabled{cursor:not-allowed;opacity:.58}
 }
 @media(max-width:420px){
   .stats-grid,.stats-grid[style]{grid-template-columns:1fr!important}
-  .mob-nav-btn{padding:5px 7px;min-width:48px}
+  .mob-nav-btn{padding:5px 4px;min-width:44px;font-size:.58rem}
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;
@@ -1552,6 +1552,11 @@ button:disabled{cursor:not-allowed;opacity:.58}
       <input type="text" id="globalSearchInput" placeholder="Buscar paciente..." oninput="globalSearch(this.value)" autocomplete="off">
     </div>
 
+    <button class="sb-link" id="sb-calendario" data-tooltip="Google Calendar" onclick="showView('calendario')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor"/><circle cx="12" cy="15" r="1" fill="currentColor"/><circle cx="16" cy="15" r="1" fill="currentColor"/></svg>
+      Google Calendar
+    </button>
+
     <button class="sb-link active" id="sb-dashboard" data-tooltip="Dashboard" onclick="showView('dashboard')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       Dashboard
@@ -1576,11 +1581,6 @@ button:disabled{cursor:not-allowed;opacity:.58}
     <button class="sb-link" id="sb-nueva" data-tooltip="Nueva Cita" onclick="showView('nueva')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
       Nueva Cita
-    </button>
-
-    <button class="sb-link" id="sb-calendario" data-tooltip="Google Calendar" onclick="showView('calendario')">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor"/><circle cx="12" cy="15" r="1" fill="currentColor"/><circle cx="16" cy="15" r="1" fill="currentColor"/></svg>
-      Google Calendar
     </button>
 
     <button class="sb-link" id="sb-bloquear" data-tooltip="Bloquear Horario" onclick="showView('bloquear')">
@@ -5298,6 +5298,10 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
   <!-- ── MOBILE BOTTOM NAV ── -->
   <nav id="mobileBottomNav">
     <div class="mob-nav-items">
+      <button class="mob-nav-btn" id="mobBtn-calendario" onclick="showView('calendario')" title="Google Calendar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor"/><circle cx="12" cy="15" r="1" fill="currentColor"/><circle cx="16" cy="15" r="1" fill="currentColor"/></svg>
+        Google
+      </button>
       <button class="mob-nav-btn active" id="mobBtn-dashboard" onclick="showView('dashboard')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         Inicio
@@ -5964,8 +5968,8 @@ function initAdminUX2026() {
   if (!sidebar || sidebar.dataset.uxReady) return;
   sidebar.dataset.uxReady = '1';
 
-  // Seis destinos cotidianos visibles; el resto queda disponible sin saturar el menú.
-  const principales = new Set(['sb-dashboard','sb-tareas','sb-agenda','sb-nueva','sb-pacientes','sb-finanzas']);
+  // Destinos cotidianos visibles; Google Calendar queda como primera opción del menú.
+  const principales = new Set(['sb-calendario','sb-dashboard','sb-tareas','sb-agenda','sb-nueva','sb-pacientes','sb-finanzas']);
   sidebar.querySelectorAll(':scope > .sb-link').forEach(link => {
     if (!principales.has(link.id) && link.id !== 'darkModeBtn' && !link.classList.contains('sb-signout')) {
       link.classList.add('sb-secondary');
@@ -6062,7 +6066,7 @@ function initFunctionalModules2026() {
   accionesLink.classList.remove('sb-secondary');
   toolsToggle.insertAdjacentElement('afterend', esperaLink);
   toolsToggle.insertAdjacentElement('afterend', autoLink);
-  document.getElementById('sb-dashboard').insertAdjacentElement('beforebegin', accionesLink);
+  document.getElementById('sb-calendario').insertAdjacentElement('afterend', accionesLink);
 
   const main = document.getElementById('mainContent');
   const acciones = document.createElement('section');
@@ -6583,12 +6587,12 @@ function _animateDashStats() {
 
 // Mobile bottom nav sync
 const _MOB_MAP = {
-  dashboard:'dashboard', agenda:'agenda', nueva:'nueva',
+  calendario:'calendario', dashboard:'dashboard', agenda:'agenda', nueva:'nueva',
   pacientes:'pacientes', finanzas:'finanzas',
   basedatos:'pacientes', codigos:'pacientes', paquetes:'pacientes',
   guiakpis:'finanzas', comisiones:'finanzas', presupuesto:'finanzas', recordatorios:'agenda',
   seguimiento:'agenda', empresas:'pacientes', pasaporte:'pacientes',
-  bloquear:'agenda', calendario:'agenda', tareas:'dashboard',
+  bloquear:'agenda', tareas:'dashboard',
 };
 function _syncMobileNav(v) {
   const target = _MOB_MAP[v] || null;
