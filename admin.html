@@ -144,6 +144,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 .team-row:first-child{border-top:0}
 .team-row strong{font-size:.9rem}
 .team-row small{display:block;color:var(--muted);margin-top:2px}
+.team-ops{margin-bottom:16px}
+.team-ops-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.55fr);gap:14px}
+.team-ops-list{display:grid;gap:9px}
+.team-ops-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--border)}
+.team-ops-row:first-child{border-top:0}
+.team-ops-row strong{font-size:.92rem}
+.team-ops-row small{display:block;color:var(--muted);margin-top:2px}
+.team-alert{border:1px solid rgba(217,119,6,.24);background:rgba(217,119,6,.08);border-radius:14px;padding:10px 12px;color:var(--text);font-size:.84rem;line-height:1.45}
+.team-alert.danger{border-color:rgba(220,38,38,.24);background:rgba(220,38,38,.08)}
+.team-alert.ok{border-color:rgba(22,163,74,.22);background:rgba(22,163,74,.08)}
+.team-alert strong{display:block;margin-bottom:2px}
+.team-assign-warning{margin:12px 0 2px;display:grid;gap:8px}
 .team-temp-pass{
   margin-top:14px;padding:16px;border-radius:16px;border:1px solid rgba(27,191,176,.28);
   background:linear-gradient(135deg,rgba(27,191,176,.12),rgba(255,255,255,.86))
@@ -155,6 +167,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 }
 @media(max-width:860px){
   .team-hero,.team-grid{grid-template-columns:1fr}
+  .team-ops-grid{grid-template-columns:1fr}
   .team-actions{justify-content:flex-start}
   #proApp{padding-bottom:84px}
 }
@@ -5432,6 +5445,7 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
       </div>
 
       <div id="equipoStats" class="team-stats"></div>
+      <div id="equipoOperacion" class="team-ops"></div>
 
       <div class="team-grid">
         <div class="team-panel">
@@ -5511,7 +5525,7 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
         <div class="form-grid g2" style="gap:14px">
           <div class="field">
             <label>Fisioterapeuta</label>
-            <select id="assignProfessionalId"></select>
+            <select id="assignProfessionalId" onchange="renderAssignWarnings()"></select>
           </div>
           <div class="field">
             <label>Permitir marcar antes de hora</label>
@@ -5528,6 +5542,7 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
             </select>
           </div>
         </div>
+        <div id="assignWarnings" class="team-assign-warning"></div>
         <div class="modal-actions">
           <button class="btn btn-ghost" onclick="closeModal('modalAsignarPro')">Cerrar</button>
           <button class="btn btn-ghost" onclick="saveAssignPro()">Guardar asignación</button>
@@ -6094,6 +6109,145 @@ function activeProfessionals() {
   return (teamData.profesionales || []).filter(p => (p.estado || p.Estado || 'Activo') === 'Activo');
 }
 
+function teamCleanText(value) {
+  return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+}
+
+function teamAppointmentById(id) {
+  const target = String(id || '');
+  return (allData.citas || []).find(c => String(c.id || c.ID || '') === target);
+}
+
+function teamAssignedAppointments(proId = '') {
+  const citas = (teamData.asignaciones || [])
+    .filter(a => !proId || String(a.ProfesionalID || '') === String(proId))
+    .map(a => {
+      const c = teamAppointmentById(a.CitaID);
+      return c ? { ...c, _assignment:a } : null;
+    })
+    .filter(Boolean)
+    .filter(c => isOperationalDate(c.fecha));
+  return citas.sort((a,b) => (`${normDate(a.fecha)} ${a.hora || ''}`).localeCompare(`${normDate(b.fecha)} ${b.hora || ''}`));
+}
+
+function teamIsInactiveAppointment(c) {
+  return ['Cancelada','Cancelada a tiempo','Cancelación tardía','Reprogramada','No asistió','Reembolsada'].includes(c?.estado || '');
+}
+
+function teamDateCode(dateStr) {
+  const codes = ['DOM','LUN','MAR','MIE','JUE','VIE','SAB'];
+  const d = new Date(`${normDate(dateStr)}T12:00:00`);
+  return codes[d.getDay()] || '';
+}
+
+function teamAvailabilityDays(disponibilidad = '') {
+  const text = teamCleanText(disponibilidad).toUpperCase().replace(/MIÉ/g,'MIE').replace(/SÁB/g,'SAB');
+  const codes = ['DOM','LUN','MAR','MIE','JUE','VIE','SAB'];
+  const found = new Set();
+  const dayIndex = code => codes.indexOf(code);
+  const addRange = (from, to) => {
+    const a = dayIndex(from), b = dayIndex(to);
+    if (a < 0 || b < 0) return;
+    if (a <= b) for (let i = a; i <= b; i++) found.add(codes[i]);
+    else { for (let i = a; i < codes.length; i++) found.add(codes[i]); for (let i = 0; i <= b; i++) found.add(codes[i]); }
+  };
+  [...text.matchAll(/\b(DOM|LUN|MAR|MIE|JUE|VIE|SAB)\b\s*(?:-|A|AL|HASTA)\s*\b(DOM|LUN|MAR|MIE|JUE|VIE|SAB)\b/g)].forEach(m => addRange(m[1], m[2]));
+  codes.forEach(code => { if (new RegExp(`\\b${code}\\b`).test(text)) found.add(code); });
+  return found;
+}
+
+function teamTimeToMinutes(value) {
+  const s = teamCleanText(value).replace(/\s+/g,'');
+  const m = s.match(/(\d{1,2})(?::?(\d{2}))?(am|pm)?/);
+  if (!m) return null;
+  let h = Number(m[1]), min = Number(m[2] || 0), mer = m[3] || '';
+  if (mer === 'pm' && h < 12) h += 12;
+  if (mer === 'am' && h === 12) h = 0;
+  if (h > 23 || min > 59) return null;
+  return h * 60 + min;
+}
+
+function teamAvailabilityRange(disponibilidad = '') {
+  const times = String(disponibilidad || '').match(/\d{1,2}(?::\d{2})?\s*(?:a\.?\s*m\.?|p\.?\s*m\.?|am|pm)?/gi) || [];
+  if (times.length < 2) return null;
+  const start = teamTimeToMinutes(times[0]);
+  const end = teamTimeToMinutes(times[1]);
+  return start === null || end === null ? null : { start, end };
+}
+
+function teamAvailabilityIssues(pro, cita) {
+  if (!pro || !cita) return [];
+  const issues = [];
+  const disponibilidad = pro.disponibilidad || pro.Disponibilidad || '';
+  const days = teamAvailabilityDays(disponibilidad);
+  const code = teamDateCode(cita.fecha);
+  if (disponibilidad && days.size && !days.has(code)) {
+    issues.push(`Disponibilidad: este profesional figura con disponibilidad ${disponibilidad}, pero la cita es ${fmtDate(cita.fecha)}.`);
+  }
+  const range = teamAvailabilityRange(disponibilidad);
+  const citaMin = teamTimeToMinutes(cita.hora);
+  if (range && citaMin !== null && (citaMin < range.start || citaMin > range.end)) {
+    issues.push(`Horario: la cita es a las ${cita.hora}, fuera del rango escrito (${disponibilidad}).`);
+  }
+  const servicios = teamCleanText(pro.servicios || pro.Servicios || '');
+  const servicioCita = teamCleanText(cita.servicio || '');
+  if (servicios && !['sin definir','todos','todo'].includes(servicios) && servicioCita) {
+    const tokens = servicios.split(/[,;\/|]+/).map(x => x.trim()).filter(Boolean);
+    const matches = tokens.some(t => servicioCita.includes(t) || t.includes(servicioCita));
+    if (tokens.length && !matches) issues.push(`Servicio: "${cita.servicio}" no aparece dentro de los servicios asignados a ${pro.nombre}.`);
+  }
+  return issues;
+}
+
+function teamConflictAppointments(proId, cita) {
+  if (!proId || !cita) return [];
+  return teamAssignedAppointments(proId).filter(c =>
+    String(c.id || c.ID || '') !== String(cita.id || c.ID || '') &&
+    !teamIsInactiveAppointment(c) &&
+    normDate(c.fecha) === normDate(cita.fecha) &&
+    String(c.hora || '') === String(cita.hora || '')
+  );
+}
+
+function renderTeamOperations(pros, pendientes, novedades) {
+  const hoyStr = today();
+  const activePros = pros.filter(p => (p.estado || '') === 'Activo');
+  const todaysRows = activePros.map(p => {
+    const citasHoy = teamAssignedAppointments(p.id).filter(c => normDate(c.fecha) === hoyStr && !teamIsInactiveAppointment(c));
+    return { pro:p, citas:citasHoy };
+  });
+  const overloaded = todaysRows.filter(r => r.citas.length >= 5);
+  const withoutSchedule = activePros.filter(p => !(p.disponibilidad || '').trim());
+  const alertas = [
+    ...pendientes.slice(0, 3).map(c => ({ tone:'danger', title:'Cita sin asignar', body:`${c.nombre} · ${fmtDate(c.fecha)} · ${c.hora || 'sin hora'}` })),
+    ...overloaded.map(r => ({ tone:'', title:'Carga alta hoy', body:`${r.pro.nombre}: ${r.citas.length} citas asignadas.` })),
+    ...withoutSchedule.slice(0, 3).map(p => ({ tone:'', title:'Disponibilidad incompleta', body:`${p.nombre} aún no tiene disponibilidad definida.` })),
+    ...novedades.filter(n => (n.EstadoAdmin || 'Pendiente') === 'Pendiente').slice(0, 3).map(n => ({ tone:'', title:'Novedad pendiente', body:`${professionalName(n.ProfesionalID)} · ${n.Tipo || 'Revisar cita'}` }))
+  ];
+  document.getElementById('equipoOperacion').innerHTML = `
+    <div class="team-ops-grid">
+      <div class="team-panel">
+        <h2>Operación de hoy</h2>
+        <div class="team-ops-list">
+          ${todaysRows.length ? todaysRows.map(r => `
+            <div class="team-ops-row">
+              <div>
+                <strong>${esc(r.pro.nombre)}</strong>
+                <small>${r.citas.length ? r.citas.map(c => `${esc(c.hora || 'Sin hora')} ${esc(c.nombre || 'Paciente')}`).join(' · ') : 'Sin citas asignadas hoy'}</small>
+              </div>
+              <span class="team-pill ${r.citas.length ? 'info' : ''}">${r.citas.length} cita${r.citas.length === 1 ? '' : 's'}</span>
+            </div>`).join('') : '<div class="empty"><p>No hay fisioterapeutas activos.</p></div>'}
+        </div>
+      </div>
+      <div class="team-panel">
+        <h2>Alertas del equipo</h2>
+        <div class="team-ops-list">
+          ${alertas.length ? alertas.map(a => `<div class="team-alert ${esc(a.tone)}"><strong>${esc(a.title)}</strong>${esc(a.body)}</div>`).join('') : '<div class="team-alert ok"><strong>Todo al día</strong>No hay alertas operativas visibles para hoy.</div>'}
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderEquipo() {
   const pros = (teamData.profesionales || []).filter(p => (p.estado || '') !== 'Eliminado');
   const assigns = teamData.asignaciones || [];
@@ -6103,6 +6257,7 @@ function renderEquipo() {
   const asignadas = new Set(assigns.map(a => String(a.CitaID || '')));
   const hoyStr = today();
   const estadosNoAsignables = ['Cancelada','Cancelada a tiempo','Cancelación tardía','Reprogramada','No asistió','Atendida','Sesión atendida','Reembolsada'];
+  const citasAsignadasOperativas = teamAssignedAppointments().filter(c => !teamIsInactiveAppointment(c));
   const pendientes = citas
     .filter(c => !asignadas.has(String(c.id)) && normDate(c.fecha) >= hoyStr && !estadosNoAsignables.includes(c.estado))
     .sort((a,b) => (`${normDate(a.fecha)} ${a.hora||''}`).localeCompare(`${normDate(b.fecha)} ${b.hora||''}`))
@@ -6111,13 +6266,14 @@ function renderEquipo() {
 
   document.getElementById('equipoStats').innerHTML = [
     ['Profesionales activos', pros.filter(p => (p.estado || '') === 'Activo').length],
-    ['Citas asignadas', assigns.length],
+    ['Citas asignadas', citasAsignadasOperativas.length],
     ['Novedades pendientes', novedades.filter(n => (n.EstadoAdmin || 'Pendiente') === 'Pendiente').length],
     ['Cuentas por pagar', porPagar.length]
   ].map(([label,val]) => `<div class="team-stat"><small>${esc(label)}</small><strong>${esc(val)}</strong></div>`).join('');
+  renderTeamOperations(pros, pendientes, novedades);
 
   document.getElementById('equipoProfesionales').innerHTML = pros.length ? pros.map(p => {
-    const citasAsignadas = assigns.filter(a => String(a.ProfesionalID || '') === String(p.id)).length;
+    const citasAsignadas = teamAssignedAppointments(p.id).filter(c => !teamIsInactiveAppointment(c)).length;
     return `
     <div class="team-card clickable" role="button" tabindex="0" title="Ver citas asignadas" onclick="openProfessionalSchedule('${esc(p.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProfessionalSchedule('${esc(p.id)}')}">
       <div class="team-card-head">
@@ -6308,7 +6464,35 @@ function abrirAsignarPro(citaId) {
   document.getElementById('assignProfessionalId').innerHTML = activeProfessionals().map(p => `<option value="${esc(p.id)}" ${a.ProfesionalID === p.id ? 'selected' : ''}>${esc(p.nombre)} · ${esc(p.rol || 'Fisioterapeuta')}</option>`).join('');
   document.getElementById('assignOverride').value = a.OverrideAtencion === 'SI' ? '1' : '';
   document.getElementById('assignExcepcion').value = '';
+  renderAssignWarnings();
   openModal('modalAsignarPro');
+}
+
+function renderAssignWarnings() {
+  const box = document.getElementById('assignWarnings');
+  if (!box) return;
+  const citaId = document.getElementById('assignCitaId')?.value || '';
+  const proId = document.getElementById('assignProfessionalId')?.value || '';
+  const cita = teamAppointmentById(citaId);
+  const pro = byIdFrom(teamData.profesionales, 'id', proId) || byIdFrom(teamData.profesionales, 'ID', proId);
+  if (!cita || !proId) {
+    box.innerHTML = '<div class="team-alert danger"><strong>Falta información</strong>Selecciona un fisioterapeuta activo para validar la asignación.</div>';
+    return;
+  }
+  const conflicts = teamConflictAppointments(proId, cita);
+  const availability = teamAvailabilityIssues(pro, cita);
+  const warnings = [];
+  if (conflicts.length) {
+    warnings.push({
+      tone:'danger',
+      title:'Choque de horario',
+      body:`${pro?.nombre || 'El profesional'} ya tiene ${conflicts.length} cita${conflicts.length === 1 ? '' : 's'} a esa misma hora: ${conflicts.map(c => c.nombre || 'Paciente').join(', ')}.`
+    });
+  }
+  availability.forEach(issue => warnings.push({ tone:'', title:'Revisar antes de asignar', body:issue }));
+  box.innerHTML = warnings.length
+    ? warnings.map(w => `<div class="team-alert ${esc(w.tone)}"><strong>${esc(w.title)}</strong>${esc(w.body)}</div>`).join('')
+    : '<div class="team-alert ok"><strong>Asignación sin alertas visibles</strong>No encuentro choques de horario ni conflictos con la disponibilidad escrita.</div>';
 }
 
 async function saveAssignPro(options = {}) {
