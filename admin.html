@@ -5434,7 +5434,7 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
           <div id="equipoProfesionales" class="team-list"></div>
         </div>
         <div class="team-panel">
-          <h2>Citas por asignar</h2>
+          <h2>Próximas citas por asignar</h2>
           <div id="equipoPendientes" class="team-list"></div>
         </div>
       </div>
@@ -6078,8 +6078,10 @@ function renderEquipo() {
   const cuentas = teamData.cuentas || [];
   const citas = citasReales ? citasReales() : (allData.citas || []);
   const asignadas = new Set(assigns.map(a => String(a.CitaID || '')));
+  const hoyStr = today();
+  const estadosNoAsignables = ['Cancelada','Cancelada a tiempo','Cancelación tardía','Reprogramada','No asistió','Atendida','Sesión atendida','Reembolsada'];
   const pendientes = citas
-    .filter(c => !asignadas.has(String(c.id)) && !['Cancelada','Reprogramada','No asistió','Sesión atendida'].includes(c.estado))
+    .filter(c => !asignadas.has(String(c.id)) && normDate(c.fecha) >= hoyStr && !estadosNoAsignables.includes(c.estado))
     .sort((a,b) => (`${normDate(a.fecha)} ${a.hora||''}`).localeCompare(`${normDate(b.fecha)} ${b.hora||''}`))
     .slice(0, 12);
   const porPagar = cuentas.filter(c => (c.Estado || '') !== 'Pagada');
@@ -6123,7 +6125,7 @@ function renderEquipo() {
         <button class="btn btn-teal btn-sm" onclick="abrirAsignarPro('${esc(c.id)}')">Asignar / autorizar</button>
         <button class="btn btn-ghost btn-sm" onclick="verDetalle('${esc(c.id)}')">Ver cita</button>
       </div>
-    </div>`).join('') : '<div class="empty"><p>No hay citas pendientes por asignar.</p></div>';
+    </div>`).join('') : '<div class="empty"><p>No hay citas próximas pendientes por asignar.</p></div>';
 
   document.getElementById('equipoNovedades').innerHTML = novedades.length ? novedades.slice().reverse().slice(0, 10).map(n => `
     <div class="team-row">
