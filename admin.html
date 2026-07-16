@@ -6020,6 +6020,14 @@ const APPOINTMENT_STATUSES = [
   'Cancelada'
 ];
 
+// Desde esta fecha el administrador empieza “limpio” operativamente.
+// Lo anterior queda como historial, pero no alimenta tareas, cobros vencidos ni alertas pendientes.
+const ADMIN_OPERATIONS_START_DATE = '2026-07-16';
+function isOperationalDate(dateStr) {
+  const d = normDate(dateStr);
+  return !!d && d >= ADMIN_OPERATIONS_START_DATE;
+}
+
 function showOnlyScreen(screenId) {
   ['loginScreen','adminApp','proLoginScreen','proApp'].forEach(id => {
     const el = document.getElementById(id);
@@ -7096,11 +7104,12 @@ function renderCentroAcciones() {
   if (!list) return;
   const hoy = today();
   const citas = (allData.citas || []).filter(c => !esRegistroServ(c.servicio));
-  const citasHoy = citas.filter(c => normDate(c.fecha) === hoy && c.estado !== 'Cancelada' && c.estado !== 'Atendida');
-  const cobros = citas.filter(c => normDate(c.fecha) < hoy && c.estado !== 'Cancelada' && !isPagada(c.id));
+  const citasOperativas = citas.filter(c => isOperationalDate(c.fecha));
+  const citasHoy = citasOperativas.filter(c => normDate(c.fecha) === hoy && c.estado !== 'Cancelada' && c.estado !== 'Atendida');
+  const cobros = citasOperativas.filter(c => normDate(c.fecha) < hoy && c.estado !== 'Cancelada' && !isPagada(c.id));
 
   const pacientesMap = new Map();
-  citas.filter(c => c.estado !== 'Cancelada' && normDate(c.fecha) <= hoy).forEach(c => {
+  citasOperativas.filter(c => c.estado !== 'Cancelada' && normDate(c.fecha) <= hoy).forEach(c => {
     const key = _normStr(c.nombre);
     if (!key) return;
     const prev = pacientesMap.get(key);
@@ -7108,9 +7117,7 @@ function renderCentroAcciones() {
   });
   const inactivos = [...pacientesMap.values()].filter(c => _daysSince(c.fecha) >= 60);
 
-  const fuentePacientes = (allData.pacientes && allData.pacientes.length)
-    ? allData.pacientes
-    : [...pacientesMap.values()];
+  const fuentePacientes = [...pacientesMap.values()];
   const vistos = new Set();
   const incompletos = fuentePacientes.filter(p => {
     const key = _normStr(p.nombre); if (!key || vistos.has(key)) return false; vistos.add(key);
@@ -8256,9 +8263,10 @@ function appointmentHealth(c) {
   const hoy = today();
   if (c.estado === 'Cancelada') return { rowClass:'agenda-alert', badge:'Cancelada', tone:'danger' };
   if (c.estado === 'No asistió') return { rowClass:'agenda-alert', badge:'No asistió', tone:'danger' };
+  if (smartIsPaid(c) || c.estado === 'Atendida' || c.estado === 'Sesión atendida') return { rowClass:'agenda-ok', badge:smartIsPaid(c) ? 'Pagada' : 'Atendida', tone:'ok' };
+  if (f && f < ADMIN_OPERATIONS_START_DATE) return { rowClass:'', badge:'Histórico', tone:'info' };
   if (c.estado === 'Pendiente') return { rowClass:'agenda-warn', badge:'Confirmar', tone:'warn' };
   if (f < hoy && !smartIsPaid(c)) return { rowClass:'agenda-warn', badge:'Cobro pendiente', tone:'warn' };
-  if (smartIsPaid(c) || c.estado === 'Atendida') return { rowClass:'agenda-ok', badge:smartIsPaid(c) ? 'Pagada' : 'Atendida', tone:'ok' };
   if (f >= hoy && !smartIsPaid(c)) return { rowClass:'agenda-info', badge:'Programada', tone:'info' };
   return { rowClass:'', badge:'Revisar', tone:'info' };
 }
@@ -8278,6 +8286,7 @@ function smartAgendaFilter(kind) {
   } else if (kind === 'pendientes') {
     document.getElementById('fStatus').value = 'Pendiente';
   } else if (kind === 'vencidos') {
+    document.getElementById('fDesde').value = ADMIN_OPERATIONS_START_DATE;
     document.getElementById('fHasta').value = hoy;
   }
   renderAgenda();
@@ -8286,7 +8295,7 @@ function smartAgendaFilter(kind) {
 function smartBriefingData() {
   const hoy = today();
   const wk = smartWeekBounds();
-  const citas = citasReales().filter(smartIsActiveAppointment);
+  const citas = citasReales().filter(smartIsActiveAppointment).filter(c => isOperationalDate(c.fecha));
   const citasHoy = citas.filter(c => normDate(c.fecha) === hoy);
   const pendientesConfirmar = citas.filter(c => normDate(c.fecha) >= hoy && c.estado === 'Pendiente');
   const cobrosVencidos = citas.filter(c => normDate(c.fecha) < hoy && !smartIsPaid(c));
@@ -8402,7 +8411,7 @@ function renderSmartCobrosCenter() {
   const citas = citasReales().filter(smartIsActiveAppointment);
   const mesPend = citas.filter(c => {
     const [cy,cm] = normDate(c.fecha).split('-').map(Number);
-    return cy === y && cm === m && !smartIsPaid(c);
+    return cy === y && cm === m && isOperationalDate(c.fecha) && !smartIsPaid(c);
   });
   const totalMes = mesPend.reduce((s,c)=>s+parsePrecio(c.precio),0);
   const prioridad = [...d.cobrosVencidos, ...d.porCobrarSemana]
@@ -16630,6 +16639,7 @@ function generarTareas() {
     if (!ft) return;
     const fSesion = normDate(c.fecha);
     if (!fSesion) return;
+    if (fSesion < ADMIN_OPERATIONS_START_DATE) return;
     const diasDiff = Math.round((hoy - new Date(fSesion+'T12:00:00')) / 86400000);
     if (diasDiff < ft.diasDelay) return;
     const key = fSesion+'_'+(c.nombre||'')+'_'+ft.tipo;
