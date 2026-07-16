@@ -127,6 +127,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 .team-panel h2{font-family:var(--font-h);font-size:1.35rem;margin-bottom:10px}
 .team-list{display:grid;gap:10px}
 .team-card{padding:14px}
+.team-card.clickable{cursor:pointer;transition:var(--tr)}
+.team-card.clickable:hover,.team-card.clickable:focus{
+  border-color:var(--primary);box-shadow:0 18px 50px rgba(27,191,176,.18);outline:none
+}
+.team-card-hint{margin-top:7px;color:var(--primary-h);font-size:.78rem;font-weight:700}
 .team-card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .team-card h3{font-size:1rem;margin-bottom:4px}
 .team-muted{color:var(--muted);font-size:.84rem;line-height:1.45}
@@ -5531,6 +5536,17 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
       </div>
     </div>
 
+    <div id="modalProAgendaAdmin" class="modal-bg" onclick="if(event.target===this)closeModal('modalProAgendaAdmin')">
+      <div class="modal" style="max-width:720px">
+        <h2 class="modal-title" id="proAgendaAdminTitle">Citas asignadas</h2>
+        <div id="proAgendaAdminSummary" class="team-muted" style="margin-bottom:12px"></div>
+        <div id="proAgendaAdminContent" class="team-list"></div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" onclick="closeModal('modalProAgendaAdmin')">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
     <div id="modalProIssue" class="modal-bg" onclick="if(event.target===this)closeModal('modalProIssue')">
       <div class="modal">
         <h2 class="modal-title">Reportar novedad</h2>
@@ -6100,8 +6116,10 @@ function renderEquipo() {
     ['Cuentas por pagar', porPagar.length]
   ].map(([label,val]) => `<div class="team-stat"><small>${esc(label)}</small><strong>${esc(val)}</strong></div>`).join('');
 
-  document.getElementById('equipoProfesionales').innerHTML = pros.length ? pros.map(p => `
-    <div class="team-card">
+  document.getElementById('equipoProfesionales').innerHTML = pros.length ? pros.map(p => {
+    const citasAsignadas = assigns.filter(a => String(a.ProfesionalID || '') === String(p.id)).length;
+    return `
+    <div class="team-card clickable" role="button" tabindex="0" title="Ver citas asignadas" onclick="openProfessionalSchedule('${esc(p.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProfessionalSchedule('${esc(p.id)}')}">
       <div class="team-card-head">
         <div>
           <h3>${esc(p.nombre)}</h3>
@@ -6111,13 +6129,15 @@ function renderEquipo() {
       </div>
       <div class="team-muted" style="margin-top:8px"><strong>Servicios:</strong> ${esc(p.servicios || 'Sin definir')}</div>
       <div class="team-muted"><strong>Disponibilidad:</strong> ${esc(p.disponibilidad || 'Sin definir')}</div>
+      <div class="team-card-hint">Ver agenda asignada · ${esc(citasAsignadas)} cita${citasAsignadas === 1 ? '' : 's'}</div>
       <div class="team-card-actions">
-        <button class="btn btn-ghost btn-sm" onclick="openProfessionalForm('${esc(p.id)}')">Editar</button>
-        <button class="btn btn-ghost btn-sm" onclick="resetProPassword('${esc(p.id)}')">Reset clave</button>
-        <button class="btn ${(p.estado || '') === 'Activo' ? 'btn-danger' : 'btn-teal'} btn-sm" onclick="togglePro('${esc(p.id)}','${(p.estado || '') === 'Activo' ? 'Inactivo' : 'Activo'}')">${(p.estado || '') === 'Activo' ? 'Desactivar' : 'Activar'}</button>
-        <button class="btn btn-danger btn-sm" onclick="deletePro('${esc(p.id)}','${esc(p.nombre)}')">Eliminar</button>
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openProfessionalForm('${esc(p.id)}')">Editar</button>
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();resetProPassword('${esc(p.id)}')">Reset clave</button>
+        <button class="btn ${(p.estado || '') === 'Activo' ? 'btn-danger' : 'btn-teal'} btn-sm" onclick="event.stopPropagation();togglePro('${esc(p.id)}','${(p.estado || '') === 'Activo' ? 'Inactivo' : 'Activo'}')">${(p.estado || '') === 'Activo' ? 'Desactivar' : 'Activar'}</button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deletePro('${esc(p.id)}','${esc(p.nombre)}')">Eliminar</button>
       </div>
-    </div>`).join('') : '<div class="empty"><p>No hay fisioterapeutas creados aún.</p></div>';
+    </div>`;
+  }).join('') : '<div class="empty"><p>No hay fisioterapeutas creados aún.</p></div>';
 
   document.getElementById('equipoPendientes').innerHTML = pendientes.length ? pendientes.map(c => `
     <div class="team-card">
@@ -6151,6 +6171,45 @@ function renderEquipo() {
       </div>
       ${(c.Estado || '') === 'Pagada' ? '<span class="team-pill ok">Pagada</span>' : `<button class="btn btn-teal btn-sm" onclick="markPayablePaid('${esc(c.ID)}')">Marcar pagada</button>`}
     </div>`).join('') : '<div class="empty"><p>Aún no hay cuentas por pagar generadas.</p></div>';
+}
+
+function openProfessionalSchedule(id) {
+  const pro = byIdFrom(teamData.profesionales, 'id', id) || byIdFrom(teamData.profesionales, 'ID', id);
+  if (!pro) return toast('No encontré el fisioterapeuta', 'err');
+  const assignments = (teamData.asignaciones || []).filter(a => String(a.ProfesionalID || '') === String(id));
+  const citas = assignments
+    .map(a => {
+      const c = (allData.citas || []).find(x => String(x.id || x.ID || '') === String(a.CitaID || ''));
+      return c ? { ...c, _assignment: a } : null;
+    })
+    .filter(Boolean)
+    .filter(c => isOperationalDate(c.fecha))
+    .sort((a,b) => (`${normDate(a.fecha)} ${a.hora || ''}`).localeCompare(`${normDate(b.fecha)} ${b.hora || ''}`));
+  const hoyStr = today();
+  const proximas = citas.filter(c => normDate(c.fecha) >= hoyStr);
+  const anteriores = citas.filter(c => normDate(c.fecha) < hoyStr);
+  const ordered = [...proximas, ...anteriores];
+
+  document.getElementById('proAgendaAdminTitle').textContent = `${pro.nombre || 'Fisioterapeuta'} · Agenda asignada`;
+  document.getElementById('proAgendaAdminSummary').textContent = ordered.length
+    ? `${ordered.length} cita${ordered.length === 1 ? '' : 's'} asignada${ordered.length === 1 ? '' : 's'} desde el inicio operativo del administrador.`
+    : 'Este profesional todavía no tiene citas asignadas desde hoy.';
+  document.getElementById('proAgendaAdminContent').innerHTML = ordered.length ? ordered.map(c => {
+    const fecha = normDate(c.fecha);
+    const statusPill = fecha === hoyStr ? '<span class="team-pill info">Hoy</span>' : (fecha > hoyStr ? '<span class="team-pill ok">Próxima</span>' : '<span class="team-pill">Anterior</span>');
+    return `
+      <div class="team-row">
+        <div>
+          <strong>${esc(c.nombre || 'Paciente')}</strong>
+          <small>${esc(fmtDate(c.fecha))} · ${esc(c.hora || 'Sin hora')} · ${esc(c.servicio || 'Servicio sin definir')} · ${esc(c.estado || 'Sin estado')}</small>
+        </div>
+        <div class="team-card-actions" style="margin-top:0;justify-content:flex-end">
+          ${statusPill}
+          <button class="btn btn-ghost btn-sm" onclick="closeModal('modalProAgendaAdmin');verDetalle('${esc(c.id || c.ID)}')">Ver cita</button>
+        </div>
+      </div>`;
+  }).join('') : '<div class="empty"><p>No hay citas asignadas para mostrar.</p></div>';
+  openModal('modalProAgendaAdmin');
 }
 
 function openProfessionalForm(id='') {
@@ -6252,7 +6311,8 @@ function abrirAsignarPro(citaId) {
   openModal('modalAsignarPro');
 }
 
-async function saveAssignPro() {
+async function saveAssignPro(options = {}) {
+  const { closeOnSuccess = true } = options;
   const params = new URLSearchParams({
     action:'assignProfessional',
     token:TOKEN,
@@ -6262,13 +6322,20 @@ async function saveAssignPro() {
     override:document.getElementById('assignOverride').value
   });
   const d = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`).then(r => r.json());
-  if (d.ok) { await loadTeamData(); renderEquipo(); renderAgenda(true); toast('Cita asignada'); return true; }
+  if (d.ok) {
+    await loadTeamData();
+    renderEquipo();
+    renderAgenda(true);
+    if (closeOnSuccess) closeModal('modalAsignarPro');
+    toast('Cita asignada');
+    return true;
+  }
   toast(d.error || 'No se pudo asignar', 'err');
   return false;
 }
 
 async function authorizeAssignPro() {
-  const assigned = await saveAssignPro();
+  const assigned = await saveAssignPro({ closeOnSuccess:false });
   if (!assigned) return;
   const params = new URLSearchParams({
     action:'authorizeAppointment',
