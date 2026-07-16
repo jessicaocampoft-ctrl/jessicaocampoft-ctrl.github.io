@@ -3490,6 +3490,11 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
               <input id="payComprobante" type="text" placeholder="Referencia, enlace privado o nota del comprobante">
             </div>
             <div class="field" style="grid-column:1/-1">
+              <label>Archivo de comprobante (JPG, PNG o PDF)</label>
+              <input id="payProofFile" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf">
+              <small style="display:block;margin-top:6px;color:var(--muted)">Máximo 8 MB. Solo lo ve administración; no aparece en el portal del fisioterapeuta.</small>
+            </div>
+            <div class="field" style="grid-column:1/-1">
               <label>Observaciones</label>
               <textarea id="payObservaciones" rows="2" placeholder="Ej: comprobante recibido por WhatsApp, pendiente validar banco"></textarea>
             </div>
@@ -3509,6 +3514,10 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
       <div class="team-grid" style="margin-top:16px">
         <div class="team-panel">
           <h2>Pagos registrados</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <button class="btn btn-ghost btn-sm" onclick="exportPaymentsCSV()">Exportar pagos CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportOperationsAuditCSV()">Exportar auditoría CSV</button>
+          </div>
           <div id="paymentsList" class="team-list"></div>
         </div>
         <div class="team-panel">
@@ -6685,7 +6694,7 @@ function prefillPaymentFromAppointment() {
 }
 
 function clearPaymentForm() {
-  ['payValorRecibido','payFechaPago','payComprobante','payObservaciones'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['payValorRecibido','payFechaPago','payComprobante','payObservaciones','payProofFile'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const c = document.getElementById('payCitaId'); if (c) c.value = '';
 }
 
@@ -6704,6 +6713,8 @@ async function saveManualPayment() {
   const c = (allData.citas || []).find(x => String(x.id) === String(citaId));
   const medioEl = document.getElementById('payMedioPago');
   const accountId = medioEl?.selectedOptions?.[0]?.dataset?.account || '';
+  const proofFile = await readPaymentProofFile();
+  if (proofFile?.error) return toast(proofFile.error, 'err');
   const payload = {
     citaId,
     cliente: c?.nombre || '',
@@ -6715,9 +6726,13 @@ async function saveManualPayment() {
     fechaPago: document.getElementById('payFechaPago').value || today(),
     comprobante: document.getElementById('payComprobante').value.trim(),
     estadoPago: 'Por verificar',
-    observaciones: document.getElementById('payObservaciones').value.trim()
+    observaciones: document.getElementById('payObservaciones').value.trim(),
+    proofFile: proofFile || null
   };
-  const d = await fetch(`${APPS_SCRIPT_URL}?action=savePayment&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(payload))}`).then(r => r.json());
+  const d = await fetch(APPS_SCRIPT_URL, {
+    method:'POST',
+    body:JSON.stringify({action:'savePayment', token:TOKEN, data:payload})
+  }).then(r => r.json());
   if (d.ok) {
     toast('Pago registrado para verificar');
     clearPaymentForm();
@@ -6726,6 +6741,21 @@ async function saveManualPayment() {
     renderPagos();
     renderAgenda(true);
   } else toast(d.error || 'No se pudo registrar', 'err');
+}
+
+function readPaymentProofFile() {
+  const input = document.getElementById('payProofFile');
+  const file = input?.files?.[0];
+  if (!file) return Promise.resolve(null);
+  const allowed = ['image/jpeg','image/png','application/pdf'];
+  if (!allowed.includes(file.type)) return Promise.resolve({error:'El comprobante debe ser JPG, PNG o PDF'});
+  if (file.size > 8 * 1024 * 1024) return Promise.resolve({error:'El comprobante supera 8 MB'});
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({name:file.name, type:file.type, size:file.size, data:reader.result});
+    reader.onerror = () => resolve({error:'No pude leer el archivo del comprobante'});
+    reader.readAsDataURL(file);
+  });
 }
 
 async function verifyPayment(id, status) {
@@ -6773,7 +6803,7 @@ function renderPagos() {
         <span class="team-pill ${tone}">${esc(p.EstadoPago || 'Pendiente')}</span>
       </div>
       <div class="team-muted" style="margin-top:8px">Medio: ${esc(p.MedioPago || '')} · Cuenta: ${esc(paymentAccountLabel(p.CuentaReceptora))}</div>
-      ${p.Comprobante ? `<div class="team-muted">Comprobante/ref: ${esc(p.Comprobante)}</div>` : ''}
+      ${p.Comprobante ? `<div class="team-muted">Comprobante/ref: ${String(p.Comprobante).startsWith('http') ? `<a href="${esc(p.Comprobante)}" target="_blank" rel="noopener">Ver comprobante</a>` : esc(p.Comprobante)}</div>` : ''}
       ${p.Observaciones ? `<div class="team-muted">Obs: ${esc(p.Observaciones)}</div>` : ''}
       <div class="team-card-actions">
         ${(p.EstadoPago || '') !== 'Aprobado' ? `<button class="btn btn-teal btn-sm" onclick="verifyPayment('${esc(p.ID)}','Aprobado')">Aprobar</button>` : ''}
@@ -6784,6 +6814,8 @@ function renderPagos() {
   }).join('') : '<div class="empty"><p>No hay pagos registrados aún.</p></div>';
 
   const planTemplates = operationsData.plantillasPlanes || [];
+  const clientPlans = operationsData.planesCliente || [];
+  const settlements = operationsData.liquidaciones || [];
   const history = operationsData.historialEstados || [];
   document.getElementById('plansAuditList').innerHTML = `
     <div class="team-card">
@@ -6791,9 +6823,44 @@ function renderPagos() {
       <div class="team-muted">${planTemplates.length ? planTemplates.map(p => `${esc(p.Nombre)} · ${esc(p.SesionesTotales)} sesiones · ${formatPrecio(parsePrecio(p.PrecioTotal || 0))}`).join('<br>') : 'No hay plantillas creadas.'}</div>
     </div>
     <div class="team-card">
+      <h3>Planes de clientes</h3>
+      <div class="team-muted">${clientPlans.length ? clientPlans.slice(0, 8).map(p => `${esc(p.Cliente)} · ${esc(p.NombrePlan)} · ${esc(p.Estado)} · saldo ${formatPrecio(parsePrecio(p.SaldoPendiente || 0))}`).join('<br>') : 'Aún no hay planes asignados a clientes.'}</div>
+    </div>
+    <div class="team-card">
+      <h3>Liquidaciones profesionales</h3>
+      <div class="team-muted">${settlements.length ? settlements.slice(0, 8).map(l => `${esc(l.ProfesionalID)} · ${esc(l.Periodo)} · ${esc(l.Sesiones)} sesiones · ${formatPrecio(parsePrecio(l.Total || 0))} · ${esc(l.Estado)}`).join('<br>') : 'Aún no hay sesiones liquidadas.'}</div>
+    </div>
+    <div class="team-card">
       <h3>Últimos cambios de estado</h3>
       <div class="team-muted">${history.length ? history.slice(0, 8).map(h => `${esc(h.CodigoReserva)} · ${esc(h.EstadoAnterior)} → ${esc(h.EstadoNuevo)}`).join('<br>') : 'Aún no hay historial nuevo.'}</div>
     </div>`;
+}
+
+function downloadOperationsCSV(filename, rows) {
+  const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 800);
+}
+
+function exportPaymentsCSV() {
+  const rows = [['ID','Código reserva','Cita','Cliente','Servicio/plan','Valor esperado','Valor recibido','Medio','Cuenta','Fecha pago','Fecha verificación','Estado','Verificó','Observaciones']];
+  (operationsData.pagos || []).forEach(p => rows.push([
+    p.ID, p.CodigoReserva, p.CitaID, p.Cliente, p.ServicioPlan, p.ValorEsperado, p.ValorRecibido,
+    p.MedioPago, paymentAccountLabel(p.CuentaReceptora), p.FechaPago, p.FechaVerificacion, p.EstadoPago, p.UsuarioVerifico, p.Observaciones
+  ]));
+  downloadOperationsCSV(`pagos_operativos_${today()}.csv`, rows);
+}
+
+function exportOperationsAuditCSV() {
+  const rows = [['ID','Fecha','Usuario','Rol','Acción','Entidad','ID entidad','Antes','Después','Motivo']];
+  (operationsData.auditoria || []).forEach(a => rows.push([
+    a.ID, a.Fecha, a.UsuarioNombre, a.Rol, a.Accion, a.Entidad, a.EntidadID, a.ValorAnterior, a.ValorNuevo, a.Motivo
+  ]));
+  downloadOperationsCSV(`auditoria_operativa_${today()}.csv`, rows);
 }
 
 function openProfessionalLoginMode() {

@@ -217,6 +217,14 @@ function doPost(e) {
       PropertiesService.getScriptProperties().setProperty('ADMIN_TOKEN', d.newPassword);
       return js({ok: true});
     }
+    if (d.action === 'savePayment') {
+      if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+      return js(savePayment_(d.data || {}, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+    }
+    if (d.action === 'verifyPayment') {
+      if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+      return js(verifyPayment_(d, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+    }
     if (d.action === 'generateEval') {
       if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
       return js(generateEvalReport(d.data, d.photos || {}));
@@ -1152,6 +1160,10 @@ function professionalMarkAttended_(token, citaId) {
     }
   }
   ensurePayableForAppointment_(sess.id, citaId, found.cita.servicio, assignment.tarifa);
+  try {
+    recordAppointmentStatusHistory_(citaId, prev, attendedStatus, {id:sess.id, nombre:sess.nombre, rol:'Fisioterapeuta'}, 'Sesion atendida desde portal profesional');
+    upsertProfessionalSettlement_(sess.id, citaId, found.cita.servicio, assignment.tarifa, new Date(), {id:sess.id, nombre:sess.nombre, rol:'Fisioterapeuta'});
+  } catch(e) {}
   auditTeam_(sess, 'Marco sesion como atendida', citaId, prev, attendedStatus, 'Accion realizada desde portal profesional');
   try { GmailApp.sendEmail(JESSICA_EMAIL, attendedStatus + ': ' + found.cita.nombre, sess.nombre + ' marco como atendida la cita ' + citaId + ' de ' + found.cita.nombre + '.'); } catch(e) {}
   return {ok:true};
@@ -1170,7 +1182,7 @@ function professionalReportIssue_(token, citaId, tipo, observacion) {
   return {ok:true,id:id};
 }
 function saveProfessional_(data) {
-  var p = JSON.parse(decodeURIComponent(data || '{}'));
+  var p = parseOperationsPayload_(data);
   if (!p.nombre || !p.usuario) return {ok:false,error:'Nombre y usuario son obligatorios'};
   var sh = teamSheet_('Profesionales'), rows = sh.getDataRange().getValues(), now = new Date(), tempPassword = '';
   if (p.id) {
@@ -1319,7 +1331,7 @@ function operationsSheet_(name) {
     ConfiguracionOperativa: ['Clave','Valor','Descripcion','Actualizado'],
     HistorialEstadosCita: ['ID','CitaID','CodigoReserva','EstadoAnterior','EstadoNuevo','Fecha','UsuarioID','UsuarioNombre','Rol','Observacion'],
     Pagos: ['ID','CodigoReserva','CitaID','Cliente','ServicioPlan','ValorEsperado','ValorRecibido','MedioPago','CuentaReceptora','FechaPago','FechaVerificacion','Comprobante','EstadoPago','UsuarioVerifico','Observaciones','CuotaNumero','SaldoPendiente','Creado','Actualizado'],
-    ComprobantesPago: ['ID','PagoID','CodigoReserva','CitaID','NombreArchivo','TipoArchivo','Tamano','DriveFileID','Estado','Creado','Observaciones'],
+    ComprobantesPago: ['ID','PagoID','CodigoReserva','CitaID','NombreArchivo','TipoArchivo','Tamano','DriveFileID','Estado','Creado','Observaciones','Hash'],
     PlantillasPlanes: ['ID','Nombre','Descripcion','SesionesTotales','PrecioIndividual','PrecioTotal','PrecioSesionPlan','Descuento','NumeroCuotas','CuotasJSON','SesionesPorCuotaJSON','VigenciaDias','ServiciosIncluidos','Estado','Actualizado'],
     PlanesCliente: ['ID','Cliente','Telefono','Email','PlantillaID','NombrePlan','CitaOrigenID','SesionesTotales','SesionesPagadas','SesionesUsadas','SesionesDisponibles','SaldoPendiente','ProximaCuota','Vence','ProfesionalID','Estado','Creado','Actualizado'],
     CuotasPlan: ['ID','PlanClienteID','NumeroCuota','Valor','Estado','FechaPago','PagoID','SesionesHabilitadas','Vence','Observaciones'],
@@ -1332,6 +1344,15 @@ function operationsSheet_(name) {
   if (!sh) {
     sh = ss.insertSheet(name);
     sh.getRange(1, 1, 1, headers[name].length).setValues([headers[name]]);
+  } else if (headers[name]) {
+    var lastCol = Math.max(sh.getLastColumn(), 1);
+    var current = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h) { return '' + (h || ''); });
+    headers[name].forEach(function(h) {
+      if (current.indexOf(h) === -1) {
+        sh.getRange(1, sh.getLastColumn() + 1).setValue(h);
+        current.push(h);
+      }
+    });
   }
   return sh;
 }
@@ -1455,13 +1476,115 @@ function doUpdateStatus(p) {
   return {ok: false, error: 'Cita no encontrada'};
 }
 
+function parseOperationsPayload_(data) {
+  if (!data) return {};
+  if (typeof data === 'object') return data;
+  try {
+    return JSON.parse(decodeURIComponent(data));
+  } catch(e1) {
+    try { return JSON.parse(data); } catch(e2) { return {}; }
+  }
+}
+
+function operationConfigValue_(key, fallback) {
+  var rows = operationsSheet_('ConfiguracionOperativa').getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][0] === key) return rows[i][1] || fallback;
+  }
+  return fallback;
+}
+
+function paymentProofFolder_() {
+  var name = 'Comprobantes Cuidandote Fisioterapia';
+  var folders = DriveApp.getFoldersByName(name);
+  if (folders.hasNext()) return folders.next();
+  return DriveApp.createFolder(name);
+}
+
+function hexDigest_(bytes) {
+  return bytes.map(function(b) {
+    var v = (b < 0 ? b + 256 : b).toString(16);
+    return v.length === 1 ? '0' + v : v;
+  }).join('');
+}
+
+function savePaymentProof_(file, meta, user) {
+  if (!file || !file.data) return null;
+  var allowed = {'image/jpeg': true, 'image/png': true, 'application/pdf': true};
+  var mime = '' + (file.type || '');
+  var name = ('' + (file.name || 'comprobante')).replace(/[\\\/:*?"<>|]/g, '-');
+  if (!allowed[mime]) return {ok:false,error:'El comprobante debe ser JPG, PNG o PDF'};
+
+  var raw = '' + file.data;
+  var comma = raw.indexOf(',');
+  if (comma > -1) raw = raw.slice(comma + 1);
+  var bytes;
+  try {
+    bytes = Utilities.base64Decode(raw);
+  } catch(e) {
+    return {ok:false,error:'No se pudo leer el comprobante. Intenta subirlo de nuevo.'};
+  }
+  var maxMb = Number(operationConfigValue_('comprobantes_max_mb', '8')) || 8;
+  if (bytes.length > maxMb * 1024 * 1024) return {ok:false,error:'El comprobante supera el tamaño máximo de ' + maxMb + ' MB'};
+
+  var digest = hexDigest_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, bytes));
+  var proofSh = operationsSheet_('ComprobantesPago');
+  var proofRows = proofSh.getDataRange().getValues();
+  for (var i = 1; i < proofRows.length; i++) {
+    var sameHash = ('' + (proofRows[i][11] || '')) === digest;
+    var sameCita = ('' + (proofRows[i][3] || '')) === ('' + (meta.citaId || ''));
+    if (sameHash && sameCita) return {ok:false,error:'Este comprobante ya fue registrado para esta cita'};
+  }
+
+  var driveFile = paymentProofFolder_().createFile(Utilities.newBlob(bytes, mime, name)).setName((meta.codigoReserva || meta.pagoId || 'comprobante') + ' - ' + name);
+  try { driveFile.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE); } catch(e) {}
+
+  var proofId = 'PRF-' + new Date().getTime() + '-' + Math.floor(Math.random() * 999);
+  proofSh.appendRow([
+    proofId, meta.pagoId || '', meta.codigoReserva || '', meta.citaId || '',
+    name, mime, bytes.length, driveFile.getId(), 'Recibido', new Date(),
+    meta.observaciones || '', digest
+  ]);
+  auditGeneral_(user, 'Cargo comprobante de pago', 'ComprobantePago', proofId, '', {pagoId:meta.pagoId, citaId:meta.citaId, archivo:name}, '');
+  return {ok:true,id:proofId,fileId:driveFile.getId(),url:driveFile.getUrl(),hash:digest};
+}
+
+function upsertProfessionalSettlement_(professionalId, citaId, servicio, tarifa, attendedAt, user) {
+  setupOperationsModule_();
+  if (!professionalId || !citaId) return;
+  var period = Utilities.formatDate(attendedAt || new Date(), 'America/Bogota', 'yyyy-MM');
+  var value = Number(('' + (tarifa || '')).replace(/[^\d.-]/g, '')) || 0;
+  var sh = operationsSheet_('LiquidacionesProfesionales'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][1] === '' + professionalId && '' + rows[i][2] === period && ['Pendiente de liquidacion','Pendiente de liquidación',''].indexOf('' + (rows[i][5] || '')) > -1) {
+      var sessions = Number(rows[i][3] || 0) + 1;
+      var total = Number(rows[i][4] || 0) + value;
+      var obs = (rows[i][8] ? rows[i][8] + '\n' : '') + citaId + ' · ' + (servicio || '') + ' · ' + value;
+      sh.getRange(i + 1, 4, 1, 6).setValues([[sessions, total, 'Pendiente de liquidacion', rows[i][6] || new Date(), rows[i][7] || '', obs]]);
+      auditGeneral_(user, 'Actualizo liquidacion profesional', 'LiquidacionProfesional', rows[i][0], '', {periodo:period, sesiones:sessions, total:total}, citaId);
+      return;
+    }
+  }
+  var id = 'LIQ-' + new Date().getTime() + '-' + Math.floor(Math.random() * 999);
+  sh.appendRow([id, professionalId, period, 1, value, 'Pendiente de liquidacion', new Date(), '', citaId + ' · ' + (servicio || '') + ' · ' + value]);
+  auditGeneral_(user, 'Creo liquidacion profesional', 'LiquidacionProfesional', id, '', {periodo:period, sesiones:1, total:value}, citaId);
+}
+
 function savePayment_(data, user) {
   setupOperationsModule_();
-  var p = JSON.parse(decodeURIComponent(data || '{}'));
+  var p = parseOperationsPayload_(data);
   if (!p.citaId && !p.codigoReserva) return {ok:false,error:'Falta cita o código de reserva'};
   var found = p.citaId ? getCitaById_(p.citaId) : null;
   var code = p.codigoReserva || (found ? reservationCodeFor_(p.citaId, found.cita.fecha) : reservationCodeFor_(''));
   var id = p.id || ('PAY-' + new Date().getTime());
+  var proofResult = p.proofFile ? savePaymentProof_(p.proofFile, {
+    pagoId: id,
+    codigoReserva: code,
+    citaId: p.citaId || '',
+    observaciones: p.observaciones || ''
+  }, user) : null;
+  if (proofResult && !proofResult.ok) return proofResult;
+  if (proofResult && proofResult.url && !p.comprobante) p.comprobante = proofResult.url;
   var sh = operationsSheet_('Pagos'), rows = sh.getDataRange().getValues(), row = -1;
   for (var i = 1; i < rows.length; i++) if ('' + rows[i][0] === id) row = i + 1;
   var expected = p.valorEsperado || (found ? found.cita.precio : '');
