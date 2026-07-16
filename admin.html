@@ -5508,7 +5508,6 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
             <label>Fisioterapeuta</label>
             <select id="assignProfessionalId"></select>
           </div>
-          <div class="field"><label>Tarifa a pagar</label><input type="number" id="assignTarifa" placeholder="Ej: 50000"></div>
           <div class="field">
             <label>Permitir marcar antes de hora</label>
             <select id="assignOverride">
@@ -6248,7 +6247,6 @@ function abrirAsignarPro(citaId) {
     <div class="team-muted">${esc(fmtDate(c.fecha))} · ${esc(c.hora)} · ${esc(c.servicio)} · Estado: ${esc(c.estado)}</div>
     <div class="team-muted">Asignado actual: ${esc(professionalName(a.ProfesionalID))}</div>`;
   document.getElementById('assignProfessionalId').innerHTML = activeProfessionals().map(p => `<option value="${esc(p.id)}" ${a.ProfesionalID === p.id ? 'selected' : ''}>${esc(p.nombre)} · ${esc(p.rol || 'Fisioterapeuta')}</option>`).join('');
-  document.getElementById('assignTarifa').value = a.Tarifa || '';
   document.getElementById('assignOverride').value = a.OverrideAtencion === 'SI' ? '1' : '';
   document.getElementById('assignExcepcion').value = '';
   openModal('modalAsignarPro');
@@ -6260,7 +6258,7 @@ async function saveAssignPro() {
     token:TOKEN,
     citaId:document.getElementById('assignCitaId').value,
     profesionalId:document.getElementById('assignProfessionalId').value,
-    tarifa:document.getElementById('assignTarifa').value,
+    tarifa:'',
     override:document.getElementById('assignOverride').value
   });
   const d = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`).then(r => r.json());
