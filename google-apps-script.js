@@ -96,7 +96,7 @@ function doGet(e) {
   }
 
   if (p.action === 'availability' && p.date) {
-    return js(getAvailability(p.date, p.service));
+    return js(getAvailability(p.date, p.service, p.modality));
   }
 
   // Pasaporte — lectura pública (sin token)
@@ -396,10 +396,55 @@ function isMidnightBookingTime_(time) {
 // -------------------------------------------------------------
 //  DISPONIBILIDAD — lee Sheets + Calendario UNA sola vez
 // -------------------------------------------------------------
-function getAvailability(date, service) {
-  var SLOTS = ['07:00','08:00','09:00','10:00','11:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
+function minutesFromTime_(time) {
+  var t = ('' + time).split(':');
+  return (parseInt(t[0], 10) || 0) * 60 + (parseInt(t[1], 10) || 0);
+}
+
+function timeFromMinutes_(mins) {
+  var h = Math.floor(mins / 60), m = mins % 60;
+  return pad(h) + ':' + pad(m);
+}
+
+function publicScheduleRanges_(date) {
+  var dp = date.split('-');
+  var d = new Date(+dp[0], +dp[1]-1, +dp[2], 0, 0, 0);
+  var ranges = {
+    0: [],
+    1: [['08:00','16:30']],
+    2: [['08:00','17:00']],
+    3: [['08:00','17:00']],
+    4: [['08:00','20:00']],
+    5: [['08:00','20:00']],
+    6: [['07:00','09:30'], ['14:00','18:00']]
+  };
+  return ranges[d.getDay()] || [];
+}
+
+function publicCandidateSlots_(date, durationMins) {
+  var out = [];
+  publicScheduleRanges_(date).forEach(function(range) {
+    var start = minutesFromTime_(range[0]);
+    var close = minutesFromTime_(range[1]);
+    for (var mins = start; mins + durationMins <= close; mins += 60) {
+      out.push(timeFromMinutes_(mins));
+    }
+  });
+  return out;
+}
+
+function fitsPublicSchedule_(date, time, durationMins) {
+  var start = minutesFromTime_(time);
+  var end = start + durationMins;
+  return publicScheduleRanges_(date).some(function(range) {
+    return start >= minutesFromTime_(range[0]) && end <= minutesFromTime_(range[1]);
+  });
+}
+
+function getAvailability(date, service, modality) {
+  var SLOTS = publicCandidateSlots_(date, getServiceDuration(service) + (modality === 'Domicilio' ? 30 : 0));
   var result = {};
-  var newDur = getServiceDuration(service); // duración del servicio que quiere agendar
+  var newDur = getServiceDuration(service) + (modality === 'Domicilio' ? 30 : 0); // duración real del servicio que quiere agendar
 
   // Leer Sheets una sola vez
   var ss    = getOrCreateSheet();
@@ -447,13 +492,16 @@ function getAvailability(date, service) {
     result[s] = ok;
   });
 
-  return {ok: true, date: date, slots: result};
+  return {ok: true, date: date, service: service || '', modality: modality || '', duration: newDur, slots: result};
 }
 
 function checkAvailability(date, time, modality, service) {
   var start = parseDT(date, time);
   var mins  = getServiceDuration(service) + (modality === 'Domicilio' ? 30 : 0);
   var end   = new Date(start.getTime() + mins * 60000);
+  if (!fitsPublicSchedule_(date, time, mins)) {
+    return {available: false, reason: 'Ese horario no alcanza para la duracion del servicio. Por favor elige otro.'};
+  }
 
   // 1. Google Calendar — bloquear solo eventos personales (no [CITA])
   try {

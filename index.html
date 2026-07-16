@@ -2616,6 +2616,8 @@
       document.getElementById('modD').classList.toggle('active', m === 'Domicilio');
       document.getElementById('addressWrap').style.display = m === 'Domicilio' ? 'block' : 'none';
       document.getElementById('dominotice').style.display = m === 'Domicilio' ? 'block' : 'none';
+      bk.time = '';
+      if (bk.date) loadAvailability(bk.date);
       checkStep3();
     }
 
@@ -2653,21 +2655,7 @@
         return false;
       }
 
-      const pad2 = n => String(n).padStart(2,'0');
-      const slots = [];
-      ranges.forEach(({from, to}) => {
-        let [h, m] = from.split(':').map(Number);
-        const [th, tm] = to.split(':').map(Number);
-        while (h * 60 + m <= th * 60 + tm) {
-          slots.push(pad2(h) + ':' + pad2(m));
-          m += 30;
-          if (m >= 60) { h++; m -= 60; }
-        }
-      });
-
-      grid.innerHTML = slots.map(s =>
-        `<span class="bk-time">${s}</span>`
-      ).join('');
+      grid.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;margin:0">Consultando horarios que caben completos para este servicio...</p>';
       return true;
     }
 
@@ -2694,13 +2682,33 @@
         t.classList.remove('selected','taken','checking');
       });
 
-      fetch(APPS_SCRIPT_URL + '?action=availability&date=' + date + '&service=' + encodeURIComponent(bk.service || ''))
+      fetch(APPS_SCRIPT_URL + '?action=availability&date=' + date + '&service=' + encodeURIComponent(bk.service || '') + '&modality=' + encodeURIComponent(bk.modality || 'Presencial'))
         .then(r => r.json())
         .then(data => { applyAvailability(data.slots || {}); })
-        .catch(() => {}); // Si falla el API, todos los slots quedan disponibles
+        .catch(() => {
+          document.getElementById('timeGrid').innerHTML = '<p style="color:#f87171;font-size:.85rem;grid-column:1/-1;margin:0">No se pudo consultar disponibilidad. Intenta de nuevo o escríbenos por WhatsApp.</p>';
+        });
     }
 
     function applyAvailability(slots) {
+      const __entries = Object.entries(slots || {}).sort(([a],[b]) => a.localeCompare(b));
+      const __grid = document.getElementById('timeGrid');
+      const __msg = document.getElementById('bkAvailMsg');
+      const __available = __entries.filter(([,libre]) => libre).length;
+      if (!__entries.length) {
+        __grid.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;margin:0">No hay horarios donde este servicio quepa completo en esta fecha.</p>';
+      } else {
+        __grid.innerHTML = __entries.map(([slot, libre]) => `<span class="bk-time ${libre ? '' : 'taken'}">${slot}</span>`).join('');
+      }
+      if (__available === 0) {
+        __msg.className = 'bk-avail-msg none';
+        __msg.innerHTML = 'No hay horarios disponibles para esta fecha. ¿Quieres que te avisemos si se libera un cupo? <a href="https://wa.me/573136467945?text=Hola%20Jessica%2C%20quisiera%20quedar%20en%20lista%20de%20espera%20para%20el%20' + encodeURIComponent(bk.date) + '" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600;text-decoration:underline">Apúntate a la lista de espera</a>';
+      } else {
+        __msg.className = 'bk-avail-msg ok';
+        __msg.textContent = __available + ' horario' + (__available > 1 ? 's' : '') + ' disponible' + (__available > 1 ? 's' : '') + ' para este servicio. Cada opción ya respeta la duración completa.';
+      }
+      __msg.style.display = 'block';
+      return;
       let available = 0, total = 0;
       document.querySelectorAll('.bk-time').forEach(t => {
         t.classList.remove('checking');
@@ -2735,11 +2743,11 @@
       btn.innerHTML = 'Verificando...';
 
       try {
-        const r = await fetch(APPS_SCRIPT_URL + '?action=availability&date=' + bk.date + '&service=' + encodeURIComponent(bk.service || ''));
+        const r = await fetch(APPS_SCRIPT_URL + '?action=availability&date=' + bk.date + '&service=' + encodeURIComponent(bk.service || '') + '&modality=' + encodeURIComponent(bk.modality || 'Presencial'));
         const data = await r.json();
         const slots = data.slots || {};
 
-        if (slots[bk.time] === false) {
+        if (slots[bk.time] !== true) {
           // Horario tomado — mostrar mensaje y recargar slots
           applyAvailability(slots);
           bk.time = '';
