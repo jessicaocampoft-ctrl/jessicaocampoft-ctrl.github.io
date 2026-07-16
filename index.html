@@ -1300,6 +1300,119 @@
     .bk-summary-row span:first-child { color: var(--text-muted); }
     .bk-summary-row span:last-child { color: var(--text); font-weight: 500; }
     .bk-summary-price { color: var(--primary) !important; font-family: var(--font-mono); }
+    .bk-payment-card {
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px solid rgba(126,221,208,0.32);
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(126,221,208,0.10), rgba(255,255,255,0.04));
+      box-shadow: 0 18px 46px rgba(126,221,208,0.08);
+    }
+    .bk-payment-card h4 {
+      font-family: var(--font-heading);
+      font-size: 1.12rem;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .bk-payment-card p {
+      margin: 0 0 12px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      line-height: 1.65;
+    }
+    .bk-pay-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .bk-pay-method {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: var(--surface-2);
+    }
+    .bk-pay-method span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      font-family: var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    .bk-pay-method strong {
+      display: block;
+      color: var(--text);
+      font-size: 0.95rem;
+      word-break: break-word;
+    }
+    .bk-reserve-code {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(126,221,208,0.35);
+      color: var(--primary);
+      background: rgba(126,221,208,0.08);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      margin: 4px 0 12px;
+    }
+    .bk-policy-list {
+      display: grid;
+      gap: 6px;
+      margin: 12px 0;
+      padding: 0;
+      list-style: none;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+    .bk-policy-list li::before {
+      content: '•';
+      color: var(--primary);
+      margin-right: 8px;
+    }
+    .bk-payment-accept {
+      margin-top: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      color: var(--text);
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+    .bk-payment-accept input {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      accent-color: var(--primary);
+      flex: 0 0 auto;
+      cursor: pointer;
+    }
+    .bk-proof-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 11px 18px;
+      border-radius: 999px;
+      background: #25D366;
+      color: #07110b;
+      font-weight: 700;
+      font-size: 0.84rem;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .bk-proof-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(37,211,102,0.28); }
     /* Buttons row */
     .bk-actions {
       display: flex;
@@ -1436,6 +1549,7 @@
       .bk-date-row { grid-template-columns: 1fr; }
       .bk-fields-row { grid-template-columns: 1fr; }
       .bk-time-grid { grid-template-columns: repeat(3, 1fr); }
+      .bk-pay-grid { grid-template-columns: 1fr; }
       .bk-success { padding: 40px 20px; }
     }
 
@@ -2135,7 +2249,7 @@
       <div class="booking-header fade-up">
         <div class="section-tag">Agenda tu cita</div>
         <h2><em>Reserva</em> tu sesión</h2>
-        <p class="booking-subtitle">Elige tu servicio, día y horario. La reserva llega directamente a mi Google Calendar y recibes confirmación por email.</p>
+        <p class="booking-subtitle">Elige tu servicio, día y horario. El cupo queda reservado temporalmente y se confirma con pago anticipado verificado por administración.</p>
       </div>
 
       <div class="bk-shell fade-up">
@@ -2261,6 +2375,11 @@
                 <input type="text" id="bkParaQuien" class="bk-input" placeholder="Ej: mi esposo, mi mamá, mi hijo... (dejar en blanco si es para ti)">
               </div>
             </div>
+            <div id="bkPaymentPreview"></div>
+            <label class="bk-payment-accept" for="bkPaymentAccept">
+              <input type="checkbox" id="bkPaymentAccept" onchange="checkStep3()">
+              <span>Entiendo que la cita se confirma únicamente con pago anticipado y que debo enviar el comprobante para que sea autorizado por administración.</span>
+            </label>
             <div class="bk-error-msg" id="bkError">Hubo un error al enviar. Escríbeme por <a href="https://wa.me/573136467945" style="color:var(--primary)">WhatsApp</a>.</div>
             <div class="bk-actions">
               <button class="bk-btn-back" onclick="goStep(2)">
@@ -2285,12 +2404,12 @@
             <div class="bk-success-icon">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7EDDD0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <h3>¡Reserva enviada!</h3>
-            <p>Te voy a confirmar la cita por WhatsApp o email. Si necesitas cambiarla, escríbeme.</p>
+            <h3>Reserva temporal creada</h3>
+            <p>Tu horario queda separado por 60 minutos. La cita queda confirmada únicamente cuando administración autorice el pago.</p>
             <div class="bk-success-details" id="bkSuccessDetails"></div>
-            <a href="https://wa.me/573136467945" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#000;font-weight:600;font-size:0.85rem;padding:11px 22px;border-radius:100px;text-decoration:none;transition:.25s ease;margin-top:4px;">
+            <a id="bkSuccessProofBtn" href="https://wa.me/573136467945" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#000;font-weight:600;font-size:0.85rem;padding:11px 22px;border-radius:100px;text-decoration:none;transition:.25s ease;margin-top:4px;">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.89.525 3.658 1.438 5.168L2 22l4.978-1.301A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 11.999 2z"/></svg>
-              Confirmar por WhatsApp
+              Enviar comprobante
             </a>
             <button class="bk-btn-reset" onclick="resetBooking()">Hacer otra reserva</button>
           </div>
@@ -2461,13 +2580,14 @@
     });
 
     // ─── Booking form ───
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_r7Kr-9Uvu0qIVAJpyu8nzhmcJ9fzpqo2pspvFFHV_14cLzb9qUN9k3Lj8cdXFdIW/exec';
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw/exec';
 
     const bk = {
       service: '', priceP: '', priceD: '',
       modality: 'Presencial',
       date: '', time: '',
-      name: '', phone: '', email: '', address: '', notes: '', paraQuien: ''
+      name: '', phone: '', email: '', address: '', notes: '', paraQuien: '',
+      reservationCode: '', clientTimestamp: ''
     };
 
     // Mínimo: mañana
@@ -2483,6 +2603,8 @@
       bk.service  = el.dataset.service;
       bk.priceP   = el.dataset.priceP;
       bk.priceD   = el.dataset.priceD;
+      bk.reservationCode = '';
+      bk.clientTimestamp = '';
       document.getElementById('btnStep1').disabled = false;
       // Avanzar automáticamente al paso 2 en cualquier dispositivo
       setTimeout(() => goStep(2), 350);
@@ -2501,6 +2623,8 @@
       document.querySelectorAll('.bk-time').forEach(t => t.classList.remove('selected'));
       el.classList.add('selected');
       bk.time = el.textContent.trim();
+      bk.reservationCode = '';
+      bk.clientTimestamp = '';
       document.getElementById('btnStep2').disabled = !(bk.date && bk.time);
     }
 
@@ -2550,6 +2674,8 @@
     function checkStep2() {
       bk.date = document.getElementById('bkDate').value;
       bk.time = '';
+      bk.reservationCode = '';
+      bk.clientTimestamp = '';
       if (bk.date) {
         const ok = buildTimeSlots(bk.date);
         if (ok) loadAvailability(bk.date);
@@ -2647,12 +2773,72 @@
       bk.email   = document.getElementById('bkEmail').value.trim();
       bk.address = document.getElementById('bkAddress').value.trim();
       const needAddr = bk.modality === 'Domicilio';
-      const ok = bk.name && bk.phone && bk.email && (!needAddr || bk.address);
+      const accepted = !!document.getElementById('bkPaymentAccept')?.checked;
+      const ok = bk.name && bk.phone && bk.email && (!needAddr || bk.address) && accepted;
       document.getElementById('btnStep3').disabled = !ok;
     }
 
+    function currentBookingPrice() {
+      return bk.modality === 'Presencial' ? bk.priceP : bk.priceD;
+    }
+
+    function makeReservationCode(ts) {
+      const parts = (bk.date || '').split('-');
+      const dmy = parts.length === 3 ? parts[2] + parts[1] + parts[0].slice(-2) : '';
+      const seq = String(ts || Date.now()).slice(-4).padStart(4, '0');
+      return 'CF-' + dmy + '-' + seq;
+    }
+
+    function ensureReservationCode() {
+      if (!bk.clientTimestamp) bk.clientTimestamp = Date.now();
+      if (!bk.reservationCode) bk.reservationCode = makeReservationCode(bk.clientTimestamp);
+      return bk.reservationCode;
+    }
+
+    function proofWhatsAppLink() {
+      const code = ensureReservationCode();
+      const price = currentBookingPrice();
+      const text = [
+        'Hola, ya realicé el pago anticipado de mi cita en Cuidándote Fisioterapia.',
+        '',
+        'Nombre: ' + (bk.name || ''),
+        'Código de reserva: ' + code,
+        'Servicio: ' + (bk.service || ''),
+        'Fecha y hora: ' + (bk.date || '') + ' ' + (bk.time || ''),
+        'Valor: ' + price,
+        '',
+        'Adjunto el comprobante para verificación administrativa.'
+      ].join('\n');
+      return 'https://wa.me/573136467945?text=' + encodeURIComponent(text);
+    }
+
+    function paymentInstructionsHTML(options = {}) {
+      const price = currentBookingPrice();
+      const code = options.showCode ? ensureReservationCode() : 'Se genera al confirmar';
+      return `
+        <div class="bk-payment-card">
+          <h4>Tu horario está reservado temporalmente</h4>
+          <p>Para confirmar tu cita debes realizar el pago anticipado y enviar el comprobante dentro de los próximos <strong style="color:var(--text)">60 minutos</strong>.</p>
+          <div class="bk-reserve-code">Código de reserva: <strong>${code}</strong></div>
+          <div class="bk-summary-row"><span>Valor del servicio</span><span class="bk-summary-price">${price}</span></div>
+          <div class="bk-pay-grid">
+            <div class="bk-pay-method"><span>Bancolombia · cuenta de ahorros</span><strong>91257857099</strong></div>
+            <div class="bk-pay-method"><span>Nequi</span><strong>3136467945</strong></div>
+            <div class="bk-pay-method"><span>Llave</span><strong>1010124692</strong></div>
+          </div>
+          <p><strong style="color:var(--text)">Titular:</strong> Jessica Andrea Ocampo Barbosa</p>
+          <ul class="bk-policy-list">
+            <li>Después de pagar, envía el comprobante junto con tu nombre completo y código de reserva.</li>
+            <li>Tu cita estará confirmada únicamente cuando recibas el mensaje: <strong style="color:var(--text)">“Cita autorizada para atender”</strong>.</li>
+            <li>Para cancelar o reagendar, escríbenos con mínimo 12 horas de anticipación. Las cancelaciones tardías pueden considerarse sesión realizada.</li>
+          </ul>
+          ${options.showButton ? `<a class="bk-proof-btn" href="${proofWhatsAppLink()}" target="_blank" rel="noopener">Enviar comprobante por WhatsApp</a>` : ''}
+        </div>
+      `;
+    }
+
     function buildSummary(container) {
-      const price = bk.modality === 'Presencial' ? bk.priceP : bk.priceD;
+      const price = currentBookingPrice();
       const dateStr = bk.date ? new Date(bk.date + 'T12:00').toLocaleDateString('es-CO', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) : '';
       container.innerHTML = `
         <div class="bk-summary-title">Resumen de tu cita</div>
@@ -2662,6 +2848,8 @@
         <div class="bk-summary-row"><span>Hora</span><span>${bk.time}</span></div>
         <div class="bk-summary-row"><span>Valor</span><span class="bk-summary-price">${price}</span></div>
       `;
+      const paymentPreview = document.getElementById('bkPaymentPreview');
+      if (paymentPreview) paymentPreview.innerHTML = paymentInstructionsHTML({showCode:false, showButton:false});
     }
 
     function goStep(n) {
@@ -2684,6 +2872,12 @@
       bk.address   = document.getElementById('bkAddress').value.trim();
       bk.notes     = document.getElementById('bkNotes').value.trim();
       bk.paraQuien = document.getElementById('bkParaQuien').value.trim();
+      if (!document.getElementById('bkPaymentAccept')?.checked) {
+        document.getElementById('bkError').textContent = 'Debes aceptar la política de pago anticipado para continuar.';
+        document.getElementById('bkError').classList.add('visible');
+        return;
+      }
+      ensureReservationCode();
 
       // Hide steps, show spinner
       document.querySelectorAll('.bk-step').forEach(s => s.classList.remove('active'));
@@ -2705,7 +2899,9 @@
           name: bk.name, phone: bk.phone,
           email: bk.email, address: bk.address,
           notes: bk.notes, priceP: bk.priceP, priceD: bk.priceD,
-          notaAdmin: bk.paraQuien ? '[PARA: ' + bk.paraQuien + ']' : ''
+          clientTimestamp: bk.clientTimestamp,
+          codigoReserva: bk.reservationCode,
+          notaAdmin: '[CODIGO RESERVA: ' + bk.reservationCode + ']' + (bk.paraQuien ? ' [PARA: ' + bk.paraQuien + ']' : '')
         })
       }).catch(() => {});
       // Mostrar éxito de inmediato sin esperar al servidor
@@ -2715,9 +2911,9 @@
     function showSuccess() {
       document.getElementById('bkSending').classList.remove('active');
       document.getElementById('bkSuccess').classList.add('active');
-      const price = bk.modality === 'Presencial' ? bk.priceP : bk.priceD;
+      const price = currentBookingPrice();
       const dateStr = new Date(bk.date + 'T12:00').toLocaleDateString('es-CO', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-      const ref = 'JO-' + Date.now().toString(36).toUpperCase().slice(-6);
+      const ref = ensureReservationCode();
       // Google Calendar link
       const gcStart = bk.date.replace(/-/g,'') + 'T' + bk.time.replace(':','') + '00';
       const gcEnd   = bk.date.replace(/-/g,'') + 'T' + bk.time.replace(':','') + '00';
@@ -2727,11 +2923,12 @@
         '&details=' + encodeURIComponent('Modalidad: ' + bk.modality + '\nValor: ' + price + '\nContacto: +57 313 646 7945');
       document.getElementById('bkSuccessDetails').innerHTML = `
         <div class="bk-summary-title">Detalles de tu reserva</div>
-        <div class="bk-summary-row"><span>Ref.</span><span style="font-family:monospace;font-size:.82rem;color:var(--primary)">${ref}</span></div>
+        <div class="bk-summary-row"><span>Código de reserva</span><span style="font-family:monospace;font-size:.82rem;color:var(--primary)">${ref}</span></div>
         <div class="bk-summary-row"><span>Servicio</span><span>${bk.service}</span></div>
         <div class="bk-summary-row"><span>${bk.modality}</span><span>${dateStr} · ${bk.time}</span></div>
         <div class="bk-summary-row"><span>Valor</span><span class="bk-summary-price">${price}</span></div>
         <div class="bk-summary-row"><span>Nombre</span><span>${bk.name}</span></div>
+        ${paymentInstructionsHTML({showCode:true, showButton:true})}
         <div style="margin-top:12px;padding:10px 14px;background:rgba(126,221,208,.07);border-radius:8px;font-size:.78rem;color:var(--text-muted);line-height:1.6">
           Para cancelar o reagendar escribe con <strong style="color:var(--text)">12 horas de anticipación</strong> al <strong style="color:var(--text)">313 646 7945</strong>.
         </div>
@@ -2740,6 +2937,8 @@
           Agregar a Google Calendar
         </a>
       `;
+      const proofBtn = document.getElementById('bkSuccessProofBtn');
+      if (proofBtn) proofBtn.href = proofWhatsAppLink();
       [1,2,3].forEach(i => {
         const p = document.getElementById('prog' + i);
         p.classList.remove('active');
@@ -2755,12 +2954,15 @@
 
     function resetBooking() {
       bk.service = bk.priceP = bk.priceD = bk.date = bk.time = bk.name = bk.phone = bk.email = bk.address = bk.notes = '';
+      bk.paraQuien = bk.reservationCode = bk.clientTimestamp = '';
       bk.modality = 'Presencial';
       document.querySelectorAll('.bk-svc').forEach(s => s.classList.remove('selected'));
       document.getElementById('timeGrid').innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;margin:0">Selecciona primero una fecha para ver los horarios disponibles.</p>';
       document.getElementById('bkDate').value = '';
       ['bkName','bkPhone','bkEmail','bkAddress','bkNotes','bkParaQuien'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('bkSuccess').classList.remove('active');
+      const accept = document.getElementById('bkPaymentAccept'); if (accept) accept.checked = false;
+      const preview = document.getElementById('bkPaymentPreview'); if (preview) preview.innerHTML = '';
       document.getElementById('addressWrap').style.display = 'none';
       selectModality('Presencial');
       goStep(1);

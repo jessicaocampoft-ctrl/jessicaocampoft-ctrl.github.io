@@ -303,16 +303,20 @@ function createBooking(d, isAdmin) {
   event.addPopupReminder(30);
 
   // Guardar en Google Sheets (solo citas reales)
-  var id    = 'C' + new Date().getTime();
+  var clientTs = Number(d.clientTimestamp || 0);
+  var id    = 'C' + (clientTs > 0 ? clientTs : new Date().getTime());
   var phoneClean = ('' + (d.phone||'')).replace(/\D/g,'');
+  var rawAdminNote = '' + (d.notaAdmin || '');
+  var codeNote = d.codigoReserva && rawAdminNote.indexOf(d.codigoReserva) === -1 ? '[CODIGO RESERVA: ' + d.codigoReserva + ']' : '';
+  var adminNote = [rawAdminNote, codeNote].filter(Boolean).join(' ');
   cSheet.appendRow([
     id,
     new Date().toLocaleString('es-CO'),
     d.name, phoneClean, d.email,
     d.service, d.modality,
     d.date, d.time, price,
-    start < new Date() ? 'Atendida' : 'Confirmada',
-    d.address || '', d.notes || '', d.notaAdmin || ''
+    isAdmin ? (start < new Date() ? 'Atendida' : 'Confirmada') : 'Pendiente de pago',
+    d.address || '', d.notes || '', adminNote
   ]);
   // Forzar columna Telefono como texto para evitar #ERROR! en Sheets
   cSheet.getRange(cSheet.getLastRow(), 4).setNumberFormat('@').setValue(phoneClean);
@@ -331,11 +335,13 @@ function createBooking(d, isAdmin) {
   var _waDP = d.date.split('-');
   var _waFechaObj = new Date(+_waDP[0], +_waDP[1]-1, +_waDP[2]);
   var _waFecha = _waDias[_waFechaObj.getDay()] + ' ' + +_waDP[2] + ' de ' + _waMeses[+_waDP[1]-1];
-  var waConfirm = '✅ Cita confirmada, ' + d.name.split(' ')[0] + '!\n\n' +
-    '📌 ' + d.service + '\n' +
-    '   ' + _waFecha + ' · ' + d.time + ' · ' + d.modality + '\n\n' +
-    'Hasta pronto. Gracias por confiar en nuestros servicios.\n' +
-    '— Jessica Ocampo Fisioterapeuta';
+  var waConfirm = 'Reserva temporal creada, ' + d.name.split(' ')[0] + '.\n\n' +
+    d.service + '\n' +
+    _waFecha + ' · ' + d.time + ' · ' + d.modality + '\n' +
+    'Codigo de reserva: ' + (d.codigoReserva || reservationCodeFor_(id, d.date)) + '\n' +
+    'Valor: ' + price + '\n\n' +
+    'Para confirmar tu cita debes realizar el pago anticipado y enviar el comprobante. La cita queda autorizada solo cuando administracion confirme el pago.\n' +
+    'Cuidandote Fisioterapia';
   var waLink = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(waConfirm);
 
   GmailApp.sendEmail(
@@ -347,8 +353,8 @@ function createBooking(d, isAdmin) {
   if (d.email && d.email.indexOf('@') > 0) {
     GmailApp.sendEmail(
       d.email,
-      '✅ Cita confirmada — Jessica Ocampo Fisioterapeuta',
-      'Tu cita está confirmada. Si no puedes ver este correo, contáctanos al +57 313 646 7945.',
+      'Reserva temporal creada - Cuidandote Fisioterapia',
+      'Tu horario quedo reservado temporalmente. Para confirmar la cita debes realizar el pago anticipado y enviar el comprobante.',
       {htmlBody: buildEmailCliente(d, price), name: 'Jessica Ocampo Fisioterapeuta'}
     );
   }
@@ -1992,19 +1998,30 @@ function buildEmailCliente(d, price) {
   var fechaLegible = diasSemana[fechaObj.getDay()] + ' ' + +dp[2] + ' de ' + meses[+dp[1]-1] + ' de ' + dp[0];
   var modDetalle = d.modality + (d.address ? ' — ' + d.address : '');
   var primerNombre = d.name.split(' ')[0];
+  var codigoReserva = d.codigoReserva || '';
 
   return '<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">' +
     '<div style="background:#0d9488;padding:20px 32px;text-align:center">' +
     '<p style="color:#fff;margin:0;font-size:15px;font-weight:600">🩺 Jessica Ocampo Fisioterapeuta</p>' +
     '</div>' +
     '<div style="padding:28px 32px">' +
-    '<p style="font-size:17px;font-weight:700;margin:0 0 20px;color:#111827">✅ Cita confirmada, ' + primerNombre + '!</p>' +
+    '<p style="font-size:17px;font-weight:700;margin:0 0 12px;color:#111827">Reserva temporal creada, ' + primerNombre + '</p>' +
+    '<p style="font-size:13px;color:#6b7280;margin:0 0 18px;line-height:1.6">Tu horario queda reservado por 60 minutos. Para confirmar la cita debes realizar el pago anticipado y enviar el comprobante para verificacion administrativa.</p>' +
     '<div style="margin:0 0 20px">' +
     '<p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#111827">📌 ' + d.service + '</p>' +
     '<p style="margin:0;font-size:13px;color:#6b7280">' + fechaLegible + ' · ' + d.time + ' · ' + modDetalle + '</p>' +
     '</div>' +
     '<hr style="border:none;border-top:2px solid #e5e7eb;margin:20px 0">' +
-    '<p style="font-size:13px;color:#6b7280;margin:0 0 16px">📩 Recibirás un recordatorio el día anterior y el mismo día de tu cita.</p>' +
+    '<div style="font-size:13px;color:#374151;line-height:1.7;margin:0 0 16px">' +
+    '<p style="margin:0 0 8px;font-weight:700;color:#111827">Datos de pago</p>' +
+    '<p style="margin:0">Codigo de reserva: ' + codigoReserva + '</p>' +
+    '<p style="margin:0">Valor: ' + price + '</p>' +
+    '<p style="margin:8px 0 0">Bancolombia - Cuenta de ahorros: 91257857099</p>' +
+    '<p style="margin:0">Nequi: 3136467945</p>' +
+    '<p style="margin:0">Llave: 1010124692</p>' +
+    '<p style="margin:8px 0 0">Titular: Jessica Andrea Ocampo Barbosa</p>' +
+    '<p style="margin:8px 0 0;color:#6b7280">Despues de pagar, envia el comprobante junto con tu nombre completo y codigo de reserva.</p>' +
+    '</div>' +
     '<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">' +
     '<p style="font-size:14px;color:#374151;margin:0 0 4px">Hasta pronto. Gracias por confiar en nuestros servicios.</p>' +
     '<p style="font-size:14px;color:#374151;margin:0;font-style:italic">— Jessica Ocampo Fisioterapeuta</p>' +
