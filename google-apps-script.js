@@ -1001,7 +1001,17 @@ function professionalChangePassword_(token, currentPassword, newPassword) {
   }
   return {ok:false,error:'Usuario no encontrado'};
 }
+var TEAM_OPERATIONAL_START_DATE = '2026-07-16';
+function isProfessionalAppointmentAuthorized_(citaRow, assignment) {
+  var estado = '' + (citaRow[10] || '');
+  var aut = assignment ? ('' + (assignment.estadoAutorizacion || '')) : '';
+  return estado === 'Autorizada para atender' || estado === 'SesiÃ³n atendida' || aut === 'Autorizada para atender' || aut === 'SesiÃ³n atendida';
+}
+function isProfessionalInactiveAppointment_(estado) {
+  return ['Cancelada','Cancelada a tiempo','CancelaciÃ³n tardÃ­a','Reprogramada','No asistiÃ³','Reembolsada'].indexOf('' + estado) > -1;
+}
 function canProfessionalAttend_(citaRow, assignment) {
+  if (!isProfessionalAppointmentAuthorized_(citaRow, assignment)) return false;
   if (assignment && assignment.overrideAtencion) return true;
   var fecha = (citaRow[7] instanceof Date) ? fmtDate(citaRow[7]) : (citaRow[7] ? ('' + citaRow[7]).split('T')[0] : '');
   var hora = st(citaRow[8]);
@@ -1029,6 +1039,44 @@ function getProfessionalAgenda_(token) {
       lugar:r[6] === 'Domicilio' ? ('' + (r[11] || 'Domicilio')) : 'Sede / presencial',
       modalidad:'' + (r[6] || ''), observaciones:[r[12], r[13]].filter(Boolean).join(' · '),
       estado:estado, autorizacion:a.estadoAutorizacion || estado, puedeAtender:canProfessionalAttend_(r, a)
+    });
+  }
+  return {ok:true, professional:sess, citas:citas};
+}
+function getProfessionalAgenda_(token) {
+  var sess = validateProfessionalSession_(token);
+  if (!sess) {
+    auditTeam_({rol:'Sistema', nombre:'Sistema'}, 'Acceso no autorizado al portal profesional', '', '', '', 'Token invalido');
+    return {ok:false,error:'Sin permiso'};
+  }
+  var assignments = getAssignmentMap_();
+  var rows = getOrCreateSheet().getSheetByName('Citas').getDataRange().getValues();
+  var citas = [];
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    var id = '' + r[0];
+    var a = assignments[id];
+    if (!a || a.profesionalId !== sess.id) continue;
+    var estado = '' + (r[10] || '');
+    if (isProfessionalInactiveAppointment_(estado)) continue;
+    var fecha = (r[7] instanceof Date) ? fmtDate(r[7]) : (r[7] ? ('' + r[7]).split('T')[0] : '');
+    if (fecha && fecha < TEAM_OPERATIONAL_START_DATE) continue;
+    var autorizado = isProfessionalAppointmentAuthorized_(r, a);
+    citas.push({
+      id:id,
+      fecha:fecha,
+      hora:st(r[8]),
+      nombre:'' + (r[2] || ''),
+      servicio:'' + (r[5] || ''),
+      duracion:getServiceDuration(r[5]) + ((r[6] === 'Domicilio') ? 30 : 0),
+      lugar:r[6] === 'Domicilio' ? ('' + (r[11] || 'Domicilio')) : 'Sede / presencial',
+      modalidad:'' + (r[6] || ''),
+      observaciones:[r[12], r[13]].filter(Boolean).join(' - '),
+      estado:estado || (autorizado ? 'Autorizada para atender' : 'Asignada'),
+      autorizacion:a.estadoAutorizacion || (autorizado ? 'Autorizada para atender' : 'Asignada pendiente de autorizacion'),
+      asignada:true,
+      autorizada:autorizado,
+      puedeAtender:canProfessionalAttend_(r, a)
     });
   }
   return {ok:true, professional:sess, citas:citas};

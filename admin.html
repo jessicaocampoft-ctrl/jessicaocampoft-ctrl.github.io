@@ -6643,23 +6643,28 @@ function renderProfessionalAgenda() {
     if (professionalMode === 'semana') return d >= start && d < end;
     return d >= new Date(today() + 'T00:00:00');
   });
-  document.getElementById('proAgendaList').innerHTML = list.length ? list.map(c => `
+  document.getElementById('proAgendaList').innerHTML = list.length ? list.map(c => {
+    const badge = c.autorizada ? (c.estado || 'Autorizada') : (c.autorizacion || 'Asignada pendiente de autorización');
+    const canAttend = c.puedeAtender && c.estado !== 'Sesión atendida';
+    return `
     <article class="pro-card pro-appointment">
       <div class="team-card-head">
         <h3>${esc(c.nombre)}</h3>
-        <span class="team-pill info">${esc(c.estado)}</span>
+        <span class="team-pill ${c.autorizada ? 'info' : 'warn'}">${esc(badge)}</span>
       </div>
       <div class="pro-meta">
         <span><strong>Fecha:</strong> ${esc(fmtDate(c.fecha))} · ${esc(c.hora)}</span>
         <span><strong>Servicio:</strong> ${esc(c.servicio)} · ${esc(c.duracion)} min</span>
         <span><strong>Lugar:</strong> ${esc(c.lugar || c.modalidad || '—')}</span>
+        ${!c.autorizada ? '<span><strong>Estado:</strong> Asignada, pendiente de autorización administrativa.</span>' : ''}
         ${c.observaciones ? `<span><strong>Observaciones:</strong> ${esc(c.observaciones)}</span>` : ''}
       </div>
       <div class="pro-actions">
-        <button class="btn btn-teal btn-sm" ${c.puedeAtender && c.estado !== 'Sesión atendida' ? '' : 'disabled'} onclick="markProfessionalAttended('${esc(c.id)}')">Marcar sesión atendida</button>
+        <button class="btn btn-teal btn-sm" ${canAttend ? '' : 'disabled'} onclick="markProfessionalAttended('${esc(c.id)}')">Marcar sesión atendida</button>
         <button class="btn btn-ghost btn-sm" onclick="openProIssue('${esc(c.id)}')">Reportar novedad</button>
       </div>
-    </article>`).join('') : '<div class="team-panel"><p class="team-muted">No hay citas autorizadas para este filtro.</p></div>';
+    </article>`;
+  }).join('') : '<div class="team-panel"><p class="team-muted">No hay citas asignadas para este filtro.</p></div>';
 }
 
 async function markProfessionalAttended(citaId) {
