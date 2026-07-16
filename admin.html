@@ -61,6 +61,98 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height
 }
 .login-btn:hover{background:var(--primary-h)}
 .login-err{color:var(--err);font-size:.85rem;margin-top:12px;display:none}
+.login-alt{
+  margin-top:18px;border-top:1px solid var(--border);padding-top:16px;
+  display:flex;flex-direction:column;gap:8px;align-items:center
+}
+.login-alt button{
+  background:transparent;border:1px solid var(--border);border-radius:999px;
+  color:var(--primary-h);font-family:var(--font-b);font-weight:700;
+  padding:9px 16px;cursor:pointer;transition:var(--tr);min-height:44px
+}
+.login-alt button:hover,.login-alt button:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--glow);outline:none}
+
+/* ══════════════════════════════════════════
+   PORTAL PROFESIONALES / EQUIPO
+══════════════════════════════════════════ */
+#proLoginScreen,#proApp{
+  position:fixed;inset:0;background:var(--bg);z-index:1001;display:none;
+  overflow:auto;padding:28px 16px
+}
+.pro-shell{width:min(1120px,100%);margin:0 auto}
+.pro-card,.team-panel,.team-card{
+  background:rgba(255,255,255,.92);border:1px solid var(--border);border-radius:18px;
+  box-shadow:0 18px 50px rgba(27,191,176,.10);backdrop-filter:blur(10px)
+}
+[data-theme="dark"] .pro-card,[data-theme="dark"] .team-panel,[data-theme="dark"] .team-card{background:rgba(26,29,36,.92)}
+.pro-card{padding:28px}
+.pro-login-card{max-width:430px;margin:8vh auto;text-align:center}
+.pro-login-card img{height:64px;margin-bottom:22px}
+.pro-login-card h1{font-family:var(--font-h);font-size:1.8rem;margin-bottom:6px}
+.pro-login-card p{color:var(--muted);font-size:.92rem;line-height:1.5;margin-bottom:20px}
+.pro-input,.team-input{
+  width:100%;background:var(--s1);border:1px solid var(--border);border-radius:11px;
+  color:var(--text);font:500 .92rem var(--font-b);padding:12px 14px;outline:none;min-height:44px
+}
+.pro-input:focus,.team-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--glow)}
+.pro-header{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.pro-brand{display:flex;align-items:center;gap:14px}
+.pro-brand img{height:52px}
+.pro-brand h1{font-family:var(--font-h);font-size:1.9rem;line-height:1}
+.pro-brand small{color:var(--muted)}
+.pro-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.pro-seg{border:1px solid var(--border);background:var(--s1);color:var(--muted);border-radius:999px;padding:9px 13px;min-height:44px;cursor:pointer;font-weight:700}
+.pro-seg.active{background:var(--primary);color:#0D0D0D;border-color:var(--primary)}
+.pro-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.pro-appointment{padding:16px;border-left:4px solid var(--primary)}
+.pro-appointment h3{font-family:var(--font-h);font-size:1.35rem;margin-bottom:8px}
+.pro-meta{display:grid;gap:6px;color:var(--muted);font-size:.88rem;line-height:1.45}
+.pro-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.team-hero{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;
+  margin-bottom:18px;padding:20px;border-radius:18px;
+  background:linear-gradient(135deg,rgba(27,191,176,.13),rgba(255,255,255,.72));
+  border:1px solid var(--border)
+}
+[data-theme="dark"] .team-hero{background:linear-gradient(135deg,rgba(27,191,176,.16),rgba(26,29,36,.72))}
+.team-hero h1{font-family:var(--font-h);font-size:2rem;line-height:1.05;margin-bottom:5px}
+.team-hero p{color:var(--muted);line-height:1.5}
+.team-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.team-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.team-stat{padding:16px;border-radius:16px;background:var(--s1);border:1px solid var(--border)}
+.team-stat small{font-family:var(--font-m);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-size:.7rem}
+.team-stat strong{display:block;margin-top:7px;font-family:var(--font-h);font-size:1.8rem;color:var(--primary)}
+.team-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);gap:16px;align-items:start}
+.team-panel{padding:16px;overflow:hidden}
+.team-panel h2{font-family:var(--font-h);font-size:1.35rem;margin-bottom:10px}
+.team-list{display:grid;gap:10px}
+.team-card{padding:14px}
+.team-card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.team-card h3{font-size:1rem;margin-bottom:4px}
+.team-muted{color:var(--muted);font-size:.84rem;line-height:1.45}
+.team-pill{display:inline-flex;align-items:center;border-radius:999px;background:var(--s2);border:1px solid var(--border);padding:4px 9px;font-size:.72rem;color:var(--muted);font-weight:700}
+.team-pill.ok{background:rgba(22,163,74,.09);color:var(--ok);border-color:rgba(22,163,74,.22)}
+.team-pill.warn{background:rgba(217,119,6,.10);color:var(--warn);border-color:rgba(217,119,6,.22)}
+.team-pill.info{background:rgba(27,191,176,.12);color:var(--primary-h)}
+.team-card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.team-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:11px 0;border-top:1px solid var(--border)}
+.team-row:first-child{border-top:0}
+.team-row strong{font-size:.9rem}
+.team-row small{display:block;color:var(--muted);margin-top:2px}
+.team-temp-pass{
+  margin-top:14px;padding:16px;border-radius:16px;border:1px solid rgba(27,191,176,.28);
+  background:linear-gradient(135deg,rgba(27,191,176,.12),rgba(255,255,255,.86))
+}
+.team-temp-pass code{
+  display:block;margin:10px 0 12px;padding:13px 14px;border-radius:12px;
+  background:var(--s1);border:1px dashed var(--primary);color:var(--text);
+  font:700 1rem var(--font-m);letter-spacing:.04em;word-break:break-all
+}
+@media(max-width:860px){
+  .team-hero,.team-grid{grid-template-columns:1fr}
+  .team-actions{justify-content:flex-start}
+  #proApp{padding-bottom:84px}
+}
 
 /* ══════════════════════════════════════════
    LAYOUT
@@ -1522,6 +1614,60 @@ button:disabled{cursor:not-allowed;opacity:.58}
     <input class="login-input" type="password" id="pwInput" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" id="loginBtn" onclick="doLogin()">Ingresar</button>
     <p class="login-err" id="loginErr">Contraseña incorrecta. Inténtalo de nuevo.</p>
+    <div class="login-alt">
+      <button type="button" onclick="openProfessionalLoginMode()">Portal del fisioterapeuta</button>
+      <small style="color:var(--muted);line-height:1.4">Acceso privado para el equipo clínico.</small>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PORTAL FISIOTERAPEUTAS
+══════════════════════════════════════════ -->
+<div id="proLoginScreen">
+  <div class="pro-card pro-login-card">
+    <img src="LogoCuidandote/logo-apilado.png" alt="Cuidándote Fisioterapia">
+    <h1>Portal del Fisioterapeuta</h1>
+    <p>Agenda privada del equipo. Cada profesional solo ve sus citas asignadas y autorizadas.</p>
+    <div style="display:grid;gap:10px;text-align:left">
+      <label class="sr-only" for="proUser">Usuario</label>
+      <input class="pro-input" id="proUser" type="text" placeholder="Usuario o email" autocomplete="username">
+      <label class="sr-only" for="proPass">Contraseña</label>
+      <input class="pro-input" id="proPass" type="password" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')doProfessionalLogin()">
+      <button class="login-btn" id="proLoginBtn" onclick="doProfessionalLogin()">Ingresar al portal</button>
+      <p class="login-err" id="proLoginErr" style="margin:0;text-align:center"></p>
+    </div>
+    <div id="proFirstChangeBox" style="display:none;margin-top:16px;text-align:left;border-top:1px solid var(--border);padding-top:16px">
+      <p style="margin-bottom:12px">Por seguridad debes cambiar la contraseña temporal antes de continuar.</p>
+      <div style="display:grid;gap:10px">
+        <input class="pro-input" id="proNewPass" type="password" placeholder="Nueva contraseña mínimo 8 caracteres" autocomplete="new-password">
+        <button class="btn btn-teal" onclick="changeProfessionalPassword()">Guardar nueva contraseña</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost" style="margin-top:14px" onclick="backToAdminLogin()">Volver al panel administrativo</button>
+  </div>
+</div>
+
+<div id="proApp">
+  <div class="pro-shell">
+    <div class="pro-header">
+      <div class="pro-brand">
+        <img src="LogoCuidandote/logo-horizontal.png" alt="Cuidándote Fisioterapia">
+        <div>
+          <h1>Mi agenda clínica</h1>
+          <small id="proWelcome">Portal del equipo</small>
+        </div>
+      </div>
+      <button class="btn btn-ghost" onclick="professionalSignout()">Cerrar sesión</button>
+    </div>
+    <div class="pro-toolbar">
+      <button class="pro-seg active" id="proMode-hoy" onclick="setProfessionalMode('hoy')">Hoy</button>
+      <button class="pro-seg" id="proMode-semana" onclick="setProfessionalMode('semana')">Semana</button>
+      <button class="pro-seg" id="proMode-proximas" onclick="setProfessionalMode('proximas')">Próximas</button>
+      <input class="team-input" style="width:auto;min-width:165px" id="proDate" type="date" onchange="setProfessionalMode('fecha')">
+      <button class="btn btn-ghost" onclick="loadProfessionalAgenda()">Actualizar</button>
+    </div>
+    <div id="proAgendaList" class="pro-grid"></div>
   </div>
 </div>
 
@@ -1593,6 +1739,11 @@ button:disabled{cursor:not-allowed;opacity:.58}
     <button class="sb-link" id="sb-pacientes" data-tooltip="Pacientes" onclick="showView('pacientes')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Pacientes
+    </button>
+
+    <button class="sb-link" id="sb-equipo" data-tooltip="Equipo clínico" onclick="showView('equipo')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Equipo clínico
     </button>
 
     <button class="sb-link" id="sb-basedatos" data-tooltip="Base de datos" onclick="showView('basedatos')">
@@ -5261,6 +5412,153 @@ Acción: enviar mensaje de reenganche a los 14 pacientes que solo vinieron una v
       <div id="msgGrid"></div>
     </section>
 
+    <!-- ── EQUIPO CLÍNICO / PORTAL FISIOTERAPEUTAS ── -->
+    <section id="vEquipo" style="display:none">
+      <div class="team-hero">
+        <div>
+          <h1><em>Equipo</em> clínico</h1>
+          <p>Gestiona fisioterapeutas, asignaciones, autorizaciones, novedades y cuentas por pagar sin exponer información financiera del negocio al portal profesional.</p>
+        </div>
+        <div class="team-actions">
+          <button class="btn btn-teal" onclick="openProfessionalForm()">+ Crear fisioterapeuta</button>
+          <button class="btn btn-ghost" onclick="openProfessionalLoginMode()">Ver portal</button>
+          <button class="btn btn-ghost" onclick="loadTeamData().then(renderEquipo)">Actualizar</button>
+        </div>
+      </div>
+
+      <div id="equipoStats" class="team-stats"></div>
+
+      <div class="team-grid">
+        <div class="team-panel">
+          <h2>Fisioterapeutas</h2>
+          <div id="equipoProfesionales" class="team-list"></div>
+        </div>
+        <div class="team-panel">
+          <h2>Citas por asignar</h2>
+          <div id="equipoPendientes" class="team-list"></div>
+        </div>
+      </div>
+
+      <div class="team-grid" style="margin-top:16px">
+        <div class="team-panel">
+          <h2>Novedades reportadas</h2>
+          <div id="equipoNovedades" class="team-list"></div>
+        </div>
+        <div class="team-panel">
+          <h2>Cuentas por pagar</h2>
+          <div id="equipoCuentas" class="team-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <div id="modalProfesional" class="modal-bg" onclick="if(event.target===this)closeModal('modalProfesional')">
+      <div class="modal">
+        <h2 class="modal-title" id="proFormTitle">Crear fisioterapeuta</h2>
+        <input type="hidden" id="teamProId">
+        <div class="form-grid g2" style="gap:14px">
+          <div class="field"><label>Nombre</label><input type="text" id="teamProNombre" placeholder="Nombre completo"></div>
+          <div class="field"><label>Usuario</label><input type="text" id="teamProUsuario" placeholder="usuario.portal"></div>
+          <div class="field"><label>Email</label><input type="email" id="teamProEmail" placeholder="correo@dominio.com"></div>
+          <div class="field">
+            <label>Rol</label>
+            <select id="teamProRol">
+              <option>Fisioterapeuta</option>
+              <option>Personal administrativo</option>
+              <option>Administrador</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Estado</label>
+            <select id="teamProEstado">
+              <option>Activo</option>
+              <option>Inactivo</option>
+            </select>
+          </div>
+          <div class="field"><label>Servicios asignados</label><input type="text" id="teamProServicios" placeholder="Valoración, Rehabilitación, Masaje"></div>
+          <div class="field"><label>Disponibilidad</label><input type="text" id="teamProDisponibilidad" placeholder="Lun-vie 8:00 a 18:00"></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" onclick="closeModal('modalProfesional')">Cancelar</button>
+          <button class="btn btn-teal" onclick="saveProfessionalForm()">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalClaveTemporal" class="modal-bg" onclick="if(event.target===this)closeModal('modalClaveTemporal')">
+      <div class="modal" style="max-width:460px">
+        <h2 class="modal-title" id="tempPassTitle">Contraseña temporal</h2>
+        <div class="team-temp-pass">
+          <p class="team-muted" id="tempPassHelp">Entrégale esta contraseña al fisioterapeuta. Al ingresar por primera vez, el sistema le pedirá cambiarla.</p>
+          <code id="tempPassValue"></code>
+          <button class="btn btn-teal" onclick="copyTempPassword()">Copiar contraseña</button>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" onclick="closeModal('modalClaveTemporal')">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalAsignarPro" class="modal-bg" onclick="if(event.target===this)closeModal('modalAsignarPro')">
+      <div class="modal">
+        <h2 class="modal-title">Asignar cita al equipo</h2>
+        <input type="hidden" id="assignCitaId">
+        <div id="assignCitaResumen" class="team-panel" style="margin-bottom:14px"></div>
+        <div class="form-grid g2" style="gap:14px">
+          <div class="field">
+            <label>Fisioterapeuta</label>
+            <select id="assignProfessionalId"></select>
+          </div>
+          <div class="field"><label>Tarifa a pagar</label><input type="number" id="assignTarifa" placeholder="Ej: 50000"></div>
+          <div class="field">
+            <label>Permitir marcar antes de hora</label>
+            <select id="assignOverride">
+              <option value="">No</option>
+              <option value="1">Sí, autorización administrativa</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Autorización especial</label>
+            <select id="assignExcepcion">
+              <option value="">Exigir pago verificado</option>
+              <option value="1">Autorizar como excepción/cortesía</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" onclick="closeModal('modalAsignarPro')">Cerrar</button>
+          <button class="btn btn-ghost" onclick="saveAssignPro()">Guardar asignación</button>
+          <button class="btn btn-teal" onclick="authorizeAssignPro()">Autorizar para atender</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalProIssue" class="modal-bg" onclick="if(event.target===this)closeModal('modalProIssue')">
+      <div class="modal">
+        <h2 class="modal-title">Reportar novedad</h2>
+        <input type="hidden" id="proIssueCitaId">
+        <div class="form-grid g1" style="gap:14px">
+          <div class="field">
+            <label>Tipo de novedad</label>
+            <select id="proIssueTipo">
+              <option>Paciente no responde</option>
+              <option>Paciente solicita reprogramar</option>
+              <option>Paciente no asistió</option>
+              <option>Información incompleta</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Observación</label>
+            <textarea id="proIssueObs" rows="4" placeholder="Describe la novedad para administración"></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" onclick="closeModal('modalProIssue')">Cancelar</button>
+          <button class="btn btn-teal" onclick="sendProfessionalIssue()">Enviar novedad</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── MODAL MENSAJES ── -->
     <div id="modalMensaje" class="modal-bg" onclick="if(event.target===this)closeModal('modalMensaje')">
       <div class="modal">
@@ -5688,6 +5986,11 @@ window.addEventListener('beforeunload', () => {
 
 let TOKEN  = sessionStorage.getItem('adminToken') || '';
 let allData = {citas: [], bloqueos: [], eventos: []};
+let teamData = {profesionales: [], asignaciones: [], novedades: [], auditoria: [], cuentas: []};
+let PROFESSIONAL_TOKEN = sessionStorage.getItem('professionalToken') || '';
+let professionalSession = null;
+let professionalAgenda = [];
+let professionalMode = 'hoy';
 let _kpiViewMonth = null; // {m, y} o null = mes actual
 let _kpiServerHistory = {};
 
@@ -5697,6 +6000,447 @@ function esc(s) {
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
     .replace(/'/g,'&#39;');
+}
+
+const APPOINTMENT_STATUSES = [
+  'Pendiente de pago',
+  'Comprobante recibido',
+  'Pago verificado',
+  'Autorizada para atender',
+  'Sesión atendida',
+  'Reprogramada',
+  'Cancelada a tiempo',
+  'Cancelación tardía',
+  'No asistió',
+  'Cortesía autorizada',
+  'Reembolsada',
+  'Confirmada',
+  'Pendiente',
+  'Atendida',
+  'Cancelada'
+];
+
+function showOnlyScreen(screenId) {
+  ['loginScreen','adminApp','proLoginScreen','proApp'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id === screenId ? (id === 'adminApp' ? 'block' : 'flex') : 'none';
+  });
+  if (screenId === 'proApp') document.getElementById('proApp').style.display = 'block';
+  if (screenId === 'proLoginScreen') document.getElementById('proLoginScreen').style.display = 'block';
+}
+
+function byIdFrom(list, key, val) {
+  return (list || []).find(x => String(x[key] || '') === String(val || ''));
+}
+
+function assignmentFor(citaId) {
+  return byIdFrom(teamData.asignaciones, 'CitaID', citaId) || {};
+}
+
+function professionalName(id) {
+  const p = byIdFrom(teamData.profesionales, 'id', id) || byIdFrom(teamData.profesionales, 'ID', id);
+  return p ? (p.nombre || p.Nombre || 'Equipo') : 'Sin asignar';
+}
+
+async function loadTeamData() {
+  if (!TOKEN) return teamData;
+  try {
+    const d = await fetch(`${APPS_SCRIPT_URL}?action=teamData&token=${encodeURIComponent(TOKEN)}`).then(r => r.json());
+    if (d.ok) {
+      teamData = {
+        profesionales: d.profesionales || [],
+        asignaciones: d.asignaciones || [],
+        novedades: d.novedades || [],
+        auditoria: d.auditoria || [],
+        cuentas: d.cuentas || []
+      };
+      (allData.citas || []).forEach(c => {
+        const a = assignmentFor(c.id);
+        c.profesionalId = a.ProfesionalID || '';
+        c.estadoAutorizacion = a.EstadoAutorizacion || '';
+        c.tarifaProfesional = a.Tarifa || '';
+      });
+    }
+  } catch(e) {
+    console.warn('No se pudo cargar Equipo', e);
+  }
+  return teamData;
+}
+
+function activeProfessionals() {
+  return (teamData.profesionales || []).filter(p => (p.estado || p.Estado || 'Activo') === 'Activo');
+}
+
+function renderEquipo() {
+  const pros = (teamData.profesionales || []).filter(p => (p.estado || '') !== 'Eliminado');
+  const assigns = teamData.asignaciones || [];
+  const novedades = teamData.novedades || [];
+  const cuentas = teamData.cuentas || [];
+  const citas = citasReales ? citasReales() : (allData.citas || []);
+  const asignadas = new Set(assigns.map(a => String(a.CitaID || '')));
+  const pendientes = citas
+    .filter(c => !asignadas.has(String(c.id)) && !['Cancelada','Reprogramada','No asistió','Sesión atendida'].includes(c.estado))
+    .sort((a,b) => (`${normDate(a.fecha)} ${a.hora||''}`).localeCompare(`${normDate(b.fecha)} ${b.hora||''}`))
+    .slice(0, 12);
+  const porPagar = cuentas.filter(c => (c.Estado || '') !== 'Pagada');
+
+  document.getElementById('equipoStats').innerHTML = [
+    ['Profesionales activos', pros.filter(p => (p.estado || '') === 'Activo').length],
+    ['Citas asignadas', assigns.length],
+    ['Novedades pendientes', novedades.filter(n => (n.EstadoAdmin || 'Pendiente') === 'Pendiente').length],
+    ['Cuentas por pagar', porPagar.length]
+  ].map(([label,val]) => `<div class="team-stat"><small>${esc(label)}</small><strong>${esc(val)}</strong></div>`).join('');
+
+  document.getElementById('equipoProfesionales').innerHTML = pros.length ? pros.map(p => `
+    <div class="team-card">
+      <div class="team-card-head">
+        <div>
+          <h3>${esc(p.nombre)}</h3>
+          <div class="team-muted">${esc(p.rol || 'Fisioterapeuta')} · ${esc(p.usuario || '')}${p.email ? ' · ' + esc(p.email) : ''}</div>
+        </div>
+        <span class="team-pill ${(p.estado || '') === 'Activo' ? 'ok' : 'warn'}">${esc(p.estado || 'Activo')}</span>
+      </div>
+      <div class="team-muted" style="margin-top:8px"><strong>Servicios:</strong> ${esc(p.servicios || 'Sin definir')}</div>
+      <div class="team-muted"><strong>Disponibilidad:</strong> ${esc(p.disponibilidad || 'Sin definir')}</div>
+      <div class="team-card-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openProfessionalForm('${esc(p.id)}')">Editar</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetProPassword('${esc(p.id)}')">Reset clave</button>
+        <button class="btn ${(p.estado || '') === 'Activo' ? 'btn-danger' : 'btn-teal'} btn-sm" onclick="togglePro('${esc(p.id)}','${(p.estado || '') === 'Activo' ? 'Inactivo' : 'Activo'}')">${(p.estado || '') === 'Activo' ? 'Desactivar' : 'Activar'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePro('${esc(p.id)}','${esc(p.nombre)}')">Eliminar</button>
+      </div>
+    </div>`).join('') : '<div class="empty"><p>No hay fisioterapeutas creados aún.</p></div>';
+
+  document.getElementById('equipoPendientes').innerHTML = pendientes.length ? pendientes.map(c => `
+    <div class="team-card">
+      <div class="team-card-head">
+        <div>
+          <h3>${esc(c.nombre)}</h3>
+          <div class="team-muted">${esc(fmtDate(c.fecha))} · ${esc(c.hora)} · ${esc(c.servicio)}</div>
+        </div>
+        <span class="team-pill">${esc(c.estado || 'Pendiente')}</span>
+      </div>
+      <div class="team-card-actions">
+        <button class="btn btn-teal btn-sm" onclick="abrirAsignarPro('${esc(c.id)}')">Asignar / autorizar</button>
+        <button class="btn btn-ghost btn-sm" onclick="verDetalle('${esc(c.id)}')">Ver cita</button>
+      </div>
+    </div>`).join('') : '<div class="empty"><p>No hay citas pendientes por asignar.</p></div>';
+
+  document.getElementById('equipoNovedades').innerHTML = novedades.length ? novedades.slice().reverse().slice(0, 10).map(n => `
+    <div class="team-row">
+      <div>
+        <strong>${esc(n.Tipo || 'Novedad')}</strong>
+        <small>${esc(professionalName(n.ProfesionalID))} · Cita ${esc(n.CitaID)} · ${esc(n.Observacion || '')}</small>
+      </div>
+      <span class="team-pill warn">${esc(n.EstadoAdmin || 'Pendiente')}</span>
+    </div>`).join('') : '<div class="empty"><p>No hay novedades reportadas.</p></div>';
+
+  document.getElementById('equipoCuentas').innerHTML = cuentas.length ? cuentas.slice().reverse().slice(0, 12).map(c => `
+    <div class="team-row">
+      <div>
+        <strong>${esc(professionalName(c.ProfesionalID))}</strong>
+        <small>${esc(c.Servicio || '')} · Cita ${esc(c.CitaID)} · ${formatPrecio(parsePrecio(c.Tarifa || 0))}</small>
+      </div>
+      ${(c.Estado || '') === 'Pagada' ? '<span class="team-pill ok">Pagada</span>' : `<button class="btn btn-teal btn-sm" onclick="markPayablePaid('${esc(c.ID)}')">Marcar pagada</button>`}
+    </div>`).join('') : '<div class="empty"><p>Aún no hay cuentas por pagar generadas.</p></div>';
+}
+
+function openProfessionalForm(id='') {
+  const p = id ? byIdFrom(teamData.profesionales, 'id', id) : null;
+  document.getElementById('proFormTitle').textContent = p ? 'Editar fisioterapeuta' : 'Crear fisioterapeuta';
+  document.getElementById('teamProId').value = p?.id || '';
+  document.getElementById('teamProNombre').value = p?.nombre || '';
+  document.getElementById('teamProUsuario').value = p?.usuario || '';
+  document.getElementById('teamProEmail').value = p?.email || '';
+  document.getElementById('teamProRol').value = p?.rol || 'Fisioterapeuta';
+  document.getElementById('teamProEstado').value = p?.estado || 'Activo';
+  document.getElementById('teamProServicios').value = p?.servicios || '';
+  document.getElementById('teamProDisponibilidad').value = p?.disponibilidad || '';
+  openModal('modalProfesional');
+}
+
+function showTemporaryPassword(title, password) {
+  document.getElementById('tempPassTitle').textContent = title || 'Contraseña temporal';
+  document.getElementById('tempPassValue').textContent = password || '';
+  openModal('modalClaveTemporal');
+}
+
+async function copyTempPassword() {
+  const value = document.getElementById('tempPassValue').textContent.trim();
+  if (!value) return;
+  try {
+    await navigator.clipboard.writeText(value);
+    toast('Contraseña copiada');
+  } catch(e) {
+    const ta = document.createElement('textarea');
+    ta.value = value;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    toast('Contraseña copiada');
+  }
+}
+
+async function saveProfessionalForm() {
+  const payload = {
+    id: document.getElementById('teamProId').value,
+    nombre: document.getElementById('teamProNombre').value.trim(),
+    usuario: document.getElementById('teamProUsuario').value.trim(),
+    email: document.getElementById('teamProEmail').value.trim(),
+    rol: document.getElementById('teamProRol').value,
+    estado: document.getElementById('teamProEstado').value,
+    servicios: document.getElementById('teamProServicios').value.trim(),
+    disponibilidad: document.getElementById('teamProDisponibilidad').value.trim(),
+    tarifasJSON: '{}'
+  };
+  const d = await fetch(`${APPS_SCRIPT_URL}?action=saveProfessional&token=${encodeURIComponent(TOKEN)}&data=${encodeURIComponent(JSON.stringify(payload))}`).then(r => r.json());
+  if (!d.ok) { toast(d.error || 'No se pudo guardar', 'err'); return; }
+  closeModal('modalProfesional');
+  await loadTeamData();
+  renderEquipo();
+  if (d.tempPassword) showTemporaryPassword('Contraseña temporal creada', d.tempPassword);
+  else toast('Profesional actualizado');
+}
+
+async function resetProPassword(id) {
+  if (!confirm('¿Restablecer la contraseña de este usuario?')) return;
+  const d = await fetch(`${APPS_SCRIPT_URL}?action=resetProfessionalPassword&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(id)}`).then(r => r.json());
+  if (d.ok) showTemporaryPassword('Nueva contraseña temporal', d.tempPassword);
+  else toast(d.error || 'No se pudo restablecer', 'err');
+}
+
+async function togglePro(id, estado) {
+  const d = await fetch(`${APPS_SCRIPT_URL}?action=toggleProfessional&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(id)}&estado=${encodeURIComponent(estado)}`).then(r => r.json());
+  if (d.ok) { await loadTeamData(); renderEquipo(); toast('Estado actualizado'); }
+  else toast(d.error || 'No se pudo actualizar', 'err');
+}
+
+async function deletePro(id, nombre) {
+  const label = nombre || 'este fisioterapeuta';
+  if (!confirm(`¿Eliminar a ${label} de la lista de fisioterapeutas?\n\nNo podrá ingresar al portal. El historial interno se conserva para auditoría.`)) return;
+  const d = await fetch(`${APPS_SCRIPT_URL}?action=deleteProfessional&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(id)}`).then(r => r.json());
+  if (d.ok) {
+    await loadTeamData();
+    renderEquipo();
+    toast('Fisioterapeuta eliminado de la lista');
+  } else {
+    toast(d.error || 'No se pudo eliminar', 'err');
+  }
+}
+
+function abrirAsignarPro(citaId) {
+  const c = (allData.citas || []).find(x => String(x.id) === String(citaId));
+  if (!c) return toast('No encontré la cita', 'err');
+  const a = assignmentFor(citaId);
+  document.getElementById('assignCitaId').value = citaId;
+  document.getElementById('assignCitaResumen').innerHTML = `
+    <strong>${esc(c.nombre)}</strong>
+    <div class="team-muted">${esc(fmtDate(c.fecha))} · ${esc(c.hora)} · ${esc(c.servicio)} · Estado: ${esc(c.estado)}</div>
+    <div class="team-muted">Asignado actual: ${esc(professionalName(a.ProfesionalID))}</div>`;
+  document.getElementById('assignProfessionalId').innerHTML = activeProfessionals().map(p => `<option value="${esc(p.id)}" ${a.ProfesionalID === p.id ? 'selected' : ''}>${esc(p.nombre)} · ${esc(p.rol || 'Fisioterapeuta')}</option>`).join('');
+  document.getElementById('assignTarifa').value = a.Tarifa || '';
+  document.getElementById('assignOverride').value = a.OverrideAtencion === 'SI' ? '1' : '';
+  document.getElementById('assignExcepcion').value = '';
+  openModal('modalAsignarPro');
+}
+
+async function saveAssignPro() {
+  const params = new URLSearchParams({
+    action:'assignProfessional',
+    token:TOKEN,
+    citaId:document.getElementById('assignCitaId').value,
+    profesionalId:document.getElementById('assignProfessionalId').value,
+    tarifa:document.getElementById('assignTarifa').value,
+    override:document.getElementById('assignOverride').value
+  });
+  const d = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`).then(r => r.json());
+  if (d.ok) { await loadTeamData(); renderEquipo(); renderAgenda(true); toast('Cita asignada'); return true; }
+  toast(d.error || 'No se pudo asignar', 'err');
+  return false;
+}
+
+async function authorizeAssignPro() {
+  const assigned = await saveAssignPro();
+  if (!assigned) return;
+  const params = new URLSearchParams({
+    action:'authorizeAppointment',
+    token:TOKEN,
+    citaId:document.getElementById('assignCitaId').value,
+    excepcion:document.getElementById('assignExcepcion').value
+  });
+  const d = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`).then(r => r.json());
+  if (d.ok) {
+    closeModal('modalAsignarPro');
+    await reload();
+    await loadTeamData();
+    renderEquipo();
+    toast('Cita autorizada para atender');
+  } else toast(d.error || 'No se pudo autorizar', 'err');
+}
+
+async function markPayablePaid(id) {
+  if (!confirm('¿Marcar esta cuenta como pagada?')) return;
+  const d = await fetch(`${APPS_SCRIPT_URL}?action=markPayablePaid&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(id)}`).then(r => r.json());
+  if (d.ok) { await loadTeamData(); renderEquipo(); toast('Cuenta marcada como pagada'); }
+  else toast(d.error || 'No se pudo actualizar', 'err');
+}
+
+function openProfessionalLoginMode() {
+  location.hash = '/profesionales/login';
+  showOnlyScreen('proLoginScreen');
+  document.getElementById('proLoginErr').style.display = 'none';
+}
+
+function backToAdminLogin() {
+  location.hash = '';
+  showOnlyScreen(TOKEN ? 'adminApp' : 'loginScreen');
+}
+
+async function doProfessionalLogin() {
+  const btn = document.getElementById('proLoginBtn');
+  const err = document.getElementById('proLoginErr');
+  err.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  try {
+    const d = await fetch(APPS_SCRIPT_URL, {
+      method:'POST',
+      body:JSON.stringify({
+        action:'professionalLogin',
+        user:document.getElementById('proUser').value.trim(),
+        password:document.getElementById('proPass').value
+      })
+    }).then(r => r.json());
+    if (!d.ok) throw new Error(d.error || 'No pudimos iniciar sesión');
+    PROFESSIONAL_TOKEN = d.professionalToken;
+    professionalSession = d.professional;
+    sessionStorage.setItem('professionalToken', PROFESSIONAL_TOKEN);
+    if (professionalSession.debeCambiarPassword) {
+      document.getElementById('proFirstChangeBox').style.display = 'block';
+      toast('Cambia la contraseña temporal para continuar');
+    } else {
+      await showProfessionalApp();
+    }
+  } catch(e) {
+    err.textContent = e.message || 'Error de acceso';
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Ingresar al portal';
+  }
+}
+
+async function changeProfessionalPassword() {
+  const currentPassword = document.getElementById('proPass').value;
+  const newPassword = document.getElementById('proNewPass').value;
+  const d = await fetch(APPS_SCRIPT_URL, {
+    method:'POST',
+    body:JSON.stringify({action:'professionalChangePassword', token:PROFESSIONAL_TOKEN, currentPassword, newPassword})
+  }).then(r => r.json());
+  if (!d.ok) return toast(d.error || 'No se pudo cambiar la contraseña', 'err');
+  toast('Contraseña actualizada');
+  document.getElementById('proFirstChangeBox').style.display = 'none';
+  await showProfessionalApp();
+}
+
+async function showProfessionalApp() {
+  location.hash = '/profesionales/agenda';
+  showOnlyScreen('proApp');
+  document.getElementById('proWelcome').textContent = professionalSession ? `${professionalSession.nombre} · ${professionalSession.rol}` : 'Portal del equipo';
+  document.getElementById('proDate').value = today();
+  await loadProfessionalAgenda();
+}
+
+async function loadProfessionalAgenda() {
+  if (!PROFESSIONAL_TOKEN) return openProfessionalLoginMode();
+  const d = await fetch(`${APPS_SCRIPT_URL}?action=professionalAgenda&token=${encodeURIComponent(PROFESSIONAL_TOKEN)}`).then(r => r.json());
+  if (!d.ok) {
+    sessionStorage.removeItem('professionalToken');
+    PROFESSIONAL_TOKEN = '';
+    toast(d.error || 'Sesión vencida', 'err');
+    return openProfessionalLoginMode();
+  }
+  professionalSession = d.professional;
+  document.getElementById('proWelcome').textContent = professionalSession ? `${professionalSession.nombre} · ${professionalSession.rol}` : 'Portal del equipo';
+  professionalAgenda = d.citas || [];
+  renderProfessionalAgenda();
+}
+
+function setProfessionalMode(mode) {
+  professionalMode = mode;
+  document.querySelectorAll('.pro-seg').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('proMode-' + mode);
+  if (btn) btn.classList.add('active');
+  renderProfessionalAgenda();
+}
+
+function renderProfessionalAgenda() {
+  const selected = document.getElementById('proDate').value || today();
+  const base = professionalAgenda.slice().sort((a,b) => (`${a.fecha} ${a.hora}`).localeCompare(`${b.fecha} ${b.hora}`));
+  const start = new Date(selected + 'T00:00:00');
+  const end = new Date(start); end.setDate(end.getDate() + 7);
+  const list = base.filter(c => {
+    const d = new Date(c.fecha + 'T00:00:00');
+    if (professionalMode === 'hoy') return c.fecha === today();
+    if (professionalMode === 'fecha') return c.fecha === selected;
+    if (professionalMode === 'semana') return d >= start && d < end;
+    return d >= new Date(today() + 'T00:00:00');
+  });
+  document.getElementById('proAgendaList').innerHTML = list.length ? list.map(c => `
+    <article class="pro-card pro-appointment">
+      <div class="team-card-head">
+        <h3>${esc(c.nombre)}</h3>
+        <span class="team-pill info">${esc(c.estado)}</span>
+      </div>
+      <div class="pro-meta">
+        <span><strong>Fecha:</strong> ${esc(fmtDate(c.fecha))} · ${esc(c.hora)}</span>
+        <span><strong>Servicio:</strong> ${esc(c.servicio)} · ${esc(c.duracion)} min</span>
+        <span><strong>Lugar:</strong> ${esc(c.lugar || c.modalidad || '—')}</span>
+        ${c.observaciones ? `<span><strong>Observaciones:</strong> ${esc(c.observaciones)}</span>` : ''}
+      </div>
+      <div class="pro-actions">
+        <button class="btn btn-teal btn-sm" ${c.puedeAtender && c.estado !== 'Sesión atendida' ? '' : 'disabled'} onclick="markProfessionalAttended('${esc(c.id)}')">Marcar sesión atendida</button>
+        <button class="btn btn-ghost btn-sm" onclick="openProIssue('${esc(c.id)}')">Reportar novedad</button>
+      </div>
+    </article>`).join('') : '<div class="team-panel"><p class="team-muted">No hay citas autorizadas para este filtro.</p></div>';
+}
+
+async function markProfessionalAttended(citaId) {
+  if (!confirm('¿Confirmas que esta sesión ya fue atendida? Esta acción solo la puede revertir administración.')) return;
+  const d = await fetch(APPS_SCRIPT_URL, {
+    method:'POST',
+    body:JSON.stringify({action:'professionalMarkAttended', token:PROFESSIONAL_TOKEN, citaId})
+  }).then(r => r.json());
+  if (d.ok) { toast('Sesión marcada como atendida'); await loadProfessionalAgenda(); }
+  else toast(d.error || 'No se pudo marcar', 'err');
+}
+
+function openProIssue(citaId) {
+  document.getElementById('proIssueCitaId').value = citaId;
+  document.getElementById('proIssueTipo').value = 'Paciente no responde';
+  document.getElementById('proIssueObs').value = '';
+  openModal('modalProIssue');
+}
+
+async function sendProfessionalIssue() {
+  const d = await fetch(APPS_SCRIPT_URL, {
+    method:'POST',
+    body:JSON.stringify({
+      action:'professionalReportIssue',
+      token:PROFESSIONAL_TOKEN,
+      citaId:document.getElementById('proIssueCitaId').value,
+      tipo:document.getElementById('proIssueTipo').value,
+      observacion:document.getElementById('proIssueObs').value.trim()
+    })
+  }).then(r => r.json());
+  if (d.ok) { closeModal('modalProIssue'); toast('Novedad enviada a administración'); }
+  else toast(d.error || 'No se pudo enviar', 'err');
+}
+
+function professionalSignout() {
+  sessionStorage.removeItem('professionalToken');
+  PROFESSIONAL_TOKEN = '';
+  professionalSession = null;
+  professionalAgenda = [];
+  openProfessionalLoginMode();
 }
 
 let _submittingBooking = false;
@@ -5735,6 +6479,7 @@ async function doLogin() {
       document.getElementById('adminApp').style.display   = 'block';
       allData = d;
       await loadAdminKV();
+      await loadTeamData();
       reloadMetas();
       _initSidebarState();
       initDashboard();
@@ -5796,6 +6541,11 @@ document.addEventListener('visibilitychange', async () => {
 window.addEventListener('DOMContentLoaded', async () => {
   initAdminUX2026();
   document.getElementById('dashDate').textContent = new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  if (location.hash.startsWith('#/profesionales') || location.hash.startsWith('#profesionales')) {
+    if (PROFESSIONAL_TOKEN) await showProfessionalApp();
+    else openProfessionalLoginMode();
+    return;
+  }
   if (TOKEN) {
     const btn = document.getElementById('loginBtn');
     try {
@@ -5807,6 +6557,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('adminApp').style.display   = 'block';
         allData = d;
         await loadAdminKV();
+        await loadTeamData();
         reloadMetas();
         _initSidebarState();
         initDashboard();
@@ -6243,7 +6994,7 @@ function toggleKPIFavorite(e,id){e.stopPropagation();const fav=JSON.parse(localS
 function applyKPIFavorites(){let fav=[];try{fav=JSON.parse(localStorage.getItem('kpiFavorites')||'[]')}catch(e){}document.querySelectorAll('.kpi-live-card').forEach(c=>{const on=fav.includes(c.dataset.kpi);c.classList.toggle('is-favorite',on);const b=c.querySelector('.kpi-fav-btn');if(b){b.classList.toggle('active',on);b.textContent=on?'★':'☆';b.setAttribute('aria-label',on?'Quitar de favoritos':'Agregar a favoritos')}})}
 
 function showView(v) {
-  ['dashboard','acciones','espera','automatizaciones','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa','recuperacion'].forEach(id => {
+  ['dashboard','acciones','espera','automatizaciones','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','equipo','basedatos','codigos','paquetes','recordatorios','finanzas','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa','recuperacion'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -6294,6 +7045,7 @@ function showView(v) {
   }
   if (v === 'bloquear')       renderBloqueos();
   if (v === 'pacientes')      renderPacientes();
+  if (v === 'equipo')         { loadTeamData().then(renderEquipo); }
   if (v === 'calendario')     renderCalendar();
   if (v === 'recordatorios')  cargarRecordatorios();
   if (v === 'basedatos')      { renderBasedatos(); initFormDB(); renderChangeLog(); renderReactivacion(); }
@@ -7244,6 +7996,16 @@ function chipState(st) {
   if (st === 'Atendida')   return '<span class="chip chip-info">Atendida</span>';
   if (st === 'Cancelada')  return '<span class="chip chip-err">Cancelada</span>';
   if (st === 'No asistió') return '<span class="chip chip-no">No asistió</span>';
+  if (st === 'Pendiente de pago') return '<span class="chip chip-warn">Pendiente de pago</span>';
+  if (st === 'Comprobante recibido') return '<span class="chip chip-info">Comprobante recibido</span>';
+  if (st === 'Pago verificado') return '<span class="chip chip-ok">Pago verificado</span>';
+  if (st === 'Autorizada para atender') return '<span class="chip chip-ok">Autorizada para atender</span>';
+  if (st === 'Sesión atendida') return '<span class="chip chip-info">Sesión atendida</span>';
+  if (st === 'Reprogramada') return '<span class="chip chip-warn">Reprogramada</span>';
+  if (st === 'Cancelada a tiempo') return '<span class="chip chip-err">Cancelada a tiempo</span>';
+  if (st === 'Cancelación tardía') return '<span class="chip chip-err">Cancelación tardía</span>';
+  if (st === 'Cortesía autorizada') return '<span class="chip chip-ok">Cortesía autorizada</span>';
+  if (st === 'Reembolsada') return '<span class="chip chip-warn">Reembolsada</span>';
   return '<span class="chip chip-warn">' + (st||'—') + '</span>';
 }
 
@@ -7411,7 +8173,10 @@ async function reload() {
     const r = await fetch(APPS_SCRIPT_URL + '?action=adminData&token=' + encodeURIComponent(TOKEN));
     if (!r.ok) { toast('Error del servidor (' + r.status + '). Recarga la página.', 'err'); return; }
     const d = await r.json();
-    if (d.ok) allData = d;
+    if (d.ok) {
+      allData = d;
+      await loadTeamData();
+    }
     else if (d.error === 'Sin permiso') { toast('Sesión expirada. Volviendo al login...', 'warn'); setTimeout(logout, 1500); }
   } catch(e) {
     toast('Sin conexión. Verifica tu internet.', 'err');
@@ -8036,16 +8801,13 @@ function renderAgenda(keepPage = false) {
       <td style="font-family:var(--font-m);color:var(--primary);font-size:.82rem">${esc(c.precio)}<br>${pagoBadge(c.id)}</td>
       <td>
         <select class="btn btn-ghost btn-sm" onchange="changeStatus('${esc(c.id)}',this.value)" style="cursor:pointer">
-          <option ${c.estado==='Confirmada'?'selected':''}>Confirmada</option>
-          <option ${c.estado==='Pendiente'?'selected':''}>Pendiente</option>
-          <option ${c.estado==='Atendida'?'selected':''}>Atendida</option>
-          <option ${c.estado==='No asistió'?'selected':''}>No asistió</option>
-          <option ${c.estado==='Cancelada'?'selected':''}>Cancelada</option>
+          ${APPOINTMENT_STATUSES.map(st => `<option ${c.estado===st?'selected':''}>${esc(st)}</option>`).join('')}
         </select>
       </td>
       <td>
         <div style="display:flex;gap:4px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="verDetalle('${esc(c.id)}')">Ver</button>
+          <button class="btn btn-ghost btn-sm" onclick="abrirAsignarPro('${esc(c.id)}')">Equipo</button>
           ${(()=>{const u=waLink(c.telefono,c.nombre,c.fecha,c.hora,c.servicio,c.precio,c.modalidad);const s=wasWaSent(c.id,'conf');return u?`<a href="${u}" target="_blank" class="btn btn-wa btn-sm" title="${s?'Ya enviado':'Confirmación'}" onclick="markWaSent('${esc(c.id)}','conf');this.textContent=this.textContent.includes('✓')?this.textContent:'Conf.✓'" style="${s?'opacity:.5':''}">${s?'Conf.✓':'Conf.'}</a>`:'';})()}
           ${(()=>{const u=waLinkRec(c.telefono,c.nombre,c.fecha,c.hora,c.servicio);const s=wasWaSent(c.id,'rec');return u?`<a href="${u}" target="_blank" class="btn btn-wa-rec btn-sm" title="${s?'Ya enviado':'Recordatorio'}" onclick="markWaSent('${esc(c.id)}','rec');this.textContent=this.textContent.includes('✓')?this.textContent:'Rec.✓'" style="${s?'opacity:.5':''}">${s?'Rec.✓':'Rec.'}</a>`:'';})()}
           ${(()=>{const u=waLinkSeg(c.telefono,c.nombre,c.servicio,c.notaAdmin);const s=wasWaSent(c.id,'seg');return u?`<a href="${u}" target="_blank" class="btn btn-wa-seg btn-sm" title="${s?'Ya enviado':'Seguimiento'}" onclick="markWaSent('${esc(c.id)}','seg');this.textContent=this.textContent.includes('✓')?this.textContent:'Seg.✓'" style="${s?'opacity:.5':''}">${s?'Seg.✓':'Seg.'}</a>`:'';})()}

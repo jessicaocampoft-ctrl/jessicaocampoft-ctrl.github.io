@@ -30,6 +30,44 @@ function validateSession(token) {
   return CacheService.getScriptCache().get('sess_' + token) === '1';
 }
 
+function createProfessionalSession_(pro) {
+  var token = generateSessionToken();
+  var payload = {
+    id: '' + pro.id,
+    nombre: '' + pro.nombre,
+    usuario: '' + pro.usuario,
+    email: '' + pro.email,
+    rol: '' + (pro.rol || 'Fisioterapeuta'),
+    debeCambiarPassword: !!pro.debeCambiarPassword
+  };
+  CacheService.getScriptCache().put('prosess_' + token, JSON.stringify(payload), 14400);
+  return token;
+}
+function validateProfessionalSession_(token) {
+  if (!token || token.length < 20) return null;
+  var raw = CacheService.getScriptCache().get('prosess_' + token);
+  if (!raw) return null;
+  try {
+    CacheService.getScriptCache().put('prosess_' + token, raw, 14400);
+    return JSON.parse(raw);
+  } catch(e) {
+    return null;
+  }
+}
+function hashPassword_(password, salt) {
+  var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, salt + '|' + password, Utilities.Charset.UTF_8);
+  return bytes.map(function(b) {
+    var v = (b < 0 ? b + 256 : b).toString(16);
+    return v.length === 1 ? '0' + v : v;
+  }).join('');
+}
+function makeSalt_() {
+  return Utilities.getUuid().replace(/-/g, '') + new Date().getTime();
+}
+function makeTempPassword_() {
+  return 'Cuidandote-' + Math.floor(100000 + Math.random() * 900000);
+}
+
 // ── RATE LIMITING LOGIN ── máx 5 intentos fallidos en 5 minutos (global)
 function loginAllowed() {
   var v = CacheService.getScriptCache().get('login_fails');
@@ -69,6 +107,11 @@ function doGet(e) {
   // Reseñas Google — público (sin token)
   if (p.action === 'getReviews') {
     return js(getGoogleReviews());
+  }
+
+  // Portal del fisioterapeuta — protegido por sesión profesional.
+  if (p.action === 'professionalAgenda') {
+    return js(getProfessionalAgenda_(p.token));
   }
 
   if (!validateSession(p.token)) {
@@ -115,6 +158,14 @@ function doGet(e) {
   if (p.action === 'getWaitlist')          return js(getWaitlist());
   if (p.action === 'addWaitlist')          return js(addWaitlist(p.data));
   if (p.action === 'removeWaitlist')       return js(removeWaitlist(p.id));
+  if (p.action === 'teamData')             return js(getTeamModuleData_());
+  if (p.action === 'saveProfessional')     return js(saveProfessional_(p.data));
+  if (p.action === 'resetProfessionalPassword') return js(resetProfessionalPassword_(p.id));
+  if (p.action === 'toggleProfessional')   return js(toggleProfessional_(p.id, p.estado));
+  if (p.action === 'deleteProfessional')   return js(deleteProfessional_(p.id));
+  if (p.action === 'assignProfessional')   return js(assignProfessionalToAppointment_(p));
+  if (p.action === 'authorizeAppointment') return js(authorizeAppointmentForProfessional_(p));
+  if (p.action === 'markPayablePaid')      return js(markProfessionalPayablePaid_(p.id));
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -130,6 +181,18 @@ function doGet(e) {
 function doPost(e) {
   try {
     var d = JSON.parse(e.postData.contents);
+    if (d.action === 'professionalLogin') {
+      return js(professionalLogin_(d.user, d.password));
+    }
+    if (d.action === 'professionalChangePassword') {
+      return js(professionalChangePassword_(d.token, d.currentPassword, d.newPassword));
+    }
+    if (d.action === 'professionalMarkAttended') {
+      return js(professionalMarkAttended_(d.token, d.citaId));
+    }
+    if (d.action === 'professionalReportIssue') {
+      return js(professionalReportIssue_(d.token, d.citaId, d.tipo, d.observacion));
+    }
     if (d.action === 'adminLogin') {
       if (!loginAllowed()) return js({ok: false, error: 'Demasiados intentos fallidos. Espera 5 minutos.'});
       if (!d.password || d.password !== ADMIN_TOKEN) {
@@ -816,6 +879,325 @@ function getAdminData() {
   }
 
   return {ok: true, citas: citas, bloqueos: bloqueos, pacientes: pacientes, codigos: codigos, eventos: eventos};
+}
+
+// -------------------------------------------------------------
+//  PORTAL DEL FISIOTERAPEUTA / EQUIPO
+// -------------------------------------------------------------
+function teamSheet_(name) {
+  var ss = getOrCreateSheet();
+  var headers = {
+    Profesionales: ['ID','Nombre','Usuario','Email','Rol','Estado','Servicios','Disponibilidad','TarifasJSON','Salt','PasswordHash','DebeCambiarPassword','Creado','Actualizado'],
+    CitaEquipo: ['CitaID','ProfesionalID','EstadoAutorizacion','OverrideAtencion','Tarifa','Actualizado','AsignadoPor'],
+    NovedadesProfesionales: ['ID','CitaID','ProfesionalID','Tipo','Observacion','Creado','EstadoAdmin'],
+    AuditoriaEquipo: ['ID','Fecha','UsuarioID','UsuarioNombre','Rol','Accion','CitaID','EstadoAnterior','EstadoNuevo','Observaciones'],
+    CuentasPorPagar: ['ID','ProfesionalID','CitaID','Servicio','Tarifa','Estado','Creado','Pagado','LiquidacionID']
+  };
+  var sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+    sh.getRange(1,1,1,headers[name].length).setValues([headers[name]]);
+  }
+  return sh;
+}
+function rowObj_(headers, row) {
+  var o = {};
+  for (var i = 0; i < headers.length; i++) o[headers[i]] = row[i];
+  return o;
+}
+function getProfessionals_() {
+  var sh = teamSheet_('Profesionales');
+  var rows = sh.getDataRange().getValues(), out = [];
+  for (var i = 1; i < rows.length; i++) {
+    if (!rows[i][0]) continue;
+    out.push({
+      id: '' + rows[i][0], nombre: '' + (rows[i][1] || ''), usuario: '' + (rows[i][2] || ''),
+      email: '' + (rows[i][3] || ''), rol: '' + (rows[i][4] || 'Fisioterapeuta'),
+      estado: '' + (rows[i][5] || 'Activo'), servicios: '' + (rows[i][6] || ''),
+      disponibilidad: '' + (rows[i][7] || ''), tarifasJSON: '' + (rows[i][8] || '{}'),
+      salt: '' + (rows[i][9] || ''), passwordHash: '' + (rows[i][10] || ''),
+      debeCambiarPassword: ('' + rows[i][11]).toLowerCase() === 'true' || rows[i][11] === true
+    });
+  }
+  return out;
+}
+function getProfessionalByLogin_(user) {
+  var u = (user || '').toLowerCase().trim(), list = getProfessionals_();
+  for (var i = 0; i < list.length; i++) {
+    if ((list[i].usuario || '').toLowerCase().trim() === u || (list[i].email || '').toLowerCase().trim() === u) return list[i];
+  }
+  return null;
+}
+function getProfessionalById_(id) {
+  var list = getProfessionals_();
+  for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+  return null;
+}
+function getAssignmentMap_() {
+  var sh = teamSheet_('CitaEquipo');
+  var rows = sh.getDataRange().getValues(), map = {};
+  for (var i = 1; i < rows.length; i++) {
+    if (!rows[i][0]) continue;
+    map['' + rows[i][0]] = {
+      citaId: '' + rows[i][0], profesionalId: '' + (rows[i][1] || ''),
+      estadoAutorizacion: '' + (rows[i][2] || ''),
+      overrideAtencion: ('' + rows[i][3]).toUpperCase() === 'SI',
+      tarifa: rows[i][4], actualizado: rows[i][5], asignadoPor: rows[i][6]
+    };
+  }
+  return map;
+}
+function getCitaById_(id) {
+  var sh = getOrCreateSheet().getSheetByName('Citas');
+  var rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][0] === '' + id) {
+      var r = rows[i];
+      return {row: i + 1, raw: r, cita: {
+        id: r[0], fechaReg: r[1], nombre: r[2], telefono: ('' + (r[3] || '')).replace(/\D/g,''),
+        email: r[4], servicio: r[5], modalidad: r[6],
+        fecha: (r[7] instanceof Date) ? fmtDate(r[7]) : (r[7] ? ('' + r[7]).split('T')[0] : ''),
+        hora: st(r[8]), precio: r[9], estado: r[10], direccion: r[11], notas: r[12], notaAdmin: r[13],
+        pago: ('' + (r[14] || '')).trim()
+      }};
+    }
+  }
+  return null;
+}
+function auditTeam_(user, action, citaId, prevState, newState, obs) {
+  teamSheet_('AuditoriaEquipo').appendRow([
+    'AUD-' + new Date().getTime() + '-' + Math.floor(Math.random()*999),
+    new Date(), user && user.id ? user.id : '', user && user.nombre ? user.nombre : 'Sistema',
+    user && user.rol ? user.rol : 'Sistema', action || '', citaId || '', prevState || '', newState || '', obs || ''
+  ]);
+}
+function professionalLogin_(user, password) {
+  if (!loginAllowed()) return {ok:false,error:'Demasiados intentos fallidos. Espera 5 minutos.'};
+  var pro = getProfessionalByLogin_(user);
+  if (!pro || pro.estado !== 'Activo' || !password || hashPassword_(password, pro.salt) !== pro.passwordHash) {
+    recordLoginFail();
+    auditTeam_({rol:'Sistema', nombre:'Sistema'}, 'Intento de acceso profesional fallido', '', '', '', user || '');
+    return {ok:false,error:'Credenciales incorrectas o usuario inactivo'};
+  }
+  resetLoginFails();
+  return {ok:true, professionalToken:createProfessionalSession_(pro), professional:{
+    id:pro.id,nombre:pro.nombre,usuario:pro.usuario,email:pro.email,rol:pro.rol,debeCambiarPassword:pro.debeCambiarPassword
+  }};
+}
+function professionalChangePassword_(token, currentPassword, newPassword) {
+  var sess = validateProfessionalSession_(token);
+  if (!sess) return {ok:false,error:'Sin permiso'};
+  if (!newPassword || newPassword.length < 8) return {ok:false,error:'La nueva contraseña debe tener mínimo 8 caracteres.'};
+  var sh = teamSheet_('Profesionales'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][0] !== sess.id) continue;
+    var salt = '' + rows[i][9];
+    if (!currentPassword || hashPassword_(currentPassword, salt) !== rows[i][10]) return {ok:false,error:'La contraseña actual no coincide.'};
+    var newSalt = makeSalt_();
+    sh.getRange(i+1, 10, 1, 3).setValues([[newSalt, hashPassword_(newPassword, newSalt), false]]);
+    sh.getRange(i+1, 14).setValue(new Date());
+    auditTeam_(sess, 'Cambio de contraseña profesional', '', '', '', 'Cambio realizado por el profesional');
+    return {ok:true};
+  }
+  return {ok:false,error:'Usuario no encontrado'};
+}
+function canProfessionalAttend_(citaRow, assignment) {
+  if (assignment && assignment.overrideAtencion) return true;
+  var fecha = (citaRow[7] instanceof Date) ? fmtDate(citaRow[7]) : (citaRow[7] ? ('' + citaRow[7]).split('T')[0] : '');
+  var hora = st(citaRow[8]);
+  if (!fecha || !hora) return false;
+  return new Date() >= parseDT(fecha, hora);
+}
+function getProfessionalAgenda_(token) {
+  var sess = validateProfessionalSession_(token);
+  if (!sess) {
+    auditTeam_({rol:'Sistema', nombre:'Sistema'}, 'Acceso no autorizado al portal profesional', '', '', '', 'Token inválido');
+    return {ok:false,error:'Sin permiso'};
+  }
+  var assignments = getAssignmentMap_(), rows = getOrCreateSheet().getSheetByName('Citas').getDataRange().getValues(), citas = [];
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i], id = '' + r[0], a = assignments[id];
+    if (!a || a.profesionalId !== sess.id) continue;
+    var estado = '' + (r[10] || '');
+    var autorizado = estado === 'Autorizada para atender' || estado === 'Sesión atendida' || a.estadoAutorizacion === 'Autorizada para atender' || a.estadoAutorizacion === 'Sesión atendida';
+    if (!autorizado) continue;
+    citas.push({
+      id:id,
+      fecha:(r[7] instanceof Date) ? fmtDate(r[7]) : (r[7] ? ('' + r[7]).split('T')[0] : ''),
+      hora:st(r[8]), nombre:'' + (r[2] || ''), servicio:'' + (r[5] || ''),
+      duracion:getServiceDuration(r[5]) + ((r[6] === 'Domicilio') ? 30 : 0),
+      lugar:r[6] === 'Domicilio' ? ('' + (r[11] || 'Domicilio')) : 'Sede / presencial',
+      modalidad:'' + (r[6] || ''), observaciones:[r[12], r[13]].filter(Boolean).join(' · '),
+      estado:estado, autorizacion:a.estadoAutorizacion || estado, puedeAtender:canProfessionalAttend_(r, a)
+    });
+  }
+  return {ok:true, professional:sess, citas:citas};
+}
+function professionalMarkAttended_(token, citaId) {
+  var sess = validateProfessionalSession_(token);
+  if (!sess) return {ok:false,error:'Sin permiso'};
+  var found = getCitaById_(citaId);
+  if (!found) return {ok:false,error:'Cita no encontrada'};
+  var assignment = getAssignmentMap_()[citaId];
+  if (!assignment || assignment.profesionalId !== sess.id) {
+    auditTeam_(sess, 'Intento de marcar cita ajena', citaId, '', '', 'Bloqueado por backend');
+    return {ok:false,error:'No tienes permiso para esta cita'};
+  }
+  if (found.cita.estado === 'Sesión atendida') return {ok:false,error:'Esta sesión ya fue marcada como atendida'};
+  if (!canProfessionalAttend_(found.raw, assignment)) return {ok:false,error:'Solo puedes marcar la sesión cuando llegue la fecha y hora de la cita'};
+  var prev = found.cita.estado;
+  getOrCreateSheet().getSheetByName('Citas').getRange(found.row, 11).setValue('Sesión atendida');
+  var linkSh = teamSheet_('CitaEquipo'), links = linkSh.getDataRange().getValues();
+  for (var i = 1; i < links.length; i++) {
+    if ('' + links[i][0] === citaId) {
+      linkSh.getRange(i+1, 3).setValue('Sesión atendida');
+      linkSh.getRange(i+1, 6).setValue(new Date());
+      break;
+    }
+  }
+  ensurePayableForAppointment_(sess.id, citaId, found.cita.servicio, assignment.tarifa);
+  auditTeam_(sess, 'Marcó sesión como atendida', citaId, prev, 'Sesión atendida', 'Acción realizada desde portal profesional');
+  try { GmailApp.sendEmail(JESSICA_EMAIL, 'Sesión atendida: ' + found.cita.nombre, sess.nombre + ' marcó como atendida la cita ' + citaId + ' de ' + found.cita.nombre + '.'); } catch(e) {}
+  return {ok:true};
+}
+function professionalReportIssue_(token, citaId, tipo, observacion) {
+  var sess = validateProfessionalSession_(token);
+  if (!sess) return {ok:false,error:'Sin permiso'};
+  var assignment = getAssignmentMap_()[citaId];
+  if (!assignment || assignment.profesionalId !== sess.id) {
+    auditTeam_(sess, 'Intento de reportar novedad en cita ajena', citaId, '', '', 'Bloqueado por backend');
+    return {ok:false,error:'No tienes permiso para esta cita'};
+  }
+  var id = 'NOV-' + new Date().getTime() + '-' + Math.floor(Math.random()*999);
+  teamSheet_('NovedadesProfesionales').appendRow([id, citaId, sess.id, tipo || 'Otro', observacion || '', new Date(), 'Pendiente']);
+  auditTeam_(sess, 'Reportó novedad', citaId, '', '', (tipo || 'Otro') + ' · ' + (observacion || ''));
+  return {ok:true,id:id};
+}
+function saveProfessional_(data) {
+  var p = JSON.parse(decodeURIComponent(data || '{}'));
+  if (!p.nombre || !p.usuario) return {ok:false,error:'Nombre y usuario son obligatorios'};
+  var sh = teamSheet_('Profesionales'), rows = sh.getDataRange().getValues(), now = new Date(), tempPassword = '';
+  if (p.id) {
+    for (var i = 1; i < rows.length; i++) {
+      if ('' + rows[i][0] !== '' + p.id) continue;
+      sh.getRange(i+1, 2, 1, 8).setValues([[p.nombre, p.usuario, p.email || '', p.rol || 'Fisioterapeuta', p.estado || 'Activo', p.servicios || '', p.disponibilidad || '', p.tarifasJSON || '{}']]);
+      sh.getRange(i+1, 14).setValue(now);
+      auditTeam_({rol:'Administrador', nombre:'Administración'}, 'Actualizó profesional', '', '', '', p.nombre);
+      return {ok:true,id:p.id};
+    }
+  }
+  var id = 'PRO-' + new Date().getTime();
+  tempPassword = p.password || makeTempPassword_();
+  var salt = makeSalt_();
+  sh.appendRow([id, p.nombre, p.usuario, p.email || '', p.rol || 'Fisioterapeuta', p.estado || 'Activo', p.servicios || '', p.disponibilidad || '', p.tarifasJSON || '{}', salt, hashPassword_(tempPassword, salt), true, now, now]);
+  auditTeam_({rol:'Administrador', nombre:'Administración'}, 'Creó profesional', '', '', '', p.nombre);
+  return {ok:true,id:id,tempPassword:tempPassword};
+}
+function resetProfessionalPassword_(id) {
+  var sh = teamSheet_('Profesionales'), rows = sh.getDataRange().getValues(), temp = makeTempPassword_(), salt = makeSalt_();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][0] !== '' + id) continue;
+    sh.getRange(i+1, 10, 1, 5).setValues([[salt, hashPassword_(temp, salt), true, rows[i][12] || new Date(), new Date()]]);
+    auditTeam_({rol:'Administrador', nombre:'Administración'}, 'Restableció contraseña profesional', '', '', '', id);
+    return {ok:true,tempPassword:temp};
+  }
+  return {ok:false,error:'Profesional no encontrado'};
+}
+function toggleProfessional_(id, estado) {
+  var sh = teamSheet_('Profesionales'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][0] !== '' + id) continue;
+    sh.getRange(i+1, 6).setValue(estado || 'Inactivo');
+    sh.getRange(i+1, 14).setValue(new Date());
+    return {ok:true};
+  }
+  return {ok:false,error:'Profesional no encontrado'};
+}
+function deleteProfessional_(id) {
+  var sh = teamSheet_('Profesionales'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][0] !== '' + id) continue;
+    sh.getRange(i+1, 6).setValue('Eliminado');
+    sh.getRange(i+1, 14).setValue(new Date());
+    auditTeam_({rol:'Administrador', nombre:'Administración'}, 'Eliminó profesional', '', '', '', rows[i][1] || id);
+    return {ok:true};
+  }
+  return {ok:false,error:'Profesional no encontrado'};
+}
+function assignProfessionalToAppointment_(p) {
+  if (!p.citaId || !p.profesionalId) return {ok:false,error:'Falta cita o profesional'};
+  var pro = getProfessionalById_(p.profesionalId);
+  if (!pro || pro.estado !== 'Activo') return {ok:false,error:'Profesional inactivo o no encontrado'};
+  var found = getCitaById_(p.citaId);
+  if (!found) return {ok:false,error:'Cita no encontrada'};
+  var sh = teamSheet_('CitaEquipo'), rows = sh.getDataRange().getValues(), row = -1;
+  for (var i = 1; i < rows.length; i++) if ('' + rows[i][0] === '' + p.citaId) row = i + 1;
+  var values = [p.citaId, p.profesionalId, p.estadoAutorizacion || '', p.override === '1' ? 'SI' : '', p.tarifa || '', new Date(), 'Administración'];
+  if (row > 0) sh.getRange(row, 1, 1, values.length).setValues([values]);
+  else sh.appendRow(values);
+  auditTeam_({rol:'Administrador', nombre:'Administración'}, 'Asignó cita a profesional', p.citaId, '', '', pro.nombre);
+  return {ok:true};
+}
+function authorizeAppointmentForProfessional_(p) {
+  var found = getCitaById_(p.citaId);
+  if (!found) return {ok:false,error:'Cita no encontrada'};
+  var assignment = getAssignmentMap_()[p.citaId];
+  if (!assignment || !assignment.profesionalId) return {ok:false,error:'Primero asigna un fisioterapeuta'};
+  var inactiveStates = ['Cancelada','Cancelada a tiempo','Cancelación tardía','Reprogramada','No asistió','Reembolsada'];
+  var active = inactiveStates.indexOf(found.cita.estado) === -1;
+  var paid = !!found.cita.pago || found.cita.estado === 'Pago verificado' || found.cita.estado === 'Cortesía autorizada';
+  if (!active) return {ok:false,error:'La cita no está activa'};
+  if (!paid && p.excepcion !== '1') return {ok:false,error:'Falta pago verificado. Usa excepción si quieres autorizar cortesía o caso especial.'};
+  var prev = found.cita.estado;
+  getOrCreateSheet().getSheetByName('Citas').getRange(found.row, 11).setValue('Autorizada para atender');
+  var sh = teamSheet_('CitaEquipo'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][0] === '' + p.citaId) {
+      sh.getRange(i+1, 3).setValue('Autorizada para atender');
+      sh.getRange(i+1, 6).setValue(new Date());
+      break;
+    }
+  }
+  auditTeam_({rol:'Administrador', nombre:'Administración'}, 'Autorizó cita para atender', p.citaId, prev, 'Autorizada para atender', p.excepcion === '1' ? 'Con excepción administrativa' : '');
+  return {ok:true};
+}
+function ensurePayableForAppointment_(professionalId, citaId, servicio, tarifa) {
+  var sh = teamSheet_('CuentasPorPagar'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) if ('' + rows[i][2] === citaId) return;
+  sh.appendRow(['PAG-' + new Date().getTime(), professionalId, citaId, servicio || '', tarifa || '', 'Pendiente', new Date(), '', '']);
+}
+function markProfessionalPayablePaid_(id) {
+  var sh = teamSheet_('CuentasPorPagar'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][0] !== '' + id) continue;
+    sh.getRange(i+1, 6, 1, 3).setValues([['Pagada', new Date(), 'LIQ-' + Utilities.formatDate(new Date(), 'America/Bogota', 'yyyyMM')]]);
+    return {ok:true};
+  }
+  return {ok:false,error:'Cuenta no encontrada'};
+}
+function getTeamModuleData_() {
+  function sheetRows(name) {
+    var sh = teamSheet_(name), values = sh.getDataRange().getValues();
+    var headers = values[0], out = [];
+    for (var i = 1; i < values.length; i++) {
+      if (!values[i][0]) continue;
+      var o = rowObj_(headers, values[i]);
+      Object.keys(o).forEach(function(k) {
+        if (o[k] instanceof Date) o[k] = o[k].toISOString();
+        else o[k] = '' + (o[k] || '');
+      });
+      out.push(o);
+    }
+    return out;
+  }
+  return {
+    ok:true,
+    profesionales:getProfessionals_().map(function(p){return {id:p.id,nombre:p.nombre,usuario:p.usuario,email:p.email,rol:p.rol,estado:p.estado,servicios:p.servicios,disponibilidad:p.disponibilidad,tarifasJSON:p.tarifasJSON,debeCambiarPassword:p.debeCambiarPassword};}),
+    asignaciones:sheetRows('CitaEquipo'),
+    novedades:sheetRows('NovedadesProfesionales'),
+    auditoria:sheetRows('AuditoriaEquipo').slice(-80).reverse(),
+    cuentas:sheetRows('CuentasPorPagar')
+  };
 }
 
 // -------------------------------------------------------------
