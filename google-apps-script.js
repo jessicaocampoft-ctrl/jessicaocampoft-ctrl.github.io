@@ -1010,6 +1010,21 @@ function isProfessionalAppointmentAuthorized_(citaRow, assignment) {
 function isProfessionalInactiveAppointment_(estado) {
   return ['Cancelada','Cancelada a tiempo','CancelaciÃ³n tardÃ­a','Reprogramada','No asistiÃ³','Reembolsada'].indexOf('' + estado) > -1;
 }
+function teamStateKey_(value) {
+  var s = ('' + (value || '')).toLowerCase().trim();
+  try { s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch(e) {}
+  return s;
+}
+function isProfessionalAppointmentAuthorized_(citaRow, assignment) {
+  var estado = teamStateKey_(citaRow[10]);
+  var aut = teamStateKey_(assignment ? assignment.estadoAutorizacion : '');
+  var valid = ['autorizada para atender','sesion atendida','confirmada','pago verificado','cortesia autorizada','atendida'];
+  return valid.indexOf(estado) > -1 || valid.indexOf(aut) > -1;
+}
+function isProfessionalInactiveAppointment_(estado) {
+  var key = teamStateKey_(estado);
+  return ['cancelada','cancelada a tiempo','cancelacion tardia','reprogramada','no asistio','reembolsada'].indexOf(key) > -1;
+}
 function canProfessionalAttend_(citaRow, assignment) {
   if (!isProfessionalAppointmentAuthorized_(citaRow, assignment)) return false;
   if (assignment && assignment.overrideAtencion) return true;
@@ -1106,6 +1121,34 @@ function professionalMarkAttended_(token, citaId) {
   ensurePayableForAppointment_(sess.id, citaId, found.cita.servicio, assignment.tarifa);
   auditTeam_(sess, 'Marcó sesión como atendida', citaId, prev, 'Sesión atendida', 'Acción realizada desde portal profesional');
   try { GmailApp.sendEmail(JESSICA_EMAIL, 'Sesión atendida: ' + found.cita.nombre, sess.nombre + ' marcó como atendida la cita ' + citaId + ' de ' + found.cita.nombre + '.'); } catch(e) {}
+  return {ok:true};
+}
+function professionalMarkAttended_(token, citaId) {
+  var sess = validateProfessionalSession_(token);
+  if (!sess) return {ok:false,error:'Sin permiso'};
+  var attendedStatus = 'Sesi\u00f3n atendida';
+  var found = getCitaById_(citaId);
+  if (!found) return {ok:false,error:'Cita no encontrada'};
+  var assignment = getAssignmentMap_()[citaId];
+  if (!assignment || assignment.profesionalId !== sess.id) {
+    auditTeam_(sess, 'Intento de marcar cita ajena', citaId, '', '', 'Bloqueado por backend');
+    return {ok:false,error:'No tienes permiso para esta cita'};
+  }
+  if (teamStateKey_(found.cita.estado) === 'sesion atendida') return {ok:false,error:'Esta sesi\u00f3n ya fue marcada como atendida'};
+  if (!canProfessionalAttend_(found.raw, assignment)) return {ok:false,error:'Solo puedes marcar la sesi\u00f3n cuando llegue la fecha y hora de la cita'};
+  var prev = found.cita.estado;
+  getOrCreateSheet().getSheetByName('Citas').getRange(found.row, 11).setValue(attendedStatus);
+  var linkSh = teamSheet_('CitaEquipo'), links = linkSh.getDataRange().getValues();
+  for (var i = 1; i < links.length; i++) {
+    if ('' + links[i][0] === citaId) {
+      linkSh.getRange(i+1, 3).setValue(attendedStatus);
+      linkSh.getRange(i+1, 6).setValue(new Date());
+      break;
+    }
+  }
+  ensurePayableForAppointment_(sess.id, citaId, found.cita.servicio, assignment.tarifa);
+  auditTeam_(sess, 'Marco sesion como atendida', citaId, prev, attendedStatus, 'Accion realizada desde portal profesional');
+  try { GmailApp.sendEmail(JESSICA_EMAIL, attendedStatus + ': ' + found.cita.nombre, sess.nombre + ' marco como atendida la cita ' + citaId + ' de ' + found.cita.nombre + '.'); } catch(e) {}
   return {ok:true};
 }
 function professionalReportIssue_(token, citaId, tipo, observacion) {
