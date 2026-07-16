@@ -166,6 +166,11 @@ function doGet(e) {
   if (p.action === 'assignProfessional')   return js(assignProfessionalToAppointment_(p));
   if (p.action === 'authorizeAppointment') return js(authorizeAppointmentForProfessional_(p));
   if (p.action === 'markPayablePaid')      return js(markProfessionalPayablePaid_(p.id));
+  if (p.action === 'setupOperationsModule') return js(setupOperationsModule_());
+  if (p.action === 'operationsData')        return js(getOperationsData_());
+  if (p.action === 'savePayment')           return js(savePayment_(p.data, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+  if (p.action === 'verifyPayment')         return js(verifyPayment_(p, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+  if (p.action === 'savePaymentAccount')    return js(savePaymentAccount_(p.data, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -1294,6 +1299,251 @@ function getTeamModuleData_() {
 // -------------------------------------------------------------
 //  HELPERS PLANES — detección y lógica de pagos
 // -------------------------------------------------------------
+// -------------------------------------------------------------
+//  MODULO OPERATIVO: PAGOS, PLANES, ROLES, HISTORIAL
+// -------------------------------------------------------------
+var APPOINTMENT_STATUS_CATALOG = [
+  'Solicitud recibida','Pendiente de pago','Pago por verificar','Pago rechazado',
+  'Confirmada','Pago verificado','Cortesía autorizada','Autorizada para atender',
+  'Sesión iniciada','Sesión atendida','Cerrada','Cancelada a tiempo',
+  'Cancelación tardía','No asistió','Reprogramada','Saldo a favor',
+  'Reserva vencida','Cancelada','Atendida','Pendiente'
+];
+
+function operationsSheet_(name) {
+  var ss = getOrCreateSheet();
+  var headers = {
+    Roles: ['ID','Nombre','Descripcion','Permisos','Estado','Creado','Actualizado'],
+    UsuariosAdmin: ['ID','Nombre','Email','Rol','Estado','Creado','Actualizado'],
+    CuentasPago: ['ID','Medio','Tipo','Numero','Titular','Estado','Orden','Actualizado'],
+    ConfiguracionOperativa: ['Clave','Valor','Descripcion','Actualizado'],
+    HistorialEstadosCita: ['ID','CitaID','CodigoReserva','EstadoAnterior','EstadoNuevo','Fecha','UsuarioID','UsuarioNombre','Rol','Observacion'],
+    Pagos: ['ID','CodigoReserva','CitaID','Cliente','ServicioPlan','ValorEsperado','ValorRecibido','MedioPago','CuentaReceptora','FechaPago','FechaVerificacion','Comprobante','EstadoPago','UsuarioVerifico','Observaciones','CuotaNumero','SaldoPendiente','Creado','Actualizado'],
+    ComprobantesPago: ['ID','PagoID','CodigoReserva','CitaID','NombreArchivo','TipoArchivo','Tamano','DriveFileID','Estado','Creado','Observaciones'],
+    PlantillasPlanes: ['ID','Nombre','Descripcion','SesionesTotales','PrecioIndividual','PrecioTotal','PrecioSesionPlan','Descuento','NumeroCuotas','CuotasJSON','SesionesPorCuotaJSON','VigenciaDias','ServiciosIncluidos','Estado','Actualizado'],
+    PlanesCliente: ['ID','Cliente','Telefono','Email','PlantillaID','NombrePlan','CitaOrigenID','SesionesTotales','SesionesPagadas','SesionesUsadas','SesionesDisponibles','SaldoPendiente','ProximaCuota','Vence','ProfesionalID','Estado','Creado','Actualizado'],
+    CuotasPlan: ['ID','PlanClienteID','NumeroCuota','Valor','Estado','FechaPago','PagoID','SesionesHabilitadas','Vence','Observaciones'],
+    SesionesPlan: ['ID','PlanClienteID','CitaID','NumeroSesion','Estado','ConsumeSesion','ProfesionalID','Fecha','Observaciones','Actualizado'],
+    TarifasProfesionales: ['ID','ProfesionalID','Servicio','TipoTarifa','Valor','Porcentaje','Turno','Estado','Actualizado'],
+    LiquidacionesProfesionales: ['ID','ProfesionalID','Periodo','Sesiones','Total','Estado','Creado','Pagado','Observaciones'],
+    AuditoriaGeneral: ['ID','Fecha','UsuarioID','UsuarioNombre','Rol','Accion','Entidad','EntidadID','ValorAnterior','ValorNuevo','Motivo']
+  };
+  var sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+    sh.getRange(1, 1, 1, headers[name].length).setValues([headers[name]]);
+  }
+  return sh;
+}
+
+function sheetObjects_(sh) {
+  var values = sh.getDataRange().getValues();
+  if (!values.length) return [];
+  var headers = values[0], out = [];
+  for (var i = 1; i < values.length; i++) {
+    if (!values[i][0]) continue;
+    var o = {};
+    for (var j = 0; j < headers.length; j++) {
+      var v = values[i][j];
+      o[headers[j]] = v instanceof Date ? v.toISOString() : '' + (v || '');
+    }
+    out.push(o);
+  }
+  return out;
+}
+
+function auditGeneral_(user, action, entity, entityId, oldValue, newValue, reason) {
+  user = user || {id:'system', nombre:'Sistema', rol:'Sistema'};
+  operationsSheet_('AuditoriaGeneral').appendRow([
+    'AUDG-' + new Date().getTime() + '-' + Math.floor(Math.random() * 999),
+    new Date(), user.id || '', user.nombre || 'Sistema', user.rol || 'Sistema',
+    action || '', entity || '', entityId || '',
+    typeof oldValue === 'string' ? oldValue : JSON.stringify(oldValue || ''),
+    typeof newValue === 'string' ? newValue : JSON.stringify(newValue || ''),
+    reason || ''
+  ]);
+}
+
+function upsertConfig_(key, value, description) {
+  var sh = operationsSheet_('ConfiguracionOperativa'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][0] === key) {
+      sh.getRange(i + 1, 2, 1, 3).setValues([[value, description || rows[i][2] || '', new Date()]]);
+      return;
+    }
+  }
+  sh.appendRow([key, value, description || '', new Date()]);
+}
+
+function seedRole_(id, name, desc, permissions) {
+  var sh = operationsSheet_('Roles'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) if ('' + rows[i][0] === id) return;
+  sh.appendRow([id, name, desc, JSON.stringify(permissions || []), 'Activo', new Date(), new Date()]);
+}
+
+function seedPaymentAccount_(id, medio, tipo, numero, titular, order) {
+  var sh = operationsSheet_('CuentasPago'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) if ('' + rows[i][0] === id) return;
+  sh.appendRow([id, medio, tipo, numero, titular, 'Activa', order || 0, new Date()]);
+}
+
+function seedPlanTemplate_() {
+  var sh = operationsSheet_('PlantillasPlanes'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) if ('' + rows[i][0] === 'PLAN-READAPTACION-6') return;
+  sh.appendRow([
+    'PLAN-READAPTACION-6','Plan de readaptación funcional','Plan base de 6 sesiones con pago en 2 cuotas.',
+    6,70000,390000,65000,30000,2,
+    JSON.stringify([{numero:1, valor:195000}, {numero:2, valor:195000}]),
+    JSON.stringify([{cuota:1, sesiones:3}, {cuota:2, sesiones:3}]),
+    60,'Readaptación Funcional','Activo',new Date()
+  ]);
+}
+
+function setupOperationsModule_() {
+  [
+    'Roles','UsuariosAdmin','CuentasPago','ConfiguracionOperativa','HistorialEstadosCita','Pagos','ComprobantesPago',
+    'PlantillasPlanes','PlanesCliente','CuotasPlan','SesionesPlan','TarifasProfesionales','LiquidacionesProfesionales','AuditoriaGeneral'
+  ].forEach(function(name) { operationsSheet_(name); });
+  seedRole_('SUPERADMIN', 'Superadministradora', 'Acceso total del sistema', ['*']);
+  seedRole_('ADMIN', 'Administrativa', 'Agenda, clientes, pagos, planes y reportes operativos', ['agenda:*','clientes:*','pagos:*','planes:*','reportes:operativos']);
+  seedRole_('FISIO', 'Fisioterapeuta', 'Solo agenda propia y registro clínico sin finanzas', ['fisio:agenda','fisio:sesiones','fisio:novedades']);
+  seedPaymentAccount_('CTA-BANCOLOMBIA', 'Bancolombia', 'Cuenta de ahorros', '91257857099', 'Jessica Andrea Ocampo Barbosa', 1);
+  seedPaymentAccount_('CTA-NEQUI', 'Nequi', 'Número', '3136467945', 'Jessica Andrea Ocampo Barbosa', 2);
+  seedPaymentAccount_('CTA-LLAVE', 'Llave', 'Número', '1010124692', 'Jessica Andrea Ocampo Barbosa', 3);
+  upsertConfig_('reserva_temporal_minutos', '60', 'Tiempo inicial para mantener una reserva temporal pendiente de pago.');
+  upsertConfig_('regla_atencion_confirmada', 'permitida', 'Excepción solicitada: una cita Confirmada puede atenderse cuando ya llegó la hora.');
+  upsertConfig_('comprobantes_max_mb', '8', 'Tamaño máximo sugerido para comprobantes JPG, JPEG, PNG o PDF.');
+  seedPlanTemplate_();
+  return {ok:true};
+}
+
+function reservationCodeFor_(citaId, fecha) {
+  var f = fecha || fmtDate(new Date());
+  var parts = f.split('-');
+  var dmy = parts.length === 3 ? (parts[2] + parts[1] + ('' + parts[0]).slice(-2)) : Utilities.formatDate(new Date(), 'America/Bogota', 'ddMMyy');
+  var raw = ('' + (citaId || '')).replace(/\D/g, '');
+  var seq = raw ? raw.slice(-4) : ('' + Math.floor(Math.random() * 9999));
+  while (seq.length < 4) seq = '0' + seq;
+  return 'CF-' + dmy + '-' + seq;
+}
+
+function recordAppointmentStatusHistory_(citaId, prevState, nextState, user, obs) {
+  var found = getCitaById_(citaId);
+  var code = found ? reservationCodeFor_(citaId, found.cita.fecha) : reservationCodeFor_(citaId);
+  user = user || {id:'admin', nombre:'Administracion', rol:'Superadministradora'};
+  operationsSheet_('HistorialEstadosCita').appendRow([
+    'HST-' + new Date().getTime() + '-' + Math.floor(Math.random()*999),
+    citaId || '', code, prevState || '', nextState || '', new Date(),
+    user.id || '', user.nombre || 'Administracion', user.rol || 'Superadministradora', obs || ''
+  ]);
+  auditGeneral_(user, 'Cambio estado cita', 'Cita', citaId, prevState || '', nextState || '', obs || '');
+}
+
+function doUpdateStatus(p) {
+  setupOperationsModule_();
+  var sheet = getOrCreateSheet().getSheetByName('Citas');
+  var rows  = sheet.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (rows[i][0] === p.id) {
+      var prev = '' + (rows[i][10] || '');
+      sheet.getRange(i+1, 11).setValue(p.status);
+      if (p.note) sheet.getRange(i+1, 14).setValue(p.note);
+      recordAppointmentStatusHistory_(p.id, prev, p.status, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}, p.note || 'Cambio desde agenda admin');
+      return {ok: true};
+    }
+  }
+  return {ok: false, error: 'Cita no encontrada'};
+}
+
+function savePayment_(data, user) {
+  setupOperationsModule_();
+  var p = JSON.parse(decodeURIComponent(data || '{}'));
+  if (!p.citaId && !p.codigoReserva) return {ok:false,error:'Falta cita o código de reserva'};
+  var found = p.citaId ? getCitaById_(p.citaId) : null;
+  var code = p.codigoReserva || (found ? reservationCodeFor_(p.citaId, found.cita.fecha) : reservationCodeFor_(''));
+  var id = p.id || ('PAY-' + new Date().getTime());
+  var sh = operationsSheet_('Pagos'), rows = sh.getDataRange().getValues(), row = -1;
+  for (var i = 1; i < rows.length; i++) if ('' + rows[i][0] === id) row = i + 1;
+  var expected = p.valorEsperado || (found ? found.cita.precio : '');
+  var values = [
+    id, code, p.citaId || '', p.cliente || (found ? found.cita.nombre : ''),
+    p.servicioPlan || (found ? found.cita.servicio : ''), expected, p.valorRecibido || '',
+    p.medioPago || '', p.cuentaReceptora || '', p.fechaPago || '', p.fechaVerificacion || '',
+    p.comprobante || '', p.estadoPago || 'Por verificar', p.usuarioVerifico || '',
+    p.observaciones || '', p.cuotaNumero || '', p.saldoPendiente || '', row > 0 ? rows[row-1][17] || new Date() : new Date(), new Date()
+  ];
+  if (row > 0) sh.getRange(row, 1, 1, values.length).setValues([values]);
+  else sh.appendRow(values);
+  if (p.citaId && (p.estadoPago || 'Por verificar') === 'Por verificar') {
+    var f = getCitaById_(p.citaId);
+    if (f) {
+      getOrCreateSheet().getSheetByName('Citas').getRange(f.row, 11).setValue('Pago por verificar');
+      recordAppointmentStatusHistory_(p.citaId, f.cita.estado, 'Pago por verificar', user, 'Pago registrado pendiente de verificación');
+    }
+  }
+  auditGeneral_(user, row > 0 ? 'Actualizó pago' : 'Registró pago', 'Pago', id, '', values, p.observaciones || '');
+  return {ok:true,id:id,codigoReserva:code};
+}
+
+function verifyPayment_(p, user) {
+  setupOperationsModule_();
+  var id = p.id, status = p.estado || p.status || '';
+  if (!id || !status) return {ok:false,error:'Falta pago o estado'};
+  var sh = operationsSheet_('Pagos'), rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][0] !== '' + id) continue;
+    var prevPay = '' + (rows[i][12] || '');
+    sh.getRange(i+1, 11, 1, 5).setValues([[new Date(), rows[i][11] || '', status, user.nombre || 'Administracion', p.observaciones || rows[i][14] || '']]);
+    sh.getRange(i+1, 19).setValue(new Date());
+    var citaId = '' + (rows[i][2] || '');
+    if (citaId) {
+      var found = getCitaById_(citaId);
+      if (found) {
+        var nextState = status === 'Aprobado' ? 'Autorizada para atender' : (status === 'Rechazado' ? 'Pago rechazado' : (status === 'Por verificar' ? 'Pago por verificar' : found.cita.estado));
+        getOrCreateSheet().getSheetByName('Citas').getRange(found.row, 11).setValue(nextState);
+        if (status === 'Aprobado') getOrCreateSheet().getSheetByName('Citas').getRange(found.row, 15).setValue(rows[i][7] || 'Pago aprobado');
+        recordAppointmentStatusHistory_(citaId, found.cita.estado, nextState, user, 'Verificación de pago: ' + status);
+      }
+    }
+    auditGeneral_(user, 'Verificó pago', 'Pago', id, prevPay, status, p.observaciones || '');
+    return {ok:true};
+  }
+  return {ok:false,error:'Pago no encontrado'};
+}
+
+function savePaymentAccount_(data, user) {
+  setupOperationsModule_();
+  var a = JSON.parse(decodeURIComponent(data || '{}'));
+  if (!a.medio || !a.numero) return {ok:false,error:'Falta medio o número'};
+  var id = a.id || ('CTA-' + new Date().getTime());
+  var sh = operationsSheet_('CuentasPago'), rows = sh.getDataRange().getValues(), row = -1;
+  for (var i = 1; i < rows.length; i++) if ('' + rows[i][0] === id) row = i + 1;
+  var values = [id, a.medio, a.tipo || '', a.numero, a.titular || 'Jessica Andrea Ocampo Barbosa', a.estado || 'Activa', a.orden || 9, new Date()];
+  if (row > 0) sh.getRange(row, 1, 1, values.length).setValues([values]);
+  else sh.appendRow(values);
+  auditGeneral_(user, row > 0 ? 'Actualizó cuenta de pago' : 'Creó cuenta de pago', 'CuentaPago', id, '', values, '');
+  return {ok:true,id:id};
+}
+
+function getOperationsData_() {
+  setupOperationsModule_();
+  return {
+    ok:true,
+    estados: APPOINTMENT_STATUS_CATALOG,
+    cuentas: sheetObjects_(operationsSheet_('CuentasPago')),
+    config: sheetObjects_(operationsSheet_('ConfiguracionOperativa')),
+    pagos: sheetObjects_(operationsSheet_('Pagos')).reverse(),
+    historialEstados: sheetObjects_(operationsSheet_('HistorialEstadosCita')).slice(-120).reverse(),
+    plantillasPlanes: sheetObjects_(operationsSheet_('PlantillasPlanes')),
+    planesCliente: sheetObjects_(operationsSheet_('PlanesCliente')),
+    cuotasPlan: sheetObjects_(operationsSheet_('CuotasPlan')),
+    sesionesPlan: sheetObjects_(operationsSheet_('SesionesPlan')),
+    tarifasProfesionales: sheetObjects_(operationsSheet_('TarifasProfesionales')),
+    liquidaciones: sheetObjects_(operationsSheet_('LiquidacionesProfesionales')),
+    auditoria: sheetObjects_(operationsSheet_('AuditoriaGeneral')).slice(-120).reverse()
+  };
+}
+
 function infoPlan(serv, mod) {
   var s = (serv || '').split('(')[0].trim();
   var esDom = mod === 'Domicilio';
