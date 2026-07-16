@@ -3466,42 +3466,65 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
 
       <div class="team-grid">
         <div class="team-panel">
-          <h2>Registrar pago manual</h2>
-          <p class="team-muted" style="margin-bottom:12px">La aprobación siempre queda en manos de administración. El comprobante completo no se muestra al fisioterapeuta.</p>
-          <div class="form-grid g2" style="gap:12px">
-            <div class="field">
-              <label>Cita</label>
-              <select id="payCitaId" onchange="prefillPaymentFromAppointment()"></select>
+          <h2>Registrar comprobante</h2>
+          <p class="team-muted" style="margin-bottom:12px">Primero selecciona la cita. Luego sube el pantallazo y decide si queda pendiente o si ya autorizas la atención.</p>
+          <select id="payCitaId" onchange="selectPaymentAppointment(this.value)" style="display:none"></select>
+
+          <div style="display:grid;grid-template-columns:minmax(260px,1fr) minmax(260px,.85fr);gap:16px;align-items:start">
+            <div>
+              <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px">
+                <div>
+                  <div style="font-family:var(--font-m);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">1 · Selecciona la cita</div>
+                  <div class="team-muted">Citas recientes y pendientes de pago</div>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="renderPaymentAppointmentList()">Actualizar lista</button>
+              </div>
+              <input id="payAppointmentSearch" class="search" type="search" placeholder="Buscar por paciente, código, fecha o servicio..." oninput="renderPaymentAppointmentList()" style="width:100%;margin-bottom:10px">
+              <div id="paymentAppointmentList" class="team-list" style="max-height:430px;overflow:auto;padding-right:4px"></div>
             </div>
-            <div class="field">
-              <label>Valor recibido</label>
-              <input id="payValorRecibido" type="text" placeholder="Ej: 70000">
+
+            <div>
+              <div id="selectedPaymentCard" class="team-card" style="margin-bottom:12px">
+                <h3>Sin cita seleccionada</h3>
+                <div class="team-muted">Elige una cita de la lista para cargar sus datos automáticamente.</div>
+              </div>
+
+              <div class="form-grid g2" style="gap:12px">
+                <div class="field">
+                  <label>Valor recibido</label>
+                  <input id="payValorRecibido" type="text" placeholder="Ej: 70000">
+                </div>
+                <div class="field">
+                  <label>Fecha del pago</label>
+                  <input id="payFechaPago" type="date">
+                </div>
+                <div class="field" style="grid-column:1/-1">
+                  <label>Medio de pago</label>
+                  <select id="payMedioPago"></select>
+                </div>
+                <div class="field" style="grid-column:1/-1">
+                  <label>Pantallazo / comprobante</label>
+                  <label for="payProofFile" style="display:flex;align-items:center;justify-content:center;min-height:92px;border:1.5px dashed var(--primary);border-radius:14px;background:rgba(20,184,166,.07);cursor:pointer;text-align:center;padding:16px">
+                    <span id="payProofLabel" style="color:var(--text);font-weight:700">Subir pantallazo del pago</span>
+                  </label>
+                  <input id="payProofFile" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" onchange="updatePaymentProofLabel()" style="display:none">
+                  <small style="display:block;margin-top:6px;color:var(--muted)">JPG, PNG o PDF · máximo 8 MB · solo visible para administración.</small>
+                </div>
+                <div class="field" style="grid-column:1/-1">
+                  <label>Referencia u observación opcional</label>
+                  <input id="payComprobante" type="text" placeholder="Ej: pago enviado por Nequi, referencia 1234">
+                </div>
+                <div class="field" style="grid-column:1/-1">
+                  <label>Nota interna</label>
+                  <textarea id="payObservaciones" rows="2" placeholder="Ej: revisar banco antes de autorizar"></textarea>
+                </div>
+              </div>
+              <div class="team-card-actions" style="gap:8px;flex-wrap:wrap">
+                <button class="btn btn-ghost" onclick="saveManualPayment('verify')">Subir para revisar</button>
+                <button class="btn btn-teal" onclick="saveManualPayment('approve')">Confirmar pago y autorizar</button>
+                <button class="btn btn-ghost" onclick="clearPaymentForm()">Limpiar</button>
+              </div>
             </div>
-            <div class="field">
-              <label>Medio de pago</label>
-              <select id="payMedioPago"></select>
-            </div>
-            <div class="field">
-              <label>Fecha del pago</label>
-              <input id="payFechaPago" type="date">
-            </div>
-            <div class="field" style="grid-column:1/-1">
-              <label>Comprobante / referencia</label>
-              <input id="payComprobante" type="text" placeholder="Referencia, enlace privado o nota del comprobante">
-            </div>
-            <div class="field" style="grid-column:1/-1">
-              <label>Archivo de comprobante (JPG, PNG o PDF)</label>
-              <input id="payProofFile" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf">
-              <small style="display:block;margin-top:6px;color:var(--muted)">Máximo 8 MB. Solo lo ve administración; no aparece en el portal del fisioterapeuta.</small>
-            </div>
-            <div class="field" style="grid-column:1/-1">
-              <label>Observaciones</label>
-              <textarea id="payObservaciones" rows="2" placeholder="Ej: comprobante recibido por WhatsApp, pendiente validar banco"></textarea>
-            </div>
-          </div>
-          <div class="team-card-actions">
-            <button class="btn btn-teal" onclick="saveManualPayment()">Guardar como pago por verificar</button>
-            <button class="btn btn-ghost" onclick="clearPaymentForm()">Limpiar</button>
           </div>
         </div>
 
@@ -6669,11 +6692,83 @@ function paymentAccountLabel(id) {
   return a ? `${a.Medio} · ${a.Numero}` : (id || 'Sin cuenta');
 }
 
+function paymentCandidateAppointments() {
+  const blocked = ['Cancelada','Cancelada a tiempo','Cancelación tardía','Reprogramada','Reserva vencida'];
+  return (allData.citas || [])
+    .filter(c => isOperationalDate(c.fecha) && !blocked.includes(c.estado))
+    .sort((a,b) => {
+      const priority = s => ['Pendiente de pago','Pago por verificar','Pago rechazado'].includes(s || '') ? 0 : 1;
+      const pa = priority(a.estado), pb = priority(b.estado);
+      if (pa !== pb) return pa - pb;
+      return (`${normDate(b.fecha)} ${b.hora || ''}`).localeCompare(`${normDate(a.fecha)} ${a.hora || ''}`);
+    })
+    .slice(0, 160);
+}
+
+function renderPaymentAppointmentList() {
+  const list = document.getElementById('paymentAppointmentList');
+  if (!list) return;
+  const selectedId = document.getElementById('payCitaId')?.value || '';
+  const q = (document.getElementById('payAppointmentSearch')?.value || '').toLowerCase().trim();
+  const citas = paymentCandidateAppointments().filter(c => {
+    const hay = `${c.id} ${c.nombre} ${c.servicio} ${fmtDate(c.fecha)} ${c.hora} ${c.estado}`.toLowerCase();
+    return !q || hay.includes(q);
+  }).slice(0, 60);
+  list.innerHTML = citas.length ? citas.map(c => {
+    const active = String(c.id) === String(selectedId);
+    const pending = ['Pendiente de pago','Pago por verificar','Pago rechazado'].includes(c.estado || '');
+    return `<button type="button" onclick="selectPaymentAppointment('${esc(c.id)}')" style="width:100%;text-align:left;border:1px solid ${active ? 'var(--primary)' : 'var(--border)'};background:${active ? 'rgba(20,184,166,.10)' : 'var(--s2)'};border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer;color:var(--text);transition:.2s ease">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div>
+          <div style="font-weight:800;color:var(--text);font-size:.95rem">${esc(c.nombre || 'Paciente')}</div>
+          <div class="team-muted">${esc(fmtDate(c.fecha))} · ${esc(c.hora || '')} · ${esc(c.servicio || '')}</div>
+        </div>
+        <span class="team-pill ${pending ? 'warn' : 'info'}">${esc(c.estado || 'Sin estado')}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:.82rem">
+        <span class="team-muted">ID ${esc(c.id || '')}</span>
+        <strong style="color:var(--primary)">${formatPrecio(parsePrecio(c.precio || 0))}</strong>
+      </div>
+    </button>`;
+  }).join('') : '<div class="empty"><p>No encontré citas para ese filtro.</p></div>';
+}
+
+function selectPaymentAppointment(id) {
+  const citaSel = document.getElementById('payCitaId');
+  if (citaSel) citaSel.value = id || '';
+  prefillPaymentFromAppointment();
+  renderPaymentAppointmentList();
+}
+
+function updateSelectedPaymentCard(c) {
+  const card = document.getElementById('selectedPaymentCard');
+  if (!card) return;
+  if (!c) {
+    card.innerHTML = '<h3>Sin cita seleccionada</h3><div class="team-muted">Elige una cita de la lista para cargar sus datos automáticamente.</div>';
+    return;
+  }
+  card.innerHTML = `
+    <div class="team-card-head">
+      <div>
+        <h3>${esc(c.nombre || 'Paciente')}</h3>
+        <div class="team-muted">${esc(fmtDate(c.fecha))} · ${esc(c.hora || '')} · ${esc(c.servicio || '')}</div>
+      </div>
+      <span class="team-pill info">${esc(c.estado || 'Sin estado')}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+      <div class="team-muted">Valor esperado<br><strong style="color:var(--primary)">${formatPrecio(parsePrecio(c.precio || 0))}</strong></div>
+      <div class="team-muted">Modalidad<br><strong style="color:var(--text)">${esc(c.modalidad || '')}</strong></div>
+    </div>`;
+}
+
+function updatePaymentProofLabel() {
+  const file = document.getElementById('payProofFile')?.files?.[0];
+  const label = document.getElementById('payProofLabel');
+  if (label) label.textContent = file ? `Archivo listo: ${file.name}` : 'Subir pantallazo del pago';
+}
+
 function fillPaymentSelectors(selectedId = '') {
-  const citas = (allData.citas || [])
-    .filter(c => isOperationalDate(c.fecha) && !['Cancelada','Cancelada a tiempo','Cancelación tardía','Reprogramada','Reserva vencida'].includes(c.estado))
-    .sort((a,b) => (`${normDate(b.fecha)} ${b.hora || ''}`).localeCompare(`${normDate(a.fecha)} ${a.hora || ''}`))
-    .slice(0, 120);
+  const citas = paymentCandidateAppointments();
   const citaSel = document.getElementById('payCitaId');
   if (citaSel) {
     citaSel.innerHTML = '<option value="">Selecciona una cita...</option>' + citas.map(c => `<option value="${esc(c.id)}" ${String(c.id) === String(selectedId) ? 'selected' : ''}>${esc(fmtDate(c.fecha))} · ${esc(c.hora)} · ${esc(c.nombre)} · ${esc(c.servicio)}</option>`).join('');
@@ -6683,11 +6778,13 @@ function fillPaymentSelectors(selectedId = '') {
     medioSel.innerHTML = (operationsData.cuentas || []).filter(a => (a.Estado || 'Activa') === 'Activa').map(a => `<option value="${esc(a.Medio)}" data-account="${esc(a.ID)}">${esc(a.Medio)} · ${esc(a.Numero)}</option>`).join('');
   }
   prefillPaymentFromAppointment();
+  renderPaymentAppointmentList();
 }
 
 function prefillPaymentFromAppointment() {
   const id = document.getElementById('payCitaId')?.value || '';
   const c = (allData.citas || []).find(x => String(x.id) === String(id));
+  updateSelectedPaymentCard(c);
   if (!c) return;
   document.getElementById('payValorRecibido').value = String(c.precio || '').replace(/[^\d]/g,'');
   if (!document.getElementById('payFechaPago').value) document.getElementById('payFechaPago').value = today();
@@ -6696,6 +6793,9 @@ function prefillPaymentFromAppointment() {
 function clearPaymentForm() {
   ['payValorRecibido','payFechaPago','payComprobante','payObservaciones','payProofFile'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const c = document.getElementById('payCitaId'); if (c) c.value = '';
+  updatePaymentProofLabel();
+  updateSelectedPaymentCard(null);
+  renderPaymentAppointmentList();
 }
 
 function abrirPagoCita(id) {
@@ -6707,7 +6807,7 @@ function abrirPagoCita(id) {
   }, 350);
 }
 
-async function saveManualPayment() {
+async function saveManualPayment(mode = 'verify') {
   const citaId = document.getElementById('payCitaId').value;
   if (!citaId) return toast('Selecciona una cita', 'err');
   const c = (allData.citas || []).find(x => String(x.id) === String(citaId));
@@ -6715,6 +6815,9 @@ async function saveManualPayment() {
   const accountId = medioEl?.selectedOptions?.[0]?.dataset?.account || '';
   const proofFile = await readPaymentProofFile();
   if (proofFile?.error) return toast(proofFile.error, 'err');
+  const ref = document.getElementById('payComprobante').value.trim();
+  if (!proofFile && !ref) return toast('Sube el pantallazo o escribe una referencia del pago', 'err');
+  if (mode === 'approve' && !confirm('¿Confirmas que el dinero ya ingresó y quieres autorizar esta cita para atender?')) return;
   const payload = {
     citaId,
     cliente: c?.nombre || '',
@@ -6724,7 +6827,7 @@ async function saveManualPayment() {
     medioPago: medioEl?.value || '',
     cuentaReceptora: accountId,
     fechaPago: document.getElementById('payFechaPago').value || today(),
-    comprobante: document.getElementById('payComprobante').value.trim(),
+    comprobante: ref,
     estadoPago: 'Por verificar',
     observaciones: document.getElementById('payObservaciones').value.trim(),
     proofFile: proofFile || null
@@ -6734,7 +6837,14 @@ async function saveManualPayment() {
     body:JSON.stringify({action:'savePayment', token:TOKEN, data:payload})
   }).then(r => r.json());
   if (d.ok) {
-    toast('Pago registrado para verificar');
+    if (mode === 'approve') {
+      const obs = payload.observaciones || 'Pago confirmado desde registro de comprobante';
+      const v = await fetch(`${APPS_SCRIPT_URL}?action=verifyPayment&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(d.id)}&estado=Aprobado&observaciones=${encodeURIComponent(obs)}`).then(r => r.json());
+      if (!v.ok) return toast(v.error || 'El comprobante se subió, pero no se pudo aprobar', 'err');
+      toast('Pago confirmado y cita autorizada');
+    } else {
+      toast('Comprobante subido para revisión');
+    }
     clearPaymentForm();
     await reload();
     await loadOperationsData();
