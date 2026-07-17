@@ -2447,14 +2447,41 @@ function getGoogleReviews() {
   var PLACE_ID = 'ChIJVwU1iJ15sCARAQ_jFCdVsXI';
   var API_KEY  = 'AIzaSyAKtsK8EaAG0GE_0Ma-mNoaMwy1ZG0gEv8';
   try {
-    var url = 'https://places.googleapis.com/v1/places/' + PLACE_ID + '?key=' + API_KEY;
+    var url = 'https://maps.googleapis.com/maps/api/place/details/json'
+      + '?place_id=' + encodeURIComponent(PLACE_ID)
+      + '&fields=rating,user_ratings_total,reviews'
+      + '&language=es'
+      + '&key=' + encodeURIComponent(API_KEY);
     var res  = UrlFetchApp.fetch(url, {
-      headers: { 'X-Goog-FieldMask': 'rating,userRatingCount,reviews.rating,reviews.text,reviews.originalText,reviews.authorAttribution,reviews.relativePublishTimeDescription' },
       muteHttpExceptions: true
     });
     var data = JSON.parse(res.getContentText());
-    if (data.error) return { ok: false, error: data.error.message };
-    return { ok: true, data: data };
+    if (data.status !== 'OK') {
+      return {
+        ok: false,
+        error: data.error_message || data.status || 'No fue posible cargar reseñas reales de Google'
+      };
+    }
+    var result = data.result || {};
+    return {
+      ok: true,
+      data: {
+        rating: result.rating || 0,
+        userRatingCount: result.user_ratings_total || 0,
+        reviews: (result.reviews || []).map(function(r) {
+          return {
+            rating: r.rating || 0,
+            text: { text: r.text || '' },
+            originalText: { text: r.text || '' },
+            authorAttribution: {
+              displayName: r.author_name || 'Paciente',
+              photoUri: r.profile_photo_url || ''
+            },
+            relativePublishTimeDescription: r.relative_time_description || ''
+          };
+        })
+      }
+    };
   } catch(e) {
     return { ok: false, error: e.message };
   }

@@ -1736,7 +1736,7 @@
     .brand-logo .logo-byline {
       position: absolute;
       left: 96px;
-      top: 78px;
+      top: 86px;
       font-family: var(--font-heading);
       font-size: 0.95rem;
       font-style: italic;
@@ -1750,7 +1750,7 @@
     .nav.scrolled .brand-logo .logo-byline {
       font-size: 0.78rem;
       left: 80px;
-      top: 66px;
+      top: 72px;
     }
     .nav-links { gap: clamp(12px, 1.25vw, 20px); }
     .nav-links a {
@@ -1758,6 +1758,15 @@
       letter-spacing: 0.06em;
       color: #4c544f;
       white-space: nowrap;
+    }
+    .nav-links a.nav-split {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      line-height: 1.15;
+      text-align: center;
     }
     .nav-links a:hover, .nav-links a.active { color: var(--primary-dark); }
     .nav-pasaporte { color: var(--primary-dark) !important; }
@@ -2157,7 +2166,7 @@
       .brand-logo .logo-byline {
         font-size: 0.66rem;
         left: 70px;
-        top: 57px;
+        top: 62px;
       }
       .nav-links {
         background: rgba(247,248,245,0.98);
@@ -2288,7 +2297,7 @@
         <span class="logo-byline">by Jessica Ocampo</span>
       </a>
       <ul class="nav-links" id="navLinks">
-        <li><a href="#servicios">Rehabilitación y readaptación funcional</a></li>
+        <li><a href="#servicios" class="nav-split"><span>Rehabilitación y</span><span>readaptación funcional</span></a></li>
         <li><a href="#experiencias">Bienestar y cuidado</a></li>
         <li><a href="#equipo">Equipo</a></li>
         <li><a href="#agenda">Agenda</a></li>
@@ -3657,27 +3666,6 @@
 
     // ─── Google Reviews (vía Apps Script) ───
     const GOOGLE_REVIEWS_URL = 'https://search.google.com/local/reviews?placeid=ChIJVwU1iJ15sCARAQ_jFCdVsXI';
-    const fallbackReviews = [
-      {
-        name: 'Reseñas verificadas',
-        time: 'Google Business',
-        rating: 5,
-        text: 'Lee experiencias reales de pacientes sobre la atención, el acompañamiento y los procesos de recuperación de Cuidándote Fisioterapia.'
-      },
-      {
-        name: 'Atención fisioterapéutica',
-        time: 'Perfil de Google',
-        rating: 5,
-        text: 'En el perfil de Google encuentras opiniones de personas atendidas en valoración, descarga muscular, readaptación y bienestar.'
-      },
-      {
-        name: 'Pacientes Cuidándote',
-        time: 'Reseñas públicas',
-        rating: 5,
-        text: 'Cuando la conexión permite cargar Google, esta sección muestra las reseñas reales automáticamente. Si no, puedes abrirlas directamente.'
-      }
-    ];
-
     function escapeHTML(value) {
       return String(value || '').replace(/[&<>"']/g, ch => ({
         '&': '&amp;',
@@ -3728,14 +3716,12 @@
 
     function showReviewsFallback() {
       const grid = document.getElementById('reviewsGrid');
-      const scoreEl = document.getElementById('reviewsScore');
-      scoreEl.textContent = 'Google';
-      scoreEl.style.fontSize = '2.2rem';
-      document.getElementById('reviewsStarsBig').textContent = '★★★★★';
-      document.getElementById('reviewsCount').textContent = 'reseñas verificadas';
-      document.getElementById('reviewsOverall').style.display = 'flex';
-      document.getElementById('reviewsBadge').style.display = 'flex';
-      grid.innerHTML = renderReviewCards(fallbackReviews, { fallback: true });
+      document.getElementById('reviewsOverall').style.display = 'none';
+      document.getElementById('reviewsBadge').style.display = 'none';
+      grid.innerHTML = `<div class="reviews-fallback-note">
+        <span><strong>Reseñas reales de Google.</strong> Si la carga automática está bloqueada por Google, puedes leerlas directamente en el perfil público.</span>
+        <a class="reviews-google-btn" href="${GOOGLE_REVIEWS_URL}" target="_blank" rel="noopener">${googleIconSVG()} Ver reseñas reales en Google</a>
+      </div>`;
     }
 
     async function loadReviews() {
