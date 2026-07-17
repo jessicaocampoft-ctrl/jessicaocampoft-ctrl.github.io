@@ -11060,7 +11060,7 @@ function renderPacientes() {
           ${waBtn(p.telefono,p.nombre,'','','','WA')}
           <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${p.telefono||''}','${p.nombre.replace(/'/g,"\\'")}','${(p.ultimoServicio||'').replace(/'/g,"\\'")}')">💬</button>
           ${(()=>{const u=waEncuesta(p.telefono,p.nombre);return u?`<a href="${u}" target="_blank" class="btn btn-ghost btn-sm" title="Enviar encuesta de satisfacción por WhatsApp">\u2B50 Encuesta</a>`:''})()}
-          <a href="https://jessicaocampoft-ctrl.github.io/pasaporte.html?nombre=${encodeURIComponent(p.nombre)}" target="_blank" class="btn btn-passport btn-sm">Pasaporte</a>
+          <a href="https://cuidandotefisioterapia.com/pasaporte.html?nombre=${encodeURIComponent(p.nombre)}" target="_blank" class="btn btn-passport btn-sm">Pasaporte</a>
           <button class="btn btn-edit btn-sm" onclick="editarPacienteIdx(${idx})">✏️ Editar</button>
           <button class="btn btn-danger btn-sm" onclick="borrarPaciente(${idx})">🗑️ Eliminar</button>
         </div>
@@ -17988,7 +17988,7 @@ function exportarCSV(modo) {
 }
 
 // ── PASAPORTE DE MOVIMIENTO ────────────────────────────────────
-const PASAPORTE_BASE  = 'https://jessicaocampoft-ctrl.github.io/pasaporte.html';
+const PASAPORTE_BASE  = 'https://cuidandotefisioterapia.com/pasaporte.html';
 const PASAPORTE_TOKEN = 'jof_pasaporte_admin_2026';
 let _pasTelefono = '';
 let _pasConfirmado = false;  // true solo cuando se seleccionó desde la BD
