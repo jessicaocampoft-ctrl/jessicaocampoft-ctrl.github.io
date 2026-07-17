@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin.html
+Disallow: /google-apps-script.js
+Disallow: /appsscript.json
+
+Allow: /
