@@ -133,6 +133,7 @@ function doGet(e) {
   if (p.action === 'deletePatient')  return js(deletePatient(decodeURIComponent(p.nombre)));
   if (p.action === 'editPatient')    return js(editPatient(JSON.parse(p.data)));
   if (p.action === 'cleanCitasSinHora') return js(cleanCitasSinHora());
+  if (p.action === 'cleanInvalidCitaTimes') return js(cleanInvalidCitaTimes());
   if (p.action === 'getReminders')   return js(getRemindersData());
   if (p.action === 'sendReminders')  return js(sendEmailReminders());
   if (p.action === 'getInactivos')   return js(getInactivosData());
@@ -254,6 +255,12 @@ function esRegistro(servicio) {
 function createBooking(d, isAdmin) {
   if (isMidnightBookingTime_(d.time)) {
     return {ok: false, error: 'Ese horario es de medianoche (00:00-00:59). Para 12 del mediodia usa 12:00.'};
+  }
+  var scheduleCheck = isAdmin
+    ? validateBookingSchedule_(d.date, d.time, d.service, d.modality)
+    : validatePublicBookingSchedule_(d.date, d.time, d.service, d.modality);
+  if (!scheduleCheck.ok) {
+    return {ok: false, error: scheduleCheck.error};
   }
   if (!isAdmin) {
     var avail = checkAvailability(d.date, d.time, d.modality, d.service);
@@ -416,6 +423,21 @@ function publicScheduleRanges_(date) {
     3: [['08:00','17:00']],
     4: [['08:00','20:00']],
     5: [['08:00','20:00']],
+    6: [['07:00','09:30']]
+  };
+  return ranges[d.getDay()] || [];
+}
+
+function clinicScheduleRanges_(date) {
+  var dp = date.split('-');
+  var d = new Date(+dp[0], +dp[1]-1, +dp[2], 0, 0, 0);
+  var ranges = {
+    0: [],
+    1: [['08:00','16:30']],
+    2: [['08:00','17:00']],
+    3: [['08:00','17:00']],
+    4: [['08:00','20:00']],
+    5: [['08:00','20:00']],
     6: [['07:00','09:30'], ['14:00','18:00']]
   };
   return ranges[d.getDay()] || [];
@@ -439,6 +461,44 @@ function fitsPublicSchedule_(date, time, durationMins) {
   return publicScheduleRanges_(date).some(function(range) {
     return start >= minutesFromTime_(range[0]) && end <= minutesFromTime_(range[1]);
   });
+}
+
+function fitsClinicSchedule_(date, time, durationMins) {
+  var start = minutesFromTime_(time);
+  var end = start + durationMins;
+  return clinicScheduleRanges_(date).some(function(range) {
+    return start >= minutesFromTime_(range[0]) && end <= minutesFromTime_(range[1]);
+  });
+}
+
+function validateBookingSchedule_(date, time, service, modality) {
+  if (!date || !time) return {ok: false, error: 'Selecciona fecha y hora.'};
+  if (isMidnightBookingTime_(time)) {
+    return {ok: false, error: 'Ese horario es de medianoche (00:00-00:59). Para 12 del mediodia usa 12:00.'};
+  }
+  var mins = getServiceDuration(service) + (modality === 'Domicilio' ? 30 : 0);
+  if (!fitsClinicSchedule_(date, time, mins)) {
+    return {
+      ok: false,
+      error: 'Ese horario no esta permitido porque la cita no cabe dentro de la jornada. El sistema no permite citas a las 9:00 p.m.; elige un horario mas temprano.'
+    };
+  }
+  return {ok: true};
+}
+
+function validatePublicBookingSchedule_(date, time, service, modality) {
+  if (!date || !time) return {ok: false, error: 'Selecciona fecha y hora.'};
+  if (isMidnightBookingTime_(time)) {
+    return {ok: false, error: 'Ese horario es de medianoche (00:00-00:59). Para 12 del mediodia usa 12:00.'};
+  }
+  var mins = getServiceDuration(service) + (modality === 'Domicilio' ? 30 : 0);
+  if (!fitsPublicSchedule_(date, time, mins)) {
+    return {
+      ok: false,
+      error: 'Ese horario no esta disponible para agenda online. Los sabados solo se agenda en la manana.'
+    };
+  }
+  return {ok: true};
 }
 
 function getAvailability(date, service, modality) {
@@ -499,8 +559,9 @@ function checkAvailability(date, time, modality, service) {
   var start = parseDT(date, time);
   var mins  = getServiceDuration(service) + (modality === 'Domicilio' ? 30 : 0);
   var end   = new Date(start.getTime() + mins * 60000);
-  if (!fitsPublicSchedule_(date, time, mins)) {
-    return {available: false, reason: 'Ese horario no alcanza para la duracion del servicio. Por favor elige otro.'};
+  var scheduleCheck = validatePublicBookingSchedule_(date, time, service, modality);
+  if (!scheduleCheck.ok) {
+    return {available: false, reason: scheduleCheck.error};
   }
 
   // 1. Google Calendar — bloquear solo eventos personales (no [CITA])
@@ -674,6 +735,8 @@ function doEditBooking(d) {
     var newFecha     = d.fecha     || oldFecha;
     var newHora      = d.hora      || oldHora;
     var newPrecio    = d.precio    || rows[i][9];
+    var scheduleCheck = validateBookingSchedule_(newFecha, newHora, newServicio, newModalidad);
+    if (!scheduleCheck.ok) return {ok: false, error: scheduleCheck.error};
     if (d.servicio)           sheet.getRange(i+1, 6).setValue(d.servicio);
     if (d.modalidad)          sheet.getRange(i+1, 7).setValue(d.modalidad);
     if (d.fecha)              sheet.getRange(i+1, 8).setValue(d.fecha);
@@ -2446,7 +2509,17 @@ function autoSendReminders() {
 function getGoogleReviews() {
   var PLACE_ID = 'ChIJVwU1iJ15sCARAQ_jFCdVsXI';
   var API_KEY  = 'AIzaSyAKtsK8EaAG0GE_0Ma-mNoaMwy1ZG0gEv8';
+  var CACHE_KEY = 'google_reviews_cache_v1';
+  var CACHE_TS_KEY = 'google_reviews_cache_v1_ts';
+  var CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
   try {
+    var props = PropertiesService.getScriptProperties();
+    var cached = props.getProperty(CACHE_KEY);
+    var cachedTs = Number(props.getProperty(CACHE_TS_KEY) || 0);
+    if (cached && cachedTs && (Date.now() - cachedTs) < CACHE_MAX_AGE_MS) {
+      return { ok: true, data: JSON.parse(cached), cached: true };
+    }
+
     var url = 'https://maps.googleapis.com/maps/api/place/details/json'
       + '?place_id=' + encodeURIComponent(PLACE_ID)
       + '&fields=rating,user_ratings_total,reviews'
@@ -2457,31 +2530,34 @@ function getGoogleReviews() {
     });
     var data = JSON.parse(res.getContentText());
     if (data.status !== 'OK') {
+      if (cached) {
+        return { ok: true, data: JSON.parse(cached), cached: true, stale: true };
+      }
       return {
         ok: false,
         error: data.error_message || data.status || 'No fue posible cargar reseñas reales de Google'
       };
     }
     var result = data.result || {};
-    return {
-      ok: true,
-      data: {
-        rating: result.rating || 0,
-        userRatingCount: result.user_ratings_total || 0,
-        reviews: (result.reviews || []).map(function(r) {
-          return {
-            rating: r.rating || 0,
-            text: { text: r.text || '' },
-            originalText: { text: r.text || '' },
-            authorAttribution: {
-              displayName: r.author_name || 'Paciente',
-              photoUri: r.profile_photo_url || ''
-            },
-            relativePublishTimeDescription: r.relative_time_description || ''
-          };
-        })
-      }
+    var payload = {
+      rating: result.rating || 0,
+      userRatingCount: result.user_ratings_total || 0,
+      reviews: (result.reviews || []).map(function(r) {
+        return {
+          rating: r.rating || 0,
+          text: { text: r.text || '' },
+          originalText: { text: r.text || '' },
+          authorAttribution: {
+            displayName: r.author_name || 'Paciente',
+            photoUri: r.profile_photo_url || ''
+          },
+          relativePublishTimeDescription: r.relative_time_description || ''
+        };
+      })
     };
+    props.setProperty(CACHE_KEY, JSON.stringify(payload));
+    props.setProperty(CACHE_TS_KEY, String(Date.now()));
+    return { ok: true, data: payload, cached: false };
   } catch(e) {
     return { ok: false, error: e.message };
   }
@@ -2700,6 +2776,52 @@ function cleanCitasSinHora() {
     }
   }
   return { ok: true, deleted: deleted };
+}
+
+// Elimina citas recientes/futuras que quedaron por fuera de la jornada permitida
+// (por ejemplo 21:00). No toca registros ni citas canceladas.
+function cleanInvalidCitaTimes() {
+  var sheet = getOrCreateSheet().getSheetByName('Citas');
+  var rows  = sheet.getDataRange().getValues();
+  var deleted = 0;
+  var items = [];
+  var now = new Date();
+  var yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  var cutoff = fmtDate(yesterday);
+
+  for (var i = rows.length - 1; i >= 1; i--) {
+    var r = rows[i];
+    var id = '' + (r[0] || '');
+    var nombre = '' + (r[2] || '');
+    var servicio = '' + (r[5] || '');
+    var modalidad = '' + (r[6] || '');
+    var fecha = sd(r[7]);
+    var hora = st(r[8]);
+    var estado = '' + (r[10] || '');
+    if (!bookingIsActive_(estado, servicio)) continue;
+    if (!fecha || fecha < cutoff) continue;
+    var check = validateBookingSchedule_(fecha, hora, servicio, modalidad);
+    if (!check.ok) {
+      try {
+        var dp = fecha.split('-');
+        var dayStart = new Date(+dp[0], +dp[1]-1, +dp[2], 0, 0, 0);
+        var dayEnd = new Date(+dp[0], +dp[1]-1, +dp[2], 23, 59, 59);
+        var calEvs = CalendarApp.getDefaultCalendar().getEvents(dayStart, dayEnd);
+        for (var k = 0; k < calEvs.length; k++) {
+          var title = calEvs[k].getTitle() || '';
+          var evTime = pad(calEvs[k].getStartTime().getHours()) + ':' + pad(calEvs[k].getStartTime().getMinutes());
+          if (title.indexOf('[CITA]') === 0 && title.indexOf(nombre) > -1 && evTime === hora) {
+            calEvs[k].deleteEvent();
+            break;
+          }
+        }
+      } catch(x) {}
+      sheet.deleteRow(i + 1);
+      deleted++;
+      items.push({id: id, nombre: nombre, fecha: fecha, hora: hora, motivo: check.error});
+    }
+  }
+  return { ok: true, deleted: deleted, items: items };
 }
 
 function buildEvalPrompt(d) {
