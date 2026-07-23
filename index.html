@@ -629,11 +629,31 @@
     }
     .experience-card h3 { font-size: 1.7rem; margin-bottom: 12px; }
     .experience-card p { color: var(--text-muted); font-size: 0.94rem; line-height: 1.75; }
+    .experience-price { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 16px; padding: 8px 12px; border-radius: 999px; background: rgba(126,221,208,0.16); color: var(--text); font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.03em; }
+    .experience-card ul { margin: 16px 0 18px; padding-left: 18px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.65; }
+    .experience-card li { margin-bottom: 6px; }
+    .experience-card .ideal { margin-top: 14px; color: var(--text); }
+    .experience-card .ideal span { color: var(--primary-dark); font-weight: 700; }
+    .experience-card.featured { border-color: rgba(126,221,208,0.95); background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(236,252,249,0.78)); }
+    .experience-card.premium { border-color: rgba(196,166,103,0.55); background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(250,246,236,0.8)); }
+    .experience-card .btn-outline,
+    .experience-card .btn-solid { margin-top: 8px; width: 100%; justify-content: center; text-align: center; }
+    .experience-options {
+      margin-top: 22px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.68);
+      box-shadow: 0 18px 60px rgba(26,26,26,0.05);
+    }
+    .experience-options h3 { font-size: 1.55rem; margin-bottom: 12px; }
+    .experience-options ul { columns: 2; margin: 0; padding-left: 18px; color: var(--text-muted); line-height: 1.75; }
     .experience-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
     .experience-note { margin-top: 22px; color: var(--text-muted); font-size: 0.9rem; }
     @media (max-width: 900px) {
       .experience-grid { grid-template-columns: 1fr; }
       .experiences { padding: 76px 0; }
+      .experience-options ul { columns: 1; }
     }
 
     /* ─── SERVICIOS ─── */
@@ -2567,31 +2587,74 @@
     <div class="container">
       <div class="experiences-header fade-up">
         <div class="section-tag">Relajación y bienestar</div>
-        <h2><em>Haz una pausa</em> y regálale cuidado a tu cuerpo</h2>
-        <p>Descubre experiencias de masaje, relajación y bienestar diseñadas para disfrutar de forma individual, en pareja o en grupo, siempre con criterio fisioterapéutico.</p>
+        <h2><em>Detente, respira</em> y regálale descanso a tu cuerpo</h2>
+        <p>Un espacio creado para bajar el ritmo. Combinamos masaje relajante, aromas, calor, sonidos envolventes y pequeños rituales de bienestar para ofrecerte una experiencia cálida, tranquila y personalizada.</p>
       </div>
       <div class="experience-grid">
         <article class="experience-card fade-up">
-          <div class="eyebrow">Relajación</div>
-          <h3>Masaje relajante individual</h3>
-          <p>Una experiencia suave para desconectarte de la rutina, liberar tensión acumulada y reconectar con una sensación de calma corporal.</p>
+          <div class="eyebrow">Pausa Cuidándote</div>
+          <h3>Pausa Cuidándote</h3>
+          <div class="experience-price">40 minutos · $80.000</div>
+          <p>Una experiencia localizada para quienes tienen poco tiempo, pero necesitan desconectarse del estrés y disfrutar un momento de calma.</p>
+          <ul>
+            <li>Bienvenida aromática.</li>
+            <li>Elección de aroma, sonido y presión.</li>
+            <li>Masaje en cuello, hombros, espalda, brazos y manos.</li>
+            <li>Aceite tibio, audio relajante y toalla facial caliente.</li>
+            <li>Bebida de cierre.</li>
+          </ul>
+          <p class="ideal"><span>Ideal para:</span> jornadas exigentes, cansancio cotidiano o una pausa rápida.</p>
+          <a href="#agenda" class="btn-outline">Reservar Pausa Cuidándote</a>
         </article>
-        <article class="experience-card fade-up">
-          <div class="eyebrow">Parejas</div>
-          <h3>Experiencias para dos</h3>
-          <p>Un momento compartido de cuidado y descanso, pensado para parejas o acompañantes que quieren regalarse bienestar sin perder el enfoque profesional.</p>
+        <article class="experience-card featured fade-up">
+          <div class="eyebrow">Ritual Cuidándote</div>
+          <h3>Ritual Cuidándote</h3>
+          <div class="experience-price">60 minutos · $110.000</div>
+          <p>Nuestra experiencia principal de relajación. Un ritual pensado para descansar todo el cuerpo y desconectarse del ritmo diario.</p>
+          <ul>
+            <li>Bienvenida aromática y elección de preferencias.</li>
+            <li>Baño de pies con burbujas de 8 a 10 minutos.</li>
+            <li>Masaje relajante de cuerpo completo.</li>
+            <li>Masaje de manos, pies y cuero cabelludo.</li>
+            <li>Audio relajante, toalla facial caliente y bebida final.</li>
+          </ul>
+          <p class="ideal"><span>Ideal para:</span> descanso completo, autocuidado y relajación corporal.</p>
+          <a href="#agenda" class="btn-solid">Reservar Ritual Cuidándote</a>
         </article>
-        <article class="experience-card fade-up">
-          <div class="eyebrow">Grupos y empresas</div>
-          <h3>Jornadas de relajación</h3>
-          <p>Servicios para empresas, gimnasios y eventos: pausas de bienestar, descarga muscular y experiencias grupales adaptadas al contexto.</p>
+        <article class="experience-card premium fade-up">
+          <div class="eyebrow">Experiencia premium</div>
+          <h3>Cuidándote Profundo</h3>
+          <div class="experience-price">90 minutos · $165.000</div>
+          <p>Una experiencia sensorial prolongada para desconectarte profundamente y disfrutar bienestar de principio a fin.</p>
+          <ul>
+            <li>Bebida de bienvenida y personalización sensorial.</li>
+            <li>Baño de pies con burbujas y sales.</li>
+            <li>Masaje corporal prolongado con aceite tibio.</li>
+            <li>Piedras volcánicas calientes y manta térmica.</li>
+            <li>Botas de compresión, aromática, snack y detalle final.</li>
+          </ul>
+          <p class="ideal"><span>Ideal para:</span> celebraciones, regalos especiales o una desconexión premium.</p>
+          <a href="#agenda" class="btn-outline">Reservar Cuidándote Profundo</a>
         </article>
+      </div>
+
+      <div class="experience-options fade-up">
+        <h3>Elige cómo quieres vivir tu experiencia</h3>
+        <ul>
+          <li>Aroma de la experiencia.</li>
+          <li>Sonido o música relajante.</li>
+          <li>Uso opcional de diadema con audio.</li>
+          <li>Presión suave, media o firme.</li>
+          <li>Zonas en las que deseas mayor atención.</li>
+          <li>Zonas que prefieres no incluir.</li>
+        </ul>
       </div>
       <div class="experience-actions fade-up">
-        <a href="#servicios" class="btn-outline">Conocer las experiencias</a>
+        <a href="#agenda" class="btn-solid">Reservar mi experiencia</a>
         <a href="#agenda" class="btn-solid">Reservar mi momento</a>
       </div>
-      <p class="experience-note fade-up">Cada experiencia se adapta según la condición de la persona. Si hay dolor intenso, lesión reciente o cirugía, primero recomendamos valoración.</p>
+      <p class="experience-note fade-up"><strong>Información importante:</strong> la duración corresponde al tiempo total de la experiencia. Se requiere reserva y pago anticipado. La cita puede reprogramarse una vez avisando con mínimo 12 horas de anticipación. Antes de comenzar realizamos una breve verificación de preferencias, sensibilidad a aromas y condiciones a tener en cuenta. La presión firme se mantiene dentro de un enfoque relajante; estas experiencias no corresponden a descarga muscular ni incluyen técnicas descontracturantes.</p>
+      <p class="experience-note fade-up"><strong>Regálate una pausa:</strong> no siempre necesitas hacer más. A veces necesitas detenerte, respirar y permitirte recibir.</p>
     </div>
   </section>
 
