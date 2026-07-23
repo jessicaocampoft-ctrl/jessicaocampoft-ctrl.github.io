@@ -636,8 +636,30 @@
     .experience-card .ideal span { color: var(--primary-dark); font-weight: 700; }
     .experience-card.featured { border-color: rgba(126,221,208,0.95); background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(236,252,249,0.78)); }
     .experience-card.premium { border-color: rgba(196,166,103,0.55); background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(250,246,236,0.8)); }
+    .experience-status {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      margin: 10px 0 4px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(196,166,103,0.45);
+      background: rgba(196,166,103,0.1);
+      color: var(--gold);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
     .experience-card .btn-outline,
     .experience-card .btn-solid { margin-top: 8px; width: 100%; justify-content: center; text-align: center; }
+    .btn-disabled {
+      opacity: .62;
+      pointer-events: none;
+      cursor: not-allowed;
+      box-shadow: none !important;
+    }
     .experience-options {
       margin-top: 22px;
       padding: 24px;
@@ -1314,6 +1336,7 @@
       gap: 4px;
     }
     .bk-svc:hover { border-color: rgba(126,221,208,0.5); background: rgba(126,221,208,0.04); }
+    .bk-svc.inactive { display: none; }
     .bk-svc.selected {
       border-color: var(--primary);
       background: rgba(126,221,208,0.08);
@@ -2424,7 +2447,7 @@
             <div class="path-benefit">Opciones individuales, para parejas, grupos, empresas, gimnasios y eventos.</div>
             <div class="path-actions">
               <a href="#experiencias" class="btn-on-dark">Conocer experiencias</a>
-              <a href="#agenda" class="btn-ghost-dark">Reservar mi momento</a>
+              <a href="#" class="btn-ghost-dark btn-disabled" aria-disabled="true">Agenda pr�ximamente</a>
             </div>
           </div>
         </article>
@@ -2440,7 +2463,8 @@
             <li>Ambiente tranquilo y cierre especial.</li>
           </ul>
           <p class="ideal"><span>Ideal para:</span> parejas, amigas, familia o regalos de bienestar.</p>
-          <a href="#agenda" class="btn-outline">Reservar CuidÃ¡ndonos para dos</a>
+          <div class="experience-status">Próximamente</div>
+          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
         </article>
         <article class="experience-card premium fade-up">
           <div class="eyebrow">Premium para dos</div>
@@ -2454,7 +2478,8 @@
             <li>Cierre tranquilo para disfrutar en compaÃ±Ã­a.</li>
           </ul>
           <p class="ideal"><span>Ideal para:</span> celebraciones, aniversarios o regalos especiales.</p>
-          <a href="#agenda" class="btn-outline">Reservar CuidÃ¡ndonos Profundo</a>
+          <div class="experience-status">Próximamente</div>
+          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
         </article>
         <article class="experience-card fade-up">
           <div class="eyebrow">Experiencia grupal</div>
@@ -2467,7 +2492,8 @@
             <li>5 o 6 personas: $85.000 por persona.</li>
           </ul>
           <p class="ideal"><span>Ideal para:</span> planes entre amigas, celebraciones y pausas grupales.</p>
-          <a href="#agenda" class="btn-outline">Reservar Plan Amigos</a>
+          <div class="experience-status">Próximamente</div>
+          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
         </article>
       </div>
     </div>
@@ -2683,7 +2709,8 @@
             <li>Bebida de cierre.</li>
           </ul>
           <p class="ideal"><span>Ideal para:</span> jornadas exigentes, cansancio cotidiano o una pausa rápida.</p>
-          <a href="#agenda" class="btn-outline">Reservar Pausa Cuidándote</a>
+          <div class="experience-status">Próximamente</div>
+          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
         </article>
         <article class="experience-card featured fade-up">
           <div class="eyebrow">Ritual Cuidándote</div>
@@ -2698,7 +2725,8 @@
             <li>Audio relajante, toalla facial caliente y bebida final.</li>
           </ul>
           <p class="ideal"><span>Ideal para:</span> descanso completo, autocuidado y relajación corporal.</p>
-          <a href="#agenda" class="btn-solid">Reservar Ritual Cuidándote</a>
+          <div class="experience-status">Próximamente</div>
+          <a href="#" class="btn-solid btn-disabled" aria-disabled="true">Agenda próximamente</a>
         </article>
         <article class="experience-card premium fade-up">
           <div class="eyebrow">Experiencia premium</div>
@@ -2713,7 +2741,8 @@
             <li>Botas de compresión, aromática, snack y detalle final.</li>
           </ul>
           <p class="ideal"><span>Ideal para:</span> celebraciones, regalos especiales o una desconexión premium.</p>
-          <a href="#agenda" class="btn-outline">Reservar Cuidándote Profundo</a>
+          <div class="experience-status">Próximamente</div>
+          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
         </article>
         <article class="experience-card fade-up">
           <div class="eyebrow">Sede Campestre Recovery</div>
@@ -2776,8 +2805,8 @@
         </ul>
       </div>
       <div class="experience-actions fade-up">
-        <a href="#agenda" class="btn-solid">Reservar mi experiencia</a>
-        <a href="#agenda" class="btn-solid">Reservar mi momento</a>
+        <a href="#" class="btn-solid btn-disabled" aria-disabled="true">Agenda pr�ximamente</a>
+        <a href="#" class="btn-solid btn-disabled" aria-disabled="true">Agenda pr�ximamente</a>
       </div>
       <p class="experience-note fade-up"><strong>Información importante:</strong> la duración corresponde al tiempo total de la experiencia. Se requiere reserva y pago anticipado. La cita puede reprogramarse una vez avisando con mínimo 12 horas de anticipación. Antes de comenzar realizamos una breve verificación de preferencias, sensibilidad a aromas y condiciones a tener en cuenta. La presión firme se mantiene dentro de un enfoque relajante; estas experiencias no corresponden a descarga muscular ni incluyen técnicas descontracturantes.</p>
       <p class="experience-note fade-up"><strong>Regálate una pausa:</strong> no siempre necesitas hacer más. A veces necesitas detenerte, respirar y permitirte recibir.</p>
@@ -3157,6 +3186,30 @@
                 <span class="bk-svc-name">Readaptación Funcional</span>
                 <span class="bk-svc-price">Presencial $70.000 · Domicilio $85.000</span>
               </div>
+              <div class="bk-svc inactive" data-active="false" data-sedes="Santa Mónica|Campestre Recovery" data-service="Pausa Cuidándote" data-duration="40" data-price-p="$80.000" data-price-d="$80.000" onclick="selectService(this)">
+                <span class="bk-svc-name">Pausa Cuidándote</span>
+                <span class="bk-svc-price">40 min · $80.000 · Próximamente</span>
+              </div>
+              <div class="bk-svc inactive" data-active="false" data-sedes="Santa Mónica|Campestre Recovery" data-service="Ritual Cuidándote" data-duration="60" data-price-p="$110.000" data-price-d="$110.000" onclick="selectService(this)">
+                <span class="bk-svc-name">Ritual Cuidándote</span>
+                <span class="bk-svc-price">60 min · $110.000 · Próximamente</span>
+              </div>
+              <div class="bk-svc inactive" data-active="false" data-sedes="Campestre Recovery" data-service="Cuidándote Profundo" data-duration="90" data-price-p="$165.000" data-price-d="$165.000" onclick="selectService(this)">
+                <span class="bk-svc-name">Cuidándote Profundo</span>
+                <span class="bk-svc-price">90 min · $165.000 · Próximamente</span>
+              </div>
+              <div class="bk-svc inactive" data-active="false" data-sedes="Campestre Recovery" data-service="Cuidándonos para dos" data-duration="60" data-price-p="$205.000" data-price-d="$205.000" onclick="selectService(this)">
+                <span class="bk-svc-name">Cuidándonos para dos</span>
+                <span class="bk-svc-price">60 min · $205.000 total · Próximamente</span>
+              </div>
+              <div class="bk-svc inactive" data-active="false" data-sedes="Campestre Recovery" data-service="Cuidándonos Profundo para dos" data-duration="90" data-price-p="$315.000" data-price-d="$315.000" onclick="selectService(this)">
+                <span class="bk-svc-name">Cuidándonos Profundo para dos</span>
+                <span class="bk-svc-price">90 min · $315.000 total · Próximamente</span>
+              </div>
+              <div class="bk-svc inactive" data-active="false" data-sedes="Campestre Recovery" data-service="Plan Amigos" data-duration="60" data-price-p="Según número de personas" data-price-d="Según número de personas" onclick="selectService(this)">
+                <span class="bk-svc-name">Plan Amigos</span>
+                <span class="bk-svc-price">Valores publicados · Próximamente</span>
+              </div>
             </div>
             <div class="bk-actions">
               <button class="bk-btn-next" id="btnStep1" onclick="goStep(2)" disabled>
@@ -3467,6 +3520,7 @@
     })();
 
     function selectService(el) {
+      if (el.dataset.active === 'false') return;
       document.querySelectorAll('.bk-svc').forEach(s => s.classList.remove('selected'));
       el.classList.add('selected');
       bk.service  = el.dataset.service;
