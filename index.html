@@ -636,6 +636,21 @@
     .experience-card .ideal span { color: var(--primary-dark); font-weight: 700; }
     .experience-card.featured { border-color: rgba(126,221,208,0.95); background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(236,252,249,0.78)); }
     .experience-card.premium { border-color: rgba(196,166,103,0.55); background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(250,246,236,0.8)); }
+    .premium-badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      margin: 0 0 10px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(196,166,103,0.5);
+      background: linear-gradient(135deg, rgba(196,166,103,0.16), rgba(126,221,208,0.1));
+      color: var(--primary-dark);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+    }
     .experience-status {
       display: inline-flex;
       align-items: center;
@@ -2731,6 +2746,7 @@
         <article class="experience-card premium fade-up">
           <div class="eyebrow">Experiencia premium</div>
           <h3>Cuidándote Profundo</h3>
+          <div class="premium-badge">EXPERIENCIA PREMIUM</div>
           <div class="experience-price">90 minutos · $165.000</div>
           <p>Una experiencia sensorial prolongada para desconectarte profundamente y disfrutar bienestar de principio a fin.</p>
           <ul>
