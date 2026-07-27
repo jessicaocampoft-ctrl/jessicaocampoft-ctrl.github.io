@@ -8841,25 +8841,27 @@ function waBtn(tel, nombre, fecha, hora, serv, label, precio, modalidad) {
 }
 
 function pasaporteLink(nombre) {
-  return PASAPORTE_BASE + '?nombre=' + encodeURIComponent((nombre||'').trim());
+  return PASAPORTE_BASE;
 }
 
 function pasaporteLinkAdmin(nombre) {
-  return PASAPORTE_BASE + '?nombre=' + encodeURIComponent((nombre||'').trim()) + '&admin=' + PASAPORTE_TOKEN;
+  return PASAPORTE_BASE;
 }
 
 function waBtnPasaporte(tel, nombre) {
-  const linkPaciente = pasaporteLink(nombre);
-  const linkAdmin    = pasaporteLinkAdmin(nombre);
-  const t     = String(tel||'').replace(/\D/g,'');
-  const phone = t.length <= 10 ? '57'+t : t;
-  const primero = waNombre(nombre);
-  const msg = 'Hola ' + primero + '! \uD83D\uDC4B\nTe dejo tu Pasaporte de Beneficios — ahi vas a ver tu progreso despues de cada sesion.\n' + linkPaciente + '\n\n\u2B50 *Como ganar beneficios?*\nCada sesion sumas avances. Al llegar a:\n\n\u2705 *4 sesiones:* Descarga Localizada 10 min (zona de tu eleccion)\n\u2705 *8 sesiones:* Valoracion Funcional Express 10 min + PDF con resultados\n\u2705 *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresion\n\u2705 *16 sesiones:* Kinesiotape + Tens 15 min (Readaptacion completa)\n\nGuardalo y nos vemos pronto! \uD83D\uDE0A';
-  const waUrl = t.length >= 7
-    ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg)
-    : 'https://wa.me/?text=' + encodeURIComponent(msg);
-  return '<a href="' + linkAdmin + '" target="_blank" class="btn btn-passport btn-sm" title="Abrir en modo admin">Pasaporte</a>'
-       + '<a href="' + waUrl + '" target="_blank" class="btn btn-teal btn-sm" title="Enviar link al paciente por WhatsApp" style="margin-left:4px">\uD83D\uDCF2</a>';
+  const safeName = String(nombre || '').replace(/'/g, "\\'");
+  return '<button type="button" class="btn btn-passport btn-sm" onclick="openPassportModuleFor(\'' + safeName + '\')" title="Generar enlace seguro">Pasaporte</button>';
+}
+
+function openPassportModuleFor(nombre) {
+  showView('pasaporte');
+  setTimeout(function() {
+    const input = document.getElementById('pasNombreInput');
+    if (!input) return;
+    input.value = nombre || '';
+    onPasInput(input.value);
+    toast('Selecciona el paciente en la lista para generar su enlace seguro.', 'info');
+  }, 80);
 }
 
 function toast(msg, type='ok') {
@@ -11069,7 +11071,7 @@ function renderPacientes() {
           ${waBtn(p.telefono,p.nombre,'','','','WA')}
           <button class="btn btn-ghost btn-sm" onclick="seguimientoWA('${p.telefono||''}','${p.nombre.replace(/'/g,"\\'")}','${(p.ultimoServicio||'').replace(/'/g,"\\'")}')">💬</button>
           ${(()=>{const u=waEncuesta(p.telefono,p.nombre);return u?`<a href="${u}" target="_blank" class="btn btn-ghost btn-sm" title="Enviar encuesta de satisfacción por WhatsApp">\u2B50 Encuesta</a>`:''})()}
-          <a href="https://cuidandotefisioterapia.com/pasaporte.html?nombre=${encodeURIComponent(p.nombre)}" target="_blank" class="btn btn-passport btn-sm">Pasaporte</a>
+          <button type="button" class="btn btn-passport btn-sm" onclick="openPassportModuleFor('${p.nombre.replace(/'/g,"\\'")}')">Pasaporte</button>
           <button class="btn btn-edit btn-sm" onclick="editarPacienteIdx(${idx})">✏️ Editar</button>
           <button class="btn btn-danger btn-sm" onclick="borrarPaciente(${idx})">🗑️ Eliminar</button>
         </div>
@@ -17998,9 +18000,9 @@ function exportarCSV(modo) {
 
 // ── PASAPORTE DE MOVIMIENTO ────────────────────────────────────
 const PASAPORTE_BASE  = 'https://cuidandotefisioterapia.com/pasaporte.html';
-const PASAPORTE_TOKEN = 'jof_pasaporte_admin_2026';
 let _pasTelefono = '';
 let _pasConfirmado = false;  // true solo cuando se seleccionó desde la BD
+let _pasCurrent = null;
 
 function _pasGetDB() {
   const map = {};
@@ -18081,13 +18083,19 @@ function limpiarPasBusqueda() {
   _pasSetConfirmed(false);
 }
 
-function generarLinkPasaporte() {
+async function generarLinkPasaporte() {
   if (!_pasConfirmado) return;
   const nombre = document.getElementById('pasNombreInput').value.trim();
   const card   = document.getElementById('pasLinkCard');
   if (!nombre) { card.style.display = 'none'; return; }
 
-  const link = PASAPORTE_BASE + '?nombre=' + encodeURIComponent(nombre);
+  const url = APPS_SCRIPT_URL + '?action=passportEnsure&token=' + encodeURIComponent(TOKEN)
+    + '&nombre=' + encodeURIComponent(nombre)
+    + '&telefono=' + encodeURIComponent(_pasTelefono || '');
+  const data = await fetch(url).then(r => r.json());
+  if (!data.ok) { toast(data.error || 'No se pudo generar el pasaporte', 'error'); return; }
+  _pasCurrent = data.passport;
+  const link = _pasCurrent.link;
   document.getElementById('pasLinkTexto').textContent = link;
   card.style.display = 'block';
 
@@ -18097,15 +18105,23 @@ function generarLinkPasaporte() {
   const msg = `Hola ${nombre.split(' ')[0]}! \uD83D\uDC4B\nTe dejo tu Pasaporte de Beneficios — ahi vas a ver tu progreso despues de cada sesion.\n${link}\n\n\u2B50 *Como ganar beneficios?*\nCada sesion sumas avances. Al llegar a:\n\n\u2705 *4 sesiones:* Descarga Localizada 10 min (zona de tu eleccion)\n\u2705 *8 sesiones:* Valoracion Funcional Express 10 min + PDF con resultados\n\u2705 *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresion\n\u2705 *16 sesiones:* Kinesiotape + Tens 15 min (Readaptacion completa)\n\nGuardalo y nos vemos pronto! \uD83D\uDE0A`;
   document.getElementById('pasWhatsApp').href = tel + '?text=' + encodeURIComponent(msg);
 
-  if (typeof QRCode !== 'undefined') {
+  if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
     QRCode.toCanvas(document.getElementById('pasQR'), link, { width: 112, margin: 1, color: { dark: '#0A1A12', light: '#F7F8FA' } });
+  } else {
+    const canvas = document.getElementById('pasQR');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#F7F8FA'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#0A1A12'; ctx.font = '11px Arial'; ctx.fillText('QR no disponible', 14, 58);
   }
+  renderPasaporteAdminTools();
 }
 
 function abrirPasaporte() {
   if (!_pasConfirmado) { toast('Selecciona un paciente de la lista primero', 'warn'); return; }
-  const nombre = document.getElementById('pasNombreInput').value.trim();
-  window.open(PASAPORTE_BASE + '?nombre=' + encodeURIComponent(nombre) + '&admin=' + PASAPORTE_TOKEN, '_blank');
+  const link = (_pasCurrent && _pasCurrent.link) || document.getElementById('pasLinkTexto').textContent;
+  if (!link) { toast('Genera primero el enlace seguro', 'warn'); return; }
+  window.open(link, '_blank');
 }
 
 function copiarLinkPas() {
@@ -18117,6 +18133,78 @@ function copiarLinkPas() {
     btn.textContent = '¡Copiado!';
     setTimeout(() => btn.textContent = orig, 2000);
   });
+}
+
+function renderPasaporteAdminTools() {
+  const card = document.getElementById('pasLinkCard');
+  if (!card || !_pasCurrent) return;
+  let box = document.getElementById('pasAdminTools');
+  if (!box) {
+    card.insertAdjacentHTML('beforeend', `
+      <div id="pasAdminTools" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--s2)">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <button class="btn btn-sm" onclick="regenerarTokenPasaporte()">Regenerar token</button>
+          <button class="btn btn-sm btn-danger" onclick="desactivarPasaporte()">Desactivar pasaporte</button>
+          <button class="btn btn-sm btn-teal" onclick="guardarProgresoPasaporte()">Guardar progreso</button>
+        </div>
+        <div id="pasProgressEditor"></div>
+      </div>`);
+  }
+  const passport = _pasCurrent.passport || {};
+  const descarga = _pasCurrent.descarga || {};
+  const stampSource = passport.stamps || passport.sellos || passport;
+  const descargaSource = descarga.stamps || descarga.sellos || descarga;
+  document.getElementById('pasProgressEditor').innerHTML = `
+    <div style="font-weight:700;margin-bottom:8px">Sellos del pasaporte</div>
+    <div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;margin-bottom:14px">
+      ${Array.from({length:16}, (_, i) => {
+        const n = i + 1;
+        const checked = !!(stampSource[n] || stampSource['s' + n] || stampSource['stamp' + n] || stampSource[i]);
+        return `<label style="border:1px solid var(--s2);border-radius:10px;padding:8px;text-align:center"><input type="checkbox" class="pasStamp" data-n="${n}" ${checked ? 'checked' : ''}> ${n}</label>`;
+      }).join('')}
+    </div>
+    <div style="font-weight:700;margin-bottom:8px">Reto mensual descarga</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${[1,2].map(n => {
+        const checked = !!(descargaSource[n] || descargaSource['s' + n] || descargaSource['stamp' + n] || descargaSource[n - 1]);
+        return `<label style="border:1px solid var(--s2);border-radius:10px;padding:8px 12px"><input type="checkbox" class="pasDescarga" data-n="${n}" ${checked ? 'checked' : ''}> Sesión ${n}</label>`;
+      }).join('')}
+    </div>`;
+}
+
+async function guardarProgresoPasaporte() {
+  if (!_pasCurrent || !_pasCurrent.id) { toast('Genera primero el enlace seguro', 'warn'); return; }
+  const passport = {stamps:{}};
+  document.querySelectorAll('.pasStamp').forEach(cb => passport.stamps[cb.dataset.n] = cb.checked);
+  const descarga = {stamps:{}};
+  document.querySelectorAll('.pasDescarga').forEach(cb => descarga.stamps[cb.dataset.n] = cb.checked);
+  const url = APPS_SCRIPT_URL + '?action=passportSaveProgress&token=' + encodeURIComponent(TOKEN)
+    + '&id=' + encodeURIComponent(_pasCurrent.id)
+    + '&passport=' + encodeURIComponent(JSON.stringify(passport))
+    + '&descarga=' + encodeURIComponent(JSON.stringify(descarga));
+  const data = await fetch(url).then(r => r.json());
+  if (!data.ok) { toast(data.error || 'No se pudo guardar el progreso', 'error'); return; }
+  _pasCurrent = data.passport;
+  renderPasaporteAdminTools();
+  toast('Progreso guardado', 'success');
+}
+
+async function regenerarTokenPasaporte() {
+  if (!_pasCurrent || !_pasCurrent.id) return;
+  if (!confirm('¿Regenerar el enlace? El anterior dejará de funcionar.')) return;
+  const data = await fetch(APPS_SCRIPT_URL + '?action=passportRegenerateToken&token=' + encodeURIComponent(TOKEN) + '&id=' + encodeURIComponent(_pasCurrent.id)).then(r => r.json());
+  if (!data.ok) { toast(data.error || 'No se pudo regenerar', 'error'); return; }
+  _pasCurrent = data.passport;
+  generarLinkPasaporte();
+  toast('Token regenerado. El enlace anterior quedó inválido.', 'success');
+}
+
+async function desactivarPasaporte() {
+  if (!_pasCurrent || !_pasCurrent.id) return;
+  if (!confirm('¿Desactivar este pasaporte?')) return;
+  const data = await fetch(APPS_SCRIPT_URL + '?action=passportDeactivate&token=' + encodeURIComponent(TOKEN) + '&id=' + encodeURIComponent(_pasCurrent.id)).then(r => r.json());
+  if (!data.ok) { toast(data.error || 'No se pudo desactivar', 'error'); return; }
+  toast('Pasaporte desactivado', 'success');
 }
 
 // ── Interceptor WA en desktop: muestra modal para copiar en vez de abrir wa.me ──
