@@ -636,44 +636,23 @@
     .experience-card .ideal span { color: var(--primary-dark); font-weight: 700; }
     .experience-card.featured { border-color: rgba(126,221,208,0.95); background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(236,252,249,0.78)); }
     .experience-card.premium { border-color: rgba(196,166,103,0.55); background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(250,246,236,0.8)); }
-    .premium-badge {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      margin: 0 0 10px;
-      padding: 7px 13px;
-      border-radius: 999px;
-      border: 1px solid rgba(196,166,103,0.5);
-      background: linear-gradient(135deg, rgba(196,166,103,0.16), rgba(126,221,208,0.1));
-      color: var(--primary-dark);
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: .1em;
-    }
-    .experience-status {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      margin: 10px 0 4px;
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(196,166,103,0.45);
-      background: rgba(196,166,103,0.1);
-      color: var(--gold);
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
     .experience-card .btn-outline,
     .experience-card .btn-solid { margin-top: 8px; width: 100%; justify-content: center; text-align: center; }
-    .btn-disabled {
-      opacity: .62;
-      pointer-events: none;
-      cursor: not-allowed;
-      box-shadow: none !important;
+    .soon-pill {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      margin: 2px 0 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(126,221,208,0.45);
+      background: rgba(126,221,208,0.1);
+      color: var(--primary-dark);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
     }
     .experience-options {
       margin-top: 22px;
@@ -1351,7 +1330,6 @@
       gap: 4px;
     }
     .bk-svc:hover { border-color: rgba(126,221,208,0.5); background: rgba(126,221,208,0.04); }
-    .bk-svc.inactive { display: none; }
     .bk-svc.selected {
       border-color: var(--primary);
       background: rgba(126,221,208,0.08);
@@ -2462,53 +2440,9 @@
             <div class="path-benefit">Opciones individuales, para parejas, grupos, empresas, gimnasios y eventos.</div>
             <div class="path-actions">
               <a href="#experiencias" class="btn-on-dark">Conocer experiencias</a>
-              <a href="#" class="btn-ghost-dark btn-disabled" aria-disabled="true">Agenda próximamente</a>
+              <a href="#agenda" class="btn-ghost-dark">Reservar mi momento</a>
             </div>
           </div>
-        </article>
-        <article class="experience-card fade-up">
-          <div class="eyebrow">Experiencia para dos</div>
-          <h3>Cuidándonos para dos</h3>
-          <div class="experience-price">60 minutos · $205.000 total</div>
-          <p>Una experiencia compartida para regalarse una pausa de bienestar, calma y cuidado corporal.</p>
-          <ul>
-            <li>Experiencia relajante para dos personas.</li>
-            <li>Personalización de aroma, sonido y presión.</li>
-            <li>Masaje relajante de 60 minutos.</li>
-            <li>Ambiente tranquilo y cierre especial.</li>
-          </ul>
-          <p class="ideal"><span>Ideal para:</span> parejas, amigas, familia o regalos de bienestar.</p>
-          <div class="experience-status">Próximamente</div>
-          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
-        </article>
-        <article class="experience-card premium fade-up">
-          <div class="eyebrow">Premium para dos</div>
-          <h3>Cuidándonos Profundo para dos</h3>
-          <div class="experience-price">90 minutos · $315.000 total</div>
-          <p>Una versión profunda y especial para compartir una experiencia sensorial más completa.</p>
-          <ul>
-            <li>Experiencia premium para dos personas.</li>
-            <li>Masaje relajante prolongado.</li>
-            <li>Elementos de calor y ritual de bienestar.</li>
-            <li>Cierre tranquilo para disfrutar en compañía.</li>
-          </ul>
-          <p class="ideal"><span>Ideal para:</span> celebraciones, aniversarios o regalos especiales.</p>
-          <div class="experience-status">Próximamente</div>
-          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
-        </article>
-        <article class="experience-card fade-up">
-          <div class="eyebrow">Experiencia grupal</div>
-          <h3>Plan Amigos</h3>
-          <div class="experience-price">Desde $85.000 por persona</div>
-          <p>Una opción para compartir bienestar entre amigos, familia o grupos pequeños.</p>
-          <ul>
-            <li>3 personas: $95.000 por persona.</li>
-            <li>4 personas: $90.000 por persona.</li>
-            <li>5 o 6 personas: $85.000 por persona.</li>
-          </ul>
-          <p class="ideal"><span>Ideal para:</span> planes entre amigas, celebraciones y pausas grupales.</p>
-          <div class="experience-status">Próximamente</div>
-          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
         </article>
       </div>
     </div>
@@ -2627,7 +2561,7 @@
           </div>
           <div class="service-card-body">
             <h3>Descarga Muscular Completa</h3>
-            <p>Tratamiento integral de todo el cuerpo para una recuperación profunda y total.</p>
+            <p>Experiencia de descarga muscular de cuerpo completo para disminuir tensión, fatiga y sensación de sobrecarga.</p>
             <p class="service-ideal"><span>Ideal para:</span> quienes acumulan tensión en todo el cuerpo, necesitan un reset total o llevan semanas sin cuidarse como merecen.</p>
             <span class="service-price">Presencial $110.000 · Domicilio $125.000</span>
           </div>
@@ -2653,7 +2587,7 @@
           </div>
           <div class="service-card-body">
             <h3>Readaptación Funcional</h3>
-            <p>Recuperación progresiva y personalizada para volver a moverte sin miedo ni dolor.</p>
+            <p>Acompañamiento progresivo y personalizado para mejorar el movimiento y retomar tus actividades con mayor confianza.</p>
             <p class="service-ideal"><span>Ideal para:</span> personas que tuvieron una lesión, cirugía o llevan tiempo con una molestia que no desaparece y quieren volver a su vida normal.</p>
             <span class="service-price">Presencial $70.000 · Domicilio $85.000</span>
           </div>
@@ -2661,44 +2595,6 @@
 
       </div>
       <div class="carousel-dots" id="servicesDots"></div>
-    </div>
-  </section>
-
-  <!-- DISPONIBILIDAD POR SEDE -->
-  <section class="experiences" id="sedes">
-    <div class="container">
-      <div class="experiences-header fade-up">
-        <div class="section-tag">Disponibilidad por sede</div>
-        <h2><em>Elige tu sede</em> según el servicio que necesitas</h2>
-        <p>Consulta qué servicios están disponibles en cada sede antes de reservar.</p>
-      </div>
-      <div class="experience-grid">
-        <article class="experience-card fade-up">
-          <div class="eyebrow">Sede Santa Mónica</div>
-          <h3>Fisioterapia y bienestar</h3>
-          <ul>
-            <li>Valoración funcional.</li>
-            <li>Readaptación funcional.</li>
-            <li>Descargas musculares.</li>
-            <li>Pausa Cuidándote.</li>
-            <li>Ritual Cuidándote.</li>
-          </ul>
-        </article>
-        <article class="experience-card featured fade-up">
-          <div class="eyebrow">Sede Campestre Recovery</div>
-          <h3>Bienestar y recuperación muscular</h3>
-          <ul>
-            <li>Descargas musculares.</li>
-            <li>Pausa Cuidándote.</li>
-            <li>Ritual Cuidándote.</li>
-            <li>Cuidándote Profundo.</li>
-            <li>Experiencias para dos.</li>
-            <li>Plan Amigos.</li>
-            <li>Sauna.</li>
-            <li>Inmersión en hielo.</li>
-          </ul>
-        </article>
-      </div>
     </div>
   </section>
 
@@ -2714,6 +2610,7 @@
         <article class="experience-card fade-up">
           <div class="eyebrow">Pausa Cuidándote</div>
           <h3>Pausa Cuidándote</h3>
+          <span class="soon-pill">Próximamente</span>
           <div class="experience-price">40 minutos · $80.000</div>
           <p>Una experiencia localizada para quienes tienen poco tiempo, pero necesitan desconectarse del estrés y disfrutar un momento de calma.</p>
           <ul>
@@ -2724,12 +2621,12 @@
             <li>Bebida de cierre.</li>
           </ul>
           <p class="ideal"><span>Ideal para:</span> jornadas exigentes, cansancio cotidiano o una pausa rápida.</p>
-          <div class="experience-status">Próximamente</div>
-          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Pausa%20Cuid%C3%A1ndote%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-outline">Recibir información por WhatsApp</a>
         </article>
         <article class="experience-card featured fade-up">
           <div class="eyebrow">Ritual Cuidándote</div>
           <h3>Ritual Cuidándote</h3>
+          <span class="soon-pill">Próximamente</span>
           <div class="experience-price">60 minutos · $110.000</div>
           <p>Nuestra experiencia principal de relajación. Un ritual pensado para descansar todo el cuerpo y desconectarse del ritmo diario.</p>
           <ul>
@@ -2740,13 +2637,12 @@
             <li>Audio relajante, toalla facial caliente y bebida final.</li>
           </ul>
           <p class="ideal"><span>Ideal para:</span> descanso completo, autocuidado y relajación corporal.</p>
-          <div class="experience-status">Próximamente</div>
-          <a href="#" class="btn-solid btn-disabled" aria-disabled="true">Agenda próximamente</a>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Ritual%20Cuid%C3%A1ndote%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-solid">Recibir información por WhatsApp</a>
         </article>
         <article class="experience-card premium fade-up">
           <div class="eyebrow">Experiencia premium</div>
           <h3>Cuidándote Profundo</h3>
-          <div class="premium-badge">EXPERIENCIA PREMIUM</div>
+          <span class="soon-pill">Próximamente</span>
           <div class="experience-price">90 minutos · $165.000</div>
           <p>Una experiencia sensorial prolongada para desconectarte profundamente y disfrutar bienestar de principio a fin.</p>
           <ul>
@@ -2757,89 +2653,58 @@
             <li>Botas de compresión, aromática, snack y detalle final.</li>
           </ul>
           <p class="ideal"><span>Ideal para:</span> celebraciones, regalos especiales o una desconexión premium.</p>
-          <div class="experience-status">Próximamente</div>
-          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Cuid%C3%A1ndote%20Profundo%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-outline">Recibir información por WhatsApp</a>
         </article>
-        <!-- wellness-combos-recovery-start -->
         <article class="experience-card fade-up">
-          <div class="eyebrow">Sede Campestre Recovery</div>
+          <div class="eyebrow">Experiencia para dos</div>
           <h3>Cuidándonos para dos</h3>
+          <span class="soon-pill">Próximamente</span>
           <div class="experience-price">60 minutos · $205.000 total</div>
-          <p>Una experiencia relajante para compartir una pausa de bienestar, calma y cuidado corporal.</p>
+          <p>Una pausa de bienestar para compartir en la Sede Campestre Recovery.</p>
           <p class="ideal"><span>Disponible en:</span> Sede Campestre Recovery — Bienestar y recuperación muscular.</p>
-          <div class="experience-status">Próximamente</div>
-          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Cuid%C3%A1ndonos%20para%20dos%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-outline">Recibir información por WhatsApp</a>
         </article>
         <article class="experience-card premium fade-up">
-          <div class="eyebrow">Sede Campestre Recovery</div>
+          <div class="eyebrow">Premium para dos</div>
           <h3>Cuidándonos Profundo para dos</h3>
+          <span class="soon-pill">Próximamente</span>
           <div class="experience-price">90 minutos · $315.000 total</div>
-          <p>Una experiencia premium para dos personas, pensada para desconectarse con más tiempo, calma y elementos de bienestar.</p>
+          <p>Una experiencia sensorial más completa para compartir calma, cuidado y recuperación muscular.</p>
           <p class="ideal"><span>Disponible en:</span> Sede Campestre Recovery — Bienestar y recuperación muscular.</p>
-          <div class="experience-status">Próximamente</div>
-          <a href="#" class="btn-outline btn-disabled" aria-disabled="true">Agenda próximamente</a>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Cuid%C3%A1ndonos%20Profundo%20para%20dos%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-outline">Recibir información por WhatsApp</a>
         </article>
         <article class="experience-card fade-up">
-          <div class="eyebrow">Sede Campestre Recovery</div>
+          <div class="eyebrow">Experiencia grupal</div>
           <h3>Plan Amigos</h3>
-          <div class="experience-price">3 a 6 personas · desde $85.000 por persona</div>
-          <p>Una opción grupal para compartir bienestar entre amigos, familia o grupos pequeños.</p>
-          <ul>
-            <li>3 personas: $95.000 por persona.</li>
-            <li>4 personas: $90.000 por persona.</li>
-            <li>5 o 6 personas: $85.000 por persona.</li>
-          </ul>
+          <span class="soon-pill">Próximamente</span>
+          <div class="experience-price">3: $95.000 p/p · 4: $90.000 p/p · 5 o 6: $85.000 p/p</div>
+          <p>Una opción para compartir bienestar entre amigos, familia o grupos pequeños.</p>
           <p class="ideal"><span>Disponible en:</span> Sede Campestre Recovery — Bienestar y recuperación muscular.</p>
-          <div class="experience-status">Próximamente</div>
-          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20cotizar%20un%20Plan%20Amigos%20de%20Cuid%C3%A1ndote%20Fisioterapia%20para%20___%20personas.%20%C2%BFMe%20pueden%20brindar%20informaci%C3%B3n%3F" class="btn-outline" target="_blank" rel="noopener">Cotiza tu Plan Amigos</a>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20cotizar%20un%20Plan%20Amigos%20de%20Cuid%C3%A1ndote%20Fisioterapia%20para%20___%20personas.%20%C2%BFMe%20pueden%20brindar%20informaci%C3%B3n%3F" target="_blank" rel="noopener" class="btn-outline">Cotiza tu Plan Amigos</a>
         </article>
-        <!-- wellness-combos-recovery-end -->
         <article class="experience-card fade-up">
           <div class="eyebrow">Sede Campestre Recovery</div>
           <h3>Sauna</h3>
-          <div class="experience-price">Bienestar y recuperación muscular</div>
-          <p>Servicio exclusivo de Sede Campestre Recovery — Bienestar y recuperación muscular.</p>
-          <ul>
-            <li>1 persona: $25.000.</li>
-            <li>2 personas: $15.000 por persona.</li>
-            <li>3 personas: $13.000 por persona.</li>
-          </ul>
-          <a href="#agenda" class="btn-outline">Reservar Sauna</a>
+          <div class="experience-price">1 persona $25.000 · 2 personas $15.000 p/p · 3 personas $13.000 p/p</div>
+          <p>Línea térmica exclusiva de Sede Campestre Recovery — Bienestar y recuperación muscular.</p>
+          <p class="ideal"><span>Adicional en descargas o experiencias:</span> +$15.000 por persona.</p>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20consultar%20disponibilidad%20para%20sauna%20en%20Sede%20Campestre%20Recovery." target="_blank" rel="noopener" class="btn-outline">Solicitar disponibilidad</a>
         </article>
         <article class="experience-card fade-up">
           <div class="eyebrow">Sede Campestre Recovery</div>
           <h3>Inmersión en hielo</h3>
-          <div class="experience-price">Bienestar y recuperación muscular</div>
-          <p>Servicio exclusivo de Sede Campestre Recovery — Bienestar y recuperación muscular.</p>
-          <ul>
-            <li>1 persona: $40.000.</li>
-            <li>2 personas: $25.000 por persona.</li>
-            <li>3 personas: $20.000 por persona.</li>
-          </ul>
-          <a href="#agenda" class="btn-outline">Reservar inmersión</a>
+          <div class="experience-price">1 persona $40.000 · 2 personas $25.000 p/p · 3 personas $20.000 p/p</div>
+          <p>Línea térmica exclusiva de Sede Campestre Recovery — Bienestar y recuperación muscular.</p>
+          <p class="ideal"><span>Adicional en descargas o experiencias:</span> +$25.000 por persona.</p>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20consultar%20disponibilidad%20para%20inmersi%C3%B3n%20en%20hielo%20en%20Sede%20Campestre%20Recovery." target="_blank" rel="noopener" class="btn-outline">Solicitar disponibilidad</a>
         </article>
-        <article class="experience-card featured fade-up">
+        <article class="experience-card premium fade-up">
           <div class="eyebrow">Sede Campestre Recovery</div>
           <h3>Sauna + inmersión en hielo</h3>
-          <div class="experience-price">1 persona · $50.000 total</div>
-          <p>Combinado individual exclusivo de Sede Campestre Recovery — Bienestar y recuperación muscular.</p>
-          <ul>
-            <li>Sauna.</li>
-            <li>Inmersión en hielo.</li>
-            <li>Combinado individual para recuperación muscular.</li>
-          </ul>
-          <a href="#agenda" class="btn-solid">Reservar combinado</a>
-        </article>
-        <article class="experience-card fade-up">
-          <div class="eyebrow">Adicionales Recovery</div>
-          <h3>Para descarga muscular o experiencia relajante</h3>
-          <div class="experience-price">Exclusivo Sede Campestre Recovery</div>
-          <p>Estos adicionales pueden sumarse a servicios de descarga muscular o experiencias relajantes realizados en la Sede Campestre Recovery.</p>
-          <ul>
-            <li>Agregar sauna: +$15.000 por persona.</li>
-            <li>Agregar inmersión en hielo: +$25.000 por persona.</li>
-            <li>Agregar sauna + inmersión: +$35.000 por persona.</li>
-          </ul>
+          <div class="experience-price">$50.000 total por persona</div>
+          <p>Combinado individual independiente de sauna e inmersión en hielo.</p>
+          <p class="ideal"><span>Adicional en descargas o experiencias:</span> sauna + inmersión +$35.000 por persona.</p>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20consultar%20disponibilidad%20para%20sauna%20%2B%20inmersi%C3%B3n%20en%20hielo%20en%20Sede%20Campestre%20Recovery." target="_blank" rel="noopener" class="btn-outline">Solicitar disponibilidad</a>
         </article>
       </div>
 
@@ -2855,8 +2720,7 @@
         </ul>
       </div>
       <div class="experience-actions fade-up">
-        <a href="#" class="btn-solid btn-disabled" aria-disabled="true">Agenda próximamente</a>
-        <a href="#" class="btn-solid btn-disabled" aria-disabled="true">Agenda próximamente</a>
+        <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20las%20experiencias%20de%20bienestar%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-solid">Recibir información por WhatsApp</a>
       </div>
       <p class="experience-note fade-up"><strong>Información importante:</strong> la duración corresponde al tiempo total de la experiencia. Se requiere reserva y pago anticipado. La cita puede reprogramarse una vez avisando con mínimo 12 horas de anticipación. Antes de comenzar realizamos una breve verificación de preferencias, sensibilidad a aromas y condiciones a tener en cuenta. La presión firme se mantiene dentro de un enfoque relajante; estas experiencias no corresponden a descarga muscular ni incluyen técnicas descontracturantes.</p>
       <p class="experience-note fade-up"><strong>Regálate una pausa:</strong> no siempre necesitas hacer más. A veces necesitas detenerte, respirar y permitirte recibir.</p>
@@ -3137,15 +3001,7 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="faq-a"><div class="faq-a-inner">
-            <div class="faq-hours">
-              <div class="faq-hour-row"><span class="faq-hour-day">Lunes</span><span class="faq-hour-time">8:00 am – 4:30 pm</span></div>
-              <div class="faq-hour-row"><span class="faq-hour-day">Martes</span><span class="faq-hour-time">8:00 am – 5:00 pm</span></div>
-              <div class="faq-hour-row"><span class="faq-hour-day">Miércoles</span><span class="faq-hour-time">8:00 am – 5:00 pm</span></div>
-              <div class="faq-hour-row"><span class="faq-hour-day">Jueves</span><span class="faq-hour-time">8:00 am – 8:00 pm</span></div>
-              <div class="faq-hour-row"><span class="faq-hour-day">Viernes</span><span class="faq-hour-time">8:00 am – 8:00 pm</span></div>
-              <div class="faq-hour-row"><span class="faq-hour-day">Sábado</span><span class="faq-hour-time">7:00 am – 9:30 am</span></div>
-              <div class="faq-hour-row"><span class="faq-hour-day">Domingo</span><span class="faq-hour-time">Sin servicio</span></div>
-            </div>
+            Trabajamos con cita previa. Los horarios disponibles se muestran directamente en nuestro sistema de reserva y pueden variar según la sede, el servicio y el profesional.
           </div></div>
         </div>
 
@@ -3155,11 +3011,11 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="faq-a"><div class="faq-a-inner">
-            Estamos ubicados en <strong>Finca Villa Diana, Vereda El Estanquillo</strong>, Dosquebradas. Al confirmar tu cita te enviamos un video con las indicaciones exactas para llegar sin problema. Si tienes dudas, escríbenos:
+            Nuestra sede principal es <strong>Cuidándote Fisioterapia — Sede Santa Mónica</strong>, ubicada en <strong>Cra. 19A #17-24, nivel 1, Dosquebradas, Risaralda</strong>. Para la Sede Campestre Recovery, la ubicación se comparte al confirmar la reserva. Si tienes dudas, escríbenos:
             <br>
-            <a href="https://wa.me/573136467945?text=Hola%20Jessica%2C%20necesito%20las%20indicaciones%20para%20llegar%20al%20consultorio" target="_blank" rel="noopener" class="faq-wa-btn">
+            <a href="https://www.google.com/maps/search/?api=1&query=Cra.%2019A%20%2317-24%2C%20nivel%201%2C%20Dosquebradas%2C%20Risaralda" target="_blank" rel="noopener" class="faq-wa-btn">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.89.525 3.658 1.438 5.168L2 22l4.978-1.301A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 11.999 2z"/></svg>
-              Pedir indicaciones por WhatsApp
+              Cómo llegar a Santa Mónica
             </a>
           </div></div>
         </div>
@@ -3216,49 +3072,25 @@
           <!-- STEP 1: Seleccionar servicio -->
           <div class="bk-step active" id="step1">
             <div class="bk-service-grid">
-              <div class="bk-svc" data-service="Descarga Muscular — Cuello y Espalda" data-price-p="$75.000" data-price-d="$90.000" onclick="selectService(this)">
+              <div class="bk-svc" data-service="Descarga Muscular — Cuello y Espalda" data-price-santa="$75.000" data-price-recovery="$75.000" data-price-d="$90.000" data-duration="60" data-venues="santa,recovery,domicilio" onclick="selectService(this)">
                 <span class="bk-svc-name">Descarga Muscular<br>Cuello y Espalda</span>
-                <span class="bk-svc-price">Presencial $75.000 · Domicilio $90.000</span>
+                <span class="bk-svc-price">Santa Mónica / Recovery $75.000 · Domicilio $90.000</span>
               </div>
-              <div class="bk-svc" data-service="Descarga Muscular — Piernas" data-price-p="$75.000" data-price-d="$90.000" onclick="selectService(this)">
+              <div class="bk-svc" data-service="Descarga Muscular — Piernas" data-price-santa="$75.000" data-price-recovery="$75.000" data-price-d="$90.000" data-duration="60" data-venues="santa,recovery,domicilio" onclick="selectService(this)">
                 <span class="bk-svc-name">Descarga Muscular<br>Piernas</span>
-                <span class="bk-svc-price">Presencial $75.000 · Domicilio $90.000</span>
+                <span class="bk-svc-price">Santa Mónica / Recovery $75.000 · Domicilio $90.000</span>
               </div>
-              <div class="bk-svc" data-service="Descarga Muscular Completa" data-price-p="$110.000" data-price-d="$125.000" onclick="selectService(this)">
+              <div class="bk-svc" data-service="Descarga Muscular Completa" data-price-santa="$110.000" data-price-recovery="$110.000" data-price-d="$125.000" data-duration="90" data-venues="santa,recovery,domicilio" onclick="selectService(this)">
                 <span class="bk-svc-name">Descarga Muscular<br>Completa</span>
-                <span class="bk-svc-price">Presencial $110.000 · Domicilio $125.000</span>
+                <span class="bk-svc-price">Santa Mónica / Recovery $110.000 · Domicilio $125.000</span>
               </div>
-              <div class="bk-svc" data-service="Valoración Funcional" data-price-p="$80.000" data-price-d="$95.000" onclick="selectService(this)">
+              <div class="bk-svc" data-service="Valoración Funcional" data-price-santa="$80.000" data-price-recovery="" data-price-d="$95.000" data-duration="60" data-venues="santa,domicilio" onclick="selectService(this)">
                 <span class="bk-svc-name">Valoración Funcional</span>
-                <span class="bk-svc-price">Presencial $80.000 · Domicilio $95.000</span>
+                <span class="bk-svc-price">Santa Mónica $80.000 · Domicilio $95.000</span>
               </div>
-              <div class="bk-svc" data-service="Readaptación Funcional" data-price-p="$70.000" data-price-d="$85.000" onclick="selectService(this)">
+              <div class="bk-svc" data-service="Readaptación Funcional" data-price-santa="$70.000" data-price-recovery="" data-price-d="$85.000" data-duration="60" data-venues="santa,domicilio" onclick="selectService(this)">
                 <span class="bk-svc-name">Readaptación Funcional</span>
-                <span class="bk-svc-price">Presencial $70.000 · Domicilio $85.000</span>
-              </div>
-              <div class="bk-svc inactive" data-active="false" data-sedes="Santa Mónica|Campestre Recovery" data-service="Pausa Cuidándote" data-duration="40" data-price-p="$80.000" data-price-d="$80.000" onclick="selectService(this)">
-                <span class="bk-svc-name">Pausa Cuidándote</span>
-                <span class="bk-svc-price">40 min · $80.000 · Próximamente</span>
-              </div>
-              <div class="bk-svc inactive" data-active="false" data-sedes="Santa Mónica|Campestre Recovery" data-service="Ritual Cuidándote" data-duration="60" data-price-p="$110.000" data-price-d="$110.000" onclick="selectService(this)">
-                <span class="bk-svc-name">Ritual Cuidándote</span>
-                <span class="bk-svc-price">60 min · $110.000 · Próximamente</span>
-              </div>
-              <div class="bk-svc inactive" data-active="false" data-sedes="Campestre Recovery" data-service="Cuidándote Profundo" data-duration="90" data-price-p="$165.000" data-price-d="$165.000" onclick="selectService(this)">
-                <span class="bk-svc-name">Cuidándote Profundo</span>
-                <span class="bk-svc-price">90 min · $165.000 · Próximamente</span>
-              </div>
-              <div class="bk-svc inactive" data-active="false" data-sedes="Campestre Recovery" data-service="Cuidándonos para dos" data-duration="60" data-price-p="$205.000" data-price-d="$205.000" onclick="selectService(this)">
-                <span class="bk-svc-name">Cuidándonos para dos</span>
-                <span class="bk-svc-price">60 min · $205.000 total · Próximamente</span>
-              </div>
-              <div class="bk-svc inactive" data-active="false" data-sedes="Campestre Recovery" data-service="Cuidándonos Profundo para dos" data-duration="90" data-price-p="$315.000" data-price-d="$315.000" onclick="selectService(this)">
-                <span class="bk-svc-name">Cuidándonos Profundo para dos</span>
-                <span class="bk-svc-price">90 min · $315.000 total · Próximamente</span>
-              </div>
-              <div class="bk-svc inactive" data-active="false" data-sedes="Campestre Recovery" data-service="Plan Amigos" data-duration="60" data-price-p="Según número de personas" data-price-d="Según número de personas" onclick="selectService(this)">
-                <span class="bk-svc-name">Plan Amigos</span>
-                <span class="bk-svc-price">Valores publicados · Próximamente</span>
+                <span class="bk-svc-price">Santa Mónica $70.000 · Domicilio $85.000</span>
               </div>
             </div>
             <div class="bk-actions">
@@ -3271,18 +3103,22 @@
 
           <!-- STEP 2: Fecha, hora y modalidad -->
           <div class="bk-step" id="step2">
-            <label class="bk-field-label">Modalidad de atención</label>
+            <label class="bk-field-label">Sede o modalidad *</label>
             <div class="bk-modality">
-              <button class="bk-mod-btn active" id="modP" type="button" onclick="selectModality('Presencial')">
+              <button class="bk-mod-btn active" id="modSanta" type="button" onclick="selectModality('Sede Santa Mónica')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                Presencial
+                Santa Mónica
+              </button>
+              <button class="bk-mod-btn" id="modRecovery" type="button" onclick="selectModality('Sede Campestre Recovery')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M5 7h14M7 17h10"/><path d="M5 7c1.5-3 12.5-3 14 0M7 17c1.2 2 8.8 2 10 0"/></svg>
+                Campestre Recovery
               </button>
               <button class="bk-mod-btn" id="modD" type="button" onclick="selectModality('Domicilio')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
                 A domicilio
               </button>
             </div>
-            <p style="font-size:0.78rem; color:var(--text-muted); font-style:italic; margin-bottom:20px;">* Sectores como Cerritos, Condina, Santa Rosa, etc. tienen recargo por desplazamiento.</p>
+            <p id="venueHelp" style="font-size:0.78rem; color:var(--text-muted); font-style:italic; margin-bottom:20px;">Santa Mónica: Cra. 19A #17-24, nivel 1, Dosquebradas. Recovery: ubicación compartida al confirmar la reserva. Domicilio: algunos sectores tienen recargo por desplazamiento.</p>
             <div class="bk-date-row">
               <div>
                 <label class="bk-field-label" for="bkDate">Fecha</label>
@@ -3323,7 +3159,7 @@
                 </div>
               </div>
               <div>
-                <label class="bk-field-label" for="bkEmail">Email (para tu confirmación) *</label>
+                <label class="bk-field-label" for="bkEmail">Email <span style="font-weight:400;color:var(--text-muted)">(opcional)</span></label>
                 <input type="email" id="bkEmail" class="bk-input" placeholder="tucorreo@email.com" oninput="checkStep3()">
               </div>
               <div id="addressWrap" style="display:none">
@@ -3331,8 +3167,8 @@
                 <input type="text" id="bkAddress" class="bk-input" placeholder="Barrio, calle, número — Pereira / Dosquebradas" oninput="checkStep3()">
               </div>
               <div>
-                <label class="bk-field-label" for="bkNotes">¿Qué te pasa? / Notas adicionales</label>
-                <input type="text" id="bkNotes" class="bk-input" placeholder="Dolor en la espalda baja, lesión de rodilla... (opcional)">
+                <label class="bk-field-label" for="bkNotes">Cuéntanos brevemente el motivo de tu cita <span style="font-weight:400;color:var(--text-muted)">(opcional)</span></label>
+                <input type="text" id="bkNotes" class="bk-input" placeholder="Ej: tensión en cuello, fatiga muscular, molestias al entrenar...">
               </div>
               <div>
                 <label class="bk-field-label" for="bkParaQuien">¿La sesión es para otra persona? <span style="font-weight:400;color:var(--text-muted)">(opcional)</span></label>
@@ -3344,7 +3180,7 @@
               <input type="checkbox" id="bkPaymentAccept" onchange="checkStep3()">
               <span>Entiendo que la cita se confirma únicamente con pago anticipado y que debo enviar el comprobante para que sea autorizado por administración.</span>
             </label>
-          <div class="bk-error-msg" id="bkError">Hubo un error al enviar. Escríbenos por <a href="https://wa.me/573136467945" style="color:var(--primary)">WhatsApp</a>.</div>
+          <div class="bk-error-msg" id="bkError">No pudimos completar tu reserva. Escríbenos por <a href="https://wa.me/573136467945" style="color:var(--primary)">WhatsApp</a> y te ayudaremos.</div>
             <div class="bk-actions">
               <button class="bk-btn-back" onclick="goStep(2)">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -3369,18 +3205,18 @@
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7EDDD0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <h3>Reserva temporal creada</h3>
-            <p>Tu horario queda separado por 60 minutos. La cita queda confirmada únicamente cuando administración autorice el pago.</p>
+            <p>Tu horario está separado durante 60 minutos. Para confirmar la cita, realiza el pago y envía el comprobante por WhatsApp. La cita quedará confirmada cuando administración verifique el pago.</p>
             <div class="bk-success-details" id="bkSuccessDetails"></div>
             <a id="bkSuccessProofBtn" href="https://wa.me/573136467945" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#000;font-weight:600;font-size:0.85rem;padding:11px 22px;border-radius:100px;text-decoration:none;transition:.25s ease;margin-top:4px;">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.89.525 3.658 1.438 5.168L2 22l4.978-1.301A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 11.999 2z"/></svg>
-              Enviar comprobante
+              Enviar comprobante por WhatsApp
             </a>
             <button class="bk-btn-reset" onclick="resetBooking()">Hacer otra reserva</button>
           </div>
 
         </div><!-- /bk-steps -->
       </div><!-- /bk-shell -->
-      <p class="booking-note">Presencial en Pereira · Domicilio en toda el área metropolitana · Gimnasios</p>
+      <p class="booking-note">Sede Santa Mónica · Sede Campestre Recovery · Domicilio en Pereira y Dosquebradas</p>
     </div>
   </section>
 
@@ -3399,7 +3235,7 @@
           </div>
           <h4>Pereira / Dosquebradas</h4>
           <div class="divider"></div>
-          <p>Colombia<br>Espacio propio, domicilio y gimnasios</p>
+          <p>Sede Santa Mónica: Cra. 19A #17-24, nivel 1<br>Dosquebradas, Risaralda</p>
         </div>
         <div class="contact-card fade-up">
           <div class="contact-icon">
@@ -3555,11 +3391,11 @@
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw/exec';
 
     const bk = {
-      service: '', priceP: '', priceD: '',
-      modality: 'Presencial',
+      service: '', priceP: '', priceD: '', priceSanta: '', priceRecovery: '',
+      modality: 'Sede Santa Mónica', venues: '',
       date: '', time: '',
       name: '', phone: '', email: '', address: '', notes: '', paraQuien: '',
-      reservationCode: '', clientTimestamp: ''
+      reservationCode: '', clientTimestamp: '', duration: ''
     };
 
     // Mínimo: mañana
@@ -3570,27 +3406,78 @@
     })();
 
     function selectService(el) {
-      if (el.dataset.active === 'false') return;
       document.querySelectorAll('.bk-svc').forEach(s => s.classList.remove('selected'));
       el.classList.add('selected');
-      bk.service  = el.dataset.service;
-      bk.priceP   = el.dataset.priceP;
-      bk.priceD   = el.dataset.priceD;
+      bk.service       = el.dataset.service;
+      bk.priceSanta    = el.dataset.priceSanta || el.dataset.priceP || '';
+      bk.priceRecovery = el.dataset.priceRecovery || '';
+      bk.priceD        = el.dataset.priceD || '';
+      bk.priceP        = bk.priceSanta;
+      bk.venues        = el.dataset.venues || 'santa,domicilio';
+      bk.duration      = el.dataset.duration || '';
+      bk.modality      = bk.venues.indexOf('santa') >= 0 ? 'Sede Santa Mónica' : (bk.venues.indexOf('recovery') >= 0 ? 'Sede Campestre Recovery' : 'Domicilio');
+      bk.date = '';
+      bk.time = '';
       bk.reservationCode = '';
       bk.clientTimestamp = '';
+      updateVenueButtons();
+      document.getElementById('bkDate').value = '';
+      document.getElementById('timeGrid').innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;margin:0">Selecciona primero una fecha para ver los horarios disponibles.</p>';
       document.getElementById('btnStep1').disabled = false;
       // Avanzar automáticamente al paso 2 en cualquier dispositivo
       setTimeout(() => goStep(2), 350);
     }
 
+    function venueAllowed(key) {
+      return (',' + (bk.venues || '') + ',').indexOf(',' + key + ',') >= 0;
+    }
+
+    function modalityKey(m) {
+      if (m === 'Domicilio') return 'domicilio';
+      if (m === 'Sede Campestre Recovery') return 'recovery';
+      return 'santa';
+    }
+
+    function updateVenueButtons() {
+      if (!venueAllowed(modalityKey(bk.modality))) {
+        if (venueAllowed('santa')) bk.modality = 'Sede Santa Mónica';
+        else if (venueAllowed('recovery')) bk.modality = 'Sede Campestre Recovery';
+        else bk.modality = 'Domicilio';
+      }
+      const buttons = [
+        {id:'modSanta', key:'santa', label:'Sede Santa Mónica'},
+        {id:'modRecovery', key:'recovery', label:'Sede Campestre Recovery'},
+        {id:'modD', key:'domicilio', label:'Domicilio'}
+      ];
+      buttons.forEach(({id,key,label}) => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        const allowed = venueAllowed(key);
+        btn.disabled = !allowed;
+        btn.style.display = allowed ? 'inline-flex' : 'none';
+        btn.classList.toggle('active', bk.modality === label);
+      });
+      document.getElementById('addressWrap').style.display = bk.modality === 'Domicilio' ? 'block' : 'none';
+      const notice = document.getElementById('dominotice');
+      if (notice) notice.style.display = bk.modality === 'Domicilio' ? 'block' : 'none';
+    }
+
     function selectModality(m) {
+      if (!venueAllowed(modalityKey(m))) return;
       bk.modality = m;
-      document.getElementById('modP').classList.toggle('active', m === 'Presencial');
+      document.getElementById('modSanta').classList.toggle('active', m === 'Sede Santa Mónica');
+      document.getElementById('modRecovery').classList.toggle('active', m === 'Sede Campestre Recovery');
       document.getElementById('modD').classList.toggle('active', m === 'Domicilio');
       document.getElementById('addressWrap').style.display = m === 'Domicilio' ? 'block' : 'none';
-      document.getElementById('dominotice').style.display = m === 'Domicilio' ? 'block' : 'none';
+      const notice = document.getElementById('dominotice');
+      if (notice) notice.style.display = m === 'Domicilio' ? 'block' : 'none';
+      bk.date = '';
       bk.time = '';
-      if (bk.date) loadAvailability(bk.date);
+      bk.reservationCode = '';
+      bk.clientTimestamp = '';
+      document.getElementById('bkDate').value = '';
+      document.getElementById('timeGrid').innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;margin:0">Selecciona una fecha para ver los horarios disponibles en esta sede o modalidad.</p>';
+      document.getElementById('btnStep2').disabled = true;
       checkStep3();
     }
 
@@ -3755,12 +3642,16 @@
       bk.address = document.getElementById('bkAddress').value.trim();
       const needAddr = bk.modality === 'Domicilio';
       const accepted = !!document.getElementById('bkPaymentAccept')?.checked;
-      const ok = bk.name && bk.phone && bk.email && (!needAddr || bk.address) && accepted;
+      const digits = bk.phone.replace(/\D/g,'');
+      const phoneOk = digits.length === 10 || (digits.length === 12 && digits.indexOf('57') === 0);
+      const ok = bk.name && phoneOk && (!needAddr || bk.address) && accepted;
       document.getElementById('btnStep3').disabled = !ok;
     }
 
     function currentBookingPrice() {
-      return bk.modality === 'Presencial' ? bk.priceP : bk.priceD;
+      if (bk.modality === 'Domicilio') return bk.priceD;
+      if (bk.modality === 'Sede Campestre Recovery') return bk.priceRecovery || bk.priceSanta || bk.priceP;
+      return bk.priceSanta || bk.priceP;
     }
 
     function makeReservationCode(ts) {
@@ -3785,6 +3676,7 @@
         'Nombre: ' + (bk.name || ''),
         'Código de reserva: ' + code,
         'Servicio: ' + (bk.service || ''),
+        'Sede / modalidad: ' + (bk.modality || ''),
         'Fecha y hora: ' + (bk.date || '') + ' ' + (bk.time || ''),
         'Valor: ' + price,
         '',
@@ -3824,7 +3716,7 @@
       container.innerHTML = `
         <div class="bk-summary-title">Resumen de tu cita</div>
         <div class="bk-summary-row"><span>Servicio</span><span>${bk.service}</span></div>
-        <div class="bk-summary-row"><span>Modalidad</span><span>${bk.modality}</span></div>
+        <div class="bk-summary-row"><span>Sede / modalidad</span><span>${bk.modality}</span></div>
         <div class="bk-summary-row"><span>Fecha</span><span>${dateStr}</span></div>
         <div class="bk-summary-row"><span>Hora</span><span>${bk.time}</span></div>
         <div class="bk-summary-row"><span>Valor</span><span class="bk-summary-price">${price}</span></div>
@@ -3865,7 +3757,13 @@
       document.getElementById('bkSending').classList.add('active');
       document.getElementById('bkError').classList.remove('visible');
 
-      const payload = `service=${enc(bk.service)}&modality=${enc(bk.modality)}&date=${enc(bk.date)}&time=${enc(bk.time)}&name=${enc(bk.name)}&phone=${enc(bk.phone)}&email=${enc(bk.email)}&address=${enc(bk.address)}&notes=${enc(bk.notes)}&priceP=${enc(bk.priceP)}&priceD=${enc(bk.priceD)}`;
+      const digits = bk.phone.replace(/\D/g,'');
+      const phoneOk = digits.length === 10 || (digits.length === 12 && digits.indexOf('57') === 0);
+      if (!phoneOk) {
+        document.getElementById('bkError').textContent = 'Revisa tu número de WhatsApp. Debe tener 10 dígitos o iniciar con +57.';
+        document.getElementById('bkError').classList.add('visible');
+        return;
+      }
 
       function enc(v){ return encodeURIComponent(v||''); }
 
@@ -3879,7 +3777,16 @@
           date: bk.date, time: bk.time,
           name: bk.name, phone: bk.phone,
           email: bk.email, address: bk.address,
-          notes: bk.notes, priceP: bk.priceP, priceD: bk.priceD,
+          notes: bk.notes,
+          priceP: bk.priceSanta || bk.priceP,
+          priceD: bk.priceD,
+          priceRecovery: bk.priceRecovery,
+          priceSelected: currentBookingPrice(),
+          duration: bk.duration,
+          source: 'PAGINA_WEB',
+          estadoPago: 'PENDIENTE_PAGO',
+          estadoCita: 'RESERVADA',
+          policyAccepted: true,
           clientTimestamp: bk.clientTimestamp,
           codigoReserva: bk.reservationCode,
           notaAdmin: '[CODIGO RESERVA: ' + bk.reservationCode + ']' + (bk.paraQuien ? ' [PARA: ' + bk.paraQuien + ']' : '')
@@ -3934,9 +3841,11 @@
     }
 
     function resetBooking() {
-      bk.service = bk.priceP = bk.priceD = bk.date = bk.time = bk.name = bk.phone = bk.email = bk.address = bk.notes = '';
+      bk.service = bk.priceP = bk.priceD = bk.priceSanta = bk.priceRecovery = bk.date = bk.time = bk.name = bk.phone = bk.email = bk.address = bk.notes = '';
       bk.paraQuien = bk.reservationCode = bk.clientTimestamp = '';
-      bk.modality = 'Presencial';
+      bk.modality = 'Sede Santa Mónica';
+      bk.venues = '';
+      bk.duration = '';
       document.querySelectorAll('.bk-svc').forEach(s => s.classList.remove('selected'));
       document.getElementById('timeGrid').innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;margin:0">Selecciona primero una fecha para ver los horarios disponibles.</p>';
       document.getElementById('bkDate').value = '';
@@ -3945,7 +3854,7 @@
       const accept = document.getElementById('bkPaymentAccept'); if (accept) accept.checked = false;
       const preview = document.getElementById('bkPaymentPreview'); if (preview) preview.innerHTML = '';
       document.getElementById('addressWrap').style.display = 'none';
-      selectModality('Presencial');
+      updateVenueButtons();
       goStep(1);
       document.getElementById('btnStep1').disabled = true;
     }
@@ -4197,7 +4106,7 @@
           {
             "@type": "Question",
             "name": "¿Cuáles son los horarios de atención?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Lunes 8am–4:30pm, Martes a Miércoles 8am–5pm, Jueves y Viernes 8am–8pm, Sábado 7am–9:30am. Domingos sin servicio." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Trabajamos con cita previa. Los horarios disponibles se muestran directamente en nuestro sistema de reserva y pueden variar según la sede, el servicio y el profesional." }
           },
           {
             "@type": "Question",
