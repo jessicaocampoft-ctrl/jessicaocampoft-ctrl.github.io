@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -18105,16 +18105,36 @@ async function generarLinkPasaporte() {
   const msg = `Hola ${nombre.split(' ')[0]}! \uD83D\uDC4B\nTe dejo tu Pasaporte de Beneficios — ahi vas a ver tu progreso despues de cada sesion.\n${link}\n\n\u2B50 *Como ganar beneficios?*\nCada sesion sumas avances. Al llegar a:\n\n\u2705 *4 sesiones:* Descarga Localizada 10 min (zona de tu eleccion)\n\u2705 *8 sesiones:* Valoracion Funcional Express 10 min + PDF con resultados\n\u2705 *12 sesiones:* Movilidad Asistida 10 min + Botas de Compresion\n\u2705 *16 sesiones:* Kinesiotape + Tens 15 min (Readaptacion completa)\n\nGuardalo y nos vemos pronto! \uD83D\uDE0A`;
   document.getElementById('pasWhatsApp').href = tel + '?text=' + encodeURIComponent(msg);
 
-  if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
-    QRCode.toCanvas(document.getElementById('pasQR'), link, { width: 112, margin: 1, color: { dark: '#0A1A12', light: '#F7F8FA' } });
-  } else {
-    const canvas = document.getElementById('pasQR');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#F7F8FA'; ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#0A1A12'; ctx.font = '11px Arial'; ctx.fillText('QR no disponible', 14, 58);
-  }
+  renderPasaporteQR(link);
   renderPasaporteAdminTools();
+}
+
+function renderPasaporteQR(link) {
+  const canvas = document.getElementById('pasQR');
+  if (!canvas) return;
+  let box = document.getElementById('pasQRBox');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'pasQRBox';
+    box.style.cssText = 'width:112px;height:112px;border-radius:10px;border:1px solid var(--border);overflow:hidden;background:#F7F8FA;display:grid;place-items:center;flex-shrink:0';
+    canvas.insertAdjacentElement('afterend', box);
+  }
+  box.innerHTML = '';
+  canvas.style.display = 'none';
+  if (typeof QRCode !== 'undefined') {
+    if (QRCode.toCanvas) {
+      canvas.style.display = 'block';
+      box.style.display = 'none';
+      QRCode.toCanvas(canvas, link, { width: 112, margin: 1, color: { dark: '#0A1A12', light: '#F7F8FA' } });
+    } else {
+      box.style.display = 'grid';
+      new QRCode(box, { text: link, width: 112, height: 112, colorDark: '#0A1A12', colorLight: '#F7F8FA', correctLevel: QRCode.CorrectLevel.M });
+    }
+  } else {
+    box.textContent = 'QR no disponible';
+    box.style.fontSize = '11px';
+    box.style.color = 'var(--muted)';
+  }
 }
 
 function abrirPasaporte() {
@@ -18144,18 +18164,22 @@ function renderPasaporteAdminTools() {
       <div id="pasAdminTools" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--s2)">
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
           <button class="btn btn-sm" onclick="regenerarTokenPasaporte()">Regenerar token</button>
-          <button class="btn btn-sm btn-danger" onclick="desactivarPasaporte()">Desactivar pasaporte</button>
+          ${_pasCurrent.estado === 'INACTIVO'
+            ? '<button class="btn btn-sm btn-teal" onclick="reactivarPasaporte()">Reactivar pasaporte</button>'
+            : '<button class="btn btn-sm btn-danger" onclick="desactivarPasaporte()">Desactivar pasaporte</button>'}
           <button class="btn btn-sm btn-teal" onclick="guardarProgresoPasaporte()">Guardar progreso</button>
         </div>
         <div id="pasProgressEditor"></div>
       </div>`);
+    box = document.getElementById('pasAdminTools');
   }
   const passport = _pasCurrent.passport || {};
   const descarga = _pasCurrent.descarga || {};
   const stampSource = passport.stamps || passport.sellos || passport;
   const descargaSource = descarga.stamps || descarga.sellos || descarga;
   document.getElementById('pasProgressEditor').innerHTML = `
-    <div style="font-weight:700;margin-bottom:8px">Sellos del pasaporte</div>
+    <div style="font-weight:700;margin-bottom:4px">Sellos del pasaporte</div>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px">${Number(passport.autoStampCount || 0)} automáticos. Ajusta solo para correcciones excepcionales.</div>
     <div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;margin-bottom:14px">
       ${Array.from({length:16}, (_, i) => {
         const n = i + 1;
@@ -18204,7 +18228,19 @@ async function desactivarPasaporte() {
   if (!confirm('¿Desactivar este pasaporte?')) return;
   const data = await fetch(APPS_SCRIPT_URL + '?action=passportDeactivate&token=' + encodeURIComponent(TOKEN) + '&id=' + encodeURIComponent(_pasCurrent.id)).then(r => r.json());
   if (!data.ok) { toast(data.error || 'No se pudo desactivar', 'error'); return; }
+  _pasCurrent = data.passport || _pasCurrent;
+  renderPasaporteAdminTools();
   toast('Pasaporte desactivado', 'success');
+}
+
+async function reactivarPasaporte() {
+  if (!_pasCurrent || !_pasCurrent.id) return;
+  if (!confirm('¿Reactivar este pasaporte?')) return;
+  const data = await fetch(APPS_SCRIPT_URL + '?action=passportReactivate&token=' + encodeURIComponent(TOKEN) + '&id=' + encodeURIComponent(_pasCurrent.id)).then(r => r.json());
+  if (!data.ok) { toast(data.error || 'No se pudo reactivar', 'error'); return; }
+  _pasCurrent = data.passport || _pasCurrent;
+  renderPasaporteAdminTools();
+  toast('Pasaporte reactivado', 'success');
 }
 
 // ── Interceptor WA en desktop: muestra modal para copiar en vez de abrir wa.me ──
