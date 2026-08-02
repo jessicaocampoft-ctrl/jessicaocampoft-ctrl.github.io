@@ -1,0 +1,89 @@
+name: Deploy secure passport backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/deploy-secure-passport.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Deploy Apps Script and verify endpoint
+        shell: bash
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+          CLASP_CREDENTIALS: ${{ secrets.CLASP_CREDENTIALS }}
+          CLASPRC: ${{ secrets.CLASPRC }}
+        run: |
+          set +e
+          STATUS_FILE="apps-script-deploy-status.txt"
+          PUBLIC_DEPLOYMENT="AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw"
+          ADMIN_DEPLOYMENT="AKfycbzLWv3DYB5WxsiT7jMCv5lnfc6oX8IvQJPMU6dGyW3_ZGU7Jj-WfXIWeEuPcI41mQ5L"
+          PUBLIC_URL="https://script.google.com/macros/s/${PUBLIC_DEPLOYMENT}/exec"
+          NOW="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+          CREDS=""
+          for candidate in "$CLASPRC_JSON" "$CLASP_CREDENTIALS" "$CLASPRC"; do
+            if [ -n "$candidate" ]; then CREDS="$candidate"; break; fi
+          done
+
+          if [ -z "$CREDS" ]; then
+            printf 'STATUS=MISSING_CLASP_CREDENTIALS\nTIME=%s\n' "$NOW" > "$STATUS_FILE"
+          else
+            printf '%s' "$CREDS" > "$HOME/.clasprc.json"
+            if ! jq -e . "$HOME/.clasprc.json" >/dev/null 2>&1; then
+              printf 'STATUS=INVALID_CLASP_CREDENTIALS\nTIME=%s\n' "$NOW" > "$STATUS_FILE"
+            else
+              npm install -g @google/clasp@2.4.2 >/tmp/npm-clasp.log 2>&1
+              if [ $? -ne 0 ]; then
+                printf 'STATUS=FAILED_INSTALL_CLASP\nTIME=%s\n' "$NOW" > "$STATUS_FILE"
+              else
+                clasp push -f >/tmp/clasp-push.log 2>&1
+                PUSH_CODE=$?
+                if [ $PUSH_CODE -ne 0 ]; then
+                  printf 'STATUS=FAILED_PUSH\nTIME=%s\nDETAIL=%s\n' "$NOW" "$(tail -n 3 /tmp/clasp-push.log | tr '\n' ' ' | sed 's/[[:space:]]\+/ /g')" > "$STATUS_FILE"
+                else
+                  DEPLOYMENTS="$(clasp deployments 2>&1)"
+                  UPDATED=""
+                  if printf '%s' "$DEPLOYMENTS" | grep -Fq "$PUBLIC_DEPLOYMENT"; then
+                    clasp deploy -i "$PUBLIC_DEPLOYMENT" -d "Secure passport ${NOW}" >/tmp/deploy-public.log 2>&1
+                    [ $? -eq 0 ] && UPDATED="${UPDATED}public," || UPDATED="${UPDATED}public_failed,"
+                  else
+                    UPDATED="${UPDATED}public_not_found,"
+                  fi
+                  if printf '%s' "$DEPLOYMENTS" | grep -Fq "$ADMIN_DEPLOYMENT"; then
+                    clasp deploy -i "$ADMIN_DEPLOYMENT" -d "Secure passport ${NOW}" >/tmp/deploy-admin.log 2>&1
+                    [ $? -eq 0 ] && UPDATED="${UPDATED}admin," || UPDATED="${UPDATED}admin_failed,"
+                  else
+                    UPDATED="${UPDATED}admin_not_found,"
+                  fi
+
+                  sleep 12
+                  RESPONSE="$(curl -L -sS --max-time 35 "${PUBLIC_URL}?action=getPassportSecure&id=INVALID&token=INVALID" | head -c 600 | tr '\n' ' ')"
+                  if printf '%s' "$RESPONSE" | grep -Eqi 'pasaporte|enlace|inv[aá]lid|no encontrado|"ok"[[:space:]]*:[[:space:]]*false'; then
+                    VERIFY="VERIFIED_SECURE_ROUTE"
+                  else
+                    VERIFY="UNVERIFIED_SECURE_ROUTE"
+                  fi
+                  printf 'STATUS=DEPLOYED\nTIME=%s\nUPDATED=%s\nVERIFY=%s\nRESPONSE=%s\n' "$NOW" "$UPDATED" "$VERIFY" "$RESPONSE" > "$STATUS_FILE"
+                fi
+              fi
+            fi
+          fi
+
+          rm -f "$HOME/.clasprc.json"
+          rm -f .github/workflows/deploy-secure-passport.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(pasaporte): registrar despliegue seguro"
+          git push
