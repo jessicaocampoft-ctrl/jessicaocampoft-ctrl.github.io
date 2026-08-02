@@ -1,0 +1,721 @@
+114:     return js(getGoogleReviews());
+115:   }
+116: 
+117:   // Portal del fisioterapeuta — protegido por sesión profesional.
+118:   if (p.action === 'professionalAgenda') {
+119:     return js(getProfessionalAgenda_(p.token));
+120:   }
+121: 
+122:   if (!validateSession(p.token)) {
+123:     return js({ok: false, error: 'Sin permiso'});
+124:   }
+125:   // Ventana deslizante: renovar TTL en cada acción válida
+126:   CacheService.getScriptCache().put('sess_' + p.token, '1', 14400);
+127: 
+128:   if (p.action === 'ping')          return js({ok: true});
+129:   if (p.action === 'adminData')     return js(getAdminData());
+130:   if (p.action === 'block')         return js(doBlock(p));
+131:   if (p.action === 'unblock')       return js(doUnblock(p));
+132:   if (p.action === 'updateStatus')  return js(doUpdateStatus(p));
+133:   if (p.action === 'adminBook')     return js(createBooking(JSON.parse(p.data), true));
+134:   if (p.action === 'getCalEvents')  return js(getCalendarEvents(p.from, p.to));
+135:   if (p.action === 'cancelBooking') return js(doCancelBooking(p.id));
+136:   if (p.action === 'editBooking')   return js(doEditBooking(JSON.parse(p.data)));
+137:   if (p.action === 'repairRescheduledDuplicate') return js(doRepairRescheduledDuplicate(p));
+138:   if (p.action === 'deletePatient')  return js(deletePatient(decodeURIComponent(p.nombre)));
+139:   if (p.action === 'editPatient')    return js(editPatient(JSON.parse(p.data)));
+140:   if (p.action === 'cleanCitasSinHora') return js(cleanCitasSinHora());
+141:   if (p.action === 'cleanInvalidCitaTimes') return js(cleanInvalidCitaTimes());
+142:   if (p.action === 'getReminders')   return js(getRemindersData());
+143:   if (p.action === 'sendReminders')  return js(sendEmailReminders());
+144:   if (p.action === 'getInactivos')   return js(getInactivosData());
+145:   if (p.action === 'generateEval')   return js(generateEvalReport(JSON.parse(decodeURIComponent(p.data))));
+146:   if (p.action === 'updatePago')     return js(doUpdatePago(p));
+147:   if (p.action === 'getAdminKV')     return js(getAdminKV());
+148:   if (p.action === 'setAdminKV')     return js(doSetAdminKV(p.data));
+149:   if (p.action === 'generarCodigo')  return js(generarCodigo(p));
+150:   if (p.action === 'registrarCodigo') return js(registrarCodigo(p));
+151:   if (p.action === 'actualizarCodigo') return js(actualizarCodigo(p));
+152:   if (p.action === 'getCodigos')     return js(getCodigos());
+153:   if (p.action === 'crearEvento')    return js(crearEvento(p));
+154:   if (p.action === 'eliminarEvento') return js(eliminarEvento(p));
+155:   if (p.action === 'getEncuestaStats')    return js(getEncuestaStats_());
+156:   if (p.action === 'autoMarcarAtendidas') return js(autoMarcarAtendidas());
+157:   if (p.action === 'automationStatus')     return js(getAutomationStatus());
+158:   if (p.action === 'automationSave')       return js(saveAutomationConfig(p.data));
+159:   if (p.action === 'automationSetup')      return js(setupAllAutomations());
+160:   if (p.action === 'automationRun')        return js(runAutomationNow(p.job || 'morning'));
+161:   if (p.action === 'automationQueue')      return js(getAutomationQueue(p.status || 'pending'));
+162:   if (p.action === 'automationQueueDone')  return js(markAutomationQueueDone(p.id));
+163:   if (p.action === 'getKPIHistory')        return js(getKPIHistory_());
+164:   if (p.action === 'getWaitlist')          return js(getWaitlist());
+165:   if (p.action === 'addWaitlist')          return js(addWaitlist(p.data));
+166:   if (p.action === 'removeWaitlist')       return js(removeWaitlist(p.id));
+167:   if (p.action === 'teamData')             return js(getTeamModuleData_());
+168:   if (p.action === 'saveProfessional')     return js(saveProfessional_(p.data));
+169:   if (p.action === 'resetProfessionalPassword') return js(resetProfessionalPassword_(p.id));
+170:   if (p.action === 'toggleProfessional')   return js(toggleProfessional_(p.id, p.estado));
+171:   if (p.action === 'deleteProfessional')   return js(deleteProfessional_(p.id));
+172:   if (p.action === 'assignProfessional')   return js(assignProfessionalToAppointment_(p));
+173:   if (p.action === 'authorizeAppointment') return js(authorizeAppointmentForProfessional_(p));
+174:   if (p.action === 'markPayablePaid')      return js(markProfessionalPayablePaid_(p.id));
+175:   if (p.action === 'setupOperationsModule') return js(setupOperationsModule_());
+176:   if (p.action === 'operationsData')        return js(getOperationsData_());
+177:   if (p.action === 'savePayment')           return js(savePayment_(p.data, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+178:   if (p.action === 'verifyPayment')         return js(verifyPayment_(p, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+179:   if (p.action === 'savePaymentAccount')    return js(savePaymentAccount_(p.data, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+180: 
+181:   // Pasaporte seguro — acciones administrativas protegidas por sesión.
+182:   if (p.action === 'passportEnsure') {
+183:     return js(passportEnsure_(p.nombre || '', p.telefono || ''));
+184:   }
+185:   if (p.action === 'passportSaveProgress') {
+186:     return js(passportSaveProgress_(p.id, p.passport || '{}', p.descarga || '{}'));
+187:   }
+188:   if (p.action === 'passportRegenerateToken') {
+189:     return js(passportRegenerateToken_(p.id));
+190:   }
+191:   if (p.action === 'passportDeactivate') {
+192:     return js(passportDeactivate_(p.id));
+193:   }
+194:   if (p.action === 'passportReactivate') {
+195:     return js(passportReactivate_(p.id));
+196:   }
+197: 
+198:   // Pasaporte — escritura (requiere token admin)
+199:   if (p.action === 'savePassport' && p.nombre) {
+200:     return js(savePassport(decodeURIComponent(p.nombre), p.passport || '{}', p.descarga || '{}'));
+201:   }
+202: 
+203:   return txt('Jessica Ocampo Fisioterapeuta - Sistema activo');
+204: }
+205: 
+206: // -------------------------------------------------------------
+207: //  POST — Reservas de pacientes + Evaluación Express con fotos
+208: // -------------------------------------------------------------
+209: function doPost(e) {
+210:   try {
+211:     var d = JSON.parse(e.postData.contents);
+212:     if (d.action === 'professionalLogin') {
+213:       return js(professionalLogin_(d.user, d.password));
+214:     }
+215:     if (d.action === 'professionalChangePassword') {
+216:       return js(professionalChangePassword_(d.token, d.currentPassword, d.newPassword));
+217:     }
+218:     if (d.action === 'professionalMarkAttended') {
+219:       return js(professionalMarkAttended_(d.token, d.citaId));
+220:     }
+221:     if (d.action === 'professionalReportIssue') {
+222:       return js(professionalReportIssue_(d.token, d.citaId, d.tipo, d.observacion));
+223:     }
+224:     if (d.action === 'adminLogin') {
+225:       if (!loginAllowed()) return js({ok: false, error: 'Demasiados intentos fallidos. Espera 5 minutos.'});
+226:       if (!d.password || d.password !== ADMIN_TOKEN) {
+227:         recordLoginFail();
+228:         return js({ok: false, error: 'Credenciales incorrectas'});
+229:       }
+230:       resetLoginFails();
+231:       var sessionToken = createSession();
+232:       var adminData = getAdminData();
+233:       adminData.sessionToken = sessionToken;
+234:       return js(adminData);
+235:     }
+236:     if (d.action === 'changePassword') {
+237:       if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+238:       if (!d.currentPassword || d.currentPassword !== ADMIN_TOKEN) return js({ok: false, error: 'La contraseña actual es incorrecta.'});
+239:       if (!d.newPassword || d.newPassword.length < 8) return js({ok: false, error: 'La nueva contraseña debe tener al menos 8 caracteres.'});
+240:       PropertiesService.getScriptProperties().setProperty('ADMIN_TOKEN', d.newPassword);
+241:       return js({ok: true});
+242:     }
+243:     if (d.action === 'savePayment') {
+244:       if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+245:       return js(savePayment_(d.data || {}, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+246:     }
+247:     if (d.action === 'verifyPayment') {
+248:       if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+249:       return js(verifyPayment_(d, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+250:     }
+251:     if (d.action === 'generateEval') {
+252:       if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+253:       return js(generateEvalReport(d.data, d.photos || {}));
+254:     }
+255:     return js(createBooking(d, false));
+256:   } catch(err) {
+257:     try { GmailApp.sendEmail(JESSICA_EMAIL, 'ERROR formulario citas', 'Error: ' + err.message + '\n\nDatos: ' + e.postData.contents); } catch(x) {}
+258:     return js({ok: false, error: err.message});
+259:   }
+260: }
+261: 
+262: // -------------------------------------------------------------
+263: //  CREAR RESERVA
+264: // -------------------------------------------------------------
+265: // Servicios que son solo registro de paciente — NO crean cita en Google Calendar
+266: var SERVICIOS_SOLO_REGISTRO = ['Registro', 'Registro paciente', 'Registro de paciente'];
+267: 
+268: function esRegistro(servicio) {
+269:   if (!servicio) return false;
+270:   var s = servicio.trim().toLowerCase();
+271:   for (var i = 0; i < SERVICIOS_SOLO_REGISTRO.length; i++) {
+272:     if (s === SERVICIOS_SOLO_REGISTRO[i].toLowerCase()) return true;
+273:   }
+274:   return s.indexOf('registro') === 0; // cualquier cosa que empiece con "Registro"
+275: }
+276: 
+277: function createBooking(d, isAdmin) {
+278:   if (isMidnightBookingTime_(d.time)) {
+279:     return {ok: false, error: 'Ese horario es de medianoche (00:00-00:59). Para 12 del mediodia usa 12:00.'};
+280:   }
+281:   var scheduleCheck = isAdmin
+282:     ? validateBookingSchedule_(d.date, d.time, d.service, d.modality)
+283:     : validatePublicBookingSchedule_(d.date, d.time, d.service, d.modality);
+284:   if (!scheduleCheck.ok) {
+285:     return {ok: false, error: scheduleCheck.error};
+286:   }
+287:   if (!isAdmin) {
+288:     var avail = checkAvailability(d.date, d.time, d.modality, d.service);
+289:     if (!avail.available) return {ok: false, error: avail.reason};
+290:   }
+291: 
+292:   var soloRegistro = esRegistro(d.service);
+293: 
+294:   // Para registros de paciente: solo guardar en hoja Pacientes (upsertPaciente ya deduplica)
+295:   if (soloRegistro) {
+296:     upsertPaciente(d.name, d.phone, d.email);
+297:     return {ok: true, id: 'REG-' + new Date().getTime()};
+298:   }
+299: 
+300:   // Lock para evitar duplicados por peticiones simultáneas (race condition)
+301:   var lock = LockService.getScriptLock();
+302:   try { lock.waitLock(15000); } catch(e) { return {ok: false, error: 'Sistema ocupado, intenta de nuevo'}; }
+303: 
+304:   try {
+305:   var price = d.modality === 'Presencial' ? d.priceP : d.priceD;
+306: 
+307:   // Dedup: si ya existe una cita con mismo nombre+fecha+hora, devolver la existente
+308:   var ss     = getOrCreateSheet();
+927:     if (d.telefono !== undefined) pSheet.getRange(j+1, 2).setNumberFormat('@').setValue(phone);
+928:     if (d.email    !== undefined) pSheet.getRange(j+1, 3).setValue(d.email);
+929:     updatedPac = true;
+930:     break;
+931:   }
+932:   // Si no existía en Pacientes (solo en Citas), crearlo
+933:   if (!updatedPac && d.newNombre) {
+934:     var today = new Date().toLocaleDateString('es-CO');
+935:     pSheet.appendRow([d.newNombre, phone, d.email || '', today, today]);
+936:     pSheet.getRange(pSheet.getLastRow(), 2).setNumberFormat('@').setValue(phone);
+937:   }
+938: 
+939:   return {ok: true, updated: count};
+940: }
+941: 
+942: function getAdminData() {
+943:   var ss = getOrCreateSheet();
+944: 
+945:   var cRows = ss.getSheetByName('Citas').getDataRange().getValues();
+946:   var citas = [];
+947:   for (var i = 1; i < cRows.length; i++) {
+948:     var r = cRows[i];
+949:     citas.push({
+950:       id: r[0], fechaReg: r[1],
+951:       nombre: r[2],
+952:       telefono: (function(){ var d=(r[3] instanceof Error||!r[3])?'':(''+r[3]).replace(/\D/g,''); return d.length>=7?d:''; })(),
+953:       email: r[4],
+954:       servicio: r[5], modalidad: r[6],
+955:       fecha: (r[7] instanceof Date) ? fmtDate(r[7]) : (r[7] ? ('' + r[7]).split('T')[0] : ''),
+956:       hora: st(r[8]),
+957:       precio: r[9],
+958:       estado: r[10], direccion: r[11], notas: r[12], notaAdmin: r[13],
+959:       pago: ('' + (r[14] || '')).trim()
+960:     });
+961:   }
+962: 
+963:   var bRows = ss.getSheetByName('Bloqueos').getDataRange().getValues();
+964:   var bloqueos = [];
+965:   for (var j = 1; j < bRows.length; j++) {
+966:     var b = bRows[j];
+967:     bloqueos.push({
+968:       bid:    b[5] || '',
+969:       fecha: (b[0] instanceof Date) ? fmtDate(b[0]) : (b[0] ? ('' + b[0]).split('T')[0] : ''),
+970:       inicio: st(b[1]),
+971:       fin:    st(b[2]),
+972:       motivo: b[3]
+973:     });
+974:   }
+975: 
+976:   var pRows = ss.getSheetByName('Pacientes').getDataRange().getValues();
+977:   var pacientes = [];
+978:   for (var k = 1; k < pRows.length; k++) {
+979:     var p = pRows[k];
+980:     var pPhone = ('' + (p[1]||'')).replace(/\D/g,'');
+981:     pacientes.push({
+982:       nombre:      ('' + (p[0]||'')).trim(),
+983:       telefono:    pPhone,
+984:       email:       ('' + (p[2]||'')).trim(),
+985:       primeraVisita: (p[3] instanceof Date) ? fmtDate(p[3]) : ('' + (p[3]||'')),
+986:       ultimaVisita:  (p[4] instanceof Date) ? fmtDate(p[4]) : ('' + (p[4]||''))
+987:     });
+988:   }
+989: 
+990:   // Hoja Codigos (referidos y bonos)
+991:   var codigos = [];
+992:   var coSheet = ss.getSheetByName('Codigos');
+993:   if (coSheet) {
+994:     var coRows = coSheet.getDataRange().getValues();
+995:     for (var c = 1; c < coRows.length; c++) {
+996:       var cr = coRows[c];
+997:       codigos.push({
+998:         codigo:      '' + (cr[0] || ''),
+999:         tipo:        '' + (cr[1] || ''),
+1000:         paciente:    '' + (cr[2] || ''),
+1001:         telefono:    '' + (cr[3] || ''),
+1002:         referidoPor: '' + (cr[4] || ''),
+1003:         fecha:       '' + (cr[5] || ''),
+1004:         estado:      '' + (cr[6] || ''),
+1005:         codigoRef:   '' + (cr[7] || '')
+1006:       });
+1007:     }
+1008:   }
+1009: 
+1010:   // Hoja Eventos
+1011:   var eventos = [];
+1012:   var evSheet = ss.getSheetByName('Eventos');
+1013:   if (evSheet) {
+1014:     var evRows = evSheet.getDataRange().getValues();
+1015:     for (var ev = 1; ev < evRows.length; ev++) {
+1016:       var er = evRows[ev];
+1017:       if (!er[0]) continue;
+1018:       eventos.push({
+1019:         id:         '' + (er[0] || ''),
+1020:         titulo:     '' + (er[1] || ''),
+1021:         tipo:       '' + (er[2] || ''),
+1022:         fecha:      (er[3] instanceof Date) ? fmtDate(er[3]) : (er[3] ? ('' + er[3]).split('T')[0] : ''),
+1023:         horaInicio: st(er[4]),
+1024:         horaFin:    st(er[5]),
+1025:         duracion:   '' + (er[6] || ''),
+1026:         cobro:      '' + (er[7] || ''),
+1027:         notas:      '' + (er[8] || ''),
+1028:         _esEvento:  true
+1029:       });
+1030:     }
+1031:   }
+1032: 
+1033:   return {ok: true, citas: citas, bloqueos: bloqueos, pacientes: pacientes, codigos: codigos, eventos: eventos};
+1034: }
+1035: 
+1036: // -------------------------------------------------------------
+1037: //  PORTAL DEL FISIOTERAPEUTA / EQUIPO
+1038: // -------------------------------------------------------------
+1039: function teamSheet_(name) {
+1040:   var ss = getOrCreateSheet();
+1041:   var headers = {
+1042:     Profesionales: ['ID','Nombre','Usuario','Email','Rol','Estado','Servicios','Disponibilidad','TarifasJSON','Salt','PasswordHash','DebeCambiarPassword','Creado','Actualizado'],
+1043:     CitaEquipo: ['CitaID','ProfesionalID','EstadoAutorizacion','OverrideAtencion','Tarifa','Actualizado','AsignadoPor'],
+1044:     NovedadesProfesionales: ['ID','CitaID','ProfesionalID','Tipo','Observacion','Creado','EstadoAdmin'],
+1045:     AuditoriaEquipo: ['ID','Fecha','UsuarioID','UsuarioNombre','Rol','Accion','CitaID','EstadoAnterior','EstadoNuevo','Observaciones'],
+1046:     CuentasPorPagar: ['ID','ProfesionalID','CitaID','Servicio','Tarifa','Estado','Creado','Pagado','LiquidacionID']
+1047:   };
+1048:   var sh = ss.getSheetByName(name);
+1049:   if (!sh) {
+1050:     sh = ss.insertSheet(name);
+1051:     sh.getRange(1,1,1,headers[name].length).setValues([headers[name]]);
+1052:   }
+1053:   return sh;
+1054: }
+1055: function rowObj_(headers, row) {
+1056:   var o = {};
+1057:   for (var i = 0; i < headers.length; i++) o[headers[i]] = row[i];
+1058:   return o;
+1059: }
+1060: function getProfessionals_() {
+1061:   var sh = teamSheet_('Profesionales');
+1062:   var rows = sh.getDataRange().getValues(), out = [];
+1063:   for (var i = 1; i < rows.length; i++) {
+1064:     if (!rows[i][0]) continue;
+1065:     out.push({
+1066:       id: '' + rows[i][0], nombre: '' + (rows[i][1] || ''), usuario: '' + (rows[i][2] || ''),
+1067:       email: '' + (rows[i][3] || ''), rol: '' + (rows[i][4] || 'Fisioterapeuta'),
+1068:       estado: '' + (rows[i][5] || 'Activo'), servicios: '' + (rows[i][6] || ''),
+1069:       disponibilidad: '' + (rows[i][7] || ''), tarifasJSON: '' + (rows[i][8] || '{}'),
+1070:       salt: '' + (rows[i][9] || ''), passwordHash: '' + (rows[i][10] || ''),
+1071:       debeCambiarPassword: ('' + rows[i][11]).toLowerCase() === 'true' || rows[i][11] === true
+1072:     });
+1073:   }
+1074:   return out;
+1075: }
+1076: function getProfessionalByLogin_(user) {
+1077:   var u = (user || '').toLowerCase().trim(), list = getProfessionals_();
+1078:   for (var i = 0; i < list.length; i++) {
+1079:     if ((list[i].usuario || '').toLowerCase().trim() === u || (list[i].email || '').toLowerCase().trim() === u) return list[i];
+1080:   }
+1081:   return null;
+1082: }
+1083: function getProfessionalById_(id) {
+1084:   var list = getProfessionals_();
+1085:   for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+1086:   return null;
+1087: }
+1088: function getAssignmentMap_() {
+1089:   var sh = teamSheet_('CitaEquipo');
+1090:   var rows = sh.getDataRange().getValues(), map = {};
+1091:   for (var i = 1; i < rows.length; i++) {
+1092:     if (!rows[i][0]) continue;
+1093:     map['' + rows[i][0]] = {
+1094:       citaId: '' + rows[i][0], profesionalId: '' + (rows[i][1] || ''),
+1095:       estadoAutorizacion: '' + (rows[i][2] || ''),
+1096:       overrideAtencion: ('' + rows[i][3]).toUpperCase() === 'SI',
+1097:       tarifa: rows[i][4], actualizado: rows[i][5], asignadoPor: rows[i][6]
+1098:     };
+1099:   }
+1100:   return map;
+1101: }
+1102: function getCitaById_(id) {
+1103:   var sh = getOrCreateSheet().getSheetByName('Citas');
+1104:   var rows = sh.getDataRange().getValues();
+1105:   for (var i = 1; i < rows.length; i++) {
+1106:     if ('' + rows[i][0] === '' + id) {
+1107:       var r = rows[i];
+1108:       return {row: i + 1, raw: r, cita: {
+1109:         id: r[0], fechaReg: r[1], nombre: r[2], telefono: ('' + (r[3] || '')).replace(/\D/g,''),
+1110:         email: r[4], servicio: r[5], modalidad: r[6],
+1111:         fecha: (r[7] instanceof Date) ? fmtDate(r[7]) : (r[7] ? ('' + r[7]).split('T')[0] : ''),
+1112:         hora: st(r[8]), precio: r[9], estado: r[10], direccion: r[11], notas: r[12], notaAdmin: r[13],
+1113:         pago: ('' + (r[14] || '')).trim()
+1114:       }};
+1115:     }
+1116:   }
+1117:   return null;
+1118: }
+1119: function auditTeam_(user, action, citaId, prevState, newState, obs) {
+1120:   teamSheet_('AuditoriaEquipo').appendRow([
+1121:     'AUD-' + new Date().getTime() + '-' + Math.floor(Math.random()*999),
+2093:   return 60;
+2094: }
+2095: 
+2096: function parseDT(date, time) {
+2097:   var d = date.split('-'), t = time.split(':');
+2098:   return new Date(+d[0], +d[1]-1, +d[2], +t[0], +t[1]);
+2099: }
+2100: 
+2101: function fmtDate(d) {
+2102:   return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+2103: }
+2104: 
+2105: function pad(n) { return n < 10 ? '0'+n : ''+n; }
+2106: 
+2107: function txt(s) { return ContentService.createTextOutput(s).setMimeType(ContentService.MimeType.TEXT); }
+2108: function js(o)  { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+2109: 
+2110: function buildDesc(d, price) {
+2111:   return 'PACIENTE: ' + d.name + '\nTelefono: ' + d.phone + '\nEmail: ' + d.email +
+2112:     '\n---\nServicio: ' + d.service + '\nModalidad: ' + d.modality +
+2113:     '\nDireccion: ' + (d.address || 'Presencial') + '\nValor: ' + price +
+2114:     '\n---\nNotas: ' + (d.notes || 'Sin notas') + '\n\nAgendado desde jessicaocampoft-ctrl.github.io';
+2115: }
+2116: 
+2117: function buildEmailJessica(d, price) {
+2118:   return 'Nueva cita agendada desde tu pagina web!\n\n' +
+2119:     'SERVICIO: ' + d.service + '\nFecha: ' + d.date + ' a las ' + d.time +
+2120:     '\nModalidad: ' + d.modality + '\nValor: ' + price +
+2121:     '\n\nPACIENTE\nNombre: ' + d.name + '\nTelefono: ' + d.phone + '\nEmail: ' + d.email +
+2122:     (d.address ? '\nDireccion: ' + d.address : '') +
+2123:     (d.notes   ? '\nNotas: '     + d.notes   : '');
+2124: }
+2125: 
+2126: function buildEmailCliente(d, price) {
+2127:   var diasSemana = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+2128:   var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+2129:   var dp = d.date.split('-');
+2130:   var fechaObj = new Date(+dp[0], +dp[1]-1, +dp[2]);
+2131:   var fechaLegible = diasSemana[fechaObj.getDay()] + ' ' + +dp[2] + ' de ' + meses[+dp[1]-1] + ' de ' + dp[0];
+2132:   var modDetalle = d.modality + (d.address ? ' — ' + d.address : '');
+2133:   var primerNombre = d.name.split(' ')[0];
+2134:   var codigoReserva = d.codigoReserva || '';
+2135: 
+2136:   return '<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">' +
+2137:     '<div style="background:#0d9488;padding:20px 32px;text-align:center">' +
+2138:     '<p style="color:#fff;margin:0;font-size:15px;font-weight:600">🩺 Jessica Ocampo Fisioterapeuta</p>' +
+2139:     '</div>' +
+2140:     '<div style="padding:28px 32px">' +
+2141:     '<p style="font-size:17px;font-weight:700;margin:0 0 12px;color:#111827">Reserva temporal creada, ' + primerNombre + '</p>' +
+2142:     '<p style="font-size:13px;color:#6b7280;margin:0 0 18px;line-height:1.6">Tu horario queda reservado por 60 minutos. Para confirmar la cita debes realizar el pago anticipado y enviar el comprobante para verificacion administrativa.</p>' +
+2143:     '<div style="margin:0 0 20px">' +
+2144:     '<p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#111827">📌 ' + d.service + '</p>' +
+2145:     '<p style="margin:0;font-size:13px;color:#6b7280">' + fechaLegible + ' · ' + d.time + ' · ' + modDetalle + '</p>' +
+2146:     '</div>' +
+2147:     '<hr style="border:none;border-top:2px solid #e5e7eb;margin:20px 0">' +
+2148:     '<div style="font-size:13px;color:#374151;line-height:1.7;margin:0 0 16px">' +
+2149:     '<p style="margin:0 0 8px;font-weight:700;color:#111827">Datos de pago</p>' +
+2150:     '<p style="margin:0">Codigo de reserva: ' + codigoReserva + '</p>' +
+2151:     '<p style="margin:0">Valor: ' + price + '</p>' +
+2152:     '<p style="margin:8px 0 0">Bancolombia - Cuenta de ahorros: 91257857099</p>' +
+2153:     '<p style="margin:0">Nequi: 3136467945</p>' +
+2154:     '<p style="margin:0">Llave: 1010124692</p>' +
+2155:     '<p style="margin:8px 0 0">Titular: Jessica Andrea Ocampo Barbosa</p>' +
+2156:     '<p style="margin:8px 0 0;color:#6b7280">Despues de pagar, envia el comprobante junto con tu nombre completo y codigo de reserva.</p>' +
+2157:     '</div>' +
+2158:     '<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">' +
+2159:     '<p style="font-size:14px;color:#374151;margin:0 0 4px">Hasta pronto. Gracias por confiar en nuestros servicios.</p>' +
+2160:     '<p style="font-size:14px;color:#374151;margin:0;font-style:italic">— Jessica Ocampo Fisioterapeuta</p>' +
+2161:     '</div>' +
+2162:     '<div style="background:#f9fafb;padding:14px 32px;text-align:center;font-size:12px;color:#9ca3af">' +
+2163:     'Jessica Ocampo Fisioterapeuta · Pereira, Colombia · ' +
+2164:     '<a href="https://wa.me/573136467945" style="color:#0d9488">+57 313 646 7945</a>' +
+2165:     '</div></div>';
+2166: }
+2167: 
+2168: function buildPaymentBlock(titulo, subtitulo) {
+2169:   return '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 18px;margin:0 0 4px">' +
+2170:     '<p style="margin:0 0 ' + (subtitulo ? '6px' : '10px') + ';font-size:14px;font-weight:700;color:#92400e">' + titulo + '</p>' +
+2171:     (subtitulo ? '<p style="margin:0 0 10px;font-size:13px;color:#78350f">' + subtitulo + '</p>' : '') +
+2172:     '<table style="width:100%;font-size:13px;color:#44403c;border-collapse:collapse">' +
+2173:     '<tr><td style="padding:3px 0;color:#78716c;width:140px">Bancolombia Ahorros</td><td style="padding:3px 0;font-weight:600">91257857099</td></tr>' +
+2174:     '<tr><td style="padding:3px 0;color:#78716c">Llave</td><td style="padding:3px 0;font-weight:600">1010124692</td></tr>' +
+2175:     '<tr><td style="padding:3px 0;color:#78716c">Nequi</td><td style="padding:3px 0;font-weight:600">3136467945</td></tr>' +
+2176:     '<tr><td style="padding:3px 0;color:#78716c">Titular</td><td style="padding:3px 0">Jessica Andrea Ocampo Barbosa</td></tr>' +
+2177:     '</table></div>';
+2178: }
+2179: 
+2180: function buildReminderEmail(nombre, serv, fechaLegible, hora, mod, precio, esHoy, plan, sesionActual) {
+2181:   var primerNombre = nombre.split(' ')[0];
+2182: 
+2183:   var intro = esHoy
+2184:     ? '¡Hola ' + primerNombre + '! 🌟 Hoy es el día de tu sesión de <strong>' + serv + '</strong> a las <strong>' + hora + '</strong> (' + mod + ').'
+2185:     : '¡Hola ' + primerNombre + '! 👋 Te recuerdo que mañana tienes tu sesión de <strong>' + serv + '</strong> a las <strong>' + hora + '</strong> (' + mod + ').';
+2186: 
+2187:   var progStr = '';
+2188:   if (plan && sesionActual) {
+2189:     progStr = '<p style="margin:10px 0 0;font-size:13px;color:#6b7280">🔄 ' +
+2190:       (plan.total ? 'Sesión ' + sesionActual + ' de ' + plan.total : 'Sesión ' + sesionActual) + '</p>';
+2191:   }
+2192: 
+2193:   // Bloque de pago: solo en recordatorio del mismo día
+2194:   var bloquePago = '';
+2195:   if (esHoy) {
+2196:     if (plan && sesionActual) {
+2197:       if (sesionActual === 1) {
+2198:         bloquePago = '<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">' +
+2199:           buildPaymentBlock('💰 Pago inicial del plan' + (plan.mitad ? ' — ' + plan.mitad : ''), 'Para comenzar recuerda traer el pago inicial.');
+2200:       } else if (plan.pagoDosEn && sesionActual === plan.pagoDosEn) {
+2201:         bloquePago = '<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">' +
+2202:           buildPaymentBlock('💰 Segundo pago del plan' + (plan.mitad ? ' — ' + plan.mitad : ''), 'Esta sesión corresponde al segundo y último pago de tu plan. Recuerda traerlo.');
+2203:       }
+2204:     } else if (!plan && precio) {
+2205:       bloquePago = '<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">' +
+2206:         buildPaymentBlock('💰 Valor: ' + precio, null);
+2207:     }
+2208:   }
+2209: 
+2210:   return '<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">' +
+2211:     '<div style="background:' + (esHoy ? '#0284c7' : '#0d9488') + ';padding:20px 32px;text-align:center">' +
+2212:     '<p style="color:#fff;margin:0;font-size:15px;font-weight:600">🩺 Jessica Ocampo Fisioterapeuta</p>' +
+2213:     '</div>' +
+2214:     '<div style="padding:28px 32px">' +
+2215:     '<p style="font-size:14px;line-height:1.7;color:#111827;margin:0">' + intro + '</p>' +
+2216:     progStr +
+2217:     bloquePago +
+2218:     '<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">' +
+2219:     '<p style="font-size:13px;color:#6b7280;margin:0 0 16px">¿Tienes algún cambio? <a href="https://wa.me/573136467945" style="color:#0d9488">Escríbeme</a>.</p>' +
+2220:     '<p style="font-size:14px;color:#374151;margin:0 0 4px">Hasta pronto. Gracias por confiar en nuestros servicios.</p>' +
+2221:     '<p style="font-size:14px;color:#374151;margin:0;font-style:italic">— Jessica Ocampo Fisioterapeuta</p>' +
+2222:     '</div>' +
+2223:     '<div style="background:#f9fafb;padding:14px 32px;text-align:center;font-size:12px;color:#9ca3af">' +
+2224:     'Jessica Ocampo Fisioterapeuta · Pereira, Colombia · ' +
+2225:     '<a href="https://wa.me/573136467945" style="color:#0d9488">+57 313 646 7945</a>' +
+2226:     '</div></div>';
+2227: }
+2228: 
+2229: // =============================================================
+2230: //  ADMIN KV — almacenamiento clave-valor sincronizado entre dispositivos
+2231: // =============================================================
+2232: 
+2233: function getAdminKVSheet() {
+2234:   var ss = getOrCreateSheet();
+2235:   var sh = ss.getSheetByName('AdminKV');
+2236:   if (!sh) {
+2237:     sh = ss.insertSheet('AdminKV');
+2238:     sh.appendRow(['key', 'value', 'updated']);
+2239:     sh.setFrozenRows(1);
+2240:   }
+2241:   return sh;
+2242: }
+2243: 
+2244: function getAdminKV() {
+2245:   try {
+2246:     var sh   = getAdminKVSheet();
+2247:     var data = sh.getDataRange().getValues();
+2248:     var kv   = {};
+2249:     for (var i = 1; i < data.length; i++) {
+2250:       if (data[i][0]) kv['' + data[i][0]] = '' + data[i][1];
+2251:     }
+2252:     return { ok: true, kv: kv };
+2253:   } catch(e) {
+2254:     return { ok: false, error: e.message, kv: {} };
+2255:   }
+2256: }
+2257: 
+2258: function doSetAdminKV(dataJson) {
+2259:   try {
+2260:     var updates = JSON.parse(decodeURIComponent(dataJson));
+2261:     var sh   = getAdminKVSheet();
+2262:     var data = sh.getDataRange().getValues();
+2263:     var now  = new Date().toISOString();
+2264: 
+2265:     // Construir índice key → número de fila (1-based)
+2266:     var keyToRow = {};
+2267:     for (var i = 1; i < data.length; i++) {
+2268:       if (data[i][0]) keyToRow['' + data[i][0]] = i + 1;
+2269:     }
+2270: 
+2271:     for (var key in updates) {
+2272:       var val = updates[key];
+2273:       if (val === '__DELETE__') {
+2274:         if (keyToRow[key]) {
+2275:           sh.deleteRow(keyToRow[key]);
+2276:           // Reconstruir índice tras borrar
+2277:           data = sh.getDataRange().getValues();
+2278:           keyToRow = {};
+2279:           for (var j = 1; j < data.length; j++) {
+2280:             if (data[j][0]) keyToRow['' + data[j][0]] = j + 1;
+2281:           }
+2282:         }
+2283:       } else if (keyToRow[key]) {
+2284:         sh.getRange(keyToRow[key], 2, 1, 2).setValues([[val, now]]);
+2285:       } else {
+2286:         sh.appendRow([key, val, now]);
+2287:         keyToRow[key] = sh.getLastRow();
+2288:       }
+2289:     }
+2290:     return { ok: true };
+2291:   } catch(e) {
+2292:     return { ok: false, error: e.message };
+2293:   }
+2294: }
+2295: 
+2296: // =============================================================
+2297: //  PASAPORTE DE MOVIMIENTO
+2298: // =============================================================
+2299: 
+2300: function getPasaportesSheet() {
+2301:   var ss = getOrCreateSheet();
+2302:   var sh = ss.getSheetByName('Pasaportes');
+2303:   if (!sh) {
+2304:     sh = ss.insertSheet('Pasaportes');
+2305:     sh.appendRow(['nombre', 'passport', 'descarga', 'actualizado']);
+2306:     sh.setFrozenRows(1);
+2307:   }
+2308:   return sh;
+2309: }
+2310: 
+2311: function getPassport(nombre) {
+2312:   try {
+2313:     var sh   = getPasaportesSheet();
+2314:     var data = sh.getDataRange().getValues();
+2315:     var norm = (nombre || '').toLowerCase().trim();
+2316:     for (var i = 1; i < data.length; i++) {
+2317:       if ((data[i][0] || '').toLowerCase().trim() === norm) {
+2318:         return {
+2319:           ok:       true,
+2320:           passport: data[i][1] ? JSON.parse(data[i][1]) : {},
+2321:           descarga: data[i][2] ? JSON.parse(data[i][2]) : {}
+2322:         };
+2323:       }
+2324:     }
+2325:     return { ok: true, passport: {}, descarga: {} };
+2326:   } catch(e) {
+2327:     return { ok: false, error: e.message };
+2328:   }
+2329: }
+2330: 
+2331: function savePassport(nombre, passportJson, descargaJson) {
+2332:   try {
+2333:     var sh   = getPasaportesSheet();
+2334:     var data = sh.getDataRange().getValues();
+2335:     var norm = (nombre || '').toLowerCase().trim();
+2336:     var now  = new Date().toISOString();
+2337:     for (var i = 1; i < data.length; i++) {
+2338:       if ((data[i][0] || '').toLowerCase().trim() === norm) {
+2339:         sh.getRange(i + 1, 1, 1, 4).setValues([[nombre, passportJson, descargaJson, now]]);
+2340:         return { ok: true };
+2341:       }
+2342:     }
+2343:     sh.appendRow([nombre, passportJson, descargaJson, now]);
+2344:     return { ok: true };
+2345:   } catch(e) {
+2346:     return { ok: false, error: e.message };
+2347:   }
+2348: }
+2349: 
+2350: // -------------------------------------------------------------
+2351: //  RECORDATORIOS MENSUALES DE REAGENDAMIENTO
+2352: // -------------------------------------------------------------
+2353: 
+2354: // Devuelve pacientes cuya última cita fue hace ~4 semanas (semana4) o 5+ semanas (semana5)
+2355: function getRemindersData() {
+2356:   var ss   = getOrCreateSheet();
+2357:   var rows = ss.getSheetByName('Citas').getDataRange().getValues();
+2358: 
+2359:   // Construir mapa: último registro por paciente
+2360:   var map = {};
+2361:   for (var i = 1; i < rows.length; i++) {
+2362:     var r = rows[i];
+2363:     if (r[10] === 'Cancelada') continue;
+2364:     var nombre = ('' + (r[2] || '')).trim();
+2365:     var fecha  = sd(r[7]);
+2366:     if (!nombre || !fecha) continue;
+2367:     var phone = ('' + (r[3] || '')).replace(/\D/g, '');
+2368:     var email = ('' + (r[4] || '')).trim();
+2369:     var serv  = r[5] || '';
+2370:     if (!map[nombre] || fecha > map[nombre].lastFecha) {
+2371:       map[nombre] = { nombre: nombre, telefono: phone, email: email, lastFecha: fecha, lastServicio: serv };
+2372:     }
+2373:   }
+2374: 
+2375:   var now = new Date(); now.setHours(0,0,0,0);
+2376:   var semana4 = [], semana5 = [];
+2377: 
+2378:   for (var key in map) {
+2379:     var p = map[key];
+2380:     var dp = p.lastFecha.split('-');
+2381:     var lastDate = new Date(+dp[0], +dp[1]-1, +dp[2]);
+2382:     var dias = Math.floor((now - lastDate) / 86400000);
+2383:     if (dias >= 28 && dias < 35) semana4.push({ nombre: p.nombre, telefono: p.telefono, email: p.email, lastServicio: p.lastServicio, lastFecha: p.lastFecha, dias: dias });
+2384:     else if (dias >= 35 && dias < 70) semana5.push({ nombre: p.nombre, telefono: p.telefono, email: p.email, lastServicio: p.lastServicio, lastFecha: p.lastFecha, dias: dias });
+2385:   }
+2386: 
+2387:   semana4.sort(function(a,b){ return a.dias - b.dias; });
+2388:   semana5.sort(function(a,b){ return a.dias - b.dias; });
+2389:   return { ok: true, semana4: semana4, semana5: semana5 };
+2390: }
+2391: 
+2392: // Devuelve pacientes cuya última cita fue hace 90+ días (3 meses o más)
+2393: function getInactivosData() {
+2394:   try {
+2395:     var ss   = getOrCreateSheet();
+2396:     var rows = ss.getSheetByName('Citas').getDataRange().getValues();
+2397: 
+2398:     // Columnas Citas: [0]ID [1]FechaReg [2]Nombre [3]Telefono [4]Email
+2399:     //                 [5]Servicio [6]Modalidad [7]FechaCita [8]Hora [9]Precio [10]Estado
+2400:     var map = {};
+2401:     for (var i = 1; i < rows.length; i++) {
+2402:       var r      = rows[i];
+2403:       var estado = ('' + (r[10] || '')).trim();
+2404:       if (estado === 'Cancelada') continue;
+2405:       if (estado === 'Registro') continue;
+2406:       var serv   = ('' + (r[5] || '')).trim();
+2407:       if (esRegistro(serv)) continue;
+2408:       var nombre = ('' + (r[2] || '')).trim();
+2409:       var fecha  = sd(r[7]);
+2410:       if (!nombre || !fecha) continue;
+2411:       var phone  = ('' + (r[3] || '')).replace(/\D/g, '');
+2412:       var email  = ('' + (r[4] || '')).trim();
+2413:       var key    = nombre.toLowerCase();
+2414:       if (!map[key] || fecha > map[key].lastFecha) {
+2415:         map[key] = { nombre: nombre, telefono: phone, email: email, lastServicio: serv, lastFecha: fecha };
+2416:       }
+2417:     }
+2418: 
+2419:     var now = new Date(); now.setHours(0,0,0,0);
+2420:     var inactivos = [];
+2421:     for (var k in map) {
+2422:       var p  = map[k];
+2423:       var dp = p.lastFecha.split('-');
