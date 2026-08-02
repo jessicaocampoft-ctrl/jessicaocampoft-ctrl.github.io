@@ -25,9 +25,12 @@ jobs:
           text = Path('google-apps-script.js').read_text(encoding='utf-8-sig')
           lines = text.splitlines()
           pats = [
-            r'function\s+getAdminData\b', r'getAdminData\s*=",
-            r"action\s*===\s*['\"]adminData", r'function\s+js\b',
-            r'function\s+getAdminKV\b', r'function\s+getTeamData\b'
+            r'function\s+getAdminData\b',
+            r'getAdminData\s*=',
+            r"action\s*===\s*['\"]adminData",
+            r'function\s+js\b',
+            r'function\s+getAdminKV\b',
+            r'function\s+getTeamData\b'
           ]
           hits=set()
           for i,line in enumerate(lines):
