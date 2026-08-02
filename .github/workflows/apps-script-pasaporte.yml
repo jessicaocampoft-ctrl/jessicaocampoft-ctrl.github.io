@@ -1,0 +1,56 @@
+name: Desplegar Pasaporte Apps Script
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar clasp
+        run: npm install --global @google/clasp@3.3.0
+
+      - name: Restaurar credencial de despliegue
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Verificar despliegues configurados
+        run: |
+          deployments="$(clasp deployments)"
+          printf '%s' "$deployments" | grep -Fq 'AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw'
+          printf '%s' "$deployments" | grep -Fq 'AKfycbzLWv3DYB5WxsiT7jMCv5lnfc6oX8IvQJPMU6dGyW3_ZGU7Jj-WfXIWeEuPcI41mQ5L'
+
+      - name: Subir Apps Script
+        run: clasp push --force
+
+      - name: Actualizar despliegue publico existente
+        run: >-
+          clasp deploy
+          --deploymentId AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw
+          --description "Pasaporte de Movimiento - ${{ github.sha }}"
+
+      - name: Actualizar despliegue administrador existente
+        run: >-
+          clasp deploy
+          --deploymentId AKfycbzLWv3DYB5WxsiT7jMCv5lnfc6oX8IvQJPMU6dGyW3_ZGU7Jj-WfXIWeEuPcI41mQ5L
+          --description "Pasaporte de Movimiento - ${{ github.sha }}"
+
+      - name: Verificar rechazo de enlace invalido
+        run: |
+          url='https://script.google.com/macros/s/AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw/exec?action=getPassportSecure&id=invalido&token=invalido'
+          response="$(curl --fail --silent --show-error --location "$url")"
+          printf '%s' "$response" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*false'
