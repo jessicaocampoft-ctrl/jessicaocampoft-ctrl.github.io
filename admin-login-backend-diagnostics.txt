@@ -1,0 +1,248 @@
+1: // =============================================================
+2: //  JESSICA OCAMPO FISIOTERAPEUTA — Apps Script Backend
+3: //  Funciones: Reservas, Base de datos, Disponibilidad,
+4: //             Panel Admin, Recordatorios diarios
+5: // =============================================================
+6: 
+7: // IMPORTANTE: estas variables se leen desde PropertiesService (no están en código).
+8: // Para configurarlas: en el editor de Apps Script → Proyecto → Propiedades del script → agrega:
+9: //   ADMIN_TOKEN   → tu contraseña admin (ej: una cadena larga aleatoria)
+10: //   GEMINI_API_KEY → tu clave de Gemini AI Studio
+11: var _props        = PropertiesService.getScriptProperties();
+12: // Sin contraseña de respaldo en código: ADMIN_TOKEN debe existir en Propiedades del script.
+13: var ADMIN_TOKEN   = _props.getProperty('ADMIN_TOKEN')   || '';
+14: var GEMINI_API_KEY = _props.getProperty('GEMINI_API_KEY') || '';
+15: 
+16: // ── SESIONES ── token UUID almacenado en CacheService (TTL 4 horas)
+17: function generateSessionToken() {
+18:   var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+19:   var t = '';
+20:   for (var i = 0; i < 48; i++) t += chars.charAt(Math.floor(Math.random() * chars.length));
+21:   return t;
+22: }
+23: function createSession() {
+24:   var token = generateSessionToken();
+25:   CacheService.getScriptCache().put('sess_' + token, '1', 14400); // 4 horas
+26:   return token;
+27: }
+28: function validateSession(token) {
+29:   if (!token || token.length < 20) return false;
+30:   return CacheService.getScriptCache().get('sess_' + token) === '1';
+31: }
+32: 
+33: function createProfessionalSession_(pro) {
+34:   var token = generateSessionToken();
+35:   var payload = {
+36:     id: '' + pro.id,
+37:     nombre: '' + pro.nombre,
+38:     usuario: '' + pro.usuario,
+39:     email: '' + pro.email,
+40:     rol: '' + (pro.rol || 'Fisioterapeuta'),
+41:     debeCambiarPassword: !!pro.debeCambiarPassword
+42:   };
+43:   CacheService.getScriptCache().put('prosess_' + token, JSON.stringify(payload), 14400);
+44:   return token;
+45: }
+46: function validateProfessionalSession_(token) {
+47:   if (!token || token.length < 20) return null;
+48:   var raw = CacheService.getScriptCache().get('prosess_' + token);
+49:   if (!raw) return null;
+50:   try {
+51:     CacheService.getScriptCache().put('prosess_' + token, raw, 14400);
+52:     return JSON.parse(raw);
+53:   } catch(e) {
+54:     return null;
+55:   }
+56: }
+57: function hashPassword_(password, salt) {
+58:   var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, salt + '|' + password, Utilities.Charset.UTF_8);
+59:   return bytes.map(function(b) {
+60:     var v = (b < 0 ? b + 256 : b).toString(16);
+61:     return v.length === 1 ? '0' + v : v;
+62:   }).join('');
+63: }
+64: function makeSalt_() {
+65:   return Utilities.getUuid().replace(/-/g, '') + new Date().getTime();
+66: }
+67: function makeTempPassword_() {
+68:   return 'Cuidandote-' + Math.floor(100000 + Math.random() * 900000);
+69: }
+70: 
+71: // ── RATE LIMITING LOGIN ── máx 5 intentos fallidos en 5 minutos (global)
+72: function loginAllowed() {
+73:   var v = CacheService.getScriptCache().get('login_fails');
+74:   return !v || parseInt(v, 10) < 5;
+75: }
+76: function recordLoginFail() {
+77:   var cache = CacheService.getScriptCache();
+78:   var count = parseInt(cache.get('login_fails') || '0', 10) + 1;
+79:   cache.put('login_fails', '' + count, 300); // ventana de 5 minutos
+80: }
+81: function resetLoginFails() {
+82:   CacheService.getScriptCache().remove('login_fails');
+83: }
+191:   if (p.action === 'passportDeactivate') {
+192:     return js(passportDeactivate_(p.id));
+193:   }
+194:   if (p.action === 'passportReactivate') {
+195:     return js(passportReactivate_(p.id));
+196:   }
+197: 
+198:   // Pasaporte — escritura (requiere token admin)
+199:   if (p.action === 'savePassport' && p.nombre) {
+200:     return js(savePassport(decodeURIComponent(p.nombre), p.passport || '{}', p.descarga || '{}'));
+201:   }
+202: 
+203:   return txt('Jessica Ocampo Fisioterapeuta - Sistema activo');
+204: }
+205: 
+206: // -------------------------------------------------------------
+207: //  POST — Reservas de pacientes + Evaluación Express con fotos
+208: // -------------------------------------------------------------
+209: function doPost(e) {
+210:   try {
+211:     var d = JSON.parse(e.postData.contents);
+212:     if (d.action === 'professionalLogin') {
+213:       return js(professionalLogin_(d.user, d.password));
+214:     }
+215:     if (d.action === 'professionalChangePassword') {
+216:       return js(professionalChangePassword_(d.token, d.currentPassword, d.newPassword));
+217:     }
+218:     if (d.action === 'professionalMarkAttended') {
+219:       return js(professionalMarkAttended_(d.token, d.citaId));
+220:     }
+221:     if (d.action === 'professionalReportIssue') {
+222:       return js(professionalReportIssue_(d.token, d.citaId, d.tipo, d.observacion));
+223:     }
+224:     if (d.action === 'adminLogin') {
+225:       if (!loginAllowed()) return js({ok: false, error: 'Demasiados intentos fallidos. Espera 5 minutos.'});
+226:       if (!d.password || d.password !== ADMIN_TOKEN) {
+227:         recordLoginFail();
+228:         return js({ok: false, error: 'Credenciales incorrectas'});
+229:       }
+230:       resetLoginFails();
+231:       var sessionToken = createSession();
+232:       var adminData = getAdminData();
+233:       adminData.sessionToken = sessionToken;
+234:       return js(adminData);
+235:     }
+236:     if (d.action === 'changePassword') {
+237:       if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+238:       if (!d.currentPassword || d.currentPassword !== ADMIN_TOKEN) return js({ok: false, error: 'La contraseña actual es incorrecta.'});
+239:       if (!d.newPassword || d.newPassword.length < 8) return js({ok: false, error: 'La nueva contraseña debe tener al menos 8 caracteres.'});
+240:       PropertiesService.getScriptProperties().setProperty('ADMIN_TOKEN', d.newPassword);
+241:       return js({ok: true});
+242:     }
+243:     if (d.action === 'savePayment') {
+244:       if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+245:       return js(savePayment_(d.data || {}, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+246:     }
+247:     if (d.action === 'verifyPayment') {
+248:       if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+249:       return js(verifyPayment_(d, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+250:     }
+251:     if (d.action === 'generateEval') {
+252:       if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+253:       return js(generateEvalReport(d.data, d.photos || {}));
+254:     }
+255:     return js(createBooking(d, false));
+256:   } catch(err) {
+257:     try { GmailApp.sendEmail(JESSICA_EMAIL, 'ERROR formulario citas', 'Error: ' + err.message + '\n\nDatos: ' + e.postData.contents); } catch(x) {}
+258:     return js({ok: false, error: err.message});
+259:   }
+260: }
+261: 
+262: // -------------------------------------------------------------
+263: //  CREAR RESERVA
+264: // -------------------------------------------------------------
+265: // Servicios que son solo registro de paciente — NO crean cita en Google Calendar
+266: var SERVICIOS_SOLO_REGISTRO = ['Registro', 'Registro paciente', 'Registro de paciente'];
+267: 
+268: function esRegistro(servicio) {
+269:   if (!servicio) return false;
+270:   var s = servicio.trim().toLowerCase();
+271:   for (var i = 0; i < SERVICIOS_SOLO_REGISTRO.length; i++) {
+272:     if (s === SERVICIOS_SOLO_REGISTRO[i].toLowerCase()) return true;
+273:   }
+274:   return s.indexOf('registro') === 0; // cualquier cosa que empiece con "Registro"
+275: }
+276: 
+277: function createBooking(d, isAdmin) {
+278:   if (isMidnightBookingTime_(d.time)) {
+279:     return {ok: false, error: 'Ese horario es de medianoche (00:00-00:59). Para 12 del mediodia usa 12:00.'};
+280:   }
+281:   var scheduleCheck = isAdmin
+282:     ? validateBookingSchedule_(d.date, d.time, d.service, d.modality)
+1109:         id: r[0], fechaReg: r[1], nombre: r[2], telefono: ('' + (r[3] || '')).replace(/\D/g,''),
+1110:         email: r[4], servicio: r[5], modalidad: r[6],
+1111:         fecha: (r[7] instanceof Date) ? fmtDate(r[7]) : (r[7] ? ('' + r[7]).split('T')[0] : ''),
+1112:         hora: st(r[8]), precio: r[9], estado: r[10], direccion: r[11], notas: r[12], notaAdmin: r[13],
+1113:         pago: ('' + (r[14] || '')).trim()
+1114:       }};
+1115:     }
+1116:   }
+1117:   return null;
+1118: }
+1119: function auditTeam_(user, action, citaId, prevState, newState, obs) {
+1120:   teamSheet_('AuditoriaEquipo').appendRow([
+1121:     'AUD-' + new Date().getTime() + '-' + Math.floor(Math.random()*999),
+1122:     new Date(), user && user.id ? user.id : '', user && user.nombre ? user.nombre : 'Sistema',
+1123:     user && user.rol ? user.rol : 'Sistema', action || '', citaId || '', prevState || '', newState || '', obs || ''
+1124:   ]);
+1125: }
+1126: function professionalLogin_(user, password) {
+1127:   if (!loginAllowed()) return {ok:false,error:'Demasiados intentos fallidos. Espera 5 minutos.'};
+1128:   var pro = getProfessionalByLogin_(user);
+1129:   if (!pro || pro.estado !== 'Activo' || !password || hashPassword_(password, pro.salt) !== pro.passwordHash) {
+1130:     recordLoginFail();
+1131:     auditTeam_({rol:'Sistema', nombre:'Sistema'}, 'Intento de acceso profesional fallido', '', '', '', user || '');
+1132:     return {ok:false,error:'Credenciales incorrectas o usuario inactivo'};
+1133:   }
+1134:   resetLoginFails();
+1135:   return {ok:true, professionalToken:createProfessionalSession_(pro), professional:{
+1136:     id:pro.id,nombre:pro.nombre,usuario:pro.usuario,email:pro.email,rol:pro.rol,debeCambiarPassword:pro.debeCambiarPassword
+1137:   }};
+1138: }
+1139: function professionalChangePassword_(token, currentPassword, newPassword) {
+1140:   var sess = validateProfessionalSession_(token);
+1141:   if (!sess) return {ok:false,error:'Sin permiso'};
+1142:   if (!newPassword || newPassword.length < 8) return {ok:false,error:'La nueva contraseña debe tener mínimo 8 caracteres.'};
+1143:   var sh = teamSheet_('Profesionales'), rows = sh.getDataRange().getValues();
+1144:   for (var i = 1; i < rows.length; i++) {
+1145:     if ('' + rows[i][0] !== sess.id) continue;
+1146:     var salt = '' + rows[i][9];
+1147:     if (!currentPassword || hashPassword_(currentPassword, salt) !== rows[i][10]) return {ok:false,error:'La contraseña actual no coincide.'};
+1148:     var newSalt = makeSalt_();
+1149:     sh.getRange(i+1, 10, 1, 3).setValues([[newSalt, hashPassword_(newPassword, newSalt), false]]);
+1150:     sh.getRange(i+1, 14).setValue(new Date());
+1151:     auditTeam_(sess, 'Cambio de contraseña profesional', '', '', '', 'Cambio realizado por el profesional');
+1152:     return {ok:true};
+1153:   }
+1154:   return {ok:false,error:'Usuario no encontrado'};
+1155: }
+1156: var TEAM_OPERATIONAL_START_DATE = '2026-07-16';
+1157: function isProfessionalAppointmentAuthorized_(citaRow, assignment) {
+1158:   var estado = '' + (citaRow[10] || '');
+1159:   var aut = assignment ? ('' + (assignment.estadoAutorizacion || '')) : '';
+1160:   return estado === 'Autorizada para atender' || estado === 'SesiÃ³n atendida' || aut === 'Autorizada para atender' || aut === 'SesiÃ³n atendida';
+1161: }
+1162: function isProfessionalInactiveAppointment_(estado) {
+1163:   return ['Cancelada','Cancelada a tiempo','CancelaciÃ³n tardÃ­a','Reprogramada','No asistiÃ³','Reembolsada'].indexOf('' + estado) > -1;
+1164: }
+1165: function teamStateKey_(value) {
+1166:   var s = ('' + (value || '')).toLowerCase().trim();
+1167:   try { s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch(e) {}
+1168:   return s;
+1169: }
+1170: function isProfessionalAppointmentAuthorized_(citaRow, assignment) {
+1171:   var estado = teamStateKey_(citaRow[10]);
+1172:   var aut = teamStateKey_(assignment ? assignment.estadoAutorizacion : '');
+1173:   var valid = ['autorizada para atender','sesion atendida','confirmada','pago verificado','cortesia autorizada','atendida'];
+1174:   return valid.indexOf(estado) > -1 || valid.indexOf(aut) > -1;
+1175: }
+1176: function isProfessionalInactiveAppointment_(estado) {
+1177:   var key = teamStateKey_(estado);
+1178:   return ['cancelada','cancelada a tiempo','cancelacion tardia','reprogramada','no asistio','reembolsada'].indexOf(key) > -1;
+1179: }
+1180: function canProfessionalAttend_(citaRow, assignment) {
+1181:   if (!isProfessionalAppointmentAuthorized_(citaRow, assignment)) return false;
