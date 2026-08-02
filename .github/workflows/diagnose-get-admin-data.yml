@@ -1,0 +1,51 @@
+name: Diagnose getAdminData
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/diagnose-get-admin-data.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract getAdminData and direct dependencies
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          text = Path('google-apps-script.js').read_text(encoding='utf-8-sig')
+          lines = text.splitlines()
+          pats = [
+            r'function\s+getAdminData\b', r'getAdminData\s*=",
+            r"action\s*===\s*['\"]adminData", r'function\s+js\b',
+            r'function\s+getAdminKV\b', r'function\s+getTeamData\b'
+          ]
+          hits=set()
+          for i,line in enumerate(lines):
+            if any(re.search(p,line,re.I) for p in pats):
+              for j in range(max(0,i-15), min(len(lines),i+180)):
+                hits.add(j)
+          out=[]
+          for j in sorted(hits):
+            line=lines[j]
+            line=re.sub(r'((?:PASSWORD|PASS|PW|SECRET)\s*=\s*)["\'][^"\']*["\']',r'\1"[REDACTED]"',line,flags=re.I)
+            out.append(f'{j+1}: {line}')
+          Path('get-admin-data-diagnostics.txt').write_text('\n'.join(out)+'\n',encoding='utf-8')
+
+      - name: Commit and remove workflow
+        run: |
+          rm -f .github/workflows/diagnose-get-admin-data.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(login): registrar diagnóstico de carga admin"
+          git push
