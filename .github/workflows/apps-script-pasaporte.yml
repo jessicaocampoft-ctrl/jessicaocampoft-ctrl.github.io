@@ -28,11 +28,10 @@ jobs:
           printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
           chmod 600 "$HOME/.clasprc.json"
 
-      - name: Verificar despliegues configurados
+      - name: Configurar proyecto Apps Script
         run: |
-          deployments="$(clasp deployments)"
-          printf '%s' "$deployments" | grep -Fq 'AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw'
-          printf '%s' "$deployments" | grep -Fq 'AKfycbzLWv3DYB5WxsiT7jMCv5lnfc6oX8IvQJPMU6dGyW3_ZGU7Jj-WfXIWeEuPcI41mQ5L'
+          printf '%s' '{"scriptId":"1KVmo_TpTAkwLXQjMVvSO51YDtojr64XsnWg8I7bz0UkGht9S1W7WD0zI","rootDir":"."}' > .clasp.json
+          printf '%s\n' '**/**' '!appsscript.json' '!google-apps-script.js' > .claspignore
 
       - name: Subir Apps Script
         run: clasp push --force
@@ -46,7 +45,7 @@ jobs:
       - name: Actualizar despliegue administrador existente
         run: >-
           clasp deploy
-          --deploymentId AKfycbzLWv3DYB5WxsiT7jMCv5lnfc6oX8IvQJPMU6dGyW3_ZGU7Jj-WfXIWeEuPcI41mQ5L
+          --deploymentId AKfycbwYxtpVLIb5DH31Bvh8UemIGZ08l1UEMuIJPbFPXOW_X0yX5J756IZKzmYx5PYOdPDC
           --description "Pasaporte de Movimiento - ${{ github.sha }}"
 
       - name: Verificar rechazo de enlace invalido
