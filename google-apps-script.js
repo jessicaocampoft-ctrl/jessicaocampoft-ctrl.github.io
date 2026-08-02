@@ -99,9 +99,14 @@ function doGet(e) {
     return js(getAvailability(p.date, p.service, p.modality));
   }
 
-  // Pasaporte — lectura pública (sin token)
-  if (p.action === 'getPassport' && p.nombre) {
-    return js(getPassport(decodeURIComponent(p.nombre)));
+  // Pasaporte seguro — lectura pública exclusivamente por ID + token privado.
+  if (p.action === 'getPassportSecure') {
+    return js(getPassportSecure_(p.id, p.accessToken || p.token));
+  }
+
+  // Los enlaces antiguos con nombre quedan deshabilitados para no exponer datos personales.
+  if (p.action === 'getPassport') {
+    return js({ok:false, error:'Este enlace antiguo ya no es válido. Solicita tu nuevo enlace privado.'});
   }
 
   // Reseñas Google — público (sin token)
@@ -172,6 +177,23 @@ function doGet(e) {
   if (p.action === 'savePayment')           return js(savePayment_(p.data, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
   if (p.action === 'verifyPayment')         return js(verifyPayment_(p, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
   if (p.action === 'savePaymentAccount')    return js(savePaymentAccount_(p.data, {id:'admin', nombre:'Administracion', rol:'Superadministradora'}));
+
+  // Pasaporte seguro — acciones administrativas protegidas por sesión.
+  if (p.action === 'passportEnsure') {
+    return js(passportEnsure_(p.nombre || '', p.telefono || ''));
+  }
+  if (p.action === 'passportSaveProgress') {
+    return js(passportSaveProgress_(p.id, p.passport || '{}', p.descarga || '{}'));
+  }
+  if (p.action === 'passportRegenerateToken') {
+    return js(passportRegenerateToken_(p.id));
+  }
+  if (p.action === 'passportDeactivate') {
+    return js(passportDeactivate_(p.id));
+  }
+  if (p.action === 'passportReactivate') {
+    return js(passportReactivate_(p.id));
+  }
 
   // Pasaporte — escritura (requiere token admin)
   if (p.action === 'savePassport' && p.nombre) {
@@ -3299,3 +3321,508 @@ function queueWaitlistMatch_(booking) {
   return queued;
 }
 
+// =============================================================
+//  PASAPORTE SEGURO V2
+//  Enlaces privados, sellos automáticos y auditoría
+// =============================================================
+
+var PASSPORT_PUBLIC_BASE_ = 'https://cuidandotefisioterapia.com/pasaporte.html';
+
+function _passportNorm_(value) {
+  var s = ('' + (value || '')).toLowerCase().trim();
+  try { s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (e) {}
+  return s.replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function _passportDigits_(value) {
+  return ('' + (value || '')).replace(/\D/g, '');
+}
+
+function _passportJson_(value, fallback) {
+  if (value && typeof value === 'object') return value;
+  try { return value ? JSON.parse(value) : (fallback || {}); } catch (e) { return fallback || {}; }
+}
+
+function _passportToken_() {
+  return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+}
+
+function _passportNewId_() {
+  return 'PAS-' + new Date().getTime() + '-' + Math.floor(1000 + Math.random() * 9000);
+}
+
+function _passportMonth_() {
+  return Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM');
+}
+
+function _passportSheet_() {
+  var ss = getOrCreateSheet();
+  var sh = ss.getSheetByName('PasaportesSeguro');
+  var headers = ['id','nombre','telefono','accessToken','estado','passport','descarga','appointmentIds','actualizado','creado'];
+  if (!sh) {
+    sh = ss.insertSheet('PasaportesSeguro');
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sh.setFrozenRows(1);
+  } else {
+    var current = sh.getRange(1, 1, 1, Math.max(1, sh.getLastColumn())).getValues()[0].map(function(h) { return '' + (h || ''); });
+    headers.forEach(function(h) {
+      if (current.indexOf(h) === -1) {
+        sh.getRange(1, sh.getLastColumn() + 1).setValue(h);
+        current.push(h);
+      }
+    });
+  }
+  return sh;
+}
+
+function _passportAuditSheet_() {
+  var ss = getOrCreateSheet();
+  var sh = ss.getSheetByName('PasaporteAuditoria');
+  var headers = ['id','fecha','actor','accion','pasaporteId','antes','despues','motivo'];
+  if (!sh) {
+    sh = ss.insertSheet('PasaporteAuditoria');
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function _passportAudit_(action, passportId, beforeValue, afterValue, reason, actor) {
+  function safe(value) {
+    var text = typeof value === 'string' ? value : JSON.stringify(value || {});
+    return text.length > 40000 ? text.slice(0, 40000) : text;
+  }
+  _passportAuditSheet_().appendRow([
+    'PAUD-' + new Date().getTime() + '-' + Math.floor(Math.random() * 999),
+    new Date(),
+    actor || 'Administración',
+    action || '',
+    passportId || '',
+    safe(beforeValue),
+    safe(afterValue),
+    reason || ''
+  ]);
+}
+
+function _passportRow_(row, rowNumber) {
+  return {
+    row: rowNumber,
+    id: '' + (row[0] || ''),
+    nombre: '' + (row[1] || ''),
+    telefono: _passportDigits_(row[2]),
+    accessToken: '' + (row[3] || ''),
+    estado: ('' + (row[4] || 'ACTIVO')).toUpperCase(),
+    passport: _passportJson_(row[5], {}),
+    descarga: _passportJson_(row[6], {}),
+    appointmentIds: _passportJson_(row[7], []),
+    actualizado: row[8] || '',
+    creado: row[9] || ''
+  };
+}
+
+function _passportFindById_(id) {
+  var sh = _passportSheet_();
+  var rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ('' + rows[i][0] === '' + id) return _passportRow_(rows[i], i + 1);
+  }
+  return null;
+}
+
+function _passportFindByIdentity_(nombre, telefono) {
+  var sh = _passportSheet_();
+  var rows = sh.getDataRange().getValues();
+  var phone = _passportDigits_(telefono);
+  var nameKey = _passportNorm_(nombre);
+  if (phone) {
+    for (var i = 1; i < rows.length; i++) {
+      if (_passportDigits_(rows[i][2]) === phone) return _passportRow_(rows[i], i + 1);
+    }
+  }
+  if (nameKey) {
+    for (var j = 1; j < rows.length; j++) {
+      if (_passportNorm_(rows[j][1]) === nameKey) return _passportRow_(rows[j], j + 1);
+    }
+  }
+  return null;
+}
+
+function _passportSaveRecord_(record) {
+  var sh = _passportSheet_();
+  var now = new Date();
+  if (!record.creado) record.creado = now;
+  record.actualizado = now;
+  var values = [[
+    record.id,
+    record.nombre,
+    _passportDigits_(record.telefono),
+    record.accessToken,
+    record.estado || 'ACTIVO',
+    JSON.stringify(record.passport || {}),
+    JSON.stringify(record.descarga || {}),
+    JSON.stringify(record.appointmentIds || []),
+    record.actualizado,
+    record.creado
+  ]];
+  if (record.row) {
+    sh.getRange(record.row, 1, 1, values[0].length).setValues(values);
+  } else {
+    sh.getRange(sh.getLastRow() + 1, 1, 1, values[0].length).setValues(values);
+    record.row = sh.getLastRow();
+  }
+  sh.getRange(record.row, 3).setNumberFormat('@').setValue(_passportDigits_(record.telefono));
+  return record;
+}
+
+function _passportReadStamp_(source, number) {
+  if (!source || typeof source !== 'object') return false;
+  var keys = [String(number), 's' + number, 'stamp' + number];
+  for (var i = 0; i < keys.length; i++) {
+    if (Object.prototype.hasOwnProperty.call(source, keys[i])) return !!source[keys[i]];
+  }
+  if (Array.isArray(source) && source.length >= number) return !!source[number - 1];
+  return false;
+}
+
+function _passportLegacy_(nombre) {
+  try {
+    var legacy = getPassport(nombre);
+    return legacy && legacy.ok ? legacy : {passport:{}, descarga:{}};
+  } catch (e) {
+    return {passport:{}, descarga:{}};
+  }
+}
+
+function _passportApprovedPayments_() {
+  var map = {};
+  try {
+    var sh = getOrCreateSheet().getSheetByName('Pagos');
+    if (!sh) return map;
+    var rows = sh.getDataRange().getValues();
+    if (!rows.length) return map;
+    var headers = rows[0].map(function(h) { return '' + (h || ''); });
+    var citaIdx = headers.indexOf('CitaID');
+    var statusIdx = headers.indexOf('EstadoPago');
+    var receivedIdx = headers.indexOf('ValorRecibido');
+    var expectedIdx = headers.indexOf('ValorEsperado');
+    if (citaIdx < 0 || statusIdx < 0) return map;
+    for (var i = 1; i < rows.length; i++) {
+      var citaId = '' + (rows[i][citaIdx] || '');
+      var status = _passportNorm_(rows[i][statusIdx]);
+      var value = parseMoney_(rows[i][receivedIdx >= 0 ? receivedIdx : expectedIdx]);
+      if (citaId && status === 'aprobado' && value > 0) map[citaId] = true;
+    }
+  } catch (e) {}
+  return map;
+}
+
+function _passportPaymentAccepted_(value) {
+  var raw = '' + (value || '');
+  if (!raw.trim()) return false;
+  var key = _passportNorm_(raw);
+  if (!key || key === '0' || key === 'false') return false;
+  var blocked = ['pendiente','por verificar','rechaz','reembols','no requiere','sin pago','no pago','cortesia'];
+  for (var i = 0; i < blocked.length; i++) {
+    if (key.indexOf(blocked[i]) > -1) return false;
+  }
+  return true;
+}
+
+function _passportEligibleAppointments_(record) {
+  var sh = getOrCreateSheet().getSheetByName('Citas');
+  if (!sh) return [];
+  var rows = sh.getDataRange().getValues();
+  var approvedPayments = _passportApprovedPayments_();
+  var phone = _passportDigits_(record.telefono);
+  var nameKey = _passportNorm_(record.nombre);
+  var seen = {};
+  var eligible = [];
+
+  for (var i = 1; i < rows.length; i++) {
+    var row = rows[i];
+    var appointmentId = '' + (row[0] || '');
+    if (!appointmentId || seen[appointmentId]) continue;
+
+    var rowPhone = _passportDigits_(row[3]);
+    var rowName = _passportNorm_(row[2]);
+    var samePatient = phone ? rowPhone === phone : rowName === nameKey;
+    if (!samePatient) continue;
+
+    var service = '' + (row[5] || '');
+    if ((typeof esRegistro === 'function' && esRegistro(service)) || _passportNorm_(service).indexOf('registro') === 0) continue;
+
+    var state = _passportNorm_(row[10]);
+    if (state !== 'atendida' && state !== 'sesion atendida') continue;
+
+    var amount = parseMoney_(row[9]);
+    if (amount <= 0) continue;
+
+    var paid = _passportPaymentAccepted_(row[14]) || !!approvedPayments[appointmentId];
+    if (!paid) continue;
+
+    seen[appointmentId] = true;
+    eligible.push({
+      id: appointmentId,
+      fecha: row[7] instanceof Date ? fmtDate(row[7]) : ('' + (row[7] || '')).split('T')[0],
+      hora: st(row[8]),
+      servicio: service
+    });
+  }
+
+  eligible.sort(function(a, b) {
+    var ak = (a.fecha || '') + '|' + (a.hora || '') + '|' + a.id;
+    var bk = (b.fecha || '') + '|' + (b.hora || '') + '|' + b.id;
+    return ak < bk ? -1 : (ak > bk ? 1 : 0);
+  });
+  return eligible;
+}
+
+function _passportChallengeView_(record) {
+  var month = _passportMonth_();
+  record.descarga = record.descarga || {};
+  record.descarga.monthly = record.descarga.monthly || {};
+  var current = record.descarga.monthly[month] || {stamps:{}};
+  current.stamps = current.stamps || {};
+  return {
+    period: month,
+    stamps: {
+      '1': _passportReadStamp_(current.stamps, 1),
+      '2': _passportReadStamp_(current.stamps, 2)
+    }
+  };
+}
+
+function _passportRefresh_(record, auditChanges) {
+  record.passport = record.passport || {};
+  record.passport.manualOverrides = record.passport.manualOverrides || {};
+
+  var beforeIds = JSON.stringify(record.appointmentIds || []);
+  var eligible = _passportEligibleAppointments_(record);
+  var ids = eligible.map(function(item) { return item.id; });
+  var autoCount = Math.min(16, ids.length);
+  var stamps = {};
+  var effectiveCount = 0;
+
+  for (var n = 1; n <= 16; n++) {
+    var done = n <= autoCount;
+    if (Object.prototype.hasOwnProperty.call(record.passport.manualOverrides, String(n))) {
+      done = !!record.passport.manualOverrides[String(n)];
+    }
+    stamps[String(n)] = done;
+    if (done) effectiveCount++;
+  }
+
+  record.appointmentIds = ids;
+  record.passport.stamps = stamps;
+  record.passport.autoStampCount = autoCount;
+  record.passport.effectiveStampCount = effectiveCount;
+  record.passport.eligibleAppointmentIds = ids;
+  record.passport.updatedAt = new Date().toISOString();
+  _passportChallengeView_(record);
+
+  var afterIds = JSON.stringify(ids);
+  if (auditChanges && beforeIds !== afterIds) {
+    _passportAudit_(
+      'RECALCULO_AUTOMATICO',
+      record.id,
+      {appointmentIds:_passportJson_(beforeIds, [])},
+      {appointmentIds:ids, autoStampCount:autoCount},
+      'Cambio en citas atendidas, pagadas y válidas.',
+      'Sistema'
+    );
+  }
+  return record;
+}
+
+function _passportAdminPayload_(record) {
+  var challenge = _passportChallengeView_(record);
+  return {
+    id: record.id,
+    nombre: record.nombre,
+    telefono: record.telefono,
+    estado: record.estado,
+    passport: record.passport || {},
+    descarga: challenge,
+    link: PASSPORT_PUBLIC_BASE_ + '?id=' + encodeURIComponent(record.id) + '&token=' + encodeURIComponent(record.accessToken)
+  };
+}
+
+function passportEnsure_(nombre, telefono) {
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(15000); } catch (e) { return {ok:false,error:'Sistema ocupado. Intenta nuevamente.'}; }
+  try {
+    nombre = decodeURIComponent(nombre || '').trim();
+    telefono = _passportDigits_(decodeURIComponent(telefono || ''));
+    if (!nombre) return {ok:false,error:'Selecciona un paciente válido.'};
+
+    var record = _passportFindByIdentity_(nombre, telefono);
+    if (!record) {
+      record = {
+        id: _passportNewId_(),
+        nombre: nombre,
+        telefono: telefono,
+        accessToken: _passportToken_(),
+        estado: 'ACTIVO',
+        passport: {manualOverrides:{}},
+        descarga: {monthly:{}},
+        appointmentIds: [],
+        creado: new Date()
+      };
+
+      var eligible = _passportEligibleAppointments_(record);
+      var autoCount = Math.min(16, eligible.length);
+      var legacy = _passportLegacy_(nombre);
+      var legacySource = (legacy.passport && (legacy.passport.stamps || legacy.passport.sellos)) || legacy.passport || {};
+      for (var n = 1; n <= 16; n++) {
+        if (_passportReadStamp_(legacySource, n) && n > autoCount) record.passport.manualOverrides[String(n)] = true;
+      }
+      var legacyChallenge = (legacy.descarga && (legacy.descarga.stamps || legacy.descarga.sellos)) || legacy.descarga || {};
+      record.descarga.monthly[_passportMonth_()] = {stamps:{
+        '1': _passportReadStamp_(legacyChallenge, 1),
+        '2': _passportReadStamp_(legacyChallenge, 2)
+      }};
+      record.passport.legacyImported = true;
+      _passportRefresh_(record, false);
+      _passportSaveRecord_(record);
+      _passportAudit_('CREACION', record.id, {}, {nombre:nombre, telefono:telefono}, 'Creación de enlace privado.', 'Administración');
+    } else {
+      if (nombre && record.nombre !== nombre) record.nombre = nombre;
+      if (telefono && record.telefono !== telefono) record.telefono = telefono;
+      if (!record.accessToken) record.accessToken = _passportToken_();
+      _passportRefresh_(record, true);
+      _passportSaveRecord_(record);
+    }
+
+    return {ok:true,passport:_passportAdminPayload_(record)};
+  } catch (e) {
+    return {ok:false,error:e.message};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function getPassportSecure_(id, accessToken) {
+  try {
+    id = '' + (id || '');
+    accessToken = '' + (accessToken || '');
+    if (!id || !accessToken) return {ok:false,error:'Enlace incompleto o no válido.'};
+
+    var record = _passportFindById_(id);
+    if (!record || record.accessToken !== accessToken) {
+      return {ok:false,error:'Este enlace no es válido o fue reemplazado. Solicita uno nuevo por WhatsApp.'};
+    }
+    if (record.estado !== 'ACTIVO') {
+      return {ok:false,error:'Este pasaporte está inactivo. Escríbenos por WhatsApp para solicitar ayuda.'};
+    }
+
+    _passportRefresh_(record, true);
+    _passportSaveRecord_(record);
+    return {
+      ok: true,
+      id: record.id,
+      nombre: record.nombre,
+      estado: record.estado,
+      passport: record.passport || {},
+      descarga: _passportChallengeView_(record)
+    };
+  } catch (e) {
+    return {ok:false,error:'No pudimos cargar el pasaporte en este momento.'};
+  }
+}
+
+function passportSaveProgress_(id, passportJson, descargaJson) {
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(15000); } catch (e) { return {ok:false,error:'Sistema ocupado. Intenta nuevamente.'}; }
+  try {
+    var record = _passportFindById_(id);
+    if (!record) return {ok:false,error:'Pasaporte no encontrado.'};
+
+    _passportRefresh_(record, true);
+    var before = {
+      manualOverrides: JSON.parse(JSON.stringify(record.passport.manualOverrides || {})),
+      descarga: _passportChallengeView_(record)
+    };
+
+    var requestedPassport = _passportJson_(decodeURIComponent(passportJson || '{}'), {});
+    var requestedSource = requestedPassport.stamps || requestedPassport.sellos || requestedPassport;
+    var overrides = {};
+    var autoCount = Number(record.passport.autoStampCount || 0);
+
+    for (var n = 1; n <= 16; n++) {
+      var automaticValue = n <= autoCount;
+      var requestedValue = _passportReadStamp_(requestedSource, n);
+      if (requestedValue !== automaticValue) overrides[String(n)] = requestedValue;
+    }
+    record.passport.manualOverrides = overrides;
+
+    var requestedChallenge = _passportJson_(decodeURIComponent(descargaJson || '{}'), {});
+    var challengeSource = requestedChallenge.stamps || requestedChallenge.sellos || requestedChallenge;
+    var month = _passportMonth_();
+    record.descarga = record.descarga || {};
+    record.descarga.monthly = record.descarga.monthly || {};
+    record.descarga.monthly[month] = {
+      stamps: {
+        '1': _passportReadStamp_(challengeSource, 1),
+        '2': _passportReadStamp_(challengeSource, 2)
+      },
+      updatedAt: new Date().toISOString()
+    };
+
+    _passportRefresh_(record, false);
+    _passportSaveRecord_(record);
+
+    var after = {
+      manualOverrides: record.passport.manualOverrides,
+      descarga: _passportChallengeView_(record)
+    };
+    _passportAudit_('CORRECCION_MANUAL', record.id, before, after, 'Ajuste excepcional realizado desde el administrador.', 'Administración');
+    return {ok:true,passport:_passportAdminPayload_(record)};
+  } catch (e) {
+    return {ok:false,error:e.message};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function passportRegenerateToken_(id) {
+  try {
+    var record = _passportFindById_(id);
+    if (!record) return {ok:false,error:'Pasaporte no encontrado.'};
+    record.accessToken = _passportToken_();
+    _passportRefresh_(record, true);
+    _passportSaveRecord_(record);
+    _passportAudit_('REGENERAR_TOKEN', record.id, {token:'anterior invalidado'}, {token:'nuevo enlace activo'}, 'El enlace anterior dejó de funcionar.', 'Administración');
+    return {ok:true,passport:_passportAdminPayload_(record)};
+  } catch (e) {
+    return {ok:false,error:e.message};
+  }
+}
+
+function passportDeactivate_(id) {
+  try {
+    var record = _passportFindById_(id);
+    if (!record) return {ok:false,error:'Pasaporte no encontrado.'};
+    var previous = record.estado;
+    record.estado = 'INACTIVO';
+    _passportSaveRecord_(record);
+    _passportAudit_('DESACTIVAR', record.id, {estado:previous}, {estado:record.estado}, 'Acción desde el administrador.', 'Administración');
+    return {ok:true,passport:_passportAdminPayload_(record)};
+  } catch (e) {
+    return {ok:false,error:e.message};
+  }
+}
+
+function passportReactivate_(id) {
+  try {
+    var record = _passportFindById_(id);
+    if (!record) return {ok:false,error:'Pasaporte no encontrado.'};
+    var previous = record.estado;
+    record.estado = 'ACTIVO';
+    _passportRefresh_(record, true);
+    _passportSaveRecord_(record);
+    _passportAudit_('REACTIVAR', record.id, {estado:previous}, {estado:record.estado}, 'Acción desde el administrador.', 'Administración');
+    return {ok:true,passport:_passportAdminPayload_(record)};
+  } catch (e) {
+    return {ok:false,error:e.message};
+  }
+}

@@ -140,7 +140,7 @@
 
       <div id="errorPanel" class="message hidden">
         <h2>No pudimos abrir tu pasaporte</h2>
-        <p id="errorText">No pudimos cargar tu pasaporte en este momento. Intenta nuevamente o escrÃ­benos por WhatsApp.</p>
+        <p id="errorText">No pudimos cargar tu pasaporte en este momento. Intenta nuevamente o escríbenos por WhatsApp.</p>
         <a id="waHelp" class="cta" href="#" target="_blank" rel="noopener">Escribir por WhatsApp</a>
       </div>
 
@@ -181,7 +181,7 @@
   <script>
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw/exec';
     const WHATSAPP_HELP = 'https://wa.me/573136467945?text=' + encodeURIComponent('Hola, necesito ayuda con mi Pasaporte Cuidándote Fisioterapia.');
-    const GENERIC_ERROR = 'No pudimos cargar tu pasaporte en este momento. Intenta nuevamente o escrÃ­benos por WhatsApp.';
+    const GENERIC_ERROR = 'No pudimos cargar tu pasaporte en este momento. Intenta nuevamente o escríbenos por WhatsApp.';
 
     const params = new URLSearchParams(window.location.search);
     const id = (params.get('id') || '').trim();
@@ -227,10 +227,10 @@
       }).join('');
 
       const tiers = [
-        ['4 sellos', 'Descarga localizada de 10 min (zona de tu elecciÃ³n)'],
-        ['8 sellos', 'ValoraciÃ³n Funcional Express de 10 min + PDF con resultados'],
-        ['12 sellos', 'Movilidad asistida de 10 min + Botas de CompresiÃ³n'],
-        ['16 sellos', 'Kinesiotape + TENS de 15 min (readaptaciÃ³n completa)']
+        ['4 sellos', 'Descarga localizada, 10 min'],
+        ['8 sellos', 'Valoración Funcional Express, 10 min + PDF'],
+        ['12 sellos', 'Movilidad asistida, 10 min + Botas de Compresión'],
+        ['16 sellos', 'Kinesiotape + TENS, 15 min']
       ];
       document.getElementById('benefits').innerHTML = tiers.map((tier, i) => {
         const needed = (i + 1) * 4;
