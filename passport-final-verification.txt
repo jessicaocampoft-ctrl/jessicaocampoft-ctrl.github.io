@@ -1,6 +1,6 @@
 VERIFICACIÓN FINAL — PASAPORTE DE MOVIMIENTO
-Fecha UTC: 2026-08-03T13:30:03Z
-Commit verificado: 44ed6ce3beaf5114eb0349527651c077dfa479c6
+Fecha UTC: 2026-08-03T13:34:21Z
+Commit verificado: 4195aae3d57349e9e98043e7bb350cc16ecaf3df
 
 PASS | Administrador público responde correctamente
 PASS | Administrador genera/solicita credenciales privadas
@@ -17,7 +17,8 @@ PASS | Beneficio de 4 sellos correcto
 PASS | Beneficio de 8 sellos correcto
 PASS | Beneficio de 12 sellos correcto
 PASS | Beneficio de 16 sellos correcto
-FAIL | Backend público responde a la validación de seguridad
+INFO | Backend HTTP: 200
+PASS | Backend público responde y rechaza credenciales inválidas
 PASS | Backend contiene reconciliación automática de citas
 PASS | Solo cuenta citas atendidas
 PASS | Solo cuenta sesiones con valor mayor a cero
@@ -28,7 +29,7 @@ PASS | Permite regenerar el token
 PASS | Permite desactivar el pasaporte
 PASS | Permite reactivar el pasaporte
 PASS | Registra auditoría del pasaporte
-FAIL | Audita regeneración del token
-FAIL | Audita desactivación
+PASS | Audita regeneración del token
+PASS | Audita desactivación
 
-RESULTADO FINAL: REQUIERE CORRECCIÓN
+RESULTADO FINAL: APROBADO
