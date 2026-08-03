@@ -30,6 +30,52 @@ function validateSession(token) {
   return CacheService.getScriptCache().get('sess_' + token) === '1';
 }
 
+// El administrador estable y el pasaporte viven en proyectos Apps Script distintos.
+// Las acciones administrativas del pasaporte validan la sesión contra el backend
+// estable que la creó. La contraseña nunca se comparte ni se almacena aquí.
+var LEGACY_ADMIN_BACKEND_URL_ = 'https://script.google.com/macros/s/AKfycbzFlqrTerVorQDn0_u_D29rh3cTRstc1XBxYDAn5-2YyexMSpip0m2RPcjzJMK7VDjd/exec';
+
+function isPassportAdminAction_(action) {
+  return [
+    'passportEnsure',
+    'passportSaveProgress',
+    'passportRegenerateToken',
+    'passportDeactivate',
+    'passportReactivate',
+    'savePassport'
+  ].indexOf(action || '') !== -1;
+}
+
+function validatePassportAdminSession_(token) {
+  if (validateSession(token)) return true;
+  if (!token || token.length < 20) return false;
+
+  var cache = CacheService.getScriptCache();
+  var cacheKey = 'legacy_admin_ok_' + token;
+  if (cache.get(cacheKey) === '1') return true;
+
+  try {
+    var url = LEGACY_ADMIN_BACKEND_URL_
+      + '?action=ping&token=' + encodeURIComponent(token)
+      + '&_bridge=' + new Date().getTime();
+    var response = UrlFetchApp.fetch(url, {
+      method: 'get',
+      muteHttpExceptions: true,
+      followRedirects: true,
+      validateHttpsCertificates: true
+    });
+    if (response.getResponseCode() !== 200) return false;
+    var data = JSON.parse(response.getContentText() || '{}');
+    if (data && data.ok === true) {
+      cache.put(cacheKey, '1', 60);
+      return true;
+    }
+  } catch (err) {
+    console.error('No se pudo validar la sesión del administrador para Pasaporte: ' + err.message);
+  }
+  return false;
+}
+
 function createProfessionalSession_(pro) {
   var token = generateSessionToken();
   var payload = {
@@ -119,11 +165,17 @@ function doGet(e) {
     return js(getProfessionalAgenda_(p.token));
   }
 
-  if (!validateSession(p.token)) {
-    return js({ok: false, error: 'Sin permiso'});
-  }
-  // Ventana deslizante: renovar TTL en cada acción válida
+
+var localSessionValid = validateSession(p.token);
+var passportSessionValid = isPassportAdminAction_(p.action)
+  && validatePassportAdminSession_(p.token);
+if (!localSessionValid && !passportSessionValid) {
+  return js({ok: false, error: 'Sin permiso'});
+}
+// Solo renueva sesiones creadas en este mismo proyecto.
+if (localSessionValid) {
   CacheService.getScriptCache().put('sess_' + p.token, '1', 14400);
+}
 
   if (p.action === 'ping')          return js({ok: true});
   if (p.action === 'adminData')     return js(getAdminData());
