@@ -1,0 +1,123 @@
+name: Verificación final Pasaporte
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pasaporte-final-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Verificar administrador, pasaporte y backend
+        shell: bash
+        run: |
+          set -u
+          REPORT="passport-final-verification.txt"
+          ADMIN_URL="https://admin.cuidandotefisioterapia.com/"
+          PASSPORT_URL="https://cuidandotefisioterapia.com/pasaporte.html"
+          PUBLIC_API="https://script.google.com/macros/s/AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw/exec"
+          failed=0
+
+          : > "$REPORT"
+          echo "VERIFICACIÓN FINAL — PASAPORTE DE MOVIMIENTO" >> "$REPORT"
+          echo "Fecha UTC: $(date -u '+%Y-%m-%dT%H:%M:%SZ')" >> "$REPORT"
+          echo "Commit verificado: $GITHUB_SHA" >> "$REPORT"
+          echo >> "$REPORT"
+
+          pass() { echo "PASS | $1" >> "$REPORT"; }
+          fail() { echo "FAIL | $1" >> "$REPORT"; failed=1; }
+          contains() {
+            local label="$1" needle="$2" file="$3"
+            if grep -Fq -- "$needle" "$file"; then pass "$label"; else fail "$label"; fi
+          }
+          absent() {
+            local label="$1" needle="$2" file="$3"
+            if grep -Fq -- "$needle" "$file"; then fail "$label"; else pass "$label"; fi
+          }
+
+          cache_buster="$(date +%s)"
+          if curl -fsSL --retry 4 --retry-delay 2 "${ADMIN_URL}?v=${cache_buster}" -o /tmp/admin.html; then
+            pass "Administrador público responde correctamente"
+            contains "Administrador genera/solicita credenciales privadas" "action=passportEnsure" /tmp/admin.html
+            contains "Administrador usa el enlace privado devuelto por backend" "data.passport.link" /tmp/admin.html
+            absent "Administrador no genera enlaces antiguos por nombre" "pasaporte.html?nombre=" /tmp/admin.html
+          else
+            fail "Administrador público responde correctamente"
+          fi
+
+          if curl -fsSL --retry 4 --retry-delay 2 "${PASSPORT_URL}?v=${cache_buster}" -o /tmp/passport.html; then
+            pass "Página pública del pasaporte responde correctamente"
+            contains "Pasaporte exige identificador privado" "params.get('id')" /tmp/passport.html
+            contains "Pasaporte exige token privado" "params.get('token')" /tmp/passport.html
+            contains "Pasaporte consulta getPassportSecure" "action=getPassportSecure" /tmp/passport.html
+            contains "Pasaporte detecta y rechaza enlace heredado por nombre" "params.get('nombre')" /tmp/passport.html
+            contains "Pasaporte muestra 16 sellos automáticos" "Array.from({length:16}" /tmp/passport.html
+            contains "Pasaporte muestra 2 sellos del reto mensual" "[1,2].map" /tmp/passport.html
+            contains "Beneficio de 4 sellos correcto" "Descarga localizada, 10 min" /tmp/passport.html
+            contains "Beneficio de 8 sellos correcto" "Valoración Funcional Express, 10 min + PDF" /tmp/passport.html
+            contains "Beneficio de 12 sellos correcto" "Movilidad asistida, 10 min + Botas de Compresión" /tmp/passport.html
+            contains "Beneficio de 16 sellos correcto" "Kinesiotape + TENS, 15 min" /tmp/passport.html
+          else
+            fail "Página pública del pasaporte responde correctamente"
+          fi
+
+          if curl -fsSLG --retry 4 --retry-delay 2 "$PUBLIC_API" \
+              --data-urlencode "action=getPassportSecure" \
+              --data-urlencode "id=PAS-INVALID-VERIFICATION" \
+              --data-urlencode "token=INVALID-VERIFICATION" \
+              -o /tmp/api.json; then
+            if python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('/tmp/api.json').read_text(encoding='utf-8'))
+          assert data.get('ok') is not True, data
+          PY
+            then
+              pass "Backend rechaza credenciales privadas inválidas"
+            else
+              fail "Backend rechaza credenciales privadas inválidas"
+            fi
+          else
+            fail "Backend público responde a la validación de seguridad"
+          fi
+
+          SOURCE="google-apps-script.js"
+          contains "Backend contiene reconciliación automática de citas" "function _passportEligibleAppointments_" "$SOURCE"
+          contains "Solo cuenta citas atendidas" "state !== 'atendida'" "$SOURCE"
+          contains "Solo cuenta sesiones con valor mayor a cero" "amount <= 0" "$SOURCE"
+          contains "Exige pago aceptado o aprobado" "_passportPaymentAccepted_" "$SOURCE"
+          contains "Deduplica por identificador de cita" "seen[appointmentId]" "$SOURCE"
+          contains "Excluye registros administrativos" "esRegistro(service)" "$SOURCE"
+          contains "Permite regenerar el token" "function passportRegenerateToken_" "$SOURCE"
+          contains "Permite desactivar el pasaporte" "function passportDeactivate_" "$SOURCE"
+          contains "Permite reactivar el pasaporte" "function passportReactivate_" "$SOURCE"
+          contains "Registra auditoría del pasaporte" "function _passportAudit_" "$SOURCE"
+          contains "Audita regeneración del token" "TOKEN_REGENERATED" "$SOURCE"
+          contains "Audita desactivación" "DEACTIVATED" "$SOURCE"
+
+          echo >> "$REPORT"
+          if [ "$failed" -eq 0 ]; then
+            echo "RESULTADO FINAL: APROBADO" >> "$REPORT"
+          else
+            echo "RESULTADO FINAL: REQUIERE CORRECCIÓN" >> "$REPORT"
+          fi
+
+          cat "$REPORT"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$REPORT"
+          git commit -m "chore(pasaporte): registrar verificación final [skip ci]" || true
+          git push
+
+          exit "$failed"
