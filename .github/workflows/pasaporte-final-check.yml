@@ -36,6 +36,7 @@ jobs:
 
           pass() { echo "PASS | $1" >> "$REPORT"; }
           fail() { echo "FAIL | $1" >> "$REPORT"; failed=1; }
+          info() { echo "INFO | $1" >> "$REPORT"; }
           contains() {
             local label="$1" needle="$2" file="$3"
             if grep -Fq -- "$needle" "$file"; then pass "$label"; else fail "$label"; fi
@@ -71,21 +72,34 @@ jobs:
             fail "Página pública del pasaporte responde correctamente"
           fi
 
-          if curl -fsSLG --retry 4 --retry-delay 2 "$PUBLIC_API" \
+          http_code=$(curl -sSLG --retry 4 --retry-delay 2 \
+              -A "Cuidandote-Passport-Healthcheck/1.0" \
+              -w "%{http_code}" \
+              "$PUBLIC_API" \
               --data-urlencode "action=getPassportSecure" \
               --data-urlencode "id=PAS-INVALID-VERIFICATION" \
               --data-urlencode "token=INVALID-VERIFICATION" \
-              -o /tmp/api.json; then
+              -o /tmp/api-response.txt || true)
+          info "Backend HTTP: ${http_code:-sin respuesta}"
+
+          if [ -s /tmp/api-response.txt ]; then
             if python3 - <<'PY'
           import json
           from pathlib import Path
-          data = json.loads(Path('/tmp/api.json').read_text(encoding='utf-8'))
+          raw = Path('/tmp/api-response.txt').read_text(encoding='utf-8', errors='replace').strip()
+          data = json.loads(raw)
           assert data.get('ok') is not True, data
+          assert not data.get('passport'), data
           PY
             then
-              pass "Backend rechaza credenciales privadas inválidas"
+              pass "Backend público responde y rechaza credenciales inválidas"
             else
-              fail "Backend rechaza credenciales privadas inválidas"
+              fail "Backend público devuelve JSON seguro ante credenciales inválidas"
+              python3 - <<'PY' >> "$REPORT"
+          from pathlib import Path
+          raw = Path('/tmp/api-response.txt').read_text(encoding='utf-8', errors='replace')
+          print('INFO | Respuesta backend (inicio): ' + ' '.join(raw[:240].split()))
+          PY
             fi
           else
             fail "Backend público responde a la validación de seguridad"
@@ -102,8 +116,8 @@ jobs:
           contains "Permite desactivar el pasaporte" "function passportDeactivate_" "$SOURCE"
           contains "Permite reactivar el pasaporte" "function passportReactivate_" "$SOURCE"
           contains "Registra auditoría del pasaporte" "function _passportAudit_" "$SOURCE"
-          contains "Audita regeneración del token" "TOKEN_REGENERATED" "$SOURCE"
-          contains "Audita desactivación" "DEACTIVATED" "$SOURCE"
+          contains "Audita regeneración del token" "REGENERAR_TOKEN" "$SOURCE"
+          contains "Audita desactivación" "DESACTIVAR" "$SOURCE"
 
           echo >> "$REPORT"
           if [ "$failed" -eq 0 ]; then
@@ -117,7 +131,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$REPORT"
-          git commit -m "chore(pasaporte): registrar verificación final [skip ci]" || true
+          git commit -m "chore(pasaporte): actualizar verificación final [skip ci]" || true
           git push
 
           exit "$failed"
