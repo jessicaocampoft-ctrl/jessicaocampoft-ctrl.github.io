@@ -1,0 +1,34 @@
+VERIFICACIÓN FINAL — PASAPORTE DE MOVIMIENTO
+Fecha UTC: 2026-08-03T13:30:03Z
+Commit verificado: 44ed6ce3beaf5114eb0349527651c077dfa479c6
+
+PASS | Administrador público responde correctamente
+PASS | Administrador genera/solicita credenciales privadas
+PASS | Administrador usa el enlace privado devuelto por backend
+PASS | Administrador no genera enlaces antiguos por nombre
+PASS | Página pública del pasaporte responde correctamente
+PASS | Pasaporte exige identificador privado
+PASS | Pasaporte exige token privado
+PASS | Pasaporte consulta getPassportSecure
+PASS | Pasaporte detecta y rechaza enlace heredado por nombre
+PASS | Pasaporte muestra 16 sellos automáticos
+PASS | Pasaporte muestra 2 sellos del reto mensual
+PASS | Beneficio de 4 sellos correcto
+PASS | Beneficio de 8 sellos correcto
+PASS | Beneficio de 12 sellos correcto
+PASS | Beneficio de 16 sellos correcto
+FAIL | Backend público responde a la validación de seguridad
+PASS | Backend contiene reconciliación automática de citas
+PASS | Solo cuenta citas atendidas
+PASS | Solo cuenta sesiones con valor mayor a cero
+PASS | Exige pago aceptado o aprobado
+PASS | Deduplica por identificador de cita
+PASS | Excluye registros administrativos
+PASS | Permite regenerar el token
+PASS | Permite desactivar el pasaporte
+PASS | Permite reactivar el pasaporte
+PASS | Registra auditoría del pasaporte
+FAIL | Audita regeneración del token
+FAIL | Audita desactivación
+
+RESULTADO FINAL: REQUIERE CORRECCIÓN
