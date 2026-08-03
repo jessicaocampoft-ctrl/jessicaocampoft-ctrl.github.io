@@ -21,24 +21,16 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
+          import re
+          import textwrap
 
           path = Path('google-apps-script.js')
           text = path.read_text(encoding='utf-8-sig')
 
-          validate_block = """function validateSession(token) {
-            if (!token || token.length < 20) return false;
-            return CacheService.getScriptCache().get('sess_' + token) === '1';
-          }
-          """
-
-          bridge_block = """function validateSession(token) {
-            if (!token || token.length < 20) return false;
-            return CacheService.getScriptCache().get('sess_' + token) === '1';
-          }
-
+          bridge = textwrap.dedent(r'''
           // El administrador estable y el pasaporte viven en proyectos Apps Script distintos.
-          // Para las acciones administrativas del pasaporte, valida la sesión activa contra
-          // el backend estable que la creó. Nunca expone ni almacena la contraseña.
+          // Las acciones administrativas del pasaporte validan la sesión contra el backend
+          // estable que la creó. La contraseña nunca se comparte ni se almacena aquí.
           var LEGACY_ADMIN_BACKEND_URL_ = 'https://script.google.com/macros/s/AKfycbzFlqrTerVorQDn0_u_D29rh3cTRstc1XBxYDAn5-2YyexMSpip0m2RPcjzJMK7VDjd/exec';
 
           function isPassportAdminAction_(action) {
@@ -81,42 +73,49 @@ jobs:
             }
             return false;
           }
-          """
+          ''').strip('\n')
 
           if 'function validatePassportAdminSession_(token)' not in text:
-            if validate_block not in text:
+            pattern = re.compile(
+              r"(function\s+validateSession\s*\(token\)\s*\{.*?\n\})",
+              re.S
+            )
+            text, count = pattern.subn(lambda m: m.group(1) + '\n\n' + bridge, text, count=1)
+            if count != 1:
               raise SystemExit('No se encontró validateSession para insertar el puente')
-            text = text.replace(validate_block, bridge_block, 1)
 
-          old_guard = """  if (!validateSession(p.token)) {
-            return js({ok: false, error: 'Sin permiso'});
-          }
-          // Ventana deslizante: renovar TTL en cada acción válida
-          CacheService.getScriptCache().put('sess_' + p.token, '1', 14400);
-          """
+          guard_pattern = re.compile(
+            r"\s{2}if\s*\(!validateSession\(p\.token\)\)\s*\{\s*"
+            r"return\s+js\(\{ok:\s*false,\s*error:\s*'Sin permiso'\}\);\s*"
+            r"\}\s*"
+            r"// Ventana deslizante: renovar TTL en cada acción válida\s*"
+            r"CacheService\.getScriptCache\(\)\.put\('sess_'\s*\+\s*p\.token,\s*'1',\s*14400\);",
+            re.S
+          )
 
-          new_guard = """  var localSessionValid = validateSession(p.token);
-          var passportSessionValid = isPassportAdminAction_(p.action)
-            && validatePassportAdminSession_(p.token);
-          if (!localSessionValid && !passportSessionValid) {
-            return js({ok: false, error: 'Sin permiso'});
-          }
-          // Solo renueva sesiones creadas en este mismo proyecto.
-          if (localSessionValid) {
-            CacheService.getScriptCache().put('sess_' + p.token, '1', 14400);
-          }
-          """
+          new_guard = textwrap.dedent(r'''
+            var localSessionValid = validateSession(p.token);
+            var passportSessionValid = isPassportAdminAction_(p.action)
+              && validatePassportAdminSession_(p.token);
+            if (!localSessionValid && !passportSessionValid) {
+              return js({ok: false, error: 'Sin permiso'});
+            }
+            // Solo renueva sesiones creadas en este mismo proyecto.
+            if (localSessionValid) {
+              CacheService.getScriptCache().put('sess_' + p.token, '1', 14400);
+            }
+          ''').rstrip()
 
-          if old_guard in text:
-            text = text.replace(old_guard, new_guard, 1)
-          elif new_guard not in text:
-            raise SystemExit('No se encontró el guard de sesión de doGet')
+          if 'var passportSessionValid = isPassportAdminAction_(p.action)' not in text:
+            text, count = guard_pattern.subn(new_guard, text, count=1)
+            if count != 1:
+              raise SystemExit('No se encontró el guard de sesión de doGet')
 
           required = [
             'function validatePassportAdminSession_(token)',
-            "var passportSessionValid = isPassportAdminAction_(p.action)",
-            "LEGACY_ADMIN_BACKEND_URL_",
-            "p.action === 'passportEnsure'"
+            'var passportSessionValid = isPassportAdminAction_(p.action)',
+            'LEGACY_ADMIN_BACKEND_URL_',
+            "if (p.action === 'passportEnsure')"
           ]
           missing = [item for item in required if item not in text]
           if missing:
@@ -125,8 +124,7 @@ jobs:
           path.write_text(text, encoding='utf-8')
           print('Puente de sesión instalado correctamente')
 
-      - name: Prepare clasp
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
@@ -149,7 +147,7 @@ jobs:
           clasp deploy --deploymentId AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw --description "Passport session bridge $GITHUB_SHA"
           clasp deploy --deploymentId AKfycbwYxtpVLIb5DH31Bvh8UemIGZ08l1UEMuIJPbFPXOW_X0yX5J756IZKzmYx5PYOdPDC --description "Passport session bridge $GITHUB_SHA"
 
-      - name: Verify deployed public route and authorization guard
+      - name: Verify deployed guards
         shell: bash
         run: |
           set -euo pipefail
@@ -158,13 +156,11 @@ jobs:
           public_body="$(curl -L -sS --max-time 45 "$public?action=getPassportSecure&id=INVALIDO&token=INVALIDO")"
           printf '%s' "$public_body" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*false'
           guard_body="$(curl -L -sS --max-time 45 "$admin?action=passportEnsure&token=INVALIDO&nombre=Prueba")"
-          printf '%s' "$guard_body" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*false'
           printf '%s' "$guard_body" | grep -Fq 'Sin permiso'
 
       - name: Commit source and remove one-time workflow
         run: |
-          rm -f .github/workflows/fix-passport-session-bridge.yml
-          rm -f .claspignore
+          rm -f .github/workflows/fix-passport-session-bridge.yml .claspignore
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
