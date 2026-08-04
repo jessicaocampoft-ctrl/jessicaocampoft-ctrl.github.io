@@ -4,6 +4,7 @@ compatibility_date = "2026-08-03"
 
 [assets]
 directory = "../admin"
+binding = "ASSETS"
 
 [[routes]]
 pattern = "login-pruebas.cuidandotefisioterapia.com"
