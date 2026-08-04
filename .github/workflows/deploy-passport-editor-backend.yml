@@ -1,0 +1,63 @@
+name: Desplegar backend editor Pasaporte
+
+on:
+  push:
+    branches:
+      - audit/pasaporte-final-2026-08-03
+    paths:
+      - zz-passport-editor-session.js
+      - .github/workflows/deploy-passport-editor-backend.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-passport-editor-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar clasp
+        run: npm install --global @google/clasp@3.3.0
+
+      - name: Restaurar credencial de despliegue
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          test -n "$CLASPRC_JSON"
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Confirmar proyecto y despliegue aislado
+        run: |
+          grep -Fq '1KVmo_TpTAkwLXQjMVvSO51YDtojr64XsnWg8I7bz0UkGht9S1W7WD0zI' .clasp.json
+          deployments="$(clasp deployments)"
+          printf '%s' "$deployments" | grep -Fq 'AKfycbx5FgNCd5uLkAl2PCAgOL3tLjnbLdt-_iX8Rp70LTVYaGkSYrrWRmvnbPRFEwT7I22D'
+
+      - name: Subir código al Apps Script de auditoría
+        run: clasp push --force
+
+      - name: Actualizar solo el despliegue del editor
+        run: >-
+          clasp deploy
+          --deploymentId AKfycbx5FgNCd5uLkAl2PCAgOL3tLjnbLdt-_iX8Rp70LTVYaGkSYrrWRmvnbPRFEwT7I22D
+          --description "Editor Pasaporte aislado - ${{ github.sha }}"
+
+      - name: Verificar acción pública aislada
+        run: |
+          sleep 5
+          url='https://script.google.com/macros/s/AKfycbx5FgNCd5uLkAl2PCAgOL3tLjnbLdt-_iX8Rp70LTVYaGkSYrrWRmvnbPRFEwT7I22D/exec?action=passportEditorSession'
+          response="$(curl --fail --silent --show-error --location "$url")"
+          printf '%s' "$response" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*false'
+          printf '%s' "$response" | grep -Fq 'Solicitud de identidad no válida'
