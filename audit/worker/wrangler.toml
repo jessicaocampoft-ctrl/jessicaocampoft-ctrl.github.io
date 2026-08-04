@@ -1,0 +1,7 @@
+name = "cuidandote-admin-login-proxy"
+main = "src/index.js"
+compatibility_date = "2026-08-03"
+
+[[routes]]
+pattern = "login-pruebas.cuidandotefisioterapia.com"
+custom_domain = true
