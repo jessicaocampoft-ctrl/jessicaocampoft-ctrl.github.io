@@ -1,0 +1,8 @@
+name = "curly-boat-8644"
+main = "src/index.js"
+compatibility_date = "2026-08-04"
+workers_dev = true
+
+[assets]
+directory = "public"
+
