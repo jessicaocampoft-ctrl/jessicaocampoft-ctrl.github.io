@@ -179,7 +179,8 @@
   </main>
 
   <script>
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw/exec';
+    // Debe apuntar a la misma implementación que crea y actualiza los pasaportes.
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7biQkVS9l1nU4AYQeOmQzbPcKebOUJ5UmX97vCJDaXg5s-9y0-mgSrE0ANZXZJ8Hd/exec';
     const WHATSAPP_HELP = 'https://wa.me/573136467945?text=' + encodeURIComponent('Hola, necesito ayuda con mi Pasaporte Cuidándote Fisioterapia.');
     const GENERIC_ERROR = 'No pudimos cargar tu pasaporte en este momento. Intenta nuevamente o escríbenos por WhatsApp.';
 
@@ -264,13 +265,24 @@
       try {
         const url = APPS_SCRIPT_URL + '?action=getPassportSecure&id=' + encodeURIComponent(id) + '&token=' + encodeURIComponent(token);
         const response = await fetch(url, {cache:'no-store'});
-        const data = await response.json();
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          console.error('[Pasaporte] Respuesta no JSON', {status: response.status, error: jsonError.message});
+          throw jsonError;
+        }
+        if (!response.ok) {
+          console.error('[Pasaporte] Error HTTP', {status: response.status, backend: data && (data.error || data.ok)});
+        }
         if (!data || !data.ok) {
+          console.error('[Pasaporte] Solicitud rechazada', {status: response.status, backend: data && (data.error || data.ok)});
           showError((data && data.error) || GENERIC_ERROR, data && data.whatsapp);
           return;
         }
         render(data);
       } catch (error) {
+        console.error('[Pasaporte] No se pudo cargar', {error: error && error.message});
         showError(GENERIC_ERROR);
       }
     }
