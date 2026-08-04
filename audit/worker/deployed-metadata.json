@@ -1,0 +1,20 @@
+{
+  "name": "cuidandote-admin-login-proxy",
+  "deploymentId": "39091e24-cf39-44d1-aeeb-7a217a4f2f83",
+  "versionId": "cc78c205-4de4-41f8-a6ab-8369a8baf1ba",
+  "createdAt": "2026-08-04T02:48:54.402888Z",
+  "compatibilityDate": "2026-08-03",
+  "routes": ["login-pruebas.cuidandotefisioterapia.com"],
+  "entrypoint": "src/index.js",
+  "bindings": [
+    "ACCESS_AUD",
+    "ACCESS_TEAM_DOMAIN",
+    "ADMIN_EMAIL",
+    "APPS_SCRIPT_URL",
+    "AUXILIAR_EMAIL",
+    "BRIDGE_SECRET",
+    "FISIOTERAPEUTA_EMAIL",
+    "POLICY_AUD",
+    "TEAM_DOMAIN"
+  ]
+}
