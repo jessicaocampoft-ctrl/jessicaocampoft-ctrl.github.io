@@ -2,3 +2,15 @@ Fotos pg Web/
 ui-ux-pro-max-skill/
 *.DNG
 *.dng
+.pnpm-store/
+node_modules/
+backups/
+publish-abonos-work/
+.publish-*/
+.claude/
+.agents/
+_PAQUETES_PARA_CHATGPT/
+*.tmp
+*.log
+Thumbs.db
+desktop.ini
