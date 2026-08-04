@@ -141,6 +141,7 @@ function bridgeScript_() {
   function startBridge() {
     window.logout = function () { sessionStorage.removeItem('adminToken'); sessionStorage.removeItem('adminUser'); location.assign('/logout'); };
     return;
+    /* Legacy password bridge disabled: the Worker injects the session before this code runs.
     var button = document.getElementById('loginBtn');
     var error = document.getElementById('loginErr');
     if (button) { button.textContent = 'Ingresando con correo autorizado...'; button.disabled = true; }
@@ -177,6 +178,7 @@ function bridgeScript_() {
         if (error) { error.textContent = message; error.style.display = 'block'; }
       } finally { if (button) { button.disabled = false; button.textContent = 'Ingresar'; } }
     };
+    */
     window.logout = function () { sessionStorage.removeItem('adminToken'); sessionStorage.removeItem('adminUser'); location.assign('/logout'); };
     // El enlace público es solo para el paciente. El editor permanece dentro
     // del panel, usando la sesión administrativa existente.
@@ -190,7 +192,6 @@ function bridgeScript_() {
       if (editButton) editButton.textContent = 'Editar progreso →';
     }
     labelPassportEditor(); setTimeout(labelPassportEditor, 1500);
-    window.doLogin();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startBridge);
   else startBridge();
