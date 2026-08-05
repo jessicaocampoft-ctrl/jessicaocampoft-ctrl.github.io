@@ -1,0 +1,48 @@
+name: Comparar Apps Script administrador versión 158
+
+on:
+  push:
+    branches:
+      - hotfix-adminbook-appsscript-2026-08-05
+
+permissions:
+  contents: read
+
+jobs:
+  comparar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar clasp
+        run: npm install --global @google/clasp@3.3.0
+
+      - name: Restaurar credencial
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          test -n "$CLASPRC_JSON"
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Descargar versión 158 aislada
+        run: |
+          mkdir live158
+          printf '%s' '{"scriptId":"1KVmo_TpTAkwLXQjMVvSO51YDtojr64XsnWg8I7bz0UkGht9S1W7WD0zI","rootDir":"live158"}' > .clasp.json
+          clasp pull --versionNumber 158
+
+      - name: Revisar ruta adminBook desplegada
+        run: |
+          echo '--- archivos versión 158 ---'
+          find live158 -maxdepth 2 -type f -print
+          echo '--- coincidencias adminBook ---'
+          grep -R -n -C 3 "adminBook" live158 || true
+          echo '--- coincidencias createBooking ---'
+          grep -R -n -C 2 "function createBooking" live158 || true
+          grep -R -n -C 3 "validatePublicBookingSchedule_" live158 || true
