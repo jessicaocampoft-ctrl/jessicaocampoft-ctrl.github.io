@@ -1,0 +1,41 @@
+name: Diagnosticar despliegues Apps Script administrador
+
+on:
+  push:
+    branches:
+      - hotfix-adminbook-appsscript-2026-08-05
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostico:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar clasp
+        run: npm install --global @google/clasp@3.3.0
+
+      - name: Restaurar credencial
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          test -n "$CLASPRC_JSON"
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Configurar proyecto
+        run: |
+          printf '%s' '{"scriptId":"1KVmo_TpTAkwLXQjMVvSO51YDtojr64XsnWg8I7bz0UkGht9S1W7WD0zI","rootDir":"."}' > .clasp.json
+
+      - name: Listar despliegues
+        run: |
+          clasp deployments | tee deployments.txt
+          grep -F 'AKfycbx7biQkVS9l1nU4AYQeOmQzbPcKebOUJ5UmX97vCJDaXg5s-9y0-mgSrE0ANZXZJ8Hd' deployments.txt
