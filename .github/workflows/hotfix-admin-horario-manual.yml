@@ -1,0 +1,134 @@
+name: Hotfix horario manual administrador
+
+on:
+  push:
+    branches:
+      - hotfix-adminbook-appsscript-2026-08-05
+
+permissions:
+  contents: read
+
+jobs:
+  validar-y-desplegar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar clasp
+        run: npm install --global @google/clasp@3.3.0
+
+      - name: Restaurar credencial
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          test -n "$CLASPRC_JSON"
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Descargar versión activa 158
+        run: |
+          mkdir release158
+          printf '%s' '{"scriptId":"1KVmo_TpTAkwLXQjMVvSO51YDtojr64XsnWg8I7bz0UkGht9S1W7WD0zI","rootDir":"release158"}' > .clasp.json
+          clasp pull --versionNumber 158
+          cp release158/google-apps-script.js release158/google-apps-script.original.js
+
+      - name: Aplicar cambio mínimo
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'release158/google-apps-script.js';
+          const src = fs.readFileSync(path, 'utf8');
+          const startMarker = 'function validateBookingSchedule_(date, time, service, modality) {';
+          const endMarker = '\nfunction validatePublicBookingSchedule_(date, time, service, modality) {';
+          const start = src.indexOf(startMarker);
+          const end = src.indexOf(endMarker, start);
+          if (start < 0 || end < 0) throw new Error('No se encontró el bloque esperado. No se desplegará nada.');
+          const original = src.slice(start, end);
+          if (!original.includes('fitsClinicSchedule_')) throw new Error('La versión activa no coincide con el diagnóstico.');
+          const replacement = `function validateBookingSchedule_(date, time, service, modality) {
+            if (!date || !time) return {ok: false, error: 'Selecciona fecha y hora.'};
+            if (isMidnightBookingTime_(time)) {
+              return {ok: false, error: 'Ese horario es de medianoche (00:00-00:59). Para 12 del mediodia usa 12:00.'};
+            }
+            // El administrador puede crear horarios manuales especiales fuera de la jornada habitual.
+            return {ok: true};
+          }
+          `;
+          const out = src.slice(0, start) + replacement + src.slice(end);
+          if (out.slice(0, start) !== src.slice(0, start)) throw new Error('Cambió contenido anterior al bloque.');
+          if (out.slice(start + replacement.length) !== src.slice(end)) throw new Error('Cambió contenido posterior al bloque.');
+          fs.writeFileSync(path, out, 'utf8');
+          fs.writeFileSync('release158/hotfix-meta.json', JSON.stringify({
+            baseVersion: 158,
+            changedFunction: 'validateBookingSchedule_',
+            activeDeployment: 'AKfycbx7biQkVS9l1nU4AYQeOmQzbPcKebOUJ5UmX97vCJDaXg5s-9y0-mgSrE0ANZXZJ8Hd'
+          }, null, 2));
+          NODE
+
+      - name: Validar alcance y comportamiento
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const vm = require('vm');
+          const assert = require('assert');
+          const before = fs.readFileSync('release158/google-apps-script.original.js', 'utf8');
+          const after = fs.readFileSync('release158/google-apps-script.js', 'utf8');
+          const startMarker = 'function validateBookingSchedule_(date, time, service, modality) {';
+          const endMarker = '\nfunction validatePublicBookingSchedule_(date, time, service, modality) {';
+          function split(src) {
+            const start = src.indexOf(startMarker);
+            const end = src.indexOf(endMarker, start);
+            assert(start >= 0 && end >= 0);
+            return {prefix: src.slice(0, start), block: src.slice(start, end), suffix: src.slice(end)};
+          }
+          const a = split(before);
+          const b = split(after);
+          assert.strictEqual(a.prefix, b.prefix, 'Cambió contenido antes del validador');
+          assert.strictEqual(a.suffix, b.suffix, 'Cambió contenido después del validador');
+          assert(a.block.includes('fitsClinicSchedule_'));
+          assert(!b.block.includes('fitsClinicSchedule_'));
+          assert(after.includes("if (p.action === 'adminBook')     return js(createBooking(JSON.parse(p.data), true));"));
+          const context = {
+            isMidnightBookingTime_: (time) => /^00:/.test(String(time || ''))
+          };
+          vm.createContext(context);
+          vm.runInContext(b.block, context);
+          assert.strictEqual(context.validateBookingSchedule_('2026-08-05', '17:00', 'Servicio', 'Presencial').ok, true);
+          assert.strictEqual(context.validateBookingSchedule_('2026-08-05', '21:00', 'Servicio', 'Presencial').ok, true);
+          assert.strictEqual(context.validateBookingSchedule_('2026-08-05', '00:30', 'Servicio', 'Presencial').ok, false);
+          assert.strictEqual(context.validateBookingSchedule_('', '17:00', 'Servicio', 'Presencial').ok, false);
+          console.log('OK: solo cambió validateBookingSchedule_ y 17:00 está permitido para admin.');
+          NODE
+          rm release158/google-apps-script.original.js release158/hotfix-meta.json
+          node --check release158/google-apps-script.js
+
+      - name: Subir versión mínima y actualizar solo el administrador activo
+        id: deploy
+        run: |
+          printf '%s' '{"scriptId":"1KVmo_TpTAkwLXQjMVvSO51YDtojr64XsnWg8I7bz0UkGht9S1W7WD0zI","rootDir":"release158"}' > .clasp.json
+          clasp push --force
+          clasp deploy \
+            --deploymentId AKfycbx7biQkVS9l1nU4AYQeOmQzbPcKebOUJ5UmX97vCJDaXg5s-9y0-mgSrE0ANZXZJ8Hd \
+            --description "Hotfix horario manual administrador 2026-08-05" | tee deploy-output.txt
+          clasp deployments | tee deployments-after.txt
+          grep -F 'AKfycbx7biQkVS9l1nU4AYQeOmQzbPcKebOUJ5UmX97vCJDaXg5s-9y0-mgSrE0ANZXZJ8Hd' deployments-after.txt
+
+      - name: Restaurar HEAD del proyecto al código actual del repositorio
+        if: always()
+        run: |
+          printf '%s' '{"scriptId":"1KVmo_TpTAkwLXQjMVvSO51YDtojr64XsnWg8I7bz0UkGht9S1W7WD0zI","rootDir":"."}' > .clasp.json
+          printf '%s\n' '**/**' '!appsscript.json' '!google-apps-script.js' > .claspignore
+          clasp push --force
+
+      - name: Verificar despliegue activo
+        run: |
+          url='https://script.google.com/macros/s/AKfycbx7biQkVS9l1nU4AYQeOmQzbPcKebOUJ5UmX97vCJDaXg5s-9y0-mgSrE0ANZXZJ8Hd/exec?test=1'
+          response="$(curl --fail --silent --show-error --location "$url")"
+          printf '%s\n' "$response"
+          printf '%s' "$response" | grep -F 'OK - Calendario:'
