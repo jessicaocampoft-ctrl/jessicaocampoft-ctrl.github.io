@@ -1,0 +1,34 @@
+name: Revisar createBooking versión 158
+
+on:
+  push:
+    branches:
+      - hotfix-adminbook-appsscript-2026-08-05
+
+permissions:
+  contents: read
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install --global @google/clasp@3.3.0
+      - name: Restaurar credencial
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+      - name: Descargar y mostrar bloque
+        run: |
+          mkdir live158
+          printf '%s' '{"scriptId":"1KVmo_TpTAkwLXQjMVvSO51YDtojr64XsnWg8I7bz0UkGht9S1W7WD0zI","rootDir":"live158"}' > .clasp.json
+          clasp pull --versionNumber 158
+          echo '--- createBooking 394-470 ---'
+          sed -n '394,470p' live158/google-apps-script.js
+          echo '--- validaciones 610-715 ---'
+          sed -n '610,715p' live158/google-apps-script.js
