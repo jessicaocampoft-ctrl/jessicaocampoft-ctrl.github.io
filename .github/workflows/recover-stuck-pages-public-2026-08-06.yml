@@ -1,4 +1,4 @@
-name: Liberar despliegue público bloqueado
+name: Preparar publicación pública por workflow
 
 on:
   push:
@@ -12,25 +12,49 @@ permissions:
   pages: write
 
 jobs:
-  cancelar-despliegue-atascado:
+  preparar-pages:
     runs-on: ubuntu-latest
     steps:
-      - name: Cancelar despliegue anterior atascado
+      - name: Cancelar despliegues públicos atascados
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          for deployment in \
+            3ee4d1914c2136fd23b7efc492e73630bcb1151d \
+            20feb268824b549bf0fbbdf558144fcd3338e8e6 \
+            9e0362ab623073b3a20d9dc43d7811a967fd9d8d
+          do
+            code=$(curl --silent --show-error \
+              --output /tmp/pages-cancel-response.txt \
+              --write-out '%{http_code}' \
+              --request POST \
+              --header "Accept: application/vnd.github+json" \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/deployments/${deployment}/cancel")
+            cat /tmp/pages-cancel-response.txt || true
+            echo "Cancelación ${deployment}: HTTP ${code}"
+            case "${code}" in
+              200|202|204|404|409) ;;
+              *) exit 1 ;;
+            esac
+          done
+
+      - name: Cambiar GitHub Pages a publicación mediante workflow
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           code=$(curl --silent --show-error \
-            --output /tmp/pages-cancel-response.txt \
+            --output /tmp/pages-update-response.txt \
             --write-out '%{http_code}' \
-            --request POST \
+            --request PUT \
             --header "Accept: application/vnd.github+json" \
             --header "Authorization: Bearer ${GH_TOKEN}" \
             --header "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/deployments/9e0362ab623073b3a20d9dc43d7811a967fd9d8d/cancel")
-          cat /tmp/pages-cancel-response.txt || true
-          echo "Código HTTP: ${code}"
-          case "${code}" in
-            200|202|204|404|409) exit 0 ;;
-            *) exit 1 ;;
-          esac
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages" \
+            --data '{"build_type":"workflow"}')
+          cat /tmp/pages-update-response.txt || true
+          echo "Cambio de modo: HTTP ${code}"
+          test "${code}" = "204"
