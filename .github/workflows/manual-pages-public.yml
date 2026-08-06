@@ -47,6 +47,9 @@ jobs:
         run: |
           set -euo pipefail
 
+          build_version="${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          echo "Versión única de despliegue: ${build_version}"
+
           echo "Solicitando token OIDC de GitHub Actions..."
           oidc_response=$(curl --fail --silent --show-error \
             --header "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
@@ -56,7 +59,7 @@ jobs:
           payload=$(jq -n \
             --argjson artifact_id "${ARTIFACT_ID}" \
             --arg environment "github-pages" \
-            --arg pages_build_version "${GITHUB_SHA}" \
+            --arg pages_build_version "${build_version}" \
             --arg oidc_token "${oidc_token}" \
             '{artifact_id:$artifact_id, environment:$environment, pages_build_version:$pages_build_version, oidc_token:$oidc_token}')
 
