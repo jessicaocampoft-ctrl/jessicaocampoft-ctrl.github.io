@@ -50,10 +50,10 @@ jobs:
           build_version="${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           echo "Versión única de despliegue: ${build_version}"
 
-          echo "Solicitando token OIDC de GitHub Actions..."
+          echo "Solicitando token OIDC específico para GitHub Pages..."
           oidc_response=$(curl --fail --silent --show-error \
             --header "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}")
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api%3A%2F%2FActionsGitHubPages")
           oidc_token=$(printf '%s' "${oidc_response}" | jq -er '.value')
 
           payload=$(jq -n \
