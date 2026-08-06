@@ -34,9 +34,6 @@ jobs:
           path: _site
 
   publicar:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: preparar
     steps:
