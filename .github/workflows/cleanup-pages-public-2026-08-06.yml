@@ -1,0 +1,81 @@
+name: Limpiar publicaciones públicas atascadas
+
+on:
+  push:
+    branches:
+      - pages-public-extended-2026-08-06
+    paths:
+      - .github/workflows/cleanup-pages-public-2026-08-06.yml
+
+permissions:
+  actions: write
+  pages: write
+  contents: read
+
+jobs:
+  limpiar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancelar workflows de publicación pendientes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          for status in queued in_progress waiting pending; do
+            response=$(curl --fail --silent --show-error \
+              --header "Accept: application/vnd.github+json" \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?status=${status}&per_page=100")
+
+            printf '%s' "${response}" | jq -r --arg current "${GITHUB_RUN_ID}" '
+              .workflow_runs[]
+              | select((.id|tostring) != $current)
+              | select(
+                  (.name | ascii_downcase | contains("pages")) or
+                  (.name | ascii_downcase | contains("publicar")) or
+                  (.name | ascii_downcase | contains("reconstrucción"))
+                )
+              | .id
+            ' | while read -r run_id; do
+              [ -z "${run_id}" ] && continue
+              echo "Cancelando workflow ${run_id}"
+              curl --silent --show-error \
+                --request POST \
+                --header "Accept: application/vnd.github+json" \
+                --header "Authorization: Bearer ${GH_TOKEN}" \
+                --header "X-GitHub-Api-Version: 2022-11-28" \
+                "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" \
+                --output /tmp/cancel-run.txt || true
+              cat /tmp/cancel-run.txt || true
+            done
+          done
+
+      - name: Cancelar todos los despliegues de Pages no finalizados
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          deployments=$(curl --fail --silent --show-error \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/deployments?environment=github-pages&per_page=100")
+
+          printf '%s' "${deployments}" | jq -r '.[].sha' | sort -u | while read -r version; do
+            [ -z "${version}" ] && continue
+            echo "Intentando cancelar despliegue ${version}"
+            code=$(curl --silent --show-error \
+              --output /tmp/cancel-page.txt \
+              --write-out '%{http_code}' \
+              --request POST \
+              --header "Accept: application/vnd.github+json" \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/deployments/${version}/cancel" || true)
+            cat /tmp/cancel-page.txt || true
+            echo "HTTP ${code}"
+          done
+
+          sleep 20
+          echo "Limpieza de Pages completada."
