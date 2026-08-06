@@ -1,0 +1,94 @@
+name: Aplicar textos habilitados aprobados v2
+
+on:
+  push:
+    branches:
+      - contenido-habilitacion-web-2026-08-06
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar-contenido:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama aislada
+        uses: actions/checkout@v4
+        with:
+          ref: contenido-habilitacion-web-2026-08-06
+          fetch-depth: 0
+
+      - name: Ejecutar parche previamente validado
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/apply-approved-content-2026-08-06.yml').read_text(encoding='utf-8')
+          lines = workflow.splitlines()
+          start = next(i for i, line in enumerate(lines) if line.strip() == "python - <<'PY'") + 1
+          end = next(i for i in range(start, len(lines)) if lines[i].strip() == 'PY')
+          code_lines = lines[start:end]
+          indents = [len(line) - len(line.lstrip()) for line in code_lines if line.strip()]
+          margin = min(indents)
+          code = '\n'.join(line[margin:] if line.strip() else '' for line in code_lines)
+          exec(compile(code, '<parche-contenido-web>', 'exec'), {})
+          PY
+
+      - name: Validar integridad y compatibilidad
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+
+          path = Path('index.html')
+          raw = path.read_bytes()
+          text = raw.decode('utf-8-sig')
+
+          class Parser(HTMLParser):
+              pass
+          Parser().feed(text)
+
+          required = {
+              'título SEO': 'Cuidándote Fisioterapia | Pereira y Dosquebradas',
+              'valoración visible': 'Valoración fisioterapéutica inicial',
+              'rehabilitación visible': 'Rehabilitación y readaptación funcional',
+              'masajes': 'Masajes relajantes',
+              'domicilios': 'Atención domiciliaria en Pereira y Dosquebradas',
+              'valor interno valoración': 'data-service="Valoración Funcional"',
+              'valor interno readaptación': 'data-service="Readaptación Funcional"',
+              'Apps Script': 'const APPS_SCRIPT_URL',
+              'pasaporte': 'href="pasaporte.html"',
+          }
+          for label, needle in required.items():
+              if needle not in text:
+                  raise SystemExit(f'Validación fallida: {label}')
+
+          forbidden = [
+              'data-service="Valoración fisioterapéutica inicial"',
+              'data-service="Rehabilitación y readaptación funcional"',
+              '<<<<<<<',
+              '>>>>>>>',
+          ]
+          for needle in forbidden:
+              if needle in text:
+                  raise SystemExit(f'Contenido no permitido detectado: {needle}')
+
+          if b'\r\n' not in raw:
+              raise SystemExit('Se perdió el formato CRLF original del archivo')
+
+          print('Integridad, formato e identificadores internos verificados.')
+          PY
+          git diff --stat
+
+      - name: Guardar únicamente index.html en la rama aislada
+        shell: bash
+        run: |
+          rm -f .github/workflows/apply-approved-content-2026-08-06.yml
+          rm -f .github/workflows/apply-approved-content-v2-2026-08-06.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/apply-approved-content-2026-08-06.yml .github/workflows/apply-approved-content-v2-2026-08-06.yml
+          git commit -m "feat: actualizar textos por habilitación y cobertura"
+          git push origin HEAD:contenido-habilitacion-web-2026-08-06
