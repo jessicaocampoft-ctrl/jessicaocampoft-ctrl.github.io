@@ -1,0 +1,350 @@
+name: Aplicar textos habilitados aprobados
+
+on:
+  push:
+    branches:
+      - contenido-habilitacion-web-2026-08-06
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar-contenido:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama de trabajo
+        uses: actions/checkout@v4
+        with:
+          ref: contenido-habilitacion-web-2026-08-06
+          fetch-depth: 0
+
+      - name: Aplicar cambios de contenido aprobados
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          raw = path.read_bytes()
+          had_bom = raw.startswith(b'\xef\xbb\xbf')
+          text = raw.decode('utf-8-sig')
+          nl = '\r\n' if '\r\n' in text else '\n'
+
+          changes = []
+
+          def replace_exact(old, new, expected=None, minimum=1):
+              global text
+              count = text.count(old)
+              if expected is not None and count != expected:
+                  raise SystemExit(f'Cantidad inesperada para {old!r}: {count}; esperada: {expected}')
+              if expected is None and count < minimum:
+                  raise SystemExit(f'No se encontró el texto requerido: {old!r}')
+              text = text.replace(old, new)
+              changes.append((old, new, count))
+
+          # SEO, buscadores y vistas al compartir.
+          replace_exact(
+              '<title>Cuidándote Fisioterapia — Fisioterapia y bienestar en Pereira</title>',
+              '<title>Cuidándote Fisioterapia | Pereira y Dosquebradas</title>',
+              expected=1,
+          )
+          replace_exact(
+              '<meta name="description" content="Cuidándote Fisioterapia. Atención presencial, a domicilio y en espacios aliados: descarga muscular, valoración funcional, readaptación y experiencias de bienestar.">',
+              '<meta name="description" content="Fisioterapia y terapia física en Pereira y Dosquebradas. Valoración fisioterapéutica, rehabilitación funcional, ejercicio terapéutico y atención a domicilio.">',
+              expected=1,
+          )
+          replace_exact(
+              '<meta property="og:title"       content="Cuidándote Fisioterapia — Pereira">',
+              '<meta property="og:title"       content="Cuidándote Fisioterapia | Pereira y Dosquebradas">',
+              expected=1,
+          )
+          replace_exact(
+              '<meta property="og:description" content="Fisioterapia, recuperación y bienestar con atención presencial, a domicilio y en espacios aliados.">',
+              '<meta property="og:description" content="Fisioterapia y terapia física en Pereira y Dosquebradas, con sede física en Dosquebradas y atención domiciliaria en ambos municipios.">',
+              expected=1,
+          )
+          replace_exact(
+              '<meta name="twitter:title"       content="Cuidándote Fisioterapia — Pereira">',
+              '<meta name="twitter:title"       content="Cuidándote Fisioterapia | Pereira y Dosquebradas">',
+              expected=1,
+          )
+          replace_exact(
+              '<meta name="twitter:description" content="Fisioterapia, recuperación y bienestar con atención personalizada.">',
+              '<meta name="twitter:description" content="Fisioterapia, terapia física, rehabilitación y atención domiciliaria en Pereira y Dosquebradas.">',
+              expected=1,
+          )
+
+          # Menú principal.
+          replace_exact(
+              '<li><a href="#servicios" class="nav-split"><span>Rehabilitación y</span><span>readaptación funcional</span></a></li>',
+              '<li><a href="#servicios" class="nav-split"><span>Fisioterapia y</span><span>rehabilitación</span></a></li>',
+              expected=1,
+          )
+          replace_exact(
+              '<li><a href="#experiencias">Bienestar y cuidado</a></li>',
+              '<li><a href="#experiencias">Masajes y bienestar</a></li>',
+              expected=1,
+          )
+          replace_exact(
+              '<li><a href="#agenda" class="nav-cta">Reservar</a></li>',
+              '<li><a href="#agenda" class="nav-cta">Agendar cita</a></li>',
+              expected=1,
+          )
+
+          # Encabezado principal.
+          replace_exact('Fisioterapia y bienestar · Pereira', 'Fisioterapia en Pereira y Dosquebradas', expected=1)
+          replace_exact(
+              '<h1>Recupera tu movimiento y vuelve a sentirte bien. <em>Fisioterapia y bienestar con intención.</em></h1>',
+              '<h1>Recupera tu movimiento con <em>atención fisioterapéutica personalizada.</em></h1>',
+              expected=1,
+          )
+          replace_exact(
+              '<p class="hero-subtitle">En Cuidándote Fisioterapia acompañamos procesos de recuperación, descarga muscular, readaptación y bienestar con atención presencial, a domicilio y en espacios aliados.</p>',
+              '<p class="hero-subtitle">Realizamos valoración fisioterapéutica, rehabilitación funcional, ejercicio terapéutico y manejo de lesiones, con atención en nuestra sede de Dosquebradas y a domicilio en Pereira y Dosquebradas. Cada proceso se adapta a tus necesidades, objetivos y evolución.</p>',
+              expected=1,
+          )
+          replace_exact(
+              '<span class="hero-photo-chip">Atención presencial y a domicilio</span>',
+              '<span class="hero-photo-chip">Sede en Dosquebradas · Domicilios en Pereira y Dosquebradas</span>',
+              expected=1,
+          )
+
+          # Línea de fisioterapia.
+          replace_exact(
+              '<div class="section-tag">Rehabilitación y readaptación funcional</div>',
+              '<div class="section-tag">Fisioterapia y rehabilitación</div>',
+              expected=1,
+          )
+          services_heading_old = '<h2><em>Servicios clínicos</em> para moverte mejor</h2>'
+          services_heading_new = (
+              '<h2><em>Fisioterapia y rehabilitación</em> para recuperar tu movimiento</h2>' + nl +
+              '        <p style="max-width:760px;margin:18px auto 0;color:var(--text-muted);line-height:1.75">Iniciamos con una valoración fisioterapéutica para conocer tus antecedentes, síntomas, movilidad, fuerza y capacidad funcional. A partir de los hallazgos definimos el diagnóstico fisioterapéutico y un plan de tratamiento personalizado según tus necesidades y objetivos.</p>'
+          )
+          replace_exact(services_heading_old, services_heading_new, expected=1)
+
+          # Valoración fisioterapéutica: cambia la presentación, conserva los valores internos del agendamiento.
+          replace_exact('alt="Valoración funcional"', 'alt="Valoración fisioterapéutica inicial"', expected=1)
+          replace_exact('<h3>Valoración Funcional</h3>', '<h3>Valoración fisioterapéutica inicial</h3>', expected=1)
+          replace_exact(
+              '<p>Evaluamos tu movimiento y diseñamos un plan personalizado según tus necesidades.</p>',
+              '<p>Evaluación integral de tus antecedentes, síntomas, movimiento, movilidad, fuerza y función. Con base en los hallazgos se define el diagnóstico fisioterapéutico y el plan de tratamiento más adecuado para tus necesidades.</p>',
+              expected=1,
+          )
+          replace_exact(
+              '<p class="service-ideal"><span>Ideal para:</span> personas que sienten que algo no está bien, quieren prevenir lesiones o no saben por dónde empezar a cuidar su cuerpo.</p>',
+              '<p class="service-ideal"><span>Ideal para:</span> personas con dolor o limitaciones de movimiento, lesiones recientes o antiguas, procesos posteriores a una cirugía o dudas sobre cómo comenzar su recuperación.</p>',
+              expected=1,
+          )
+          replace_exact(
+              '<span class="service-price">Presencial $80.000 · Domicilio $95.000</span>',
+              '<span class="service-price">Sede Santa Mónica $80.000 · Domicilio $95.000</span>',
+              expected=1,
+          )
+
+          # Rehabilitación y readaptación: cambia la presentación, conserva el valor interno.
+          replace_exact('alt="Readaptación funcional"', 'alt="Rehabilitación y readaptación funcional"', expected=1)
+          replace_exact('<h3>Readaptación Funcional</h3>', '<h3>Rehabilitación y readaptación funcional</h3>', expected=1)
+          replace_exact(
+              '<p>Acompañamiento progresivo y personalizado para mejorar el movimiento y retomar tus actividades con mayor confianza.</p>',
+              '<p>Sesiones de tratamiento fisioterapéutico orientadas a recuperar movilidad, fuerza, control y confianza mediante ejercicio terapéutico, educación, técnicas manuales y progresiones adaptadas a cada proceso.</p>',
+              expected=1,
+          )
+          replace_exact(
+              '<p class="service-ideal"><span>Ideal para:</span> personas que tuvieron una lesión, cirugía o llevan tiempo con una molestia que no desaparece y quieren volver a su vida normal.</p>',
+              '<p class="service-ideal"><span>Ideal para:</span> recuperación después de una lesión o cirugía, molestias persistentes y retorno progresivo al deporte, al trabajo o a las actividades cotidianas.</p>',
+              expected=1,
+          )
+          replace_exact(
+              '<span class="service-price">Presencial $70.000 · Domicilio $85.000</span>',
+              '<span class="service-price">Sede Santa Mónica $70.000 · Domicilio $85.000</span>',
+              expected=1,
+          )
+
+          # Nombres visibles dentro del agendamiento; se preservan data-service y las integraciones.
+          replace_exact('<span class="bk-svc-name">Valoración Funcional</span>', '<span class="bk-svc-name">Valoración fisioterapéutica inicial</span>', expected=1)
+          replace_exact('<span class="bk-svc-name">Readaptación Funcional</span>', '<span class="bk-svc-name">Rehabilitación y readaptación funcional</span>', expected=1)
+
+          # Masajes relajantes y experiencias de bienestar.
+          replace_exact('<div class="section-tag">Relajación y bienestar</div>', '<div class="section-tag">Masajes y bienestar</div>', expected=1)
+          replace_exact(
+              '<h2><em>Detente, respira</em> y regálale descanso a tu cuerpo</h2>',
+              '<h2><em>Masajes relajantes</em> y experiencias de bienestar</h2>',
+              expected=1,
+          )
+          replace_exact(
+              '<p>Un espacio creado para bajar el ritmo. Combinamos masaje relajante, aromas, calor, sonidos envolventes y pequeños rituales de bienestar para ofrecerte una experiencia cálida, tranquila y personalizada.</p>',
+              '<p>Desconéctate de la rutina y regálale a tu cuerpo un momento de descanso. Disfruta experiencias con masajes relajantes, calor, aromas y diferentes elementos de bienestar. Estas experiencias no sustituyen una valoración ni un tratamiento fisioterapéutico cuando existe una lesión o limitación funcional.</p>',
+              expected=1,
+          )
+          replace_exact('Sede Campestre Recovery — Bienestar y recuperación muscular.', 'Sede Campestre Recovery — Masajes relajantes y bienestar.', minimum=1)
+
+          # Presentación profesional.
+          replace_exact(
+              '<p>Cuidándote Fisioterapia nace para acompañar a personas que necesitan moverse mejor, recuperarse con seguridad y recibir una atención cercana sin perder el rigor clínico.</p>',
+              '<p>Cuidándote Fisioterapia es un espacio dedicado a la valoración, el tratamiento y la rehabilitación del movimiento, con atención profesional, humana y personalizada.</p>',
+              expected=1,
+          )
+          replace_exact(
+              '<p>El equipo está liderado por Jessica Ocampo, fisioterapeuta deportiva y deportista de alto rendimiento, con experiencia real en lesiones, recuperación y readaptación funcional.</p>',
+              '<p>El equipo está liderado por Jessica Ocampo, fisioterapeuta con experiencia en atención de deportistas y población general. Su trayectoria como deportista de alto rendimiento le permite comprender de manera cercana los retos físicos y emocionales de cada proceso.</p>',
+              expected=1,
+          )
+          replace_exact(
+              '<p>Combinamos evaluación, terapia manual, ejercicio terapéutico y educación para que cada persona entienda su proceso y avance con confianza.</p>',
+              '<p>Combinamos evaluación fisioterapéutica, ejercicio terapéutico, técnicas manuales y educación para que cada paciente comprenda su proceso y participe activamente en él.</p>',
+              expected=1,
+          )
+          replace_exact(
+              '<p>Atendemos niños, adultos mayores, deportistas y personas que buscan aliviar dolor, liberar tensión o volver a sus actividades diarias con mayor tranquilidad.</p>',
+              '<p>Atendemos personas con dolor, lesiones, limitaciones funcionales o necesidades relacionadas con el movimiento, tanto en nuestra sede de Dosquebradas como a domicilio en Pereira y Dosquebradas.</p>',
+              expected=1,
+          )
+
+          # Agendamiento, domicilio y contacto.
+          replace_exact('<h2><em>Reserva</em> tu sesión</h2>', '<h2><em>Agenda</em> tu valoración o sesión</h2>', expected=1)
+          replace_exact(
+              '<p class="booking-subtitle">Elige tu servicio, día y horario. El cupo queda reservado temporalmente y se confirma con pago anticipado verificado por administración.</p>',
+              '<p class="booking-subtitle">Selecciona el servicio, la modalidad y el horario que necesitas. Tu espacio se reserva temporalmente y se confirma después de verificar el pago anticipado.</p>',
+              expected=1,
+          )
+          replace_exact(
+              '<p class="booking-note">Atención en sede, espacios aliados y domicilio según disponibilidad</p>',
+              '<p class="booking-note">Sede física en Dosquebradas · Atención domiciliaria en Pereira y Dosquebradas, según disponibilidad</p>',
+              expected=1,
+          )
+          replace_exact('<h4>Ubicación</h4>', '<h4>Sede física y domicilios</h4>', expected=1)
+          replace_exact(
+              '<p>Ubicación disponible al confirmar la reserva.</p>',
+              '<p>Sede Santa Mónica en Dosquebradas · Atención domiciliaria en Pereira y Dosquebradas.</p>',
+              expected=1,
+          )
+
+          # Preguntas frecuentes y datos estructurados.
+          replace_exact('<li><strong>Valoración Funcional:</strong> 50 minutos.</li>', '<li><strong>Valoración fisioterapéutica inicial:</strong> 50 minutos.</li>', expected=1)
+          replace_exact('<li><strong>Readaptación Funcional</strong> (según plan de trabajo): 40 a 45 minutos.</li>', '<li><strong>Rehabilitación y readaptación funcional</strong> (según plan de tratamiento): 40 a 45 minutos.</li>', expected=1)
+          replace_exact(
+              'Sí, contamos con atención a domicilio según disponibilidad. Algunos sectores alejados tienen un recargo por desplazamiento que se indica en el formulario.',
+              'Sí. Contamos con atención fisioterapéutica domiciliaria en Pereira y Dosquebradas, de acuerdo con la ubicación y disponibilidad. Algunos sectores pueden tener recargo por desplazamiento, informado antes de confirmar la cita.',
+              expected=1,
+          )
+          replace_exact(
+              'Descarga muscular Express (cuello/espalda o piernas): 50 minutos. Descarga Completa (cuerpo completo): 1 hora 20 minutos. Valoración Funcional: 50 minutos. Readaptación Funcional: 40 a 45 minutos.',
+              'Descarga muscular Express (cuello/espalda o piernas): 50 minutos. Descarga Completa (cuerpo completo): 1 hora 20 minutos. Valoración fisioterapéutica inicial: 50 minutos. Rehabilitación y readaptación funcional: 40 a 45 minutos.',
+              expected=1,
+          )
+          replace_exact(
+              'Sí, contamos con atención a domicilio según disponibilidad. Algunos sectores alejados tienen recargo por desplazamiento.',
+              'Sí. Contamos con atención fisioterapéutica domiciliaria en Pereira y Dosquebradas, de acuerdo con la ubicación y disponibilidad. Algunos sectores pueden tener recargo por desplazamiento.',
+              expected=1,
+          )
+
+          faq_marker = '      <div class="faq-grid fade-up">' + nl + nl
+          faq_insert = (
+              '      <div class="faq-grid fade-up">' + nl + nl +
+              '        <div class="faq-item">' + nl +
+              '          <div class="faq-q" onclick="toggleFaq(this)">' + nl +
+              '            ¿Fisioterapia y terapia física son lo mismo?' + nl +
+              '            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' + nl +
+              '          </div>' + nl +
+              '          <div class="faq-a"><div class="faq-a-inner">Muchas personas utilizan ambos términos. En Colombia, la denominación profesional y oficial es fisioterapia. En Cuidándote realizamos valoración fisioterapéutica, tratamiento, ejercicio terapéutico y rehabilitación funcional.</div></div>' + nl +
+              '        </div>' + nl + nl +
+              '        <div class="faq-item">' + nl +
+              '          <div class="faq-q" onclick="toggleFaq(this)">' + nl +
+              '            ¿Los masajes relajantes reemplazan la fisioterapia?' + nl +
+              '            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' + nl +
+              '          </div>' + nl +
+              '          <div class="faq-a"><div class="faq-a-inner">No. Los masajes relajantes y las experiencias de bienestar no sustituyen una valoración ni un tratamiento fisioterapéutico cuando existe una lesión, dolor persistente o limitación funcional.</div></div>' + nl +
+              '        </div>' + nl + nl
+          )
+          replace_exact(faq_marker, faq_insert, expected=1)
+
+          structured_marker = '        "mainEntity": [' + nl
+          structured_insert = (
+              '        "mainEntity": [' + nl +
+              '          {' + nl +
+              '            "@type": "Question",' + nl +
+              '            "name": "¿Fisioterapia y terapia física son lo mismo?",' + nl +
+              '            "acceptedAnswer": { "@type": "Answer", "text": "Muchas personas utilizan ambos términos. En Colombia, la denominación profesional y oficial es fisioterapia. En Cuidándote realizamos valoración fisioterapéutica, tratamiento, ejercicio terapéutico y rehabilitación funcional." }' + nl +
+              '          },' + nl +
+              '          {' + nl +
+              '            "@type": "Question",' + nl +
+              '            "name": "¿Los masajes relajantes reemplazan la fisioterapia?",' + nl +
+              '            "acceptedAnswer": { "@type": "Answer", "text": "No. Los masajes relajantes y las experiencias de bienestar no sustituyen una valoración ni un tratamiento fisioterapéutico cuando existe una lesión, dolor persistente o limitación funcional." }' + nl +
+              '          },' + nl
+          )
+          replace_exact(structured_marker, structured_insert, expected=1)
+
+          # Pie de página.
+          replace_exact('© 2026 Cuidándote Fisioterapia. Pereira, Colombia', '© 2026 Cuidándote Fisioterapia. Pereira y Dosquebradas, Risaralda', expected=1)
+          replace_exact('Atención presencial, domicilio y espacios aliados', 'Sede física en Dosquebradas · Atención domiciliaria en Pereira y Dosquebradas', expected=1)
+          replace_exact('<a href="#agenda">Reservar</a>', '<a href="#agenda">Agendar cita</a>', expected=1)
+
+          # Controles de seguridad: los identificadores internos deben seguir intactos.
+          required_internal = [
+              'data-service="Valoración Funcional"',
+              'data-service="Readaptación Funcional"',
+              "if (bk.modality === 'Domicilio')",
+              'const APPS_SCRIPT_URL',
+              'href="pasaporte.html"',
+          ]
+          for needle in required_internal:
+              if needle not in text:
+                  raise SystemExit(f'Se alteró o desapareció un identificador protegido: {needle}')
+
+          forbidden_internal = [
+              'data-service="Valoración fisioterapéutica inicial"',
+              'data-service="Rehabilitación y readaptación funcional"',
+          ]
+          for needle in forbidden_internal:
+              if needle in text:
+                  raise SystemExit(f'No se debe migrar el valor interno en esta fase: {needle}')
+
+          encoded = text.encode('utf-8')
+          if had_bom:
+              encoded = b'\xef\xbb\xbf' + encoded
+          path.write_bytes(encoded)
+
+          print(f'Cambios aplicados: {len(changes)} reglas')
+          for old, new, count in changes:
+              print(f'- {count} reemplazo(s): {old[:75]!r}')
+          PY
+
+      - name: Validar integridad básica
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+
+          text = Path('index.html').read_text(encoding='utf-8-sig')
+
+          class Parser(HTMLParser):
+              pass
+
+          Parser().feed(text)
+
+          checks = {
+              'nuevo título SEO': 'Cuidándote Fisioterapia | Pereira y Dosquebradas',
+              'valoración visible': 'Valoración fisioterapéutica inicial',
+              'rehabilitación visible': 'Rehabilitación y readaptación funcional',
+              'masajes y bienestar': 'Masajes relajantes',
+              'domicilios confirmados': 'Atención domiciliaria en Pereira y Dosquebradas',
+              'pasaporte intacto': 'pasaporte.html',
+              'Apps Script intacto': 'APPS_SCRIPT_URL',
+          }
+          for label, needle in checks.items():
+              if needle not in text:
+                  raise SystemExit(f'Validación fallida: {label}')
+          print('Validación básica completada.')
+          PY
+          git diff --check
+
+      - name: Guardar cambios en la rama aislada
+        shell: bash
+        run: |
+          rm -f .github/workflows/apply-approved-content-2026-08-06.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/apply-approved-content-2026-08-06.yml
+          git commit -m "feat: actualizar textos por habilitación y cobertura"
+          git push origin HEAD:contenido-habilitacion-web-2026-08-06
