@@ -1,6 +1,9 @@
-name: Publicar página pública sin cancelación automática
+name: Publicar sitio web
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -9,19 +12,18 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages-public-direct
-  cancel-in-progress: false
+  group: pages-public
+  cancel-in-progress: true
 
 jobs:
-  publicar:
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+  preparar:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
     steps:
       - name: Descargar la versión aprobada
         uses: actions/checkout@v4
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
 
       - name: Preparar archivos públicos
         run: |
@@ -33,74 +35,22 @@ jobs:
             --exclude '_site' \
             ./ _site/
 
-      - name: Cargar artefacto de GitHub Pages
-        id: artifact
+      - name: Cargar sitio
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
-      - name: Publicar y esperar hasta completar
-        id: deploy
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ARTIFACT_ID: ${{ steps.artifact.outputs.artifact_id }}
-        run: |
-          set -euo pipefail
-
-          build_version="${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          echo "Versión única de despliegue: ${build_version}"
-
-          echo "Solicitando token OIDC específico para GitHub Pages..."
-          oidc_response=$(curl --fail --silent --show-error \
-            --header "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api%3A%2F%2FActionsGitHubPages")
-          oidc_token=$(printf '%s' "${oidc_response}" | jq -er '.value')
-
-          payload=$(jq -n \
-            --argjson artifact_id "${ARTIFACT_ID}" \
-            --arg environment "github-pages" \
-            --arg pages_build_version "${build_version}" \
-            --arg oidc_token "${oidc_token}" \
-            '{artifact_id:$artifact_id, environment:$environment, pages_build_version:$pages_build_version, oidc_token:$oidc_token}')
-
-          echo "Creando el despliegue de GitHub Pages..."
-          response=$(curl --fail --silent --show-error \
-            --request POST \
-            --header "Accept: application/vnd.github+json" \
-            --header "Authorization: Bearer ${GH_TOKEN}" \
-            --header "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/deployments" \
-            --data "${payload}")
-
-          deployment_id=$(printf '%s' "${response}" | jq -er '.id')
-          status_url=$(printf '%s' "${response}" | jq -er '.status_url')
-          page_url=$(printf '%s' "${response}" | jq -r '.page_url // "https://cuidandotefisioterapia.com/"')
-          echo "page_url=${page_url}" >> "${GITHUB_OUTPUT}"
-          echo "Despliegue creado: ${deployment_id}"
-
-          for attempt in $(seq 1 720); do
-            status_response=$(curl --fail --silent --show-error \
-              --header "Accept: application/vnd.github+json" \
-              --header "Authorization: Bearer ${GH_TOKEN}" \
-              --header "X-GitHub-Api-Version: 2022-11-28" \
-              "${status_url}")
-            status=$(printf '%s' "${status_response}" | jq -r '.status // "unknown_status"')
-            echo "Intento ${attempt}: ${status}"
-
-            case "${status}" in
-              succeed)
-                echo "Publicación completada correctamente."
-                exit 0
-                ;;
-              deployment_failed|deployment_content_failed|deployment_cancelled|deployment_lost)
-                echo "El despliegue terminó con estado: ${status}" >&2
-                printf '%s\n' "${status_response}" >&2
-                exit 1
-                ;;
-            esac
-
-            sleep 5
-          done
-
-          echo "El despliegue continúa en GitHub después de 60 minutos; no fue cancelado por este workflow." >&2
-          exit 1
+  publicar:
+    needs: preparar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+        with:
+          timeout: 1800000
+          reporting_interval: 5000
+          error_count: 30
