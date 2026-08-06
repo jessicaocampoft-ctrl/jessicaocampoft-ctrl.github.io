@@ -1,1 +1,1 @@
-Despliegue final solicitado el 2026-08-06 después de liberar correctamente el despliegue anterior atascado. Este archivo no modifica el contenido ni el funcionamiento del sitio.
+Publicación pública limpia solicitada el 2026-08-06 después de cancelar todas las ejecuciones y despliegues superpuestos. Este archivo no modifica el contenido ni el funcionamiento del sitio.
