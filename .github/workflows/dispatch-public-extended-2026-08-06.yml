@@ -36,7 +36,8 @@ jobs:
 
           for deployment in \
             4c939a38f125cc5d09b24c4c1439cd44e1a0fb86 \
-            fa9aa28720b60c4bce370fa16760752dcc0aaccc
+            fa9aa28720b60c4bce370fa16760752dcc0aaccc \
+            91c884b6848d9c2138d0b7bb2450130e89f06668
           do
             code=$(cancel_known "${deployment}")
             echo "Cancelación conocida ${deployment}: HTTP ${code}"
@@ -59,7 +60,7 @@ jobs:
             echo "No apareció un despliegue automático competidor; se continúa."
           fi
 
-      - name: Iniciar workflow de publicación extendida
+      - name: Iniciar workflow de publicación extendida corregida
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
