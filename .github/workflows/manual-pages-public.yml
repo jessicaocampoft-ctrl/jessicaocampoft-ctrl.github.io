@@ -1,0 +1,49 @@
+name: Publicar página pública con tiempo extendido
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-public-extended
+  cancel-in-progress: false
+
+jobs:
+  preparar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar la versión aprobada
+        uses: actions/checkout@v4
+
+      - name: Preparar archivos públicos
+        run: |
+          mkdir -p _site
+          rsync -a \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '_site' \
+            ./ _site/
+
+      - name: Cargar artefacto de GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  publicar:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: preparar
+    steps:
+      - name: Publicar con margen extendido
+        id: deployment
+        uses: actions/deploy-pages@v5
+        with:
+          timeout: '1800000'
+          reporting_interval: '5000'
+          error_count: '30'
