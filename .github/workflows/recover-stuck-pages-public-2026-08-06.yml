@@ -13,7 +13,6 @@ permissions:
 
 jobs:
   cancelar-despliegue-atascado:
-    if: contains(github.event.head_commit.added, '.github/workflows/recover-stuck-pages-public-2026-08-06.yml')
     runs-on: ubuntu-latest
     steps:
       - name: Cancelar despliegue anterior atascado
