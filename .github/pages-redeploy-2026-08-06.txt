@@ -1,1 +1,1 @@
-Nuevo despliegue solicitado el 2026-08-06 después de que GitHub Pages cancelara el despliegue anterior. Este archivo no modifica el contenido ni el funcionamiento del sitio.
+Despliegue final solicitado el 2026-08-06 después de liberar correctamente el despliegue anterior atascado. Este archivo no modifica el contenido ni el funcionamiento del sitio.
