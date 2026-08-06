@@ -1,4 +1,4 @@
-name: Reiniciar publicación pública con identificador único
+name: Reiniciar publicación pública con token OIDC correcto
 
 on:
   push:
@@ -16,33 +16,27 @@ jobs:
   reiniciar:
     runs-on: ubuntu-latest
     steps:
-      - name: Cerrar el intento anterior
+      - name: Cerrar intentos anteriores
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          for deployment in \
+            6f890c18e6c1123d4f5206877eb57fdf2c23fb17 \
+            a01d8eb4b4ce4dc97ed8f1ec4b90c674d10c5e7f-31111737962-1
+          do
+            curl --silent --show-error \
+              --request POST \
+              --header "Accept: application/vnd.github+json" \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/deployments/${deployment}/cancel" \
+              --output /tmp/cancel-pages.txt || true
+            cat /tmp/cancel-pages.txt || true
+          done
+          sleep 8
 
-          curl --silent --show-error \
-            --request POST \
-            --header "Accept: application/vnd.github+json" \
-            --header "Authorization: Bearer ${GH_TOKEN}" \
-            --header "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/deployments/6f890c18e6c1123d4f5206877eb57fdf2c23fb17/cancel" \
-            --output /tmp/cancel-pages.txt || true
-          cat /tmp/cancel-pages.txt || true
-
-          curl --silent --show-error \
-            --request POST \
-            --header "Accept: application/vnd.github+json" \
-            --header "Authorization: Bearer ${GH_TOKEN}" \
-            --header "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/31110838706/cancel" \
-            --output /tmp/cancel-run.txt || true
-          cat /tmp/cancel-run.txt || true
-
-          sleep 10
-
-      - name: Iniciar el despliegue nuevo
+      - name: Iniciar despliegue corregido
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
