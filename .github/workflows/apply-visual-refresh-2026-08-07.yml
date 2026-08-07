@@ -1,0 +1,126 @@
+name: Aplicar rediseño visual 2026-08-07
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    if: contains(github.event.head_commit.message, '[visual-refresh]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar sitio actual
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Aplicar cambios visuales aprobados
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+
+          def replace_once(old, new, label):
+              global text
+              if old not in text:
+                  raise SystemExit(f'No se encontró el bloque requerido: {label}')
+              text = text.replace(old, new, 1)
+
+          # 1) Navegación y textos visibles.
+          replace_once('<li><a href="#experiencias">Masajes y bienestar</a></li>',
+                       '<li><a href="#experiencias" class="nav-wellness-label">Masajes relajantes y bienestar</a></li>',
+                       'menú de bienestar')
+
+          replace_once('''          <div class="hero-badge">\n            <span class="dot"></span>\n            Fisioterapia en Pereira y Dosquebradas\n          </div>''',
+                       '''          <div class="hero-badge hero-enabled-badge">\n            <span class="hero-enabled-check" aria-hidden="true">✓</span>\n            Servicio de fisioterapia habilitado\n          </div>''',
+                       'badge hero')
+
+          replace_once('Reservar una sesión\n            </a>\n            <a href="https://wa.me/573136467945"',
+                       'Agendar valoración\n            </a>\n            <a href="https://wa.me/573136467945"',
+                       'CTA hero')
+
+          replace_once('<p class="hero-trust-note">✓ Respuesta por WhatsApp durante horario de atención &nbsp;·&nbsp; ✓ Cupos limitados por semana</p>',
+                       '<p class="hero-trust-note">Atención fisioterapéutica habilitada en sede y modalidad domiciliaria · Sede en Dosquebradas · Domicilios en Pereira y Dosquebradas</p>',
+                       'nota de confianza hero')
+
+          # 2) Franja de habilitación debajo del hero.
+          trust_html = '''\n  <!-- CONFIANZA Y HABILITACIÓN -->\n  <section class="enablement-strip" aria-label="Habilitación y modalidades de atención">\n    <div class="container">\n      <div class="enablement-grid">\n        <article class="enablement-item">\n          <span class="enablement-icon" aria-hidden="true">✓</span>\n          <div><strong>Servicio habilitado en REPS</strong><span>Fisioterapia · Profesional independiente</span></div>\n        </article>\n        <article class="enablement-item">\n          <span class="enablement-icon" aria-hidden="true">⌂</span>\n          <div><strong>Atención en sede</strong><span>Dosquebradas, Risaralda</span></div>\n        </article>\n        <article class="enablement-item">\n          <span class="enablement-icon" aria-hidden="true">⌖</span>\n          <div><strong>Atención domiciliaria</strong><span>Pereira y Dosquebradas</span></div>\n        </article>\n      </div>\n      <p class="enablement-legal">Cuidándote Fisioterapia presta el servicio de fisioterapia como profesional independiente habilitada en el Registro Especial de Prestadores de Servicios de Salud (REPS).</p>\n    </div>\n  </section>\n'''
+          anchor = '  </section>\n\n  <!-- CAMINOS DE SERVICIO -->'
+          if 'class="enablement-strip"' not in text:
+              replace_once(anchor, '  </section>\n' + trust_html + '\n  <!-- CAMINOS DE SERVICIO -->', 'inserción franja REPS')
+
+          # 3) Afinar los dos caminos visuales.
+          text = text.replace('<div class="path-kicker">Relajación y bienestar</div>', '<div class="path-kicker">Masajes relajantes y bienestar</div>', 1)
+          text = text.replace('Experiencias de masaje, descarga muscular y cuidado corporal pensadas para liberar tensión, bajar la carga del día a día y reconectar con el bienestar.',
+                              'Masajes relajantes y experiencias de bienestar pensadas para bajar el ritmo, liberar tensión cotidiana y regalarle al cuerpo una pausa real.', 1)
+
+          # 4) Servicios: encabezado editorial y orden más comercial (valoración, rehabilitación, descargas).
+          replace_once('<h2><em>Fisioterapia y rehabilitación</em> para recuperar tu movimiento</h2>',
+                       '<h2>Un proceso diseñado <em>para ti</em></h2>',
+                       'título servicios')
+          replace_once('<p style="max-width:760px;margin:18px auto 0;color:var(--text-muted);line-height:1.75">Iniciamos con una valoración fisioterapéutica para conocer tus antecedentes, síntomas, movilidad, fuerza y capacidad funcional. A partir de los hallazgos definimos el diagnóstico fisioterapéutico y un plan de tratamiento personalizado según tus necesidades y objetivos.</p>',
+                       '<p>Comenzamos con una valoración fisioterapéutica para comprender tus síntomas, movimiento, fuerza y capacidad funcional. A partir de los hallazgos definimos el proceso más adecuado para tus necesidades, objetivos y evolución.</p>',
+                       'intro servicios')
+
+          c1 = text.find('        <!-- Card 1 -->')
+          c2 = text.find('        <!-- Card 2 -->')
+          c3 = text.find('        <!-- Card 3 -->')
+          c4 = text.find('        <!-- Card 4 -->')
+          c5 = text.find('        <!-- Card 5 -->')
+          end = text.find('      </div>\n      <div class="carousel-dots" id="servicesDots"></div>', c5)
+          if min(c1,c2,c3,c4,c5,end) < 0:
+              raise SystemExit('No se pudieron identificar las cinco tarjetas de servicios')
+          b1 = text[c1:c2]
+          b2 = text[c2:c3]
+          b3 = text[c3:c4]
+          b4 = text[c4:c5]
+          b5 = text[c5:end]
+          reordered = b4 + b5 + b1 + b2 + b3
+          text = text[:c1] + reordered + text[end:]
+
+          # 5) Bienestar y sección profesional.
+          text = text.replace('<div class="section-tag">Masajes y bienestar</div>', '<div class="section-tag">Masajes relajantes y bienestar</div>', 1)
+          text = text.replace('<div class="section-tag">Nuestro enfoque</div>', '<div class="section-tag">Conoce a tu fisioterapeuta</div>', 1)
+          text = text.replace('<h2><em>Cuidamos tu movimiento</em> con experiencia clínica y humana</h2>', '<h2>Jessica <em>Ocampo</em></h2>', 1)
+
+          # 6) CSS de refinamiento: conserva turquesa como protagonista y no altera funcionalidad.
+          css = r'''\n<style id="visual-refresh-2026-08-07">\n  :root {\n    --primary: #7EDDD0;\n    --primary-hover: #63CDC0;\n    --primary-dark: #0B7D77;\n    --gold: #C9A55A;\n    --surface-1: #F8FBFA;\n    --surface-2: #EDF9F7;\n    --shadow-soft: 0 22px 60px rgba(18,95,89,.10);\n    --shadow-card: 0 12px 34px rgba(18,95,89,.075);\n  }\n\n  body { background: #fff; color: #23322f; }\n  .grid-bg {\n    background: linear-gradient(180deg,#fff 0%,#fff 44%,#f8fbfa 100%);\n  }\n  .grid-bg::after { opacity: .28; }\n\n  .nav {\n    padding: 12px 0;\n    background: rgba(255,255,255,.95);\n    border-bottom: 1px solid rgba(11,125,119,.10);\n    box-shadow: 0 8px 30px rgba(18,95,89,.045);\n  }\n  .nav.scrolled { padding: 9px 0; background: rgba(255,255,255,.98); }\n  .brand-logo { width: 205px; padding-bottom: 8px; }\n  .nav.scrolled .brand-logo { width: 188px; }\n  .brand-logo .logo-byline { top: 75px; left: 84px; font-size: .78rem; }\n  .nav.scrolled .brand-logo .logo-byline { top: 69px; left: 77px; font-size: .72rem; }\n  .nav-links { gap: clamp(10px,1.1vw,18px); }\n  .nav-links a { font-size: .66rem; letter-spacing: .045em; font-weight: 600; }\n  .nav-wellness-label { max-width: 158px; white-space: normal !important; text-align: center; line-height: 1.15; color: var(--primary-dark) !important; }\n  .nav-cta { border-radius: 8px; background: var(--primary-dark); color: #fff !important; box-shadow: none; padding: 10px 17px; }\n  .nav-cta:hover { background: #096b66; box-shadow: 0 10px 26px rgba(11,125,119,.18); }\n\n  .hero {\n    padding: 138px 0 64px;\n    background: linear-gradient(90deg,#F9FDFC 0 51%,#EAF7F5 51% 100%);\n  }\n  .hero::before { display:none; }\n  .hero-grid { grid-template-columns: minmax(0,1.02fr) minmax(390px,.98fr); gap: 50px; }\n  .hero-enabled-badge {\n    color: var(--primary-dark);\n    background: rgba(237,249,247,.94);\n    border-color: rgba(11,125,119,.12);\n    letter-spacing: .065em;\n    font-weight: 700;\n    padding: 7px 13px;\n  }\n  .hero-enabled-check {\n    width: 20px; height: 20px; display:grid; place-items:center;\n    border-radius:50%; background:rgba(126,221,208,.28); color:var(--primary-dark);\n    font-family:var(--font-body); font-size:.78rem; font-weight:800;\n  }\n  .hero h1 { color:#165b56; max-width: 650px; font-size: clamp(2.65rem,4.4vw,4.35rem); line-height: 1.01; }\n  .hero h1 em { color: var(--primary-dark); }\n  .hero-subtitle { color:#4f5d5a; font-size:1rem; line-height:1.68; max-width:620px; margin-bottom:28px; }\n  .hero-buttons { margin-bottom:14px; }\n  .btn-solid { border-radius:8px; background:var(--primary-dark); color:#fff; box-shadow:none; padding:13px 24px; }\n  .btn-solid:hover { background:#096b66; box-shadow:0 10px 28px rgba(11,125,119,.18); }\n  .btn-outline { border-radius:8px; color:var(--primary-dark); border-color:rgba(11,125,119,.28); background:#fff; padding:13px 24px; }\n  .hero-trust-note { color:#596663; margin:14px 0 24px; max-width:620px; line-height:1.55; }\n  .hero-stats { gap:24px; }\n  .stat-value { color:var(--primary-dark); font-size:1.55rem; }\n  .hero-photo-frame { max-width:520px; border-radius:0; border:0; box-shadow:none; background:transparent; }\n  .hero-photo-frame::before,.hero-photo-frame .overlay,.hero-photo-frame .corner { display:none !important; }\n  .hero-photo-frame img { aspect-ratio: 1.08/1; min-height:420px; border-radius:0; object-fit:cover; object-position:center 28%; }\n  .hero-photo-chip { bottom:15px; border-radius:999px; color:#28504b; background:rgba(255,255,255,.92); font-size:.67rem; }\n\n  .enablement-strip { position:relative; z-index:3; margin-top:-26px; padding:0 0 48px; }\n  .enablement-grid {\n    display:grid; grid-template-columns:repeat(3,1fr); background:rgba(255,255,255,.97);\n    border:1px solid rgba(11,125,119,.12); border-radius:18px; overflow:hidden;\n    box-shadow:0 18px 48px rgba(18,95,89,.09);\n  }\n  .enablement-item { display:flex; gap:14px; align-items:center; padding:20px 22px; border-right:1px solid rgba(11,125,119,.10); }\n  .enablement-item:last-child { border-right:0; }\n  .enablement-icon { width:42px; height:42px; flex:0 0 42px; display:grid; place-items:center; border-radius:13px; border:1px solid rgba(11,125,119,.22); background:var(--surface-2); color:var(--primary-dark); font-weight:800; }\n  .enablement-item strong { display:block; color:var(--primary-dark); font-size:.84rem; margin-bottom:3px; }\n  .enablement-item span:not(.enablement-icon) { display:block; color:#687370; font-size:.72rem; }\n  .enablement-legal { text-align:center; color:#727c79; font-size:.72rem; margin:12px auto 0; max-width:850px; }\n\n  .service-paths { padding-bottom:72px; }\n  .path-grid { gap:20px; }\n  .path-card { min-height:390px; border-radius:18px; box-shadow:var(--shadow-card); }\n  .path-card::after { background:linear-gradient(to top,rgba(9,35,32,.86),rgba(9,35,32,.12) 68%,transparent); }\n  .path-content { padding:30px; }\n  .path-kicker { color:#b9f0e8; }\n  .path-card h2 { font-size:clamp(1.8rem,3vw,2.65rem); }\n\n  .about { padding:84px 0; background:#fff; }\n  .about-grid { grid-template-columns:minmax(300px,.82fr) minmax(0,1.18fr); gap:58px; }\n  .about-photo-wrap { max-width:400px; }\n  .about-photo-wrap img { border-radius:18px; box-shadow:var(--shadow-card); }\n  .about-badge { border-radius:14px; background:rgba(255,255,255,.94); }\n  .about-content .section-tag { border:0; padding:0; background:transparent; box-shadow:none; color:var(--primary-dark); margin-bottom:10px; }\n  .about-content .section-tag::before { display:none; }\n  .about-content h2 { font-size:clamp(2.6rem,4.5vw,4rem); color:#165b56; margin-bottom:10px; }\n  .about-content h2 em { color:var(--primary-dark); }\n\n  .services { padding:86px 0; background:#fff; }\n  .services .container { display:grid; grid-template-columns:245px minmax(0,1fr); gap:30px; align-items:start; }\n  .services-header { text-align:left; position:sticky; top:120px; }\n  .services-header .section-tag { border:0; padding:0; background:transparent; box-shadow:none; color:var(--primary-dark); margin-bottom:10px; }\n  .services-header .section-tag::before { display:none; }\n  .services-header h2 { font-size:clamp(2.3rem,3.4vw,3.2rem); color:#165b56; line-height:1.02; }\n  .services-header h2 em { color:var(--primary-dark); }\n  .services-header p { margin-top:16px; color:#596663; font-size:.88rem; line-height:1.68; }\n  .services-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }\n  .service-card { border-radius:14px; box-shadow:var(--shadow-card); border-color:rgba(11,125,119,.10); }\n  .service-card-img { height:178px; }\n  .service-card-img img { height:100%; object-fit:cover; }\n  .service-card-body { padding:18px; }\n  .service-card h3 { color:var(--primary-dark); font-size:1.45rem; line-height:1.05; }\n  .service-card-body > p { font-size:.82rem; line-height:1.55; }\n  .service-ideal { font-size:.76rem !important; }\n  .service-price { display:block; margin-top:13px; padding:8px 10px; border-radius:9px; background:var(--surface-2); color:var(--primary-dark); font-size:.73rem; font-weight:700; }\n  .carousel-dots { grid-column:2; }\n\n  .experiences { padding:82px 0; background:linear-gradient(90deg,#EFF9F7,#E8F6F3); }\n  .experiences .container { display:grid; grid-template-columns:245px minmax(0,1fr); gap:30px; align-items:start; }\n  .experiences-header { text-align:left; position:sticky; top:120px; }\n  .experiences-header .section-tag { border:0; padding:0; background:transparent; box-shadow:none; color:var(--primary-dark); margin-bottom:10px; }\n  .experiences-header .section-tag::before { display:none; }\n  .experiences-header h2 { color:#165b56; font-size:clamp(2.25rem,3.3vw,3.15rem); line-height:1.02; }\n  .experiences-header h2 em { color:var(--primary-dark); }\n  .experiences-header p { color:#586562; font-size:.86rem; line-height:1.65; margin-top:15px; }\n  .experience-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }\n  .experience-card { border-radius:14px; border-color:rgba(11,125,119,.10); box-shadow:var(--shadow-card); background:rgba(255,255,255,.95); overflow:hidden; }\n  .experience-card:nth-child(1)::before,\n  .experience-card:nth-child(2)::before,\n  .experience-card:nth-child(3)::before { content:''; display:block; height:150px; background-size:cover; background-position:center; margin:-28px -28px 20px; }\n  .experience-card:nth-child(1)::before { background-image:url('Ventosas.jpg'); }\n  .experience-card:nth-child(2)::before { background-image:url('Pistola%20percutora.jpg'); }\n  .experience-card:nth-child(3)::before { background-image:url('Liberacion%20instrumental%20trapecio.jpg'); }\n  .experience-card h3 { color:var(--primary-dark); }\n  .experience-price { color:var(--primary-dark); }\n\n  .reviews, .plans, .booking, .contact { position:relative; z-index:1; }\n  .footer { background:#184A46; color:#fff; }\n  .footer-copy,.footer-links a { color:rgba(255,255,255,.72); }\n  .footer-sep { background:var(--primary); opacity:.6; }\n  .footer::after {\n    content:'Servicio de fisioterapia habilitado en REPS · Profesional independiente · Sede en Dosquebradas · Atención domiciliaria en Pereira y Dosquebradas';\n    display:block; max-width:1200px; margin:22px auto 0; padding:18px 24px 0; border-top:1px solid rgba(255,255,255,.12);\n    text-align:center; color:rgba(255,255,255,.58); font-size:.7rem;\n  }\n\n  @media (max-width:1020px) {\n    .services .container,.experiences .container { grid-template-columns:1fr; }\n    .services-header,.experiences-header { position:static; text-align:center; max-width:760px; margin:0 auto 30px; }\n    .carousel-dots { grid-column:1; }\n    .services-grid,.experience-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }\n    .hero-grid { grid-template-columns:1fr; }\n    .hero { background:#F8FCFB; }\n    .hero-photo-wrap { order:-1; }\n    .hero-photo-frame { max-width:620px; }\n    .hero-photo-frame img { min-height:360px; }\n    .enablement-grid { grid-template-columns:1fr; }\n    .enablement-item { border-right:0; border-bottom:1px solid rgba(11,125,119,.10); }\n    .enablement-item:last-child { border-bottom:0; }\n  }\n  @media (max-width:768px) {\n    .nav-wellness-label { max-width:none; text-align:left; }\n    .hero { padding-top:118px; }\n    .hero-photo-frame img { height:280px !important; min-height:0; }\n    .hero h1 { font-size:clamp(2.15rem,10vw,3.05rem); }\n    .hero-stats { display:none; }\n    .enablement-strip { margin-top:0; padding-top:18px; }\n    .services-grid,.experience-grid { grid-template-columns:1fr; }\n    .services { padding:68px 0; }\n    .experiences { padding:68px 0; }\n    .about { padding:68px 0; }\n  }\n</style>\n'''
+          if 'id="visual-refresh-2026-08-07"' not in text:
+              replace_once('</head>', css + '\n</head>', 'CSS final')
+
+          path.write_text(text, encoding='utf-8')
+          print('Rediseño visual aplicado correctamente.')
+          PY
+
+      - name: Validar cambios mínimos
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "Servicio de fisioterapia habilitado" index.html
+          grep -q "Masajes relajantes y bienestar" index.html
+          grep -q "enablement-strip" index.html
+          grep -q "visual-refresh-2026-08-07" index.html
+          grep -q "Valoración fisioterapéutica inicial" index.html
+          grep -q "Rehabilitación y readaptación funcional" index.html
+          grep -q "data-service=\"Valoración Funcional\"" index.html
+          grep -q "data-service=\"Readaptación Funcional\"" index.html
+
+      - name: Limpiar disparador y guardar cambios
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/apply-visual-refresh-2026-08-07.yml
+          rm -f .github/visual-refresh-trigger-2026-08-07.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "design: aplicar rediseño visual premium"
+          git push origin main
