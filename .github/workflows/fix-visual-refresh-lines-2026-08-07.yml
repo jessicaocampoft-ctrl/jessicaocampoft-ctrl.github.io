@@ -1,0 +1,54 @@
+name: Corregir estilos visuales 2026-08-07
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  corregir:
+    if: contains(github.event.head_commit.message, '[fix-visual-lines]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Convertir saltos literales del bloque visual
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          t=p.read_text(encoding='utf-8')
+          start=t.find(r'\n<style id="visual-refresh-2026-08-07">')
+          if start < 0:
+              raise SystemExit('No se encontró el inicio literal del bloque visual')
+          end=t.find(r'</style>\n', start)
+          if end < 0:
+              raise SystemExit('No se encontró el final literal del bloque visual')
+          end += len(r'</style>\n')
+          block=t[start:end]
+          fixed=block.replace(r'\n','\n')
+          t=t[:start]+fixed+t[end:]
+          p.write_text(t,encoding='utf-8')
+          print('Saltos de línea corregidos')
+          PY
+          grep -q '<style id="visual-refresh-2026-08-07">' index.html
+          if grep -Fq '\n  :root' index.html; then
+            echo 'Aún quedan saltos literales en CSS' >&2
+            exit 1
+          fi
+      - name: Limpiar y guardar
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/fix-visual-refresh-lines-2026-08-07.yml
+          rm -f .github/fix-visual-lines-trigger-2026-08-07.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: corregir carga de estilos del rediseño"
+          git push origin main
