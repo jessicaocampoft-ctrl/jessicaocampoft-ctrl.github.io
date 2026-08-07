@@ -1,1 +1,0 @@
-Disparador temporal para aplicar la corrección visual V2 aprobada el 2026-08-07.
