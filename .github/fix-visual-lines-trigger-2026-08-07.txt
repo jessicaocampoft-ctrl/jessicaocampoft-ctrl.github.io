@@ -1,0 +1,1 @@
+Disparador temporal de corrección de saltos de línea del CSS del rediseño.
