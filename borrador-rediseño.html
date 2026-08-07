@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Borrador visual — Cuidándote Fisioterapia</title>
+  <link rel="icon" href="LogoCuidandote/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --turq:#7EDDD0;
+      --turq-2:#63CDC0;
+      --turq-deep:#2A7A72;
+      --turq-pale:#EDF9F7;
+      --turq-soft:#F5FCFA;
+      --gold:#C9A55A;
+      --ink:#18201F;
+      --muted:#686F6D;
+      --line:rgba(42,122,114,.16);
+      --white:#fff;
+      --shadow:0 24px 70px rgba(42,122,114,.10);
+      --shadow-sm:0 12px 36px rgba(42,122,114,.08);
+      --serif:'Cormorant Garamond',serif;
+      --sans:'Trebuchet MS','DM Sans',Arial,sans-serif;
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:var(--sans);color:var(--ink);background:#fff;line-height:1.65;-webkit-font-smoothing:antialiased}
+    img{max-width:100%;display:block}
+    a{text-decoration:none;color:inherit}
+    button,a{font:inherit}
+    .container{width:min(1180px,calc(100% - 40px));margin:auto}
+    .eyebrow{display:inline-flex;align-items:center;gap:9px;padding:7px 13px;border:1px solid rgba(126,221,208,.7);border-radius:999px;background:rgba(255,255,255,.86);color:var(--turq-deep);font-size:.72rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+    .eyebrow svg{width:15px;height:15px;stroke:var(--turq-deep)}
+    h1,h2,h3{font-family:var(--serif);line-height:1.02;letter-spacing:-.025em}
+    h1{font-size:clamp(3.15rem,6vw,5.75rem);font-weight:600}
+    h2{font-size:clamp(2.5rem,4.8vw,4.35rem);font-weight:600}
+    h3{font-size:1.85rem;font-weight:600}
+    .accent{color:var(--turq-deep);font-style:italic}
+    .muted{color:var(--muted)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:50px;padding:13px 25px;border-radius:999px;font-weight:700;font-size:.9rem;transition:.2s ease;border:1px solid transparent}
+    .btn-primary{background:var(--turq);color:#10201D;box-shadow:0 12px 28px rgba(126,221,208,.28)}
+    .btn-primary:hover{transform:translateY(-2px);background:var(--turq-2)}
+    .btn-secondary{background:#fff;border-color:var(--line);color:var(--turq-deep)}
+    .btn-secondary:hover{border-color:var(--turq);transform:translateY(-2px)}
+    .btn svg{width:17px;height:17px}
+
+    /* NAV */
+    .nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(42,122,114,.10)}
+    .nav-inner{min-height:88px;display:flex;align-items:center;justify-content:space-between;gap:26px}
+    .logo{width:188px;flex:0 0 auto}
+    .nav-links{display:flex;align-items:center;justify-content:flex-end;gap:24px;list-style:none}
+    .nav-links a:not(.nav-cta){font-size:.72rem;line-height:1.22;text-transform:uppercase;letter-spacing:.055em;color:#5e6664;font-weight:700;text-align:center}
+    .nav-links a:not(.nav-cta):hover{color:var(--turq-deep)}
+    .nav-cta{padding:11px 21px;background:var(--turq);border-radius:999px;font-size:.76rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
+    .nav-wellness{max-width:162px}
+
+    /* HERO */
+    .hero{position:relative;overflow:hidden;background:linear-gradient(145deg,#fff 15%,#F8FEFC 56%,#E9F8F5 100%);padding:86px 0 72px}
+    .hero::before{content:"";position:absolute;width:620px;height:620px;border-radius:50%;right:-210px;top:-240px;background:radial-gradient(circle,rgba(126,221,208,.34),rgba(126,221,208,0) 68%)}
+    .hero-grid{position:relative;display:grid;grid-template-columns:1.07fr .93fr;gap:68px;align-items:center}
+    .hero-copy{padding:24px 0}
+    .hero .eyebrow{margin-bottom:24px}
+    .hero h1{max-width:720px}
+    .hero-lead{font-size:1.08rem;color:var(--muted);max-width:650px;margin:25px 0 28px}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+    .hero-location{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:22px;color:#68706E;font-size:.78rem}
+    .hero-location span{display:inline-flex;align-items:center;gap:7px}
+    .hero-location i{width:4px;height:4px;border-radius:50%;background:var(--gold)}
+    .hero-media{position:relative}
+    .hero-photo{aspect-ratio:4/5;object-fit:cover;border-radius:30px;box-shadow:var(--shadow);border:1px solid rgba(126,221,208,.35)}
+    .hero-card{position:absolute;left:-34px;bottom:28px;width:250px;padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border:1px solid rgba(126,221,208,.42);box-shadow:var(--shadow-sm)}
+    .hero-card-top{display:flex;align-items:center;gap:10px;color:var(--turq-deep);font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.055em}
+    .hero-card p{font-size:.76rem;color:var(--muted);margin-top:6px}
+    .seal{width:33px;height:33px;border-radius:50%;display:grid;place-items:center;background:var(--turq-pale);border:1px solid rgba(126,221,208,.5)}
+    .seal svg{width:18px;height:18px;stroke:var(--turq-deep)}
+
+    /* TRUST */
+    .trust{padding:26px 0;background:#fff;border-bottom:1px solid rgba(42,122,114,.10)}
+    .trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(42,122,114,.10);border:1px solid rgba(42,122,114,.10);border-radius:22px;overflow:hidden}
+    .trust-item{display:flex;align-items:center;gap:14px;background:#fff;padding:20px 24px}
+    .trust-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:var(--turq-pale);flex:0 0 auto}
+    .trust-icon svg{width:20px;height:20px;stroke:var(--turq-deep)}
+    .trust-item strong{display:block;font-size:.86rem;color:var(--ink)}
+    .trust-item span{display:block;font-size:.74rem;color:var(--muted);margin-top:2px}
+
+    /* SECTION */
+    .section{padding:106px 0}
+    .section-head{max-width:760px;margin-bottom:46px}
+    .section-head.center{text-align:center;margin-left:auto;margin-right:auto}
+    .section-head .eyebrow{margin-bottom:18px}
+    .section-head p{font-size:1rem;color:var(--muted);margin-top:17px;max-width:680px}
+    .section-head.center p{margin-left:auto;margin-right:auto}
+
+    /* CLINICAL CARDS */
+    .clinical{background:#fff}
+    .clinical-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+    .clinical-card{display:grid;grid-template-columns:.92fr 1.08fr;min-height:410px;border:1px solid var(--line);border-radius:28px;overflow:hidden;background:#fff;box-shadow:var(--shadow-sm)}
+    .clinical-photo{height:100%;object-fit:cover}
+    .clinical-body{padding:31px;display:flex;flex-direction:column}
+    .mini-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;font-weight:800;color:var(--turq-deep);margin-bottom:10px}
+    .clinical-body p{color:var(--muted);font-size:.9rem;margin:12px 0 16px}
+    .chips{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 18px}
+    .chip{padding:7px 10px;border-radius:999px;background:var(--turq-pale);border:1px solid rgba(126,221,208,.34);font-size:.68rem;color:var(--turq-deep);font-weight:800;letter-spacing:.025em}
+    .ideal{padding:13px 14px;border-left:2px solid var(--turq);background:#FAFDFC;border-radius:0 12px 12px 0;font-size:.78rem;color:var(--muted);margin-bottom:18px}
+    .ideal strong{color:var(--ink)}
+    .clinical-body .btn{margin-top:auto;width:max-content}
+
+    /* RELEASE / DESCARGAS */
+    .release{background:linear-gradient(180deg,#F8FCFB,#fff)}
+    .release-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    .release-card{border-radius:24px;border:1px solid var(--line);background:#fff;padding:24px;box-shadow:var(--shadow-sm)}
+    .release-card .num{font-family:var(--serif);font-size:2.55rem;color:var(--turq-deep);line-height:1}
+    .release-card h3{font-size:1.55rem;margin:13px 0 8px}
+    .release-card p{font-size:.82rem;color:var(--muted)}
+    .price-line{margin-top:19px;padding-top:15px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:end}
+    .price-line span{font-size:.7rem;color:var(--muted)}
+    .price-line strong{color:var(--turq-deep);font-size:.86rem;text-align:right}
+
+    /* WELLNESS */
+    .wellness{position:relative;overflow:hidden;background:linear-gradient(145deg,#F9FEFC,#EAF8F5)}
+    .wellness::after{content:"";position:absolute;inset:auto -160px -200px auto;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(201,165,90,.13),transparent 65%)}
+    .wellness-intro{display:grid;grid-template-columns:.9fr 1.1fr;gap:46px;align-items:center;margin-bottom:44px;position:relative;z-index:1}
+    .wellness-photo{height:420px;width:100%;object-fit:cover;border-radius:30px;box-shadow:var(--shadow);border:1px solid rgba(126,221,208,.35)}
+    .wellness-copy .eyebrow{margin-bottom:18px}
+    .wellness-copy p{color:var(--muted);margin:17px 0 20px}
+    .wellness-note{display:flex;align-items:flex-start;gap:10px;font-size:.76rem;color:#65706D;padding:12px 14px;background:rgba(255,255,255,.64);border-radius:14px;border:1px solid var(--line)}
+    .wellness-note svg{width:17px;height:17px;stroke:var(--turq-deep);flex:0 0 auto;margin-top:2px}
+    .ritual-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .ritual{background:rgba(255,255,255,.87);border:1px solid rgba(126,221,208,.38);border-radius:25px;padding:26px;box-shadow:var(--shadow-sm)}
+    .ritual.premium{border-color:rgba(201,165,90,.44);background:linear-gradient(180deg,#fff,#FFFBF3)}
+    .ritual .time{font-size:.69rem;color:var(--turq-deep);font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+    .ritual h3{margin:8px 0 9px}
+    .ritual p{font-size:.82rem;color:var(--muted);min-height:80px}
+    .ritual-price{font-family:var(--serif);font-size:1.75rem;color:var(--turq-deep);margin-top:15px}
+
+    /* ABOUT */
+    .about{background:#fff}
+    .about-grid{display:grid;grid-template-columns:.86fr 1.14fr;gap:64px;align-items:center}
+    .about-photo{border-radius:30px;aspect-ratio:4/5;object-fit:cover;border:1px solid var(--line);box-shadow:var(--shadow)}
+    .about-copy .eyebrow{margin-bottom:18px}
+    .role{font-size:.82rem;letter-spacing:.055em;text-transform:uppercase;color:var(--turq-deep);font-weight:800;margin:13px 0 18px}
+    .about-copy>p{color:var(--muted);max-width:640px}
+    .about-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:24px}
+    .fact{padding:15px;border-radius:16px;background:var(--turq-soft);border:1px solid var(--line);font-size:.72rem;color:var(--muted)}
+    .fact strong{display:block;color:var(--ink);font-size:.78rem;margin-bottom:3px}
+
+    /* CTA */
+    .cta-wrap{padding:0 0 104px}
+    .cta{position:relative;overflow:hidden;border-radius:32px;padding:58px;background:linear-gradient(135deg,var(--turq-deep),#1F6760);color:#fff;display:grid;grid-template-columns:1fr auto;gap:36px;align-items:center}
+    .cta::after{content:"";position:absolute;width:320px;height:320px;border-radius:50%;right:-100px;top:-160px;background:rgba(126,221,208,.20)}
+    .cta h2{font-size:clamp(2.3rem,4vw,3.7rem);position:relative;z-index:1}
+    .cta p{color:rgba(255,255,255,.78);margin-top:10px;position:relative;z-index:1}
+    .cta .btn{position:relative;z-index:2;background:#fff;color:var(--turq-deep);min-width:190px}
+
+    /* FOOTER */
+    footer{background:#183F3B;color:#fff;padding:56px 0 28px}
+    .footer-grid{display:grid;grid-template-columns:1.25fr .9fr .9fr;gap:48px}
+    .footer-logo{width:210px;filter:brightness(0) invert(1);opacity:.96}
+    footer h4{font-family:var(--serif);font-size:1.25rem;margin-bottom:12px}
+    footer p,footer a{color:rgba(255,255,255,.70);font-size:.78rem;line-height:1.8}
+    footer a:hover{color:var(--turq)}
+    .footer-legal{margin-top:38px;padding-top:20px;border-top:1px solid rgba(255,255,255,.12);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;color:rgba(255,255,255,.55);font-size:.7rem}
+
+    @media(max-width:1040px){
+      .nav-links{gap:14px}.nav-links a:not(.nav-cta){font-size:.66rem}.nav-cta{padding:10px 15px}
+      .clinical-grid{grid-template-columns:1fr}.clinical-card{max-width:820px}
+    }
+    @media(max-width:860px){
+      .nav-links li:not(:last-child):not(:nth-last-child(2)){display:none}
+      .hero-grid,.wellness-intro,.about-grid{grid-template-columns:1fr}
+      .hero{padding-top:50px}.hero-media{max-width:560px;margin:auto}.hero-card{left:18px}
+      .trust-grid,.release-grid,.ritual-grid{grid-template-columns:1fr}
+      .trust-grid{gap:0}.trust-item{border-bottom:1px solid rgba(42,122,114,.10)}.trust-item:last-child{border-bottom:0}
+      .release-card,.ritual{max-width:660px;width:100%;margin:auto}
+      .wellness-photo{height:360px}.about-photo{max-width:480px;margin:auto;width:100%}
+      .cta{grid-template-columns:1fr;padding:38px}.cta .btn{width:max-content}
+      .footer-grid{grid-template-columns:1fr 1fr}.footer-grid>div:first-child{grid-column:1/-1}
+    }
+    @media(max-width:620px){
+      .container{width:min(100% - 28px,1180px)}.nav-inner{min-height:74px}.logo{width:150px}.nav-links{gap:8px}.nav-links li:nth-last-child(2){display:none}.nav-cta{font-size:.68rem}
+      .hero{padding:42px 0 58px}.hero-copy{text-align:left}.hero h1{font-size:3.25rem}.hero-actions{display:grid}.hero-actions .btn{width:100%}.hero-photo{border-radius:22px}.hero-card{left:12px;right:12px;bottom:12px;width:auto}
+      .section{padding:78px 0}.clinical-card{grid-template-columns:1fr;min-height:0}.clinical-photo{height:250px;width:100%}.clinical-body{padding:24px}.clinical-body .btn{width:100%}
+      .about-facts{grid-template-columns:1fr}.wellness-photo{height:280px}.cta-wrap{padding-bottom:78px}.cta{padding:30px 23px;border-radius:24px}.cta .btn{width:100%}
+      .footer-grid{grid-template-columns:1fr;gap:28px}.footer-grid>div:first-child{grid-column:auto}
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="logo" href="#inicio"><img src="LogoCuidandote/logo-horizontal-web.png" alt="Cuidándote Fisioterapia"></a>
+      <ul class="nav-links">
+        <li><a href="#fisioterapia">Fisioterapia y<br>rehabilitación</a></li>
+        <li><a class="nav-wellness" href="#bienestar">Masajes relajantes y bienestar</a></li>
+        <li><a href="#jessica">Nosotros</a></li>
+        <li><a href="pasaporte.html">Pasaporte</a></li>
+        <li><a class="nav-cta" href="#agenda">Agendar cita</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="eyebrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9"><path d="M12 3l7 3v5c0 4.8-2.9 8.4-7 10-4.1-1.6-7-5.2-7-10V6l7-3Z"/><path d="m9 12 2 2 4-5"/></svg>
+            Servicio de fisioterapia habilitado
+          </div>
+          <h1>Recupera tu movimiento con <span class="accent">atención fisioterapéutica personalizada.</span></h1>
+          <p class="hero-lead">Valoración fisioterapéutica, rehabilitación funcional y ejercicio terapéutico con atención en nuestra sede de Dosquebradas y a domicilio en Pereira y Dosquebradas.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#agenda">Agendar valoración
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a class="btn btn-secondary" href="#fisioterapia">Conocer servicios</a>
+          </div>
+          <div class="hero-location"><span>Sede en Dosquebradas</span><i></i><span>Domicilios en Pereira y Dosquebradas</span></div>
+        </div>
+        <div class="hero-media">
+          <img class="hero-photo" src="Readaptacion%20Mafe.jpg" alt="Atención fisioterapéutica en Cuidándote Fisioterapia">
+          <div class="hero-card">
+            <div class="hero-card-top">
+              <span class="seal"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3l7 3v5c0 4.8-2.9 8.4-7 10-4.1-1.6-7-5.2-7-10V6l7-3Z"/><path d="m9 12 2 2 4-5"/></svg></span>
+              Atención habilitada
+            </div>
+            <p>Fisioterapia como profesional independiente · REPS.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="trust" aria-label="Habilitación y modalidades">
+      <div class="container trust-grid">
+        <div class="trust-item"><span class="trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3l7 3v5c0 4.8-2.9 8.4-7 10-4.1-1.6-7-5.2-7-10V6l7-3Z"/><path d="m9 12 2 2 4-5"/></svg></span><div><strong>Servicio habilitado</strong><span>Fisioterapia · REPS</span></div></div>
+        <div class="trust-item"><span class="trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5V21H3V10.5Z"/><path d="M9 21v-7h6v7"/></svg></span><div><strong>Atención en sede</strong><span>Dosquebradas, Risaralda</span></div></div>
+        <div class="trust-item"><span class="trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 21s6-5.1 6-11a6 6 0 1 0-12 0c0 5.9 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg></span><div><strong>Atención domiciliaria</strong><span>Pereira y Dosquebradas</span></div></div>
+      </div>
+    </section>
+
+    <section class="section clinical" id="fisioterapia">
+      <div class="container">
+        <header class="section-head center">
+          <div class="eyebrow">Fisioterapia y rehabilitación</div>
+          <h2>Un proceso diseñado para <span class="accent">ti.</span></h2>
+          <p>Comenzamos entendiendo tus síntomas, movimiento, fuerza y capacidad funcional para definir un abordaje personalizado y progresivo.</p>
+        </header>
+        <div class="clinical-grid">
+          <article class="clinical-card">
+            <img class="clinical-photo" src="Readaptacion%20Mafe.jpg" alt="Valoración fisioterapéutica inicial">
+            <div class="clinical-body">
+              <span class="mini-label">Punto de inicio</span>
+              <h3>Valoración fisioterapéutica inicial</h3>
+              <p>Revisamos antecedentes, síntomas, movilidad, fuerza y función para definir los hallazgos y el plan fisioterapéutico más adecuado.</p>
+              <div class="chips"><span class="chip">50 min</span><span class="chip">Sede $80.000</span><span class="chip">Domicilio $95.000</span></div>
+              <div class="ideal"><strong>Ideal para:</strong> dolor, lesiones, postoperatorios, limitaciones de movimiento o cuando no sabes por dónde empezar.</div>
+              <a class="btn btn-primary" href="#agenda">Agendar valoración</a>
+            </div>
+          </article>
+          <article class="clinical-card">
+            <img class="clinical-photo" src="Readaptacion%20Mafe.jpg" alt="Rehabilitación y readaptación funcional">
+            <div class="clinical-body">
+              <span class="mini-label">Proceso progresivo</span>
+              <h3>Rehabilitación y readaptación funcional</h3>
+              <p>Ejercicio terapéutico, educación, técnicas manuales y progresiones adaptadas a tus objetivos para recuperar función y volver a tus actividades.</p>
+              <div class="chips"><span class="chip">40–45 min</span><span class="chip">Sede $70.000</span><span class="chip">Domicilio $85.000</span></div>
+              <div class="ideal"><strong>Ideal para:</strong> lesiones, postoperatorios, dolor persistente, retorno al entrenamiento o actividades cotidianas.</div>
+              <a class="btn btn-primary" href="#agenda">Agendar sesión</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section release">
+      <div class="container">
+        <header class="section-head">
+          <div class="eyebrow">Descarga muscular</div>
+          <h2>Menos tensión. Más <span class="accent">ligereza.</span></h2>
+          <p>Opciones según la zona y el nivel de carga que estés acumulando.</p>
+        </header>
+        <div class="release-grid">
+          <article class="release-card"><div class="num">01</div><h3>Cuello y espalda</h3><p>Para tensión cervical y dorsal asociada a jornadas largas, estrés o carga física.</p><div class="price-line"><span>50 min</span><strong>Sede $75.000<br>Domicilio $90.000</strong></div></article>
+          <article class="release-card"><div class="num">02</div><h3>Piernas</h3><p>Para fatiga, sensación de pesadez y sobrecarga de miembros inferiores.</p><div class="price-line"><span>50 min</span><strong>Sede $75.000<br>Domicilio $90.000</strong></div></article>
+          <article class="release-card"><div class="num">03</div><h3>Cuerpo completo</h3><p>Una experiencia integral para disminuir tensión y sensación de sobrecarga general.</p><div class="price-line"><span>80 min</span><strong>Sede $110.000<br>Domicilio $125.000</strong></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section wellness" id="bienestar">
+      <div class="container">
+        <div class="wellness-intro">
+          <img class="wellness-photo" src="Ventosas.jpg" alt="Masajes relajantes y experiencias de bienestar">
+          <div class="wellness-copy">
+            <div class="eyebrow">Masajes relajantes y bienestar</div>
+            <h2>Tu cuerpo también necesita <span class="accent">una pausa.</span></h2>
+            <p>Desconéctate de la rutina y disfruta experiencias creadas para relajar el cuerpo y la mente mediante masaje relajante, calor, aromas y diferentes elementos de bienestar.</p>
+            <div class="wellness-note"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7h.01"/></svg><span>Las experiencias de bienestar no sustituyen una valoración o tratamiento fisioterapéutico cuando existe una lesión o limitación funcional.</span></div>
+          </div>
+        </div>
+        <div class="ritual-grid">
+          <article class="ritual"><span class="time">40 minutos</span><h3>Pausa Cuidándote</h3><p>Una experiencia localizada para desconectarte del estrés y regalarle al cuerpo un momento de calma.</p><div class="ritual-price">$80.000</div></article>
+          <article class="ritual"><span class="time">60 minutos</span><h3>Ritual Cuidándote</h3><p>La experiencia principal de relajación: masaje de cuerpo completo y rituales sensoriales para bajar el ritmo.</p><div class="ritual-price">$110.000</div></article>
+          <article class="ritual premium"><span class="time">90 minutos · Premium</span><h3>Cuidándote Profundo</h3><p>Una experiencia sensorial prolongada con calor, masaje y elementos de bienestar para una desconexión completa.</p><div class="ritual-price">$165.000</div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section about" id="jessica">
+      <div class="container about-grid">
+        <img class="about-photo" src="Imagen%20de%20perfil%201.jpg" alt="Jessica Ocampo, fisioterapeuta">
+        <div class="about-copy">
+          <div class="eyebrow">Conoce a tu fisioterapeuta</div>
+          <h2>Jessica <span class="accent">Ocampo.</span></h2>
+          <div class="role">Fisioterapeuta con experiencia en atención de deportistas</div>
+          <p>Atención cercana, funcional y personalizada, combinando valoración, ejercicio terapéutico, técnicas manuales y educación. La experiencia como deportista de alto rendimiento aporta una comprensión práctica de las exigencias del entrenamiento, las lesiones y el retorno a la actividad.</p>
+          <div class="about-facts">
+            <div class="fact"><strong>Fisioterapeuta</strong>Servicio habilitado en REPS.</div>
+            <div class="fact"><strong>Alto rendimiento</strong>Experiencia deportiva real.</div>
+            <div class="fact"><strong>Atención personalizada</strong>Deportistas y población general.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-wrap" id="agenda">
+      <div class="container">
+        <div class="cta">
+          <div><h2>Agenda tu valoración o sesión.</h2><p>Sede Santa Mónica en Dosquebradas · Atención domiciliaria en Pereira y Dosquebradas.</p></div>
+          <a class="btn" href="https://wa.me/573136467945" target="_blank" rel="noopener">Agendar ahora</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div><img class="footer-logo" src="LogoCuidandote/logo-horizontal-web.png" alt="Cuidándote Fisioterapia"><p style="margin-top:14px;max-width:360px">Fisioterapia, rehabilitación, descargas musculares, masajes relajantes y experiencias de bienestar.</p></div>
+        <div><h4>Atención</h4><p>Sede Santa Mónica<br>Dosquebradas, Risaralda<br>Atención domiciliaria en Pereira y Dosquebradas</p></div>
+        <div><h4>Contacto</h4><p><a href="https://wa.me/573136467945">WhatsApp +57 313 646 7945</a><br><a href="https://www.instagram.com/cuidandotefisioterapia/">@cuidandotefisioterapia</a><br><a href="pasaporte.html">Pasaporte Cuidándote</a></p></div>
+      </div>
+      <div class="footer-legal"><span>Servicio de fisioterapia habilitado en REPS · Profesional independiente</span><span>© 2026 Cuidándote Fisioterapia</span></div>
+    </div>
+  </footer>
+</body>
+</html>
