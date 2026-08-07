@@ -1,0 +1,1 @@
+Segundo disparador técnico para ejecutar la corrección visual V2 tras simplificar el workflow.
