@@ -1,0 +1,1 @@
+Disparador temporal para aplicar el header institucional y la sección de equipo aprobados.
