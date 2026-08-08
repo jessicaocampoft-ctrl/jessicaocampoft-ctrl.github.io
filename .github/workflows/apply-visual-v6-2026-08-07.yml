@@ -1,0 +1,38 @@
+name: Aplicar diseño visual V6 2026-08-07
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    if: contains(github.event.head_commit.message, '[visual-v6]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Aplicar diseño V6
+        run: python .github/apply_visual_v6.py
+
+      - name: Validar integraciones críticas
+        run: |
+          grep -q 'visual-refresh-v6-2026-08-07' index.html
+          grep -q 'loadReviews();' index.html
+          grep -q 'APPS_SCRIPT_URL' index.html
+          grep -q 'pasaporte.html' index.html
+
+      - name: Limpiar temporales y guardar
+        run: |
+          rm -f .github/apply_visual_v6.py
+          rm -f .github/workflows/apply-visual-v6-2026-08-07.yml
+          rm -f .github/visual-v6-trigger-2026-08-07.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "design: aplicar diseño visual V6"
+          git push origin main
