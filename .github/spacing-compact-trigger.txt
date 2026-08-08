@@ -1,0 +1,1 @@
+Aplicar únicamente compactación de espacios aprobada.
