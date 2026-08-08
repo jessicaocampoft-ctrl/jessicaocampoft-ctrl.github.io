@@ -1,0 +1,103 @@
+name: Validar y desplegar horarios públicos
+
+on:
+  push:
+    branches:
+      - horarios-publicos-2026-08-07
+    paths:
+      - .github/public-schedule-trigger.txt
+
+permissions:
+  contents: write
+
+concurrency:
+  group: public-schedule-backend-2026-08-07
+  cancel-in-progress: false
+
+jobs:
+  validar-desplegar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama aislada
+        uses: actions/checkout@v4
+        with:
+          ref: horarios-publicos-2026-08-07
+          fetch-depth: 0
+
+      - name: Aplicar backend y conexión pública
+        run: python .github/apply_public_schedule_backend.py
+
+      - name: Validar sintaxis y alcance
+        run: |
+          set -euo pipefail
+          node --check google-apps-script.js
+          node --check public-schedule-client.js
+          grep -q "publicScheduleConfig" google-apps-script.js
+          grep -q "savePublicScheduleConfig" google-apps-script.js
+          grep -q "publicCandidateSlotsConfigured_" google-apps-script.js
+          grep -q "fitsPublicScheduleConfigured_" google-apps-script.js
+          grep -q "public-schedule-client.js" index.html
+          grep -q "loadReviews();" index.html
+          grep -q "pasaporte.html" index.html
+          grep -q "getPassportSecure" google-apps-script.js
+          grep -q "passportSaveProgress_" google-apps-script.js
+
+      - name: Guardar resultado limpio en rama
+        run: |
+          set -euo pipefail
+          rm -f .github/apply_public_schedule_backend.py
+          rm -f .github/public-schedule-trigger.txt
+          rm -f .github/workflows/apply-public-schedule-backend.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: horarios públicos por sede"
+          git push origin HEAD:horarios-publicos-2026-08-07
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar clasp
+        run: npm install --global @google/clasp@3.3.0
+
+      - name: Restaurar credencial de Apps Script
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Configurar proyecto Apps Script
+        run: |
+          printf '%s' '{"scriptId":"1KVmo_TpTAkwLXQjMVvSO51YDtojr64XsnWg8I7bz0UkGht9S1W7WD0zI","rootDir":"."}' > .clasp.json
+          printf '%s\n' '**/**' '!appsscript.json' '!google-apps-script.js' > .claspignore
+
+      - name: Subir código Apps Script
+        run: clasp push --force
+
+      - name: Mostrar despliegues disponibles
+        run: clasp deployments
+
+      - name: Actualizar despliegue público
+        run: >-
+          clasp deploy
+          --deploymentId AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw
+          --description "Horarios públicos por sede - ${{ github.sha }}"
+
+      - name: Actualizar despliegue usado por administrador
+        run: >-
+          clasp deploy
+          --deploymentId AKfycbx7biQkVS9l1nU4AYQeOmQzbPcKebOUJ5UmX97vCJDaXg5s-9y0-mgSrE0ANZXZJ8Hd
+          --description "Horarios públicos admin - ${{ github.sha }}"
+
+      - name: Verificar endpoints de configuración
+        run: |
+          set -euo pipefail
+          public_url='https://script.google.com/macros/s/AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw/exec?action=publicScheduleConfig'
+          admin_url='https://script.google.com/macros/s/AKfycbx7biQkVS9l1nU4AYQeOmQzbPcKebOUJ5UmX97vCJDaXg5s-9y0-mgSrE0ANZXZJ8Hd/exec?action=publicScheduleConfig'
+          curl --fail --silent --show-error --location "$public_url" | tee /tmp/public.json | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true'
+          curl --fail --silent --show-error --location "$admin_url" | tee /tmp/admin.json | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true'
+          grep -q 'Sede Santa Mónica' /tmp/public.json
+          grep -q 'Sede Campestre Recovery' /tmp/public.json
