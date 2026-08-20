@@ -1,0 +1,58 @@
+name: Hotfix booking CORS check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/hotfix-booking-cors-check.yml
+
+permissions:
+  contents: read
+
+jobs:
+  cors-browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Instalar cliente de navegador
+        run: npm install puppeteer-core@24.15.0 --no-save
+      - name: Probar POST legible desde el dominio público
+        shell: bash
+        run: |
+          cat > /tmp/cors-check.js <<'NODE'
+          const puppeteer = require('puppeteer-core');
+          const fs = require('fs');
+          (async () => {
+            const chrome = ['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser'].find(fs.existsSync);
+            if (!chrome) throw new Error('Chrome no disponible');
+            const browser = await puppeteer.launch({headless:true,executablePath:chrome,args:['--no-sandbox','--disable-setuid-sandbox']});
+            const page = await browser.newPage();
+            await page.goto('https://cuidandotefisioterapia.com/?cors_check=20260819',{waitUntil:'domcontentloaded',timeout:90000});
+            const result = await page.evaluate(async () => {
+              const url = 'https://script.google.com/macros/s/AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw/exec';
+              try {
+                const r = await fetch(url, {
+                  method: 'POST',
+                  headers: {'Content-Type':'text/plain;charset=utf-8'},
+                  body: JSON.stringify({action:'generateEval',token:'__CORS_READ_ONLY_TEST__'})
+                });
+                return {readable:true,status:r.status,text:await r.text()};
+              } catch (e) {
+                return {readable:false,error:String(e && e.message || e)};
+              }
+            });
+            console.log(JSON.stringify(result));
+            await browser.close();
+            if (!result.readable) throw new Error('El navegador no pudo leer la respuesta POST: ' + result.error);
+            let parsed;
+            try { parsed = JSON.parse(result.text); } catch (e) { throw new Error('Respuesta POST no fue JSON legible'); }
+            if (parsed.ok !== false || !/permiso/i.test(parsed.error || '')) {
+              throw new Error('Respuesta inesperada; la prueba segura debía ser rechazada sin modificar datos: ' + result.text);
+            }
+            console.log('✅ El navegador puede leer la respuesta JSON del Apps Script mediante POST simple.');
+          })().catch(e => { console.error(e); process.exit(1); });
+          NODE
+          node /tmp/cors-check.js
