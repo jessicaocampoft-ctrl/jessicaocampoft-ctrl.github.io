@@ -190,7 +190,7 @@
     if (venueKey(bk.modality) === 'recovery') {
       bk.modality = 'Sede Santa Mónica';
       stripRecoveryFromMarkup();
-      return Promise.reject(new Error('La Sede Campestre Recovery ya no está disponible para agendamiento. Selecciona Santa Mónica o domicilio.'));
+      return Promise.reject(new Error('Esa sede ya no está disponible para agendamiento. Selecciona Santa Mónica o domicilio.'));
     }
     return fetchJsonWithTimeout(availabilityUrl(), {}, 20000).then(function (data) {
       var slots = data && data.slots ? data.slots : {};
@@ -366,7 +366,7 @@
         }
         if (venueKey(bk.modality) === 'recovery') {
           bk.modality = 'Sede Santa Mónica';
-          showBookingError('La Sede Campestre Recovery ya no está disponible para agendamiento. Selecciona Santa Mónica o domicilio.', false);
+          showBookingError('Esa sede ya no está disponible para agendamiento. Selecciona Santa Mónica o domicilio.', false);
           return;
         }
 

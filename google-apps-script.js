@@ -1,4 +1,4 @@
-﻿// =============================================================
+// =============================================================
 //  Cuidándote Fisioterapia â€” Apps Script Backend
 //  Funciones: Reservas, Base de datos, Disponibilidad,
 //             Panel Admin, Recordatorios diarios
@@ -348,9 +348,7 @@ function createBooking(d, isAdmin) {
   try { lock.waitLock(15000); } catch(e) { return {ok: false, error: 'Sistema ocupado, intenta de nuevo'}; }
 
   try {
-  var price = d.priceSelected || (d.modality === 'Domicilio'
-    ? d.priceD
-    : (d.modality === 'Sede Campestre Recovery' ? (d.priceRecovery || d.priceP) : d.priceP));
+  var price = d.priceSelected || (d.modality === 'Domicilio' ? d.priceD : d.priceP);
 
   // Dedup: si ya existe una cita con mismo nombre+fecha+hora, devolver la existente
   var ss     = getOrCreateSheet();
@@ -376,9 +374,7 @@ function createBooking(d, isAdmin) {
     description: buildDesc(d, price),
     location: d.modality === 'Domicilio'
       ? (d.address || 'Domicilio - direccion por confirmar')
-      : (d.modality === 'Sede Campestre Recovery'
-        ? 'Sede Campestre Recovery - ubicacion compartida al confirmar'
-        : 'Ubicacion compartida al confirmar la reserva')
+      : 'Ubicacion compartida al confirmar la reserva'
   });
   event.addEmailReminder(60);
   event.addPopupReminder(30);
@@ -629,16 +625,6 @@ function defaultPublicScheduleConfig_() {
           'Readaptación Funcional'
         ],
         weekly: defaultPublicWeekly_()
-      },
-      recovery: {
-        label: 'Sede Campestre Recovery',
-        enabled: true,
-        services: [
-          'Descarga Muscular — Cuello y Espalda',
-          'Descarga Muscular — Piernas',
-          'Descarga Muscular Completa'
-        ],
-        weekly: defaultPublicWeekly_()
       }
     },
     updatedAt: ''
@@ -679,12 +665,11 @@ function sanitizePublicScheduleConfig_(input) {
   if (!source || typeof source !== 'object') source = {};
   var sourceVenues = source.venues || {};
   var allowed = {
-    santa: defaults.venues.santa.services.slice(),
-    recovery: defaults.venues.recovery.services.slice()
+    santa: defaults.venues.santa.services.slice()
   };
   var out = {version:1, venues:{}, updatedAt: source.updatedAt || ''};
 
-  ['santa','recovery'].forEach(function(key) {
+  ['santa'].forEach(function(key) {
     var def = defaults.venues[key];
     var src = sourceVenues[key] || {};
     var srcServices = Array.isArray(src.services) ? src.services : def.services;
@@ -734,13 +719,13 @@ function savePublicScheduleConfig_(input, user) {
 function publicVenueKey_(modality) {
   var value = ('' + (modality || '')).toLowerCase();
   if (value.indexOf('santa') >= 0) return 'santa';
-  if (value.indexOf('recovery') >= 0 || value.indexOf('campestre') >= 0) return 'recovery';
+
   return 'domicilio';
 }
 
 function configuredPublicRanges_(date, modality, service) {
   var key = publicVenueKey_(modality);
-  // Domicilios conserva la jornada pública histórica; este módulo controla las dos sedes físicas.
+  // Domicilios conserva la jornada pública histórica; este módulo controla la sede física.
   if (key === 'domicilio') return null;
   var response = getPublicScheduleConfig_();
   var config = response && response.config;
