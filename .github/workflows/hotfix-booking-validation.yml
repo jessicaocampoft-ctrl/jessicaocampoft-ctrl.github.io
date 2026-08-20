@@ -1,0 +1,200 @@
+name: Hotfix agendamiento - validación aislada
+
+on:
+  push:
+    branches:
+      - hotfix-agendamiento-confirmacion-real-2026-08-19
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Sintaxis
+        run: node --check public-schedule-client.js
+
+      - name: Probar confirmación, rechazo, timeout y cupo ocupado
+        shell: bash
+        run: |
+          cat > /tmp/test-booking.js <<'NODE'
+          const fs = require('fs');
+          const vm = require('vm');
+          const assert = require('assert');
+          const source = fs.readFileSync('public-schedule-client.js', 'utf8');
+
+          function response(body, ok = true) {
+            return { ok, text: async () => JSON.stringify(body) };
+          }
+
+          function makeElement(id) {
+            const classes = new Set();
+            return {
+              id, value: '', checked: false, disabled: false, innerHTML: '', textContent: '',
+              dataset: {}, style: {}, children: [],
+              classList: {
+                add: (...xs) => xs.forEach(x => classes.add(x)),
+                remove: (...xs) => xs.forEach(x => classes.delete(x)),
+                contains: x => classes.has(x),
+                toggle: (x, force) => {
+                  if (force === true) classes.add(x);
+                  else if (force === false) classes.delete(x);
+                  else classes.has(x) ? classes.delete(x) : classes.add(x);
+                  return classes.has(x);
+                }
+              },
+              setAttribute() {},
+              appendChild(child) { this.children.push(child); },
+              insertAdjacentElement() {},
+              addEventListener() {}
+            };
+          }
+
+          function buildScenario(fetchPlan) {
+            const els = {};
+            const ids = [
+              'bkName','bkPhone','bkEmail','bkAddress','bkNotes','bkParaQuien','bkPaymentAccept',
+              'bkError','bkSending','btnStep2','btnStep3','bkAvailMsg','step2','step3',
+              'modSanta','modRecovery','modD','addressWrap','dominotice'
+            ];
+            ids.forEach(id => els[id] = makeElement(id));
+            els.bkName.value = 'Paciente Prueba';
+            els.bkPhone.value = '3001234567';
+            els.bkPaymentAccept.checked = true;
+
+            const steps = [makeElement('s1'), makeElement('s2'), makeElement('s3')];
+            let fetchIndex = 0;
+            let successCount = 0;
+            let lastStep = 0;
+            let postCount = 0;
+            let availabilityApplied = null;
+
+            const ctx = {
+              console,
+              setTimeout,
+              clearTimeout,
+              AbortController,
+              encodeURIComponent,
+              Date,
+              JSON,
+              Object,
+              Array,
+              Promise,
+              APPS_SCRIPT_URL: 'https://example.invalid/exec',
+              bk: {
+                service: 'Valoración fisioterapéutica', modality: 'Sede Santa Mónica',
+                date: '2026-08-20', time: '10:00', name: '', phone: '', email: '', address: '', notes: '',
+                paraQuien: '', priceSanta: '$80.000', priceP: '$80.000', priceD: '$95.000',
+                priceRecovery: '', duration: 40, reservationCode: 'RES-TEST-001', clientTimestamp: 123456789
+              },
+              currentBookingPrice: () => '$80.000',
+              ensureReservationCode: () => 'RES-TEST-001',
+              showSuccess: () => { successCount++; },
+              goStep: n => { lastStep = n; },
+              applyAvailability: slots => { availabilityApplied = slots; },
+              venueAllowed: () => true,
+              selectService: () => {},
+              updateVenueButtons: () => {},
+              selectModality: () => {},
+              checkAndContinue: () => {},
+              submitBooking: () => {},
+              document: {
+                readyState: 'complete',
+                getElementById: id => els[id] || (els[id] = makeElement(id)),
+                querySelectorAll: selector => selector === '.bk-step' ? steps : [],
+                createElement: tag => makeElement(tag),
+                addEventListener() {}
+              },
+              fetch: async (url, options = {}) => {
+                if (String(url).includes('publicScheduleConfig')) return response({ok:false});
+                const plan = fetchPlan[fetchIndex++];
+                if (!plan) throw new Error('Fetch inesperado: ' + url);
+                if (options.method === 'POST') postCount++;
+                if (plan.reject) throw new Error(plan.reject);
+                return response(plan.body, plan.ok !== false);
+              }
+            };
+            ctx.window = ctx;
+            vm.createContext(ctx);
+            vm.runInContext(source, ctx, {filename:'public-schedule-client.js'});
+            return {
+              ctx, els,
+              state: () => ({successCount,lastStep,postCount,availabilityApplied}),
+              wait: () => new Promise(r => setTimeout(r, 30))
+            };
+          }
+
+          (async () => {
+            // 1) Confirmación real: disponibilidad + POST ok con id => éxito una sola vez.
+            {
+              const s = buildScenario([
+                {body:{ok:true,slots:{'10:00':true}}},
+                {body:{ok:true,id:'C-OK-1'}}
+              ]);
+              s.ctx.submitBooking();
+              await s.wait();
+              assert.equal(s.state().successCount, 1, 'Debe mostrar éxito cuando el backend confirma id');
+              assert.equal(s.state().postCount, 1, 'Debe enviar un solo POST');
+            }
+
+            // 2) Rechazo explícito: no éxito, mensaje real y reintento habilitado.
+            {
+              const s = buildScenario([
+                {body:{ok:true,slots:{'10:00':true}}},
+                {body:{ok:false,error:'Horario no disponible'}}
+              ]);
+              s.ctx.submitBooking();
+              await s.wait();
+              assert.equal(s.state().successCount, 0, 'No debe mostrar éxito si el servidor rechaza');
+              assert.equal(s.state().lastStep, 3, 'Debe volver al paso 3');
+              assert.equal(s.els.btnStep3.disabled, false, 'Debe permitir corregir/reintentar un rechazo explícito');
+              assert.ok(s.els.bkError.classList.contains('visible'), 'Debe mostrar error visible');
+            }
+
+            // 3) La disponibilidad no puede comprobarse: fail closed; no avanza.
+            {
+              const s = buildScenario([{reject:'sin red'}]);
+              s.ctx.checkAndContinue();
+              await s.wait();
+              assert.notEqual(s.state().lastStep, 3, 'No debe avanzar si no puede verificar disponibilidad');
+              assert.ok(s.els.bkAvailMsg.style.display === 'block', 'Debe informar fallo de disponibilidad');
+            }
+
+            // 4) POST ambiguo: nunca éxito y bloqueo para impedir doble envío ciego.
+            {
+              const s = buildScenario([
+                {body:{ok:true,slots:{'10:00':true}}},
+                {reject:'Failed to fetch'}
+              ]);
+              s.ctx.submitBooking();
+              await s.wait();
+              assert.equal(s.state().successCount, 0, 'No debe mostrar éxito ante respuesta ambigua');
+              assert.equal(s.els.btnStep3.disabled, true, 'Debe bloquear un segundo envío ciego');
+              assert.equal(s.els.btnStep3.dataset.bookingLocked, '1', 'Debe marcar el bloqueo ambiguo');
+              assert.ok(s.els.bkError.classList.contains('visible'), 'Debe mostrar verificación manual');
+            }
+
+            // 5) Cupo tomado antes del POST: no enviar y volver al paso 2.
+            {
+              const s = buildScenario([{body:{ok:true,slots:{'10:00':false}}}]);
+              s.ctx.submitBooking();
+              await s.wait();
+              assert.equal(s.state().successCount, 0, 'No debe mostrar éxito si el cupo fue tomado');
+              assert.equal(s.state().postCount, 0, 'No debe enviar POST si el cupo ya no está libre');
+              assert.equal(s.state().lastStep, 2, 'Debe volver a selección de horario');
+            }
+
+            console.log('✅ 5 escenarios de agendamiento validados sin tocar producción ni crear citas reales.');
+          })().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
+          NODE
+          node /tmp/test-booking.js
