@@ -1,0 +1,91 @@
+name: Verificar retiro de Recovery
+
+on:
+  push:
+    branches:
+      - remove-recovery-booking-20260819
+    paths:
+      - .github/workflows/verify-recovery-retired.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+        with:
+          ref: remove-recovery-booking-20260819
+          fetch-depth: 0
+
+      - name: Validar limpieza local
+        shell: bash
+        run: |
+          node --check public-schedule-client.js
+          if grep -Eqi 'recovery|campestre' index.html; then
+            echo 'La web pública todavía contiene Recovery/Campestre.' >&2
+            grep -Ein 'recovery|campestre' index.html | head -30 >&2
+            exit 1
+          fi
+          if grep -Fq 'Sede Campestre Recovery' public-schedule-client.js google-apps-script.js; then
+            echo 'Aún queda el nombre de la sede retirada en código activo.' >&2
+            exit 1
+          fi
+          if grep -Fq "defaults.venues.recovery" google-apps-script.js; then
+            echo 'Recovery aún forma parte de la configuración pública.' >&2
+            exit 1
+          fi
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar clasp
+        run: npm install --global @google/clasp@3.3.0
+
+      - name: Restaurar credencial Apps Script
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Desplegar backend limpio
+        shell: bash
+        run: |
+          printf '%s' '{"scriptId":"1KVmo_TpTAkwLXQjMVvSO51YDtojr64XsnWg8I7bz0UkGht9S1W7WD0zI","rootDir":"."}' > .clasp.json
+          printf '%s\n' '**/**' '!appsscript.json' '!google-apps-script.js' > .claspignore
+          clasp push --force
+          clasp deploy --deploymentId AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw --description "Verificación retiro Recovery - $GITHUB_SHA"
+          clasp deploy --deploymentId AKfycbwYxtpVLIb5DH31Bvh8UemIGZ08l1UEMuIJPbFPXOW_X0yX5J756IZKzmYx5PYOdPDC --description "Verificación retiro Recovery - $GITHUB_SHA"
+
+      - name: Comprobar backend desplegado
+        shell: bash
+        run: |
+          url='https://script.google.com/macros/s/AKfycbwPE46Z_7mnCPTE7KcthlluGXsuqwAofVBHS0jGXv7C8ekLpmPzHu5x0jFYB7yxEquw/exec?action=publicScheduleConfig'
+          response="$(curl --fail --silent --show-error --location "$url")"
+          printf '%s' "$response" > /tmp/public-schedule.json
+          python - <<'PY'
+          import json
+          data = json.load(open('/tmp/public-schedule.json', encoding='utf-8'))
+          venues = ((data or {}).get('config') or {}).get('venues') or {}
+          if 'recovery' in venues:
+              raise SystemExit('El backend desplegado todavía expone Recovery')
+          if set(venues) != {'santa'}:
+              raise SystemExit('Sedes físicas inesperadas en backend: ' + repr(sorted(venues)))
+          print('Backend verificado: solo Santa Mónica como sede física configurable')
+          PY
+
+      - name: Registrar verificación exitosa
+        shell: bash
+        run: |
+          rm -f .github/workflows/verify-recovery-retired.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- .github/workflows/verify-recovery-retired.yml
+          git commit --allow-empty -m 'chore: verificar retiro de Recovery desplegado'
+          git push origin HEAD:remove-recovery-booking-20260819
