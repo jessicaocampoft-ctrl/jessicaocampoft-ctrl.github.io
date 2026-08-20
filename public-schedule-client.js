@@ -14,12 +14,14 @@
   }
 
   function venueEnabled(key) {
+    if (key === 'recovery') return false;
     if (key === 'domicilio') return true;
     if (!scheduleConfig || !scheduleConfig.venues || !scheduleConfig.venues[key]) return true;
     return scheduleConfig.venues[key].enabled !== false;
   }
 
   function serviceAllowed(key, service) {
+    if (key === 'recovery') return false;
     if (key === 'domicilio') return true;
     if (!scheduleConfig || !scheduleConfig.venues || !scheduleConfig.venues[key]) return true;
     var services = scheduleConfig.venues[key].services;
@@ -28,6 +30,7 @@
   }
 
   function allowedForCurrentService(key) {
+    if (key === 'recovery') return false;
     if (!venueEnabled(key)) return false;
     if (key === 'domicilio') return true;
     var service = (typeof bk !== 'undefined' && bk) ? bk.service : '';
@@ -35,9 +38,52 @@
     return serviceAllowed(key, service);
   }
 
+  function stripRecoveryFromMarkup() {
+    var btn = document.getElementById('modRecovery');
+    if (btn) {
+      btn.style.display = 'none';
+      btn.disabled = true;
+      btn.setAttribute('aria-hidden', 'true');
+    }
+    document.querySelectorAll('.bk-svc').forEach(function (card) {
+      var venues = String(card.dataset.venues || '')
+        .split(',')
+        .map(function (v) { return v.trim(); })
+        .filter(function (v) { return v && v !== 'recovery'; });
+      card.dataset.venues = venues.join(',');
+      card.dataset.priceRecovery = '';
+      var price = card.querySelector('.bk-svc-price');
+      if (price) {
+        price.textContent = String(price.textContent || '')
+          .replace(/\s*\/\s*Recovery\b/g, '')
+          .replace(/\s{2,}/g, ' ')
+          .trim();
+      }
+    });
+    try {
+      if (typeof bk !== 'undefined' && bk) {
+        bk.venues = String(bk.venues || '')
+          .split(',')
+          .map(function (v) { return v.trim(); })
+          .filter(function (v) { return v && v !== 'recovery'; })
+          .join(',');
+        bk.priceRecovery = '';
+        if (venueKey(bk.modality) === 'recovery') {
+          bk.modality = (',' + bk.venues + ',').indexOf(',santa,') >= 0 ? 'Sede Santa Mónica' : 'Domicilio';
+        }
+      }
+    } catch (_) {}
+  }
+
   function setButtonVisibility(id, key) {
     var btn = document.getElementById(id);
     if (!btn) return;
+    if (key === 'recovery') {
+      btn.style.display = 'none';
+      btn.disabled = true;
+      btn.setAttribute('aria-hidden', 'true');
+      return;
+    }
     var allowedByServiceMarkup = true;
     if (typeof venueAllowed === 'function' && typeof bk !== 'undefined' && bk && bk.venues) {
       allowedByServiceMarkup = venueAllowed(key);
@@ -50,13 +96,13 @@
 
   function pickFallbackVenue() {
     if (typeof bk === 'undefined' || !bk) return;
+    stripRecoveryFromMarkup();
     var currentKey = venueKey(bk.modality);
     if (currentKey === 'domicilio') return;
     if (allowedForCurrentService(currentKey) && (!bk.venues || typeof venueAllowed !== 'function' || venueAllowed(currentKey))) return;
 
     var candidates = [
       { key: 'santa', value: 'Sede Santa Mónica' },
-      { key: 'recovery', value: 'Sede Campestre Recovery' },
       { key: 'domicilio', value: 'Domicilio' }
     ];
     for (var i = 0; i < candidates.length; i++) {
@@ -70,7 +116,7 @@
   }
 
   function renderVenueState() {
-    if (!loaded) return;
+    stripRecoveryFromMarkup();
     setButtonVisibility('modSanta', 'santa');
     setButtonVisibility('modRecovery', 'recovery');
     setButtonVisibility('modD', 'domicilio');
@@ -81,7 +127,7 @@
     var domicilio = document.getElementById('modD');
     if (typeof bk !== 'undefined' && bk) {
       if (santa) santa.classList.toggle('active', bk.modality === 'Sede Santa Mónica');
-      if (recovery) recovery.classList.toggle('active', bk.modality === 'Sede Campestre Recovery');
+      if (recovery) recovery.classList.remove('active');
       if (domicilio) domicilio.classList.toggle('active', bk.modality === 'Domicilio');
       var addressWrap = document.getElementById('addressWrap');
       if (addressWrap) addressWrap.style.display = bk.modality === 'Domicilio' ? 'block' : 'none';
@@ -140,6 +186,11 @@
     }
     if (!bk.date || !bk.time) {
       return Promise.reject(new Error('Selecciona nuevamente la fecha y la hora.'));
+    }
+    if (venueKey(bk.modality) === 'recovery') {
+      bk.modality = 'Sede Santa Mónica';
+      stripRecoveryFromMarkup();
+      return Promise.reject(new Error('La Sede Campestre Recovery ya no está disponible para agendamiento. Selecciona Santa Mónica o domicilio.'));
     }
     return fetchJsonWithTimeout(availabilityUrl(), {}, 20000).then(function (data) {
       var slots = data && data.slots ? data.slots : {};
@@ -236,7 +287,7 @@
       notes: bk.notes,
       priceP: bk.priceSanta || bk.priceP,
       priceD: bk.priceD,
-      priceRecovery: bk.priceRecovery,
+      priceRecovery: '',
       priceSelected: typeof currentBookingPrice === 'function' ? currentBookingPrice() : '',
       duration: bk.duration,
       source: 'PAGINA_WEB',
@@ -252,6 +303,7 @@
   function installReliableBooking() {
     if (typeof window.checkAndContinue === 'function' && !window.checkAndContinue.__reliableBooking) {
       var reliableContinue = function () {
+        stripRecoveryFromMarkup();
         if (!bk.date || !bk.time) {
           showStep2AvailabilityError('Selecciona fecha y hora para continuar.');
           return;
@@ -289,6 +341,7 @@
     if (typeof window.submitBooking === 'function' && !window.submitBooking.__reliableBooking) {
       var reliableSubmit = function () {
         if (bookingSubmitting || bookingAmbiguous) return;
+        stripRecoveryFromMarkup();
         collectBookingFields();
         clearBookingError();
 
@@ -309,6 +362,11 @@
         }
         if (!bk.service || !bk.date || !bk.time) {
           showBookingError('Faltan datos de la reserva. Vuelve y selecciona servicio, fecha y hora.', false);
+          return;
+        }
+        if (venueKey(bk.modality) === 'recovery') {
+          bk.modality = 'Sede Santa Mónica';
+          showBookingError('La Sede Campestre Recovery ya no está disponible para agendamiento. Selecciona Santa Mónica o domicilio.', false);
           return;
         }
 
@@ -357,9 +415,6 @@
             return;
           }
 
-          // Una caída, timeout, bloqueo CORS o respuesta ilegible después de iniciar el POST
-          // es ambigua: el servidor podría haber alcanzado a guardar la cita. Nunca mostrar éxito
-          // ni permitir un segundo envío automático, para evitar reservas duplicadas.
           bookingAmbiguous = true;
           restoreStep3AfterFailure(
             'No pudimos confirmar automáticamente si la reserva quedó guardada. No la envíes de nuevo todavía; verifícala por WhatsApp con tu código de reserva.',
@@ -376,7 +431,9 @@
     if (typeof window.selectService === 'function' && !window.selectService.__publicScheduleWrapped) {
       var originalSelectService = window.selectService;
       var wrappedSelectService = function (el) {
+        stripRecoveryFromMarkup();
         var result = originalSelectService.apply(this, arguments);
+        stripRecoveryFromMarkup();
         renderVenueState();
         return result;
       };
@@ -387,7 +444,9 @@
     if (typeof window.updateVenueButtons === 'function' && !window.updateVenueButtons.__publicScheduleWrapped) {
       var originalUpdateVenueButtons = window.updateVenueButtons;
       var wrappedUpdateVenueButtons = function () {
+        stripRecoveryFromMarkup();
         var result = originalUpdateVenueButtons.apply(this, arguments);
+        stripRecoveryFromMarkup();
         renderVenueState();
         return result;
       };
@@ -398,9 +457,12 @@
     if (typeof window.selectModality === 'function' && !window.selectModality.__publicScheduleWrapped) {
       var originalSelectModality = window.selectModality;
       var wrappedSelectModality = function (m) {
+        if (venueKey(m) === 'recovery') return false;
         var key = venueKey(m);
         if (!allowedForCurrentService(key)) return;
-        return originalSelectModality.apply(this, arguments);
+        var result = originalSelectModality.apply(this, arguments);
+        stripRecoveryFromMarkup();
+        return result;
       };
       wrappedSelectModality.__publicScheduleWrapped = true;
       window.selectModality = wrappedSelectModality;
@@ -422,12 +484,15 @@
         renderVenueState();
       })
       .catch(function () {
-        // La disponibilidad del servidor sigue siendo la fuente de verdad.
+        stripRecoveryFromMarkup();
+        renderVenueState();
       });
   }
 
   function init() {
+    stripRecoveryFromMarkup();
     wrapBookingFunctions();
+    renderVenueState();
     loadConfig();
   }
 
