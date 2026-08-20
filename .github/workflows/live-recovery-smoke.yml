@@ -1,0 +1,62 @@
+name: Smoke live sin Recovery
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/live-recovery-smoke.yml
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install puppeteer-core@24.15.0 --no-save
+      - name: Verificar agendamiento público
+        run: |
+          cat > live-smoke.js <<'NODE'
+          const puppeteer = require('puppeteer-core');
+          const fs = require('fs');
+          (async () => {
+            const chrome = ['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser'].find(fs.existsSync);
+            if (!chrome) throw new Error('Chrome no disponible');
+            const browser = await puppeteer.launch({headless:true,executablePath:chrome,args:['--no-sandbox','--disable-setuid-sandbox']});
+            const page = await browser.newPage();
+            await page.setCacheEnabled(false);
+            await page.goto('https://cuidandotefisioterapia.com/?recovery_smoke=' + Date.now(), {waitUntil:'networkidle2',timeout:90000});
+            await new Promise(r => setTimeout(r, 3000));
+            const result = await page.evaluate(() => {
+              const btn = document.getElementById('modRecovery');
+              const prices = Array.from(document.querySelectorAll('.bk-svc-price')).map(el => el.textContent || '');
+              const before = typeof bk !== 'undefined' && bk ? bk.modality : '';
+              let callResult = null;
+              if (typeof selectModality === 'function') callResult = selectModality('Sede Campestre Recovery');
+              const after = typeof bk !== 'undefined' && bk ? bk.modality : '';
+              return {
+                buttonExists: !!btn,
+                buttonDisplay: btn ? getComputedStyle(btn).display : 'missing',
+                buttonDisabled: btn ? !!btn.disabled : true,
+                prices,
+                before,
+                after,
+                callResult,
+                submitBookingType: typeof submitBooking
+              };
+            });
+            console.log(JSON.stringify(result, null, 2));
+            await browser.close();
+            if (result.buttonExists && result.buttonDisplay !== 'none') throw new Error('Recovery sigue visible');
+            if (!result.buttonDisabled) throw new Error('Recovery no quedó deshabilitada');
+            if (result.prices.some(t => /Recovery/i.test(t))) throw new Error('Los precios del agendamiento todavía mencionan Recovery');
+            if (/Recovery/i.test(result.after || '')) throw new Error('La selección programática todavía permite Recovery');
+            if (result.submitBookingType !== 'function') throw new Error('El flujo de reserva no quedó disponible');
+            console.log('✅ Web pública: Recovery retirada del agendamiento.');
+          })().catch(e => { console.error(e); process.exit(1); });
+          NODE
+          node live-smoke.js
