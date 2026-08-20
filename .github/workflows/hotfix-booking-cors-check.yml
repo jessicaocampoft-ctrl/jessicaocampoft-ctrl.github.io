@@ -22,7 +22,7 @@ jobs:
       - name: Probar POST legible desde el dominio público
         shell: bash
         run: |
-          cat > /tmp/cors-check.js <<'NODE'
+          cat > cors-check.js <<'NODE'
           const puppeteer = require('puppeteer-core');
           const fs = require('fs');
           (async () => {
@@ -55,4 +55,4 @@ jobs:
             console.log('✅ El navegador puede leer la respuesta JSON del Apps Script mediante POST simple.');
           })().catch(e => { console.error(e); process.exit(1); });
           NODE
-          node /tmp/cors-check.js
+          node cors-check.js
