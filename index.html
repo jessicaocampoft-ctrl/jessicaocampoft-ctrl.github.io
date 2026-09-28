@@ -3372,6 +3372,33 @@
   }
 </style>
 
+<style id="motion-enhancements-2026-09">
+  /* Entradas escalonadas: movimiento suave al recorrer la página. */
+  .services-grid .service-card.fade-up:nth-child(2),
+  .experience-grid .experience-card.fade-up:nth-child(2),
+  .contact-cards .contact-card.fade-up:nth-child(2) { transition-delay:.10s; }
+  .services-grid .service-card.fade-up:nth-child(3),
+  .experience-grid .experience-card.fade-up:nth-child(3),
+  .contact-cards .contact-card.fade-up:nth-child(3) { transition-delay:.20s; }
+  .services-grid .service-card.fade-up:nth-child(4) { transition-delay:.30s; }
+  .services-grid .service-card.fade-up:nth-child(5) { transition-delay:.40s; }
+
+  /* Un pulso espaciado hace visible WhatsApp sin interrumpir la lectura. */
+  .wa-float-btn { animation:whatsapp-attention 4.8s ease-in-out 2s infinite; }
+  @keyframes whatsapp-attention {
+    0%, 84%, 100% { transform:translateY(0) scale(1); box-shadow:0 4px 24px rgba(37,211,102,.4); }
+    88% { transform:translateY(-3px) scale(1.025); box-shadow:0 10px 30px rgba(37,211,102,.52); }
+    92% { transform:translateY(0) scale(1); box-shadow:0 4px 24px rgba(37,211,102,.4); }
+  }
+  .wa-float-btn:hover { animation-play-state:paused; }
+  @media (prefers-reduced-motion:reduce) {
+    .wa-float-btn { animation:none!important; }
+    .services-grid .service-card.fade-up,
+    .experience-grid .experience-card.fade-up,
+    .contact-cards .contact-card.fade-up { transition-delay:0s!important; }
+  }
+</style>
+
 </head>
 <body>
 
