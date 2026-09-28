@@ -1146,24 +1146,26 @@
     .reviews-loading { grid-column: 1 / -1; text-align: center; padding: 48px; color: var(--text-muted); font-size: .9rem; }
     .reviews-fallback-note {
       grid-column: 1 / -1;
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      width: min(860px, 100%);
+      gap: 28px;
+      width: min(720px, 100%);
       margin: 0 auto;
-      padding: 24px 28px;
-      border: 2px solid #7EDDD0;
-      border-radius: 22px;
-      background: #FFFFFF;
-      color: #1A1A1A !important;
-      font-size: 1rem;
-      line-height: 1.65;
-      box-shadow: 0 20px 58px rgba(42,122,114,0.18);
+      padding: 22px 24px;
+      border: 1px solid #7EDDD0;
+      border-radius: 18px;
+      background: #F8FCFB;
+      color: #435451 !important;
+      font-size: .92rem;
+      line-height: 1.55;
+      box-shadow: 0 12px 32px rgba(42,122,114,.10);
     }
-    .reviews-fallback-note span { color: #1A1A1A !important; }
+    .reviews-fallback-copy { display: grid; gap: 5px; }
+    .reviews-fallback-note span { color: #61716E !important; }
     .reviews-fallback-note strong {
       color: var(--text);
+      font-size: .96rem;
     }
     .reviews-google-btn {
       display: inline-flex;
@@ -1171,7 +1173,7 @@
       justify-content: center;
       gap: 8px;
       min-height: 44px;
-      padding: 12px 20px;
+      padding: 11px 18px;
       border-radius: 999px;
       background: #2A7A72;
       color: #FFFFFF !important;
@@ -1187,7 +1189,7 @@
     @media (max-width: 900px) { .reviews-grid { grid-template-columns: 1fr 1fr; } .reviews-divider { display: none; } }
     @media (max-width: 600px) {
       .reviews-grid { grid-template-columns: 1fr; }
-      .reviews-fallback-note { align-items: stretch; flex-direction: column; }
+      .reviews-fallback-note { grid-template-columns: 1fr; gap:16px; }
       .reviews-google-btn { width: 100%; }
     }
 
@@ -3316,6 +3318,8 @@
 
 <style id="brand-signatures">
   /* La firma acompaña la marca en el encabezado y en el pie de página. */
+  .reviews { padding-top:76px!important; padding-bottom:76px!important; }
+  .reviews-header { margin-bottom:30px!important; }
   .footer-logo { position:relative; display:inline-flex; width:220px; }
   .footer-logo .logo-byline {
     position:absolute;
@@ -3333,6 +3337,7 @@
     pointer-events:none;
   }
   @media (max-width:768px) {
+    .reviews { padding-top:54px!important; padding-bottom:54px!important; }
     .footer-logo .logo-byline { font-size:.58rem; }
   }
 </style>
@@ -4903,7 +4908,7 @@
       }).join('');
 
       const note = options.fallback ? `<div class="reviews-fallback-note">
-        <span>Si tu navegador bloquea la carga automática, puedes abrir las reseñas verificadas directamente en Google.</span>
+        <div class="reviews-fallback-copy"><strong>Reseñas verificadas en Google</strong><span>Si la carga automática no está disponible, puedes leerlas directamente en el perfil público.</span></div>
         <a class="reviews-google-btn" href="${GOOGLE_REVIEWS_URL}" target="_blank" rel="noopener">${googleIconSVG()} Ver reseñas en Google</a>
       </div>` : '';
 
@@ -4915,7 +4920,7 @@
       document.getElementById('reviewsOverall').style.display = 'none';
       document.getElementById('reviewsBadge').style.display = 'none';
       grid.innerHTML = `<div class="reviews-fallback-note">
-        <span><strong>Reseñas reales de Google.</strong> Si la carga automática está bloqueada por Google, puedes leerlas directamente en el perfil público.</span>
+        <div class="reviews-fallback-copy"><strong>Reseñas verificadas en Google</strong><span>Si la carga automática no está disponible, puedes leerlas directamente en el perfil público.</span></div>
         <a class="reviews-google-btn" href="${GOOGLE_REVIEWS_URL}" target="_blank" rel="noopener">${googleIconSVG()} Ver reseñas reales en Google</a>
       </div>`;
     }
