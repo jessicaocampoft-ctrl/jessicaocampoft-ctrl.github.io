@@ -3374,6 +3374,15 @@
 
 <style id="motion-enhancements-2026-09">
   /* Entradas escalonadas: movimiento suave al recorrer la página. */
+  .service-card.fade-up,
+  .experience-card.fade-up,
+  .contact-card.fade-up {
+    transform:translateY(42px) scale(.975);
+    transition-duration:.75s;
+  }
+  .service-card.fade-up.visible,
+  .experience-card.fade-up.visible,
+  .contact-card.fade-up.visible { transform:translateY(0) scale(1); }
   .services-grid .service-card.fade-up:nth-child(2),
   .experience-grid .experience-card.fade-up:nth-child(2),
   .contact-cards .contact-card.fade-up:nth-child(2) { transition-delay:.10s; }
@@ -3384,15 +3393,31 @@
   .services-grid .service-card.fade-up:nth-child(5) { transition-delay:.40s; }
 
   /* Un pulso espaciado hace visible WhatsApp sin interrumpir la lectura. */
-  .wa-float-btn { animation:whatsapp-attention 4.8s ease-in-out 2s infinite; }
+  .wa-float { isolation:isolate; }
+  .wa-float::before {
+    content:'';
+    position:absolute;
+    inset:-7px;
+    z-index:0;
+    border:2px solid rgba(37,211,102,.56);
+    border-radius:999px;
+    animation:whatsapp-ring 2.8s ease-out infinite;
+    pointer-events:none;
+  }
+  .wa-float-btn { position:relative; z-index:1; animation:whatsapp-attention 3.6s ease-in-out 1s infinite; }
   @keyframes whatsapp-attention {
     0%, 84%, 100% { transform:translateY(0) scale(1); box-shadow:0 4px 24px rgba(37,211,102,.4); }
     88% { transform:translateY(-3px) scale(1.025); box-shadow:0 10px 30px rgba(37,211,102,.52); }
     92% { transform:translateY(0) scale(1); box-shadow:0 4px 24px rgba(37,211,102,.4); }
   }
+  @keyframes whatsapp-ring {
+    0%, 72%, 100% { opacity:0; transform:scale(.92); }
+    78% { opacity:.72; transform:scale(1); }
+    94% { opacity:0; transform:scale(1.18); }
+  }
   .wa-float-btn:hover { animation-play-state:paused; }
   @media (prefers-reduced-motion:reduce) {
-    .wa-float-btn { animation:none!important; }
+    .wa-float-btn,.wa-float::before { animation:none!important; }
     .services-grid .service-card.fade-up,
     .experience-grid .experience-card.fade-up,
     .contact-cards .contact-card.fade-up { transition-delay:0s!important; }
