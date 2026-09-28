@@ -3337,6 +3337,39 @@
   }
 </style>
 
+<style id="subtle-polish-2026-09">
+  /* Detalles discretos para reforzar claridad, accesibilidad y respuesta táctil. */
+  :focus-visible {
+    outline:3px solid rgba(82,184,174,.55);
+    outline-offset:4px;
+  }
+  .nav-cta,
+  .btn-solid,
+  .btn-outline,
+  .wa-float-btn {
+    transition:transform .2s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
+  }
+  .nav-cta:hover,
+  .btn-solid:hover,
+  .btn-outline:hover { box-shadow:0 10px 22px rgba(69,191,179,.16)!important; }
+  .service-price,
+  .experience-price,
+  .plan-price-chip {
+    box-shadow:0 4px 12px rgba(36,155,146,.08);
+  }
+  .service-card,
+  .experience-card,
+  .plan-card,
+  .review-card,
+  .contact-card { transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+  .footer-copy { margin-top:4px!important; line-height:1.6!important; }
+  @media (max-width:768px) {
+    .wa-float { right:16px!important; bottom:max(16px, env(safe-area-inset-bottom))!important; }
+    .wa-float-btn { box-shadow:0 10px 26px rgba(69,191,179,.3)!important; }
+    .booking { border-radius:18px!important; }
+  }
+</style>
+
 </head>
 <body>
 
