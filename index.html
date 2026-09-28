@@ -3205,12 +3205,15 @@
     }
     .brand-logo .logo-byline {
       display:block!important;
-      position:static!important;
-      inset:auto!important;
-      align-self:center!important;
-      margin-top:1px!important;
+      /* Firma ubicada como en el arte original: debajo y al extremo derecho. */
+      position:absolute!important;
+      top:76%!important;
+      right:8%!important;
+      left:auto!important;
+      inset-inline:auto 8%!important;
+      margin:0!important;
       font-family:var(--font-heading)!important;
-      font-size:.9rem!important;
+      font-size:.56rem!important;
       font-style:italic!important;
       font-weight:500!important;
       line-height:1.15!important;
