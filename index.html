@@ -3204,7 +3204,7 @@
       align-items:center!important;
     }
     .brand-logo .logo-byline {
-      display:none!important;
+      display:block!important;
       /* Firma proporcional: debajo de FISIOTERAPIA y hacia la derecha. */
       position:absolute!important;
       top:69%!important;
@@ -3311,6 +3311,29 @@
       margin-bottom:13px!important;
       line-height:1.62!important;
     }
+  }
+</style>
+
+<style id="brand-signatures">
+  /* La firma acompaña la marca en el encabezado y en el pie de página. */
+  .footer-logo { position:relative; display:inline-flex; width:220px; }
+  .footer-logo .logo-byline {
+    position:absolute;
+    top:69%;
+    left:71%;
+    margin:0;
+    font-family:var(--font-heading);
+    font-size:.64rem;
+    font-style:italic;
+    font-weight:500;
+    line-height:1.15;
+    color:#52b8ae;
+    letter-spacing:.01em;
+    white-space:nowrap;
+    pointer-events:none;
+  }
+  @media (max-width:768px) {
+    .footer-logo .logo-byline { font-size:.58rem; }
   }
 </style>
 
@@ -4259,6 +4282,7 @@
       <div class="footer-brand">
         <div class="footer-logo">
           <img src="LogoCuidandote/logo-horizontal-web.png" height="36" alt="Cuidándote Fisioterapia">
+          <span class="logo-byline">by Jessica Ocampo</span>
         </div>
         <p class="footer-copy">© 2026 Cuidándote Fisioterapia. Pereira y Dosquebradas, Risaralda</p>
       </div>
