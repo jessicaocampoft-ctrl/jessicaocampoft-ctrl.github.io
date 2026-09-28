@@ -3424,6 +3424,26 @@
   }
 </style>
 
+<style id="clinic-space-section">
+  .clinic-space { padding:88px 0; background:#F8FCFB; }
+  .clinic-space-grid { display:grid; grid-template-columns:1.08fr .92fr; align-items:center; gap:clamp(36px,6vw,84px); }
+  .clinic-space-photo { overflow:hidden; border-radius:22px; box-shadow:0 20px 50px rgba(32,90,84,.14); }
+  .clinic-space-photo img { display:block; width:100%; aspect-ratio:4 / 3; object-fit:cover; object-position:center 54%; }
+  .clinic-space-content { max-width:490px; }
+  .clinic-space-content .section-tag { margin-bottom:14px; }
+  .clinic-space-content h2 { margin:0 0 18px; font-size:clamp(2.2rem,3.5vw,3.4rem); line-height:1.1; color:var(--text); }
+  .clinic-space-content p { margin:0 0 22px; color:var(--text-muted); line-height:1.75; }
+  .clinic-space-list { display:grid; gap:10px; margin:0 0 28px; padding:0; list-style:none; color:var(--text); font-size:.9rem; }
+  .clinic-space-list li { display:flex; align-items:center; gap:9px; }
+  .clinic-space-list li::before { content:'✓'; display:grid; place-items:center; width:20px; height:20px; flex:0 0 20px; border-radius:50%; background:rgba(126,221,208,.28); color:#267F76; font-size:.76rem; font-weight:800; }
+  @media (max-width:768px) {
+    .clinic-space { padding:54px 0; }
+    .clinic-space-grid { grid-template-columns:1fr; gap:28px; }
+    .clinic-space-content { max-width:none; }
+    .clinic-space-photo img { aspect-ratio:1 / 1; }
+  }
+</style>
+
 </head>
 <body>
 
@@ -4286,6 +4306,26 @@
         </div><!-- /bk-steps -->
       </div><!-- /bk-shell -->
       <p class="booking-note">Sede física en Dosquebradas · Atención domiciliaria en Pereira y Dosquebradas, según disponibilidad</p>
+    </div>
+  </section>
+
+  <!-- SEDE -->
+  <section class="clinic-space" id="sede">
+    <div class="container clinic-space-grid">
+      <div class="clinic-space-photo fade-up">
+        <img src="Sede-Cuidandote.png" alt="Sede de Cuidándote Fisioterapia en Dosquebradas" loading="lazy" decoding="async">
+      </div>
+      <div class="clinic-space-content fade-up">
+        <div class="section-tag">Nuestra sede</div>
+        <h2>Un espacio preparado para cuidarte.</h2>
+        <p>Conoce nuestra sede en Santa Mónica, Dosquebradas: un lugar cómodo y pensado para acompañarte en tu proceso de recuperación y bienestar.</p>
+        <ul class="clinic-space-list">
+          <li>Atención fisioterapéutica personalizada</li>
+          <li>Espacio cómodo para movimiento y recuperación</li>
+          <li>Agenda previa para una atención sin esperas</li>
+        </ul>
+        <a href="#agenda" class="btn-solid">Agendar atención en sede</a>
+      </div>
     </div>
   </section>
 
