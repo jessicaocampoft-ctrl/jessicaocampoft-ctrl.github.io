@@ -3425,6 +3425,14 @@
 </style>
 
 <style id="clinic-space-section">
+  /* La foto del equipo conserva su encuadre completo, sin recortes laterales. */
+  .about-photo-wrap img {
+    aspect-ratio:auto!important;
+    height:auto!important;
+    object-fit:contain!important;
+    object-position:center!important;
+    background:#F7F7F5;
+  }
   .clinic-space { padding:88px 0; background:#F8FCFB; }
   .clinic-space-grid { display:grid; grid-template-columns:1.08fr .92fr; align-items:center; gap:clamp(36px,6vw,84px); }
   .clinic-space-photo { overflow:hidden; border-radius:22px; box-shadow:0 20px 50px rgba(32,90,84,.14); }
