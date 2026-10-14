@@ -7607,7 +7607,7 @@ function initFunctionalModules2026() {
     </div>
     <div class="card" style="margin-bottom:20px">
       <div class="card-title">Agregar pendiente</div>
-      <div class="wait-form" style="grid-template-columns:1.35fr 1fr .8fr .7fr auto">
+      <div class="wait-form" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
         <div><label for="fisioTaskTitle">Pendiente *</label><input id="fisioTaskTitle" maxlength="160" autocomplete="off" placeholder="Ej: Evolucionar a Mariana Murillo"></div>
         <div><label for="fisioTaskPatient">Paciente (opcional)</label><input id="fisioTaskPatient" list="fisioPatientList" autocomplete="off" placeholder="Busca o escribe el nombre"><datalist id="fisioPatientList"></datalist></div>
         <div><label for="fisioTaskDate">Para cuándo</label><input id="fisioTaskDate" type="date"></div>
