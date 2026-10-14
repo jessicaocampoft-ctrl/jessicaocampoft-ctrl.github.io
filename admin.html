@@ -7566,15 +7566,19 @@ function initFunctionalModules2026() {
     return b;
   };
   const iconActions = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+  const iconFisio = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V4.75A1.75 1.75 0 0 1 5.75 3h8.5A1.75 1.75 0 0 1 16 4.75V21"/><path d="M8 7h4M8 11h4M8 15h2"/><path d="M17 14v7M13.5 17.5h7"/></svg>';
   const iconWait = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a6 6 0 0 1 12 0v2"/><path d="M19 8v6M16 11h6"/></svg>';
   const iconAuto = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>';
   const accionesLink = makeLink('acciones','Centro de acciones',iconActions);
+  const fisioLink = makeLink('pendientesFisio','Pendientes fisio',iconFisio);
   const esperaLink = makeLink('espera','Lista de espera',iconWait);
   const autoLink = makeLink('automatizaciones','Automatizaciones',iconAuto);
   accionesLink.classList.remove('sb-secondary');
+  fisioLink.classList.remove('sb-secondary');
   toolsToggle.insertAdjacentElement('afterend', esperaLink);
   toolsToggle.insertAdjacentElement('afterend', autoLink);
   document.getElementById('sb-calendario').insertAdjacentElement('afterend', accionesLink);
+  accionesLink.insertAdjacentElement('afterend', fisioLink);
 
   const main = document.getElementById('mainContent');
   const acciones = document.createElement('section');
@@ -7593,6 +7597,31 @@ function initFunctionalModules2026() {
     </div>
     <div class="ops-list" id="opsList"></div>`;
   main.appendChild(acciones);
+
+  const pendientesFisio = document.createElement('section');
+  pendientesFisio.id = 'vPendientesFisio'; pendientesFisio.style.display = 'none';
+  pendientesFisio.innerHTML = `
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+      <div><h1 class="page-title">Pendientes <em>fisio</em></h1><p class="page-sub">Tus tareas clínicas personales, separadas de la agenda y de los pendientes administrativos.</p></div>
+      <button class="btn btn-ghost btn-sm" onclick="renderPendientesFisio(true)">↻ Actualizar</button>
+    </div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Agregar pendiente</div>
+      <div class="wait-form" style="grid-template-columns:1.35fr 1fr .8fr .7fr auto">
+        <div><label for="fisioTaskTitle">Pendiente *</label><input id="fisioTaskTitle" maxlength="160" autocomplete="off" placeholder="Ej: Evolucionar a Mariana Murillo"></div>
+        <div><label for="fisioTaskPatient">Paciente (opcional)</label><input id="fisioTaskPatient" list="fisioPatientList" autocomplete="off" placeholder="Busca o escribe el nombre"><datalist id="fisioPatientList"></datalist></div>
+        <div><label for="fisioTaskDate">Para cuándo</label><input id="fisioTaskDate" type="date"></div>
+        <div><label for="fisioTaskPriority">Prioridad</label><select id="fisioTaskPriority"><option value="Normal">Normal</option><option value="Alta">Alta</option><option value="Baja">Baja</option></select></div>
+        <button class="btn btn-teal" onclick="addFisioTask()">Agregar</button>
+      </div>
+      <div style="margin-top:10px"><label for="fisioTaskDetail" style="font-size:.75rem;color:var(--muted);font-family:var(--font-m)">Detalle opcional</label><input id="fisioTaskDetail" maxlength="500" autocomplete="off" placeholder="Ej: revisar evolución y dejar registro en la historia clínica"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="card-title" style="margin:0">Pendientes activos <span class="chip chip-info" id="fisioTaskCount">0</span></div>
+      <div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" id="fisioFilterOpen" onclick="setFisioTaskFilter('open')">Pendientes</button><button class="btn btn-ghost btn-sm" id="fisioFilterDone" onclick="setFisioTaskFilter('done')">Realizados</button></div>
+    </div>
+    <div class="ops-list" id="fisioTaskList"><div class="loading-wrap"><div class="spinner"></div> Cargando...</div></div>`;
+  main.appendChild(pendientesFisio);
 
   const espera = document.createElement('section');
   espera.id = 'vEspera'; espera.style.display = 'none';
@@ -7759,7 +7788,7 @@ function applyRoleRestrictions() {
   // Auxiliar operativo: acceso completo. Exclusivos de propietaria se bloquean en backend.
 }
 function showView(v) {
-  ['dashboard','acciones','espera','automatizaciones','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','equipo','basedatos','codigos','paquetes','recordatorios','finanzas','pagos','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa','recuperacion'].forEach(id => {
+  ['dashboard','acciones','pendientesFisio','espera','automatizaciones','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','equipo','basedatos','codigos','paquetes','recordatorios','finanzas','pagos','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa','recuperacion'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -7828,6 +7857,7 @@ function showView(v) {
   if (v === 'comisiones')     renderComisiones();
   if (v === 'recuperacion')   renderRecuperaciones();
   if (v === 'acciones')       renderCentroAcciones();
+  if (v === 'pendientesFisio') renderPendientesFisio();
   if (v === 'espera')         renderWaitList();
   if (v === 'automatizaciones') loadAutomationCenter();
   if (v === 'dashboard')      actualizarContadorLeads();
@@ -7917,6 +7947,130 @@ function goAgendaPatient(encodedName) {
   showView('agenda');
   const search = document.getElementById('fSearch');
   if (search) { search.value = name; renderAgenda(); search.focus(); }
+}
+
+// ── PENDIENTES FISIO (tareas clínicas personales) ──
+let _fisioTasks = [];
+let _fisioTasksLoaded = false;
+let _fisioTaskFilter = 'open';
+
+function _fisioTaskDate(value) {
+  const normalized = normDate(value || '');
+  return normalized ? fmtDate(normalized) : 'Sin fecha';
+}
+
+function _fisioTaskPriority(task) {
+  const priority = String(task.prioridad || 'Normal');
+  const styles = {
+    Alta: 'background:#fef2f2;border-color:#fecaca;color:#b91c1c',
+    Normal: 'background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8',
+    Baja: 'background:#f0fdf4;border-color:#bbf7d0;color:#15803d'
+  };
+  return `<span style="font-size:.7rem;font-family:var(--font-m);border:1px solid;border-radius:99px;padding:2px 8px;white-space:nowrap;${styles[priority] || styles.Normal}">${esc(priority)}</span>`;
+}
+
+async function _loadFisioTasks(force=false) {
+  if (_fisioTasksLoaded && !force) return true;
+  const response = await fetch(`${APPS_SCRIPT_URL}?action=getFisioTasks&token=${encodeURIComponent(TOKEN)}`).then(r => r.json());
+  if (!response.ok) throw new Error(response.error || 'No se pudieron cargar los pendientes fisio');
+  _fisioTasks = Array.isArray(response.items) ? response.items : [];
+  _fisioTasksLoaded = true;
+  return true;
+}
+
+function _fillFisioPatientList() {
+  const list = document.getElementById('fisioPatientList');
+  if (!list) return;
+  const seen = new Set();
+  const names = (allData.citas || []).map(c => (c.nombre || '').trim()).filter(name => {
+    const key = _normStr(name);
+    if (!key || seen.has(key)) return false;
+    seen.add(key); return true;
+  }).sort((a,b) => a.localeCompare(b, 'es'));
+  list.innerHTML = names.map(name => `<option value="${esc(name)}"></option>`).join('');
+}
+
+function setFisioTaskFilter(filter) {
+  _fisioTaskFilter = filter === 'done' ? 'done' : 'open';
+  renderPendientesFisio();
+}
+
+async function renderPendientesFisio(force=false) {
+  const list = document.getElementById('fisioTaskList');
+  if (!list) return;
+  if (!document.getElementById('fisioTaskDate').value) document.getElementById('fisioTaskDate').value = today();
+  _fillFisioPatientList();
+  if (force || !_fisioTasksLoaded) {
+    list.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> Cargando pendientes...</div>';
+    try { await _loadFisioTasks(force); }
+    catch (error) { list.innerHTML = `<div class="empty-compact">No fue posible cargar los pendientes fisio. ${esc(error.message || '')}</div>`; return; }
+  }
+  const active = _fisioTasks.filter(task => task.estado !== 'Realizado');
+  const items = _fisioTaskFilter === 'done' ? _fisioTasks.filter(task => task.estado === 'Realizado') : active;
+  const count = document.getElementById('fisioTaskCount');
+  if (count) count.textContent = active.length;
+  const openButton = document.getElementById('fisioFilterOpen');
+  const doneButton = document.getElementById('fisioFilterDone');
+  if (openButton) openButton.classList.toggle('btn-teal', _fisioTaskFilter === 'open');
+  if (doneButton) doneButton.classList.toggle('btn-teal', _fisioTaskFilter === 'done');
+  if (!items.length) {
+    list.innerHTML = `<div class="empty-compact">${_fisioTaskFilter === 'done' ? 'Aún no hay pendientes fisio realizados.' : 'No tienes pendientes fisio. Agrega uno como “Evolucionar a Mariana”.'}</div>`;
+    return;
+  }
+  list.innerHTML = items.map(task => {
+    const done = task.estado === 'Realizado';
+    const patient = task.paciente ? ` · ${esc(task.paciente)}` : '';
+    const detail = task.detalle ? `<div class="wait-meta" style="margin-top:3px">${esc(task.detalle)}</div>` : '';
+    const completed = done && task.completado ? ` · realizado ${esc(_fisioTaskDate(task.completado))}` : '';
+    return `<div class="wait-card" style="${done ? 'opacity:.72' : ''}">
+      <div class="wait-avatar" style="background:${done ? '#bbf7d0' : '#dbeafe'};color:${done ? '#15803d' : '#1d4ed8'}">${done ? '✓' : '🩺'}</div>
+      <div class="wait-info"><div class="wait-name" style="${done ? 'text-decoration:line-through' : ''}">${esc(task.tarea || 'Pendiente fisio')}</div><div class="wait-meta">${_fisioTaskDate(task.fechaObjetivo)}${patient}${completed}</div>${detail}</div>
+      <div class="ops-actions">${_fisioTaskPriority(task)}<button class="btn ${done ? 'btn-ghost' : 'btn-teal'} btn-sm" onclick="setFisioTaskStatus('${esc(task.id)}','${done ? 'Pendiente' : 'Realizado'}')">${done ? 'Reabrir' : '✓ Realizado'}</button><button class="btn btn-err btn-sm" onclick="deleteFisioTask('${esc(task.id)}')" aria-label="Eliminar pendiente">Eliminar</button></div>
+    </div>`;
+  }).join('');
+}
+
+async function addFisioTask() {
+  const tarea = (document.getElementById('fisioTaskTitle')?.value || '').trim();
+  const paciente = (document.getElementById('fisioTaskPatient')?.value || '').trim();
+  const fechaObjetivo = (document.getElementById('fisioTaskDate')?.value || '').trim();
+  const prioridad = document.getElementById('fisioTaskPriority')?.value || 'Normal';
+  const detalle = (document.getElementById('fisioTaskDetail')?.value || '').trim();
+  if (!tarea) { toast('Escribe el pendiente, por ejemplo: Evolucionar a Mariana','err'); document.getElementById('fisioTaskTitle')?.focus(); return; }
+  const button = event?.currentTarget;
+  if (button) { button.disabled = true; button.textContent = 'Guardando...'; }
+  try {
+    const data = encodeURIComponent(JSON.stringify({tarea,paciente,fechaObjetivo,prioridad,detalle}));
+    const response = await fetch(`${APPS_SCRIPT_URL}?action=addFisioTask&token=${encodeURIComponent(TOKEN)}&data=${data}`).then(r => r.json());
+    if (!response.ok) throw new Error(response.error || 'No se pudo guardar');
+    ['fisioTaskTitle','fisioTaskPatient','fisioTaskDetail'].forEach(id => { const input = document.getElementById(id); if (input) input.value = ''; });
+    _fisioTasksLoaded = false;
+    _fisioTaskFilter = 'open';
+    await renderPendientesFisio(true);
+    toast('Pendiente fisio guardado');
+  } catch (error) { toast(error.message || 'No se pudo guardar el pendiente','err'); }
+  finally { if (button) { button.disabled = false; button.textContent = 'Agregar'; } }
+}
+
+async function setFisioTaskStatus(id, estado) {
+  try {
+    const response = await fetch(`${APPS_SCRIPT_URL}?action=updateFisioTask&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(id)}&estado=${encodeURIComponent(estado)}`).then(r => r.json());
+    if (!response.ok) throw new Error(response.error || 'No se pudo actualizar');
+    _fisioTasksLoaded = false;
+    await renderPendientesFisio(true);
+    toast(estado === 'Realizado' ? 'Pendiente marcado como realizado' : 'Pendiente reabierto');
+  } catch (error) { toast(error.message || 'No se pudo actualizar el pendiente','err'); }
+}
+
+async function deleteFisioTask(id) {
+  if (!confirm('¿Eliminar este pendiente fisio?')) return;
+  try {
+    const response = await fetch(`${APPS_SCRIPT_URL}?action=deleteFisioTask&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(id)}`).then(r => r.json());
+    if (!response.ok) throw new Error(response.error || 'No se pudo eliminar');
+    _fisioTasksLoaded = false;
+    await renderPendientesFisio(true);
+    toast('Pendiente eliminado');
+  } catch (error) { toast(error.message || 'No se pudo eliminar el pendiente','err'); }
 }
 
 // ── LISTA DE ESPERA (sincronizada con Google Sheets; fallback local) ──

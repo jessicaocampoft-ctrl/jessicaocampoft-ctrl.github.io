@@ -188,6 +188,10 @@ function doGet(e) {
   if (p.action === 'getWaitlist')          return js(getWaitlist());
   if (p.action === 'addWaitlist')          return js(addWaitlist(p.data));
   if (p.action === 'removeWaitlist')       return js(removeWaitlist(p.id));
+  if (p.action === 'getFisioTasks')        return js(getFisioTasks_());
+  if (p.action === 'addFisioTask')         return js(addFisioTask_(p.data, sessionUser));
+  if (p.action === 'updateFisioTask')      return js(updateFisioTask_(p.id, p.estado, sessionUser));
+  if (p.action === 'deleteFisioTask')      return js(deleteFisioTask_(p.id, sessionUser));
   if (p.action === 'teamData')             return js(getTeamModuleData_());
   if (p.action === 'saveProfessional')     return js(saveProfessional_(p.data, sessionUser));
   if (p.action === 'resetProfessionalPassword') return js(resetProfessionalPassword_(p.id, sessionUser));
@@ -4501,6 +4505,70 @@ function waitlistSheet_(){return getAutomationSheet_('ListaEspera',['id','nombre
 function getWaitlist(){var rows=waitlistSheet_().getDataRange().getValues(),items=[];for(var i=1;i<rows.length;i++)if(rows[i][0]&&(''+rows[i][5])!=='Retirado')items.push({id:''+rows[i][0],nombre:''+rows[i][1],telefono:''+rows[i][2],servicio:''+rows[i][3],preferencia:''+rows[i][4],estado:''+rows[i][5],creado:rows[i][6] instanceof Date?rows[i][6].toISOString():''+rows[i][6]});return{ok:true,items:items.reverse()};}
 function addWaitlist(data){try{var p=JSON.parse(decodeURIComponent(data||'{}'));if(!p.nombre||!p.telefono)return{ok:false,error:'Nombre y telÃ©fono son obligatorios'};var id='WAIT-'+new Date().getTime();waitlistSheet_().appendRow([id,p.nombre,p.telefono,p.servicio||'',p.preferencia||'','Esperando',new Date()]);return{ok:true,id:id};}catch(e){return{ok:false,error:e.message};}}
 function removeWaitlist(id){var sh=waitlistSheet_(),rows=sh.getDataRange().getValues();for(var i=1;i<rows.length;i++)if((''+rows[i][0])===(''+id)){sh.getRange(i+1,6).setValue('Retirado');return{ok:true};}return{ok:false,error:'Paciente no encontrado'};}
+
+// -------------------------------------------------------------
+// PENDIENTES FISIO — tareas clínicas personales de la administradora
+// -------------------------------------------------------------
+function fisioTasksSheet_(){
+  return getAutomationSheet_('PendientesFisio',['id','tarea','paciente','fechaObjetivo','prioridad','detalle','estado','creado','actualizado','creadoPor','completado']);
+}
+function fisioTaskText_(value, max){ return ('' + (value || '')).replace(/[\r\n]+/g,' ').trim().slice(0, max); }
+function getFisioTasks_(){
+  var rows=fisioTasksSheet_().getDataRange().getValues(),items=[];
+  for(var i=1;i<rows.length;i++){
+    if(!rows[i][0] || (''+rows[i][6])==='Eliminado') continue;
+    items.push({
+      id:''+rows[i][0], tarea:''+rows[i][1], paciente:''+rows[i][2],
+      fechaObjetivo:rows[i][3] instanceof Date?Utilities.formatDate(rows[i][3],'America/Bogota','yyyy-MM-dd'):''+rows[i][3],
+      prioridad:''+(rows[i][4]||'Normal'), detalle:''+rows[i][5], estado:''+(rows[i][6]||'Pendiente'),
+      creado:rows[i][7] instanceof Date?rows[i][7].toISOString():''+rows[i][7],
+      actualizado:rows[i][8] instanceof Date?rows[i][8].toISOString():''+rows[i][8],
+      creadoPor:''+rows[i][9], completado:rows[i][10] instanceof Date?Utilities.formatDate(rows[i][10],'America/Bogota','yyyy-MM-dd'):''+rows[i][10]
+    });
+  }
+  items.sort(function(a,b){
+    var ad=a.fechaObjetivo || '9999-12-31', bd=b.fechaObjetivo || '9999-12-31';
+    if(a.estado !== b.estado) return a.estado === 'Realizado' ? 1 : -1;
+    return ad === bd ? (b.creado||'').localeCompare(a.creado||'') : ad.localeCompare(bd);
+  });
+  return {ok:true,items:items};
+}
+function addFisioTask_(data, user){
+  try {
+    var p=JSON.parse(decodeURIComponent(data||'{}'));
+    var tarea=fisioTaskText_(p.tarea,160);
+    if(!tarea) return {ok:false,error:'El pendiente es obligatorio'};
+    var fecha=fisioTaskText_(p.fechaObjetivo,10);
+    if(fecha && !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return {ok:false,error:'La fecha no es válida'};
+    var prioridad=['Alta','Normal','Baja'].indexOf(''+p.prioridad)>=0 ? ''+p.prioridad : 'Normal';
+    var now=new Date(), id='FISIO-'+now.getTime()+'-'+Utilities.getUuid().slice(0,8);
+    fisioTasksSheet_().appendRow([id,tarea,fisioTaskText_(p.paciente,120),fecha,prioridad,fisioTaskText_(p.detalle,500),'Pendiente',now,now,''+(user&&user.nombre||'Administración'),'']);
+    auditTeam_(user,'Creó pendiente fisio','','',id,tarea);
+    return {ok:true,id:id};
+  } catch(e) { return {ok:false,error:e.message}; }
+}
+function updateFisioTask_(id, estado, user){
+  var next=(''+estado)==='Realizado' ? 'Realizado' : 'Pendiente';
+  var sh=fisioTasksSheet_(), rows=sh.getDataRange().getValues();
+  for(var i=1;i<rows.length;i++) if((''+rows[i][0])===(''+id) && (''+rows[i][6])!=='Eliminado'){
+    sh.getRange(i+1,7).setValue(next);
+    sh.getRange(i+1,9).setValue(new Date());
+    sh.getRange(i+1,11).setValue(next==='Realizado'?new Date():'');
+    auditTeam_(user,next==='Realizado'?'Completó pendiente fisio':'Reabrió pendiente fisio','','',''+id,''+rows[i][1]);
+    return {ok:true};
+  }
+  return {ok:false,error:'Pendiente no encontrado'};
+}
+function deleteFisioTask_(id, user){
+  var sh=fisioTasksSheet_(), rows=sh.getDataRange().getValues();
+  for(var i=1;i<rows.length;i++) if((''+rows[i][0])===(''+id) && (''+rows[i][6])!=='Eliminado'){
+    sh.getRange(i+1,7).setValue('Eliminado');
+    sh.getRange(i+1,9).setValue(new Date());
+    auditTeam_(user,'Eliminó pendiente fisio','','',''+id,''+rows[i][1]);
+    return {ok:true};
+  }
+  return {ok:false,error:'Pendiente no encontrado'};
+}
 
 function queueWaitlistMatch_(booking) {
   if(!getAutomationConfig().waitlistMatching)return 0;
