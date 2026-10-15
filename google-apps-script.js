@@ -202,6 +202,8 @@ function doGet(e) {
   if (p.action === 'toggleProfessional')   return js(toggleProfessional_(p.id, p.estado, sessionUser));
   if (p.action === 'deleteProfessional')   return js(deleteProfessional_(p.id, sessionUser));
   if (p.action === 'assignProfessional')   return js(assignProfessionalToAppointment_(p));
+  if (p.action === 'getTeamWorkSchedule')  return js(getTeamWorkSchedule_(p.professionalId, p.week));
+  if (p.action === 'saveTeamWorkSchedule') return js(saveTeamWorkSchedule_(p.data, sessionUser));
   if (p.action === 'authorizeAppointment') return js(authorizeAppointmentForProfessional_(p));
   if (p.action === 'authorizeCourtesy')     return js(authorizeCourtesy_(p, sessionUser));
   if (p.action === 'createCreditBalance')   return js(createCreditBalance_(p, sessionUser));
@@ -1308,7 +1310,8 @@ function teamSheet_(name) {
     CitaEquipo: ['CitaID','ProfesionalID','EstadoAutorizacion','OverrideAtencion','Tarifa','Actualizado','AsignadoPor'],
     NovedadesProfesionales: ['ID','CitaID','ProfesionalID','Tipo','Observacion','Creado','EstadoAdmin'],
     AuditoriaEquipo: ['ID','Fecha','UsuarioID','UsuarioNombre','Rol','Accion','CitaID','EstadoAnterior','EstadoNuevo','Observaciones'],
-    CuentasPorPagar: ['ID','ProfesionalID','CitaID','Servicio','Tarifa','Estado','Creado','Pagado','LiquidacionID']
+    CuentasPorPagar: ['ID','ProfesionalID','CitaID','Servicio','Tarifa','Estado','Creado','Pagado','LiquidacionID'],
+    HorariosEquipo: ['ID','ProfesionalID','SemanaInicio','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado','Domingo','Actualizado','ActualizadoPor']
   };
   var sh = ss.getSheetByName(name);
   if (!sh) {
@@ -1349,6 +1352,38 @@ function getProfessionalById_(id) {
   var list = getProfessionals_();
   for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
   return null;
+}
+function teamMonday_(dateValue) {
+  var d = dateValue ? new Date(dateValue + 'T12:00:00') : new Date();
+  var day = d.getDay() || 7;
+  d.setDate(d.getDate() - day + 1);
+  return Utilities.formatDate(d, 'America/Bogota', 'yyyy-MM-dd');
+}
+function teamWorkHoursText_(value) { return ('' + (value || '')).replace(/[\r\n]+/g, ' ').trim().slice(0,120); }
+function teamScheduleRow_(row) {
+  return {id:''+row[0],professionalId:''+row[1],semanaInicio:row[2] instanceof Date?Utilities.formatDate(row[2],'America/Bogota','yyyy-MM-dd'):''+row[2],lunes:''+row[3],martes:''+row[4],miercoles:''+row[5],jueves:''+row[6],viernes:''+row[7],sabado:''+row[8],domingo:''+row[9]};
+}
+function getTeamWorkSchedule_(professionalId, week) {
+  var start=teamMonday_(week), sh=teamSheet_('HorariosEquipo'), rows=sh.getDataRange().getValues();
+  for(var i=1;i<rows.length;i++){
+    var item=teamScheduleRow_(rows[i]);
+    if(item.professionalId===(''+professionalId) && item.semanaInicio===start) return {ok:true,item:item};
+  }
+  return {ok:true,item:null};
+}
+function saveTeamWorkSchedule_(data,user) {
+  try {
+    var p=JSON.parse(decodeURIComponent(data||'{}')), professionalId=''+(p.professionalId||''), pro=getProfessionalById_(professionalId);
+    if(!pro || pro.estado!=='Activo') return {ok:false,error:'Colaborador no encontrado o inactivo'};
+    var start=teamMonday_(p.semanaInicio), sh=teamSheet_('HorariosEquipo'), rows=sh.getDataRange().getValues(), now=new Date();
+    var values=[professionalId,start,teamWorkHoursText_(p.lunes),teamWorkHoursText_(p.martes),teamWorkHoursText_(p.miercoles),teamWorkHoursText_(p.jueves),teamWorkHoursText_(p.viernes),teamWorkHoursText_(p.sabado),teamWorkHoursText_(p.domingo),now,''+(user&&user.nombre||'Administración')];
+    var row=0;
+    for(var i=1;i<rows.length;i++){var item=teamScheduleRow_(rows[i]);if(item.professionalId===professionalId&&item.semanaInicio===start){row=i+1;break;}}
+    var id='HOR-'+new Date().getTime();
+    if(row){sh.getRange(row,2,1,values.length).setValues([values]);id=''+rows[row-1][0];}else sh.appendRow([id].concat(values));
+    auditTeam_(user,'Actualizó horario semanal','','',id,pro.nombre+' · semana '+start);
+    return {ok:true,item:{id:id,professionalId:professionalId,semanaInicio:start,lunes:values[2],martes:values[3],miercoles:values[4],jueves:values[5],viernes:values[6],sabado:values[7],domingo:values[8]}};
+  } catch(e) { return {ok:false,error:e.message}; }
 }
 function getAssignmentMap_() {
   var sh = teamSheet_('CitaEquipo');
@@ -1477,7 +1512,7 @@ function getProfessionalAgenda_(token) {
       estado:estado, autorizacion:a.estadoAutorizacion || estado, puedeAtender:canProfessionalAttend_(r, a)
     });
   }
-  return {ok:true, professional:sess, citas:citas};
+  return {ok:true, professional:sess, citas:citas, workSchedule:getTeamWorkSchedule_(sess.id, teamMonday_()).item};
 }
 function getProfessionalAgenda_(token) {
   var sess = validateProfessionalSession_(token);
@@ -1515,7 +1550,7 @@ function getProfessionalAgenda_(token) {
       puedeAtender:canProfessionalAttend_(r, a)
     });
   }
-  return {ok:true, professional:sess, citas:citas};
+  return {ok:true, professional:sess, citas:citas, workSchedule:getTeamWorkSchedule_(sess.id, teamMonday_()).item};
 }
 function professionalMarkAttended_(token, citaId) {
   var sess = validateProfessionalSession_(token);

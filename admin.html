@@ -1697,6 +1697,10 @@ button:disabled{cursor:not-allowed;opacity:.58}
       <input class="team-input" style="width:auto;min-width:165px" id="proDate" type="date" onchange="setProfessionalMode('fecha')">
       <button class="btn btn-ghost" onclick="loadProfessionalAgenda()">Actualizar</button>
     </div>
+    <section class="team-panel" style="margin:0 0 18px;padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h2 style="margin:0;font-size:1rem">Mi horario de trabajo</h2><small class="team-muted" id="proWorkWeekLabel">Semana actual</small></div></div>
+      <div id="proWorkSchedule" class="team-ops-list" style="margin-top:10px"><div class="team-muted">Cargando horario...</div></div>
+    </section>
     <div id="proAgendaList" class="pro-grid"></div>
   </div>
 </div>
@@ -6200,6 +6204,7 @@ let teamData = {profesionales: [], asignaciones: [], novedades: [], auditoria: [
 let PROFESSIONAL_TOKEN = sessionStorage.getItem('professionalToken') || '';
 let professionalSession = null;
 let professionalAgenda = [];
+let professionalWorkSchedule = null;
 let professionalMode = 'hoy';
 let _kpiViewMonth = null; // {m, y} o null = mes actual
 let _kpiServerHistory = {};
@@ -7112,7 +7117,28 @@ async function loadProfessionalAgenda() {
   professionalSession = d.professional;
   document.getElementById('proWelcome').textContent = professionalSession ? `${professionalSession.nombre} · ${professionalSession.rol}` : 'Portal del equipo';
   professionalAgenda = d.citas || [];
+  professionalWorkSchedule = d.workSchedule || null;
+  renderProfessionalWorkSchedule();
   renderProfessionalAgenda();
+}
+
+const WORK_DAYS = [
+  ['lunes','Lunes'],['martes','Martes'],['miercoles','Miércoles'],['jueves','Jueves'],['viernes','Viernes'],['sabado','Sábado'],['domingo','Domingo']
+];
+function mondayOf(dateValue) {
+  const base = dateValue ? new Date(`${dateValue}T12:00:00`) : new Date();
+  const day = base.getDay() || 7;
+  base.setDate(base.getDate() - day + 1);
+  return base.toISOString().slice(0,10);
+}
+function renderProfessionalWorkSchedule() {
+  const el = document.getElementById('proWorkSchedule'); if (!el) return;
+  const weekLabel = document.getElementById('proWorkWeekLabel');
+  const schedule = professionalWorkSchedule;
+  if (weekLabel) weekLabel.textContent = schedule?.semanaInicio ? `Semana del ${fmtDate(schedule.semanaInicio)}` : 'Semana actual';
+  if (!schedule) { el.innerHTML = '<div class="team-muted">Aún no hay un horario registrado para esta semana. Si tienes dudas, consulta con administración.</div>'; return; }
+  const days = WORK_DAYS.filter(([key]) => (schedule[key] || '').trim());
+  el.innerHTML = days.length ? days.map(([key,label]) => `<div class="team-ops-row"><strong>${label}</strong><span>${esc(schedule[key])}</span></div>`).join('') : '<div class="team-muted">No tienes horas asignadas para esta semana.</div>';
 }
 
 function setProfessionalMode(mode) {
@@ -7568,21 +7594,25 @@ function initFunctionalModules2026() {
   const iconActions = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
   const iconFisio = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V4.75A1.75 1.75 0 0 1 5.75 3h8.5A1.75 1.75 0 0 1 16 4.75V21"/><path d="M8 7h4M8 11h4M8 15h2"/><path d="M17 14v7M13.5 17.5h7"/></svg>';
   const iconPaymentPending = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M15 9.5c0-1.1-1.3-2-3-2s-3 .9-3 2 1.3 2 3 2 3 .9 3 2-1.3 2-3 2-3-.9-3-2"/></svg>';
+  const iconWorkHours = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
   const iconWait = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a6 6 0 0 1 12 0v2"/><path d="M19 8v6M16 11h6"/></svg>';
   const iconAuto = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>';
   const accionesLink = makeLink('acciones','Centro de acciones',iconActions);
   const fisioLink = makeLink('pendientesFisio','Pendientes fisio',iconFisio);
   const paymentPendingLink = makeLink('pendientesPago','Pendientes de pago',iconPaymentPending);
+  const workHoursLink = makeLink('horariosEquipo','Horarios del equipo',iconWorkHours);
   const esperaLink = makeLink('espera','Lista de espera',iconWait);
   const autoLink = makeLink('automatizaciones','Automatizaciones',iconAuto);
   accionesLink.classList.remove('sb-secondary');
   fisioLink.classList.remove('sb-secondary');
   paymentPendingLink.classList.remove('sb-secondary');
+  workHoursLink.classList.remove('sb-secondary');
   toolsToggle.insertAdjacentElement('afterend', esperaLink);
   toolsToggle.insertAdjacentElement('afterend', autoLink);
   document.getElementById('sb-calendario').insertAdjacentElement('afterend', accionesLink);
   accionesLink.insertAdjacentElement('afterend', fisioLink);
   fisioLink.insertAdjacentElement('afterend', paymentPendingLink);
+  document.getElementById('sb-equipo').insertAdjacentElement('afterend', workHoursLink);
 
   const main = document.getElementById('mainContent');
   const acciones = document.createElement('section');
@@ -7634,6 +7664,14 @@ function initFunctionalModules2026() {
     <div class="card" style="margin-bottom:20px"><div class="card-title">Registrar cobro pendiente</div><div class="wait-form" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"><div><label for="paymentPendingPatient">Paciente *</label><input id="paymentPendingPatient" list="fisioPatientList" autocomplete="off" placeholder="Nombre del paciente"></div><div><label for="paymentPendingConcept">Concepto *</label><input id="paymentPendingConcept" maxlength="160" placeholder="Ej: Plan 8 sesiones o saldo sesión"></div><div><label for="paymentPendingAmount">Valor *</label><input id="paymentPendingAmount" inputmode="numeric" placeholder="Ej: 250000"></div><div><label for="paymentPendingDate">Fecha esperada</label><input id="paymentPendingDate" type="date"></div><button class="btn btn-teal" onclick="addPaymentPending()">Agregar</button></div><div style="margin-top:10px"><label for="paymentPendingNote" style="font-size:.75rem;color:var(--muted);font-family:var(--font-m)">Nota opcional</label><input id="paymentPendingNote" maxlength="500" placeholder="Ej: acordó pagar el viernes por transferencia"></div></div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap"><div class="card-title" style="margin:0">Cobros por gestionar <span class="chip chip-warn" id="paymentPendingCount">0</span></div><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" id="paymentFilterOpen" onclick="setPaymentPendingFilter('open')">Pendientes</button><button class="btn btn-ghost btn-sm" id="paymentFilterDone" onclick="setPaymentPendingFilter('done')">Pagados</button></div></div><div class="ops-list" id="paymentPendingList"><div class="loading-wrap"><div class="spinner"></div> Cargando...</div></div>`;
   main.appendChild(pendientesPago);
+
+  const horariosEquipo = document.createElement('section');
+  horariosEquipo.id = 'vHorariosEquipo'; horariosEquipo.style.display = 'none';
+  horariosEquipo.innerHTML = `
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div><h1 class="page-title">Horarios del <em>equipo</em></h1><p class="page-sub">Carga el horario semanal de cada colaborador. Cada persona lo verá en su portal clínico.</p></div><button class="btn btn-ghost btn-sm" onclick="renderTeamWorkHours(true)">↻ Actualizar</button></div>
+        <div class="card" style="margin-bottom:18px"><div class="card-title">Semana de trabajo</div><div class="wait-form" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))"><div><label for="workHoursProfessional">Colaborador *</label><select id="workHoursProfessional" onchange="renderTeamWorkHours()"></select></div><div><label for="workHoursWeek">Semana que inicia el</label><input id="workHoursWeek" type="date" onchange="renderTeamWorkHours()"></div><button class="btn btn-ghost" onclick="renderTeamWorkHours(true)">Consultar</button></div></div>
+    <div class="card"><div class="card-title">Horario semanal</div><p class="team-muted" style="margin-top:-5px">Escribe los rangos de cada día. Déjalo vacío si no trabaja ese día.</p><div id="workHoursFields" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px"></div><div style="display:flex;justify-content:flex-end;margin-top:18px"><button class="btn btn-teal" onclick="saveTeamWorkHours()">Guardar horario semanal</button></div></div>`;
+  main.appendChild(horariosEquipo);
 
   const espera = document.createElement('section');
   espera.id = 'vEspera'; espera.style.display = 'none';
@@ -7800,7 +7838,7 @@ function applyRoleRestrictions() {
   // Auxiliar operativo: acceso completo. Exclusivos de propietaria se bloquean en backend.
 }
 function showView(v) {
-  ['dashboard','acciones','pendientesFisio','pendientesPago','espera','automatizaciones','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','equipo','basedatos','codigos','paquetes','recordatorios','finanzas','pagos','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa','recuperacion'].forEach(id => {
+  ['dashboard','acciones','pendientesFisio','pendientesPago','horariosEquipo','espera','automatizaciones','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','equipo','basedatos','codigos','paquetes','recordatorios','finanzas','pagos','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa','recuperacion'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -7871,6 +7909,7 @@ function showView(v) {
   if (v === 'acciones')       renderCentroAcciones();
   if (v === 'pendientesFisio') renderPendientesFisio();
   if (v === 'pendientesPago') renderPaymentPending();
+  if (v === 'horariosEquipo') renderTeamWorkHours();
   if (v === 'espera')         renderWaitList();
   if (v === 'automatizaciones') loadAutomationCenter();
   if (v === 'dashboard')      actualizarContadorLeads();
@@ -7960,6 +7999,51 @@ function goAgendaPatient(encodedName) {
   showView('agenda');
   const search = document.getElementById('fSearch');
   if (search) { search.value = name; renderAgenda(); search.focus(); }
+}
+
+// ── HORARIOS SEMANALES DEL EQUIPO ──
+let _teamWorkSchedule = null;
+function _workHoursPayloadFromForm() {
+  const payload = {};
+  WORK_DAYS.forEach(([key]) => payload[key] = (document.getElementById(`workHour_${key}`)?.value || '').trim());
+  return payload;
+}
+async function renderTeamWorkHours(force=false) {
+  const professional = document.getElementById('workHoursProfessional');
+  const week = document.getElementById('workHoursWeek');
+  const fields = document.getElementById('workHoursFields');
+  if (!professional || !week || !fields) return;
+  if (!teamData.profesionales?.length || force) await loadTeamData();
+  const active = (teamData.profesionales || []).filter(p => (p.estado || '') === 'Activo');
+  const current = professional.value;
+  professional.innerHTML = `<option value="">Selecciona un colaborador</option>${active.map(p => `<option value="${esc(p.id)}">${esc(p.nombre)} · ${esc(p.rol || 'Fisioterapeuta')}</option>`).join('')}`;
+  professional.value = active.some(p => p.id === current) ? current : (active[0]?.id || '');
+  if (!week.value) week.value = mondayOf(today());
+  const normalizedWeek = mondayOf(week.value);
+  if (week.value !== normalizedWeek) week.value = normalizedWeek;
+  _teamWorkSchedule = null;
+  if (professional.value) {
+    try {
+      const d = await fetch(`${APPS_SCRIPT_URL}?action=getTeamWorkSchedule&token=${encodeURIComponent(TOKEN)}&professionalId=${encodeURIComponent(professional.value)}&week=${encodeURIComponent(normalizedWeek)}`).then(r => r.json());
+      if (!d.ok) throw new Error(d.error || 'No se pudo consultar el horario');
+      _teamWorkSchedule = d.item || null;
+    } catch (error) { toast(error.message || 'No se pudo consultar el horario','err'); }
+  }
+  fields.innerHTML = WORK_DAYS.map(([key,label]) => `<div><label for="workHour_${key}">${label}</label><input id="workHour_${key}" maxlength="120" placeholder="Ej: 8:00 a. m.–12:00 m. · 2:00–6:00 p. m." value="${esc(_teamWorkSchedule?.[key] || '')}"></div>`).join('');
+}
+async function saveTeamWorkHours() {
+  const professionalId = document.getElementById('workHoursProfessional')?.value || '';
+  const semanaInicio = mondayOf(document.getElementById('workHoursWeek')?.value || today());
+  if (!professionalId) { toast('Selecciona un colaborador','err'); return; }
+  const schedule = _workHoursPayloadFromForm();
+  if (!Object.values(schedule).some(Boolean)) { toast('Escribe al menos un horario de trabajo','err'); return; }
+  try {
+    const data = encodeURIComponent(JSON.stringify({professionalId,semanaInicio,...schedule}));
+    const d = await fetch(`${APPS_SCRIPT_URL}?action=saveTeamWorkSchedule&token=${encodeURIComponent(TOKEN)}&data=${data}`).then(r => r.json());
+    if (!d.ok) throw new Error(d.error || 'No se pudo guardar');
+    _teamWorkSchedule = d.item || {...schedule,semanaInicio};
+    toast('Horario semanal guardado. El colaborador ya puede verlo en su portal.');
+  } catch (error) { toast(error.message || 'No se pudo guardar el horario','err'); }
 }
 
 // ── PENDIENTES FISIO (tareas clínicas personales) ──
