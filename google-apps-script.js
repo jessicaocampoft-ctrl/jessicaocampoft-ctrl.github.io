@@ -192,6 +192,10 @@ function doGet(e) {
   if (p.action === 'addFisioTask')         return js(addFisioTask_(p.data, sessionUser));
   if (p.action === 'updateFisioTask')      return js(updateFisioTask_(p.id, p.estado, sessionUser));
   if (p.action === 'deleteFisioTask')      return js(deleteFisioTask_(p.id, sessionUser));
+  if (p.action === 'getPaymentPending')    return js(getPaymentPending_());
+  if (p.action === 'addPaymentPending')    return js(addPaymentPending_(p.data, sessionUser));
+  if (p.action === 'updatePaymentPending') return js(updatePaymentPending_(p.id, p.estado, sessionUser));
+  if (p.action === 'deletePaymentPending') return js(deletePaymentPending_(p.id, sessionUser));
   if (p.action === 'teamData')             return js(getTeamModuleData_());
   if (p.action === 'saveProfessional')     return js(saveProfessional_(p.data, sessionUser));
   if (p.action === 'resetProfessionalPassword') return js(resetProfessionalPassword_(p.id, sessionUser));
@@ -4568,6 +4572,40 @@ function deleteFisioTask_(id, user){
     return {ok:true};
   }
   return {ok:false,error:'Pendiente no encontrado'};
+}
+
+// -------------------------------------------------------------
+// PENDIENTES DE PAGO — cobros manuales que aún no son un pago recibido
+// -------------------------------------------------------------
+function paymentPendingSheet_(){ return getAutomationSheet_('PendientesPago',['id','paciente','concepto','valor','fechaObjetivo','nota','estado','creado','actualizado','creadoPor','completado']); }
+function getPaymentPending_(){
+  var rows=paymentPendingSheet_().getDataRange().getValues(),items=[];
+  for(var i=1;i<rows.length;i++){
+    if(!rows[i][0] || (''+rows[i][6])==='Eliminado') continue;
+    items.push({id:''+rows[i][0],paciente:''+rows[i][1],concepto:''+rows[i][2],valor:+rows[i][3]||0,fechaObjetivo:rows[i][4] instanceof Date?Utilities.formatDate(rows[i][4],'America/Bogota','yyyy-MM-dd'):''+rows[i][4],nota:''+rows[i][5],estado:''+(rows[i][6]||'Pendiente'),creado:rows[i][7] instanceof Date?rows[i][7].toISOString():''+rows[i][7],completado:rows[i][10] instanceof Date?Utilities.formatDate(rows[i][10],'America/Bogota','yyyy-MM-dd'):''+rows[i][10]});
+  }
+  items.sort(function(a,b){var ad=a.fechaObjetivo||'9999-12-31',bd=b.fechaObjetivo||'9999-12-31';if(a.estado!==b.estado)return a.estado==='Pagado'?1:-1;return ad===bd?(b.creado||'').localeCompare(a.creado||''):ad.localeCompare(bd);});
+  return {ok:true,items:items};
+}
+function addPaymentPending_(data,user){
+  try{
+    var p=JSON.parse(decodeURIComponent(data||'{}')),paciente=fisioTaskText_(p.paciente,120),concepto=fisioTaskText_(p.concepto,160),valor=parseMoney_(p.valor),fecha=fisioTaskText_(p.fechaObjetivo,10);
+    if(!paciente||!concepto||!valor)return {ok:false,error:'Paciente, concepto y valor son obligatorios'};
+    if(fecha&&!/^\d{4}-\d{2}-\d{2}$/.test(fecha))return {ok:false,error:'La fecha no es válida'};
+    var now=new Date(),id='PENDPAGO-'+now.getTime()+'-'+Utilities.getUuid().slice(0,8);
+    paymentPendingSheet_().appendRow([id,paciente,concepto,valor,fecha,fisioTaskText_(p.nota,500),'Pendiente',now,now,''+(user&&user.nombre||'Administración'),'']);
+    auditTeam_(user,'Creó cobro pendiente','','',id,paciente+' · '+concepto); return {ok:true,id:id};
+  }catch(e){return {ok:false,error:e.message};}
+}
+function updatePaymentPending_(id,estado,user){
+  var next=(''+estado)==='Pagado'?'Pagado':'Pendiente',sh=paymentPendingSheet_(),rows=sh.getDataRange().getValues();
+  for(var i=1;i<rows.length;i++)if((''+rows[i][0])===(''+id)&&(''+rows[i][6])!=='Eliminado'){sh.getRange(i+1,7).setValue(next);sh.getRange(i+1,9).setValue(new Date());sh.getRange(i+1,11).setValue(next==='Pagado'?new Date():'');auditTeam_(user,next==='Pagado'?'Marcó cobro pendiente como pagado':'Reabrió cobro pendiente','','',''+id,''+rows[i][1]);return {ok:true};}
+  return {ok:false,error:'Cobro no encontrado'};
+}
+function deletePaymentPending_(id,user){
+  var sh=paymentPendingSheet_(),rows=sh.getDataRange().getValues();
+  for(var i=1;i<rows.length;i++)if((''+rows[i][0])===(''+id)&&(''+rows[i][6])!=='Eliminado'){sh.getRange(i+1,7).setValue('Eliminado');sh.getRange(i+1,9).setValue(new Date());auditTeam_(user,'Eliminó cobro pendiente','','',''+id,''+rows[i][1]);return {ok:true};}
+  return {ok:false,error:'Cobro no encontrado'};
 }
 
 function queueWaitlistMatch_(booking) {

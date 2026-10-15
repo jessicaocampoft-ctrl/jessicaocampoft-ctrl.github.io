@@ -7567,18 +7567,22 @@ function initFunctionalModules2026() {
   };
   const iconActions = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
   const iconFisio = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V4.75A1.75 1.75 0 0 1 5.75 3h8.5A1.75 1.75 0 0 1 16 4.75V21"/><path d="M8 7h4M8 11h4M8 15h2"/><path d="M17 14v7M13.5 17.5h7"/></svg>';
+  const iconPaymentPending = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M15 9.5c0-1.1-1.3-2-3-2s-3 .9-3 2 1.3 2 3 2 3 .9 3 2-1.3 2-3 2-3-.9-3-2"/></svg>';
   const iconWait = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a6 6 0 0 1 12 0v2"/><path d="M19 8v6M16 11h6"/></svg>';
   const iconAuto = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>';
   const accionesLink = makeLink('acciones','Centro de acciones',iconActions);
   const fisioLink = makeLink('pendientesFisio','Pendientes fisio',iconFisio);
+  const paymentPendingLink = makeLink('pendientesPago','Pendientes de pago',iconPaymentPending);
   const esperaLink = makeLink('espera','Lista de espera',iconWait);
   const autoLink = makeLink('automatizaciones','Automatizaciones',iconAuto);
   accionesLink.classList.remove('sb-secondary');
   fisioLink.classList.remove('sb-secondary');
+  paymentPendingLink.classList.remove('sb-secondary');
   toolsToggle.insertAdjacentElement('afterend', esperaLink);
   toolsToggle.insertAdjacentElement('afterend', autoLink);
   document.getElementById('sb-calendario').insertAdjacentElement('afterend', accionesLink);
   accionesLink.insertAdjacentElement('afterend', fisioLink);
+  fisioLink.insertAdjacentElement('afterend', paymentPendingLink);
 
   const main = document.getElementById('mainContent');
   const acciones = document.createElement('section');
@@ -7622,6 +7626,14 @@ function initFunctionalModules2026() {
     </div>
     <div class="ops-list" id="fisioTaskList"><div class="loading-wrap"><div class="spinner"></div> Cargando...</div></div>`;
   main.appendChild(pendientesFisio);
+
+  const pendientesPago = document.createElement('section');
+  pendientesPago.id = 'vPendientesPago'; pendientesPago.style.display = 'none';
+  pendientesPago.innerHTML = `
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div><h1 class="page-title">Pendientes de <em>pago</em></h1><p class="page-sub">Cobros que quieres tener controlados, aunque todavía no correspondan a una cita específica.</p></div><button class="btn btn-ghost btn-sm" onclick="renderPaymentPending(true)">↻ Actualizar</button></div>
+    <div class="card" style="margin-bottom:20px"><div class="card-title">Registrar cobro pendiente</div><div class="wait-form" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"><div><label for="paymentPendingPatient">Paciente *</label><input id="paymentPendingPatient" list="fisioPatientList" autocomplete="off" placeholder="Nombre del paciente"></div><div><label for="paymentPendingConcept">Concepto *</label><input id="paymentPendingConcept" maxlength="160" placeholder="Ej: Plan 8 sesiones o saldo sesión"></div><div><label for="paymentPendingAmount">Valor *</label><input id="paymentPendingAmount" inputmode="numeric" placeholder="Ej: 250000"></div><div><label for="paymentPendingDate">Fecha esperada</label><input id="paymentPendingDate" type="date"></div><button class="btn btn-teal" onclick="addPaymentPending()">Agregar</button></div><div style="margin-top:10px"><label for="paymentPendingNote" style="font-size:.75rem;color:var(--muted);font-family:var(--font-m)">Nota opcional</label><input id="paymentPendingNote" maxlength="500" placeholder="Ej: acordó pagar el viernes por transferencia"></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap"><div class="card-title" style="margin:0">Cobros por gestionar <span class="chip chip-warn" id="paymentPendingCount">0</span></div><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" id="paymentFilterOpen" onclick="setPaymentPendingFilter('open')">Pendientes</button><button class="btn btn-ghost btn-sm" id="paymentFilterDone" onclick="setPaymentPendingFilter('done')">Pagados</button></div></div><div class="ops-list" id="paymentPendingList"><div class="loading-wrap"><div class="spinner"></div> Cargando...</div></div>`;
+  main.appendChild(pendientesPago);
 
   const espera = document.createElement('section');
   espera.id = 'vEspera'; espera.style.display = 'none';
@@ -7788,7 +7800,7 @@ function applyRoleRestrictions() {
   // Auxiliar operativo: acceso completo. Exclusivos de propietaria se bloquean en backend.
 }
 function showView(v) {
-  ['dashboard','acciones','pendientesFisio','espera','automatizaciones','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','equipo','basedatos','codigos','paquetes','recordatorios','finanzas','pagos','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa','recuperacion'].forEach(id => {
+  ['dashboard','acciones','pendientesFisio','pendientesPago','espera','automatizaciones','tareas','tareasConfig','agenda','nueva','calendario','bloquear','pacientes','equipo','basedatos','codigos','paquetes','recordatorios','finanzas','pagos','guiakpis','presupuesto','seguimiento','mensajes','empresas','pasaporte','comisiones','guioneswa','recuperacion'].forEach(id => {
     const sec = document.getElementById('v' + id.charAt(0).toUpperCase() + id.slice(1));
     const sb  = document.getElementById('sb-' + id);
     if (sec) sec.style.display = 'none';
@@ -7858,6 +7870,7 @@ function showView(v) {
   if (v === 'recuperacion')   renderRecuperaciones();
   if (v === 'acciones')       renderCentroAcciones();
   if (v === 'pendientesFisio') renderPendientesFisio();
+  if (v === 'pendientesPago') renderPaymentPending();
   if (v === 'espera')         renderWaitList();
   if (v === 'automatizaciones') loadAutomationCenter();
   if (v === 'dashboard')      actualizarContadorLeads();
@@ -8072,6 +8085,60 @@ async function deleteFisioTask(id) {
     toast('Pendiente eliminado');
   } catch (error) { toast(error.message || 'No se pudo eliminar el pendiente','err'); }
 }
+
+// ── PENDIENTES DE PAGO (cobros manuales por gestionar) ──
+let _paymentPending = [];
+let _paymentPendingLoaded = false;
+let _paymentPendingFilter = 'open';
+
+function _moneyInput(value) { return parseInt(String(value || '').replace(/\D/g,''),10) || 0; }
+function _paymentPendingMoney(value) { return new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(_moneyInput(value)); }
+async function _loadPaymentPending(force=false) {
+  if (_paymentPendingLoaded && !force) return true;
+  const response = await fetch(`${APPS_SCRIPT_URL}?action=getPaymentPending&token=${encodeURIComponent(TOKEN)}`).then(r => r.json());
+  if (!response.ok) throw new Error(response.error || 'No se pudieron cargar los pendientes de pago');
+  _paymentPending = Array.isArray(response.items) ? response.items : [];
+  _paymentPendingLoaded = true;
+  return true;
+}
+function setPaymentPendingFilter(filter) { _paymentPendingFilter = filter === 'done' ? 'done' : 'open'; renderPaymentPending(); }
+async function renderPaymentPending(force=false) {
+  const list = document.getElementById('paymentPendingList'); if (!list) return;
+  if (!document.getElementById('paymentPendingDate').value) document.getElementById('paymentPendingDate').value = today();
+  _fillFisioPatientList();
+  if (force || !_paymentPendingLoaded) {
+    list.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> Cargando cobros...</div>';
+    try { await _loadPaymentPending(force); } catch (error) { list.innerHTML = `<div class="empty-compact">No fue posible cargar los cobros. ${esc(error.message || '')}</div>`; return; }
+  }
+  const open = _paymentPending.filter(item => item.estado !== 'Pagado');
+  const items = _paymentPendingFilter === 'done' ? _paymentPending.filter(item => item.estado === 'Pagado') : open;
+  document.getElementById('paymentPendingCount').textContent = open.length;
+  document.getElementById('paymentFilterOpen')?.classList.toggle('btn-teal', _paymentPendingFilter === 'open');
+  document.getElementById('paymentFilterDone')?.classList.toggle('btn-teal', _paymentPendingFilter === 'done');
+  if (!items.length) { list.innerHTML = `<div class="empty-compact">${_paymentPendingFilter === 'done' ? 'Aún no hay cobros marcados como pagados.' : 'No tienes cobros pendientes registrados.'}</div>`; return; }
+  list.innerHTML = items.map(item => {
+    const paid = item.estado === 'Pagado';
+    const note = item.nota ? `<div class="wait-meta" style="margin-top:3px">${esc(item.nota)}</div>` : '';
+    return `<div class="wait-card" style="${paid ? 'opacity:.72' : ''}"><div class="wait-avatar" style="background:${paid ? '#bbf7d0' : '#fef3c7'};color:${paid ? '#15803d' : '#b45309'}">${paid ? '✓' : '$'}</div><div class="wait-info"><div class="wait-name" style="${paid ? 'text-decoration:line-through' : ''}">${esc(item.paciente)} · ${esc(item.concepto)}</div><div class="wait-meta">${_paymentPendingMoney(item.valor)} · ${_fisioTaskDate(item.fechaObjetivo)}${paid && item.completado ? ' · pagado '+esc(_fisioTaskDate(item.completado)) : ''}</div>${note}</div><div class="ops-actions"><button class="btn ${paid ? 'btn-ghost' : 'btn-teal'} btn-sm" onclick="setPaymentPendingStatus('${esc(item.id)}','${paid ? 'Pendiente' : 'Pagado'}')">${paid ? 'Reabrir' : '✓ Marcar pagado'}</button><button class="btn btn-err btn-sm" onclick="deletePaymentPending('${esc(item.id)}')" aria-label="Eliminar cobro">Eliminar</button></div></div>`;
+  }).join('');
+}
+async function addPaymentPending() {
+  const paciente=(document.getElementById('paymentPendingPatient').value||'').trim();
+  const concepto=(document.getElementById('paymentPendingConcept').value||'').trim();
+  const valor=_moneyInput(document.getElementById('paymentPendingAmount').value);
+  const fechaObjetivo=(document.getElementById('paymentPendingDate').value||'').trim();
+  const nota=(document.getElementById('paymentPendingNote').value||'').trim();
+  if (!paciente || !concepto || !valor) { toast('Paciente, concepto y valor son obligatorios','err'); return; }
+  try {
+    const data=encodeURIComponent(JSON.stringify({paciente,concepto,valor,fechaObjetivo,nota}));
+    const response=await fetch(`${APPS_SCRIPT_URL}?action=addPaymentPending&token=${encodeURIComponent(TOKEN)}&data=${data}`).then(r=>r.json());
+    if(!response.ok) throw new Error(response.error||'No se pudo guardar');
+    ['paymentPendingPatient','paymentPendingConcept','paymentPendingAmount','paymentPendingNote'].forEach(id=>document.getElementById(id).value='');
+    _paymentPendingLoaded=false; _paymentPendingFilter='open'; await renderPaymentPending(true); toast('Cobro pendiente guardado');
+  } catch(error) { toast(error.message||'No se pudo guardar el cobro','err'); }
+}
+async function setPaymentPendingStatus(id,estado) { try { const r=await fetch(`${APPS_SCRIPT_URL}?action=updatePaymentPending&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(id)}&estado=${encodeURIComponent(estado)}`).then(x=>x.json()); if(!r.ok) throw new Error(r.error||'No se pudo actualizar'); _paymentPendingLoaded=false; await renderPaymentPending(true); toast(estado==='Pagado'?'Cobro marcado como pagado':'Cobro reabierto'); } catch(error) { toast(error.message||'No se pudo actualizar','err'); } }
+async function deletePaymentPending(id) { if(!confirm('¿Eliminar este cobro pendiente?')) return; try { const r=await fetch(`${APPS_SCRIPT_URL}?action=deletePaymentPending&token=${encodeURIComponent(TOKEN)}&id=${encodeURIComponent(id)}`).then(x=>x.json()); if(!r.ok) throw new Error(r.error||'No se pudo eliminar'); _paymentPendingLoaded=false; await renderPaymentPending(true); toast('Cobro eliminado'); } catch(error) { toast(error.message||'No se pudo eliminar','err'); } }
 
 // ── LISTA DE ESPERA (sincronizada con Google Sheets; fallback local) ──
 function _getWaitList() {
