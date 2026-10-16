@@ -1340,12 +1340,20 @@ function teamSheet_(name) {
     NovedadesProfesionales: ['ID','CitaID','ProfesionalID','Tipo','Observacion','Creado','EstadoAdmin'],
     AuditoriaEquipo: ['ID','Fecha','UsuarioID','UsuarioNombre','Rol','Accion','CitaID','EstadoAnterior','EstadoNuevo','Observaciones'],
     CuentasPorPagar: ['ID','ProfesionalID','CitaID','Servicio','Tarifa','Estado','Creado','Pagado','LiquidacionID'],
-    HorariosEquipo: ['ID','ProfesionalID','SemanaInicio','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado','Domingo','Actualizado','ActualizadoPor']
+    HorariosEquipo: ['ID','ProfesionalID','SemanaInicio','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado','Domingo','Actualizado','ActualizadoPor','HorasAcordadas','HorasTrabajadas','Observacion']
   };
   var sh = ss.getSheetByName(name);
   if (!sh) {
     sh = ss.insertSheet(name);
     sh.getRange(1,1,1,headers[name].length).setValues([headers[name]]);
+  } else if (name === 'HorariosEquipo') {
+    var currentHeaders = sh.getRange(1,1,1,Math.max(1,sh.getLastColumn())).getValues()[0].map(function(value){ return '' + (value || ''); });
+    headers[name].forEach(function(header) {
+      if (currentHeaders.indexOf(header) === -1) {
+        sh.getRange(1, sh.getLastColumn() + 1).setValue(header);
+        currentHeaders.push(header);
+      }
+    });
   }
   return sh;
 }
@@ -1390,7 +1398,12 @@ function teamMonday_(dateValue) {
 }
 function teamWorkHoursText_(value) { return ('' + (value || '')).replace(/[\r\n]+/g, ' ').trim().slice(0,120); }
 function teamScheduleRow_(row) {
-  return {id:''+row[0],professionalId:''+row[1],semanaInicio:row[2] instanceof Date?Utilities.formatDate(row[2],'America/Bogota','yyyy-MM-dd'):''+row[2],lunes:''+row[3],martes:''+row[4],miercoles:''+row[5],jueves:''+row[6],viernes:''+row[7],sabado:''+row[8],domingo:''+row[9]};
+  return {id:''+row[0],professionalId:''+row[1],semanaInicio:row[2] instanceof Date?Utilities.formatDate(row[2],'America/Bogota','yyyy-MM-dd'):''+row[2],lunes:''+row[3],martes:''+row[4],miercoles:''+row[5],jueves:''+row[6],viernes:''+row[7],sabado:''+row[8],domingo:''+row[9],horasAcordadas:row[12] === '' || row[12] === undefined ? '' : Number(row[12]) || 0,horasTrabajadas:row[13] === '' || row[13] === undefined ? '' : Number(row[13]) || 0,observacion:''+(row[14] || '')};
+}
+function teamWorkHoursNumber_(value) {
+  if (value === '' || value === null || value === undefined) return '';
+  var number = Number(('' + value).replace(',', '.'));
+  return isFinite(number) && number >= 0 && number <= 168 ? number : '';
 }
 function getTeamWorkSchedule_(professionalId, week) {
   var start=teamMonday_(week), sh=teamSheet_('HorariosEquipo'), rows=sh.getDataRange().getValues();
@@ -1406,12 +1419,13 @@ function saveTeamWorkSchedule_(data,user) {
     if(!pro || pro.estado!=='Activo') return {ok:false,error:'Colaborador no encontrado o inactivo'};
     var start=teamMonday_(p.semanaInicio), sh=teamSheet_('HorariosEquipo'), rows=sh.getDataRange().getValues(), now=new Date();
     var values=[professionalId,start,teamWorkHoursText_(p.lunes),teamWorkHoursText_(p.martes),teamWorkHoursText_(p.miercoles),teamWorkHoursText_(p.jueves),teamWorkHoursText_(p.viernes),teamWorkHoursText_(p.sabado),teamWorkHoursText_(p.domingo),now,''+(user&&user.nombre||'Administración')];
+    var payrollValues=[teamWorkHoursNumber_(p.horasAcordadas),teamWorkHoursNumber_(p.horasTrabajadas),teamWorkHoursText_(p.observacion)];
     var row=0;
     for(var i=1;i<rows.length;i++){var item=teamScheduleRow_(rows[i]);if(item.professionalId===professionalId&&item.semanaInicio===start){row=i+1;break;}}
     var id='HOR-'+new Date().getTime();
-    if(row){sh.getRange(row,2,1,values.length).setValues([values]);id=''+rows[row-1][0];}else sh.appendRow([id].concat(values));
+    if(row){sh.getRange(row,2,1,values.length).setValues([values]);sh.getRange(row,13,1,payrollValues.length).setValues([payrollValues]);id=''+rows[row-1][0];}else sh.appendRow([id].concat(values).concat(payrollValues));
     auditTeam_(user,'Actualizó horario semanal','','',id,pro.nombre+' · semana '+start);
-    return {ok:true,item:{id:id,professionalId:professionalId,semanaInicio:start,lunes:values[2],martes:values[3],miercoles:values[4],jueves:values[5],viernes:values[6],sabado:values[7],domingo:values[8]}};
+    return {ok:true,item:{id:id,professionalId:professionalId,semanaInicio:start,lunes:values[2],martes:values[3],miercoles:values[4],jueves:values[5],viernes:values[6],sabado:values[7],domingo:values[8],horasAcordadas:payrollValues[0],horasTrabajadas:payrollValues[1],observacion:payrollValues[2]}};
   } catch(e) { return {ok:false,error:e.message}; }
 }
 function getAssignmentMap_() {
