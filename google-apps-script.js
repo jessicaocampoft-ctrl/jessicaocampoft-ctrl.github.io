@@ -152,6 +152,7 @@ function doGet(e) {
 
   if (p.action === 'ping')          return js({ok: true});
   if (p.action === 'adminData')     return js(getAdminData());
+  if (p.action === 'packageMembershipData') return js(getPackageMembershipData_());
   if (p.action === 'block')         return js(doBlock(p));
   if (p.action === 'unblock')       return js(doUnblock(p));
   if (p.action === 'updateStatus')  return js(doUpdateStatus(p, sessionUser));
@@ -314,6 +315,10 @@ function doPost(e) {
       var scheduleUser = getSessionUser_(d.token) || {id:'admin', nombre:'Administracion', rol:'Superadministradora'};
       return js(savePublicScheduleConfig_(d.data || {}, scheduleUser));
     }
+    if (d.action === 'savePackageMemberships') {
+      if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
+      return js(savePackageMemberships_(d.data || {}));
+    }
     if (d.action === 'savePayment') {
       if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
       var postUser = getSessionUser_(d.token) || {id:'admin', nombre:'Administracion', rol:'Superadministradora'};
@@ -349,6 +354,64 @@ function esRegistro(servicio) {
     if (s === SERVICIOS_SOLO_REGISTRO[i].toLowerCase()) return true;
   }
   return s.indexOf('registro') === 0; // cualquier cosa que empiece con "Registro"
+}
+
+// Paquetes de sesiones: se guardan como registros independientes para que las
+// reservas y consumos no dependan del navegador desde el que se agendó.
+function packageMembershipSheet_() {
+  var ss = getOrCreateSheet();
+  var sheet = ss.getSheetByName('PaquetesSesiones');
+  if (!sheet) {
+    sheet = ss.insertSheet('PaquetesSesiones');
+    sheet.appendRow(['ID', 'DatosJSON', 'Actualizado']);
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function getPackageMembershipData_() {
+  var rows = packageMembershipSheet_().getDataRange().getValues();
+  var records = [];
+  for (var i = 1; i < rows.length; i++) {
+    if (!rows[i][0] || !rows[i][1]) continue;
+    try {
+      var record = JSON.parse('' + rows[i][1]);
+      if (record && record.id) records.push(record);
+    } catch (e) {
+      // Un registro dañado no debe impedir leer los demás paquetes.
+    }
+  }
+  return {ok:true, records:records};
+}
+
+function savePackageMemberships_(data) {
+  var records = Array.isArray(data.records) ? data.records : [];
+  var deletedIds = Array.isArray(data.deletedIds) ? data.deletedIds.map(function(id){ return '' + id; }) : [];
+  var sheet = packageMembershipSheet_();
+  var rows = sheet.getDataRange().getValues();
+  var positions = {};
+  for (var i = 1; i < rows.length; i++) if (rows[i][0]) positions['' + rows[i][0]] = i + 1;
+
+  deletedIds.forEach(function(id) {
+    if (positions[id]) {
+      sheet.deleteRow(positions[id]);
+      // Las posiciones siguientes cambian; se reconstruyen tras cada eliminación.
+      rows = sheet.getDataRange().getValues();
+      positions = {};
+      for (var r = 1; r < rows.length; r++) if (rows[r][0]) positions['' + rows[r][0]] = r + 1;
+    }
+  });
+
+  records.forEach(function(record) {
+    if (!record || !record.id || deletedIds.indexOf('' + record.id) >= 0) return;
+    var values = [['' + record.id, JSON.stringify(record), new Date()]];
+    if (positions['' + record.id]) sheet.getRange(positions['' + record.id], 1, 1, 3).setValues(values);
+    else {
+      sheet.appendRow(values[0]);
+      positions['' + record.id] = sheet.getLastRow();
+    }
+  });
+  return {ok:true, saved:records.length, deleted:deletedIds.length};
 }
 
 function createBooking(d, isAdmin) {
@@ -4454,11 +4517,54 @@ function runAutomationNow(job) {
   return runAutomationMorning();
 }
 
+// Al iniciar el día se confirma como pagada la cita del día anterior solamente
+// cuando nadie la dejó marcada como deuda. Una cita cancelada, no asistida,
+// con comprobante en revisión o marcada "Pendiente de pago" nunca se cambia.
+function autoConfirmPreviousDayPayments_() {
+  var sheet = getOrCreateSheet().getSheetByName('Citas');
+  var map = ensureCitasStateColumns_();
+  var rows = sheet.getDataRange().getValues();
+  var targetDate = Utilities.formatDate(new Date(Date.now() - 86400000), 'America/Bogota', 'yyyy-MM-dd');
+  var user = {id:'system', nombre:'Sistema', rol:'Automatizacion'};
+  var confirmed = 0, skipped = 0;
+
+  for (var i = 1; i < rows.length; i++) {
+    var row = rows[i];
+    if (!row[0] || sd(row[7]) !== targetDate) continue;
+    var legacyStatus = '' + (row[10] || '');
+    var legacyKey = normalizeKey_(legacyStatus);
+    var state = getCitaStateFromRow_(row, map);
+    var blocked = [
+      'cancelada', 'no asistio', 'pendiente de pago', 'pago por verificar', 'pago rechazado'
+    ].indexOf(legacyKey) >= 0 || [
+      APPOINTMENT_STATUS.CANCELADA, APPOINTMENT_STATUS.NO_ASISTIO
+    ].indexOf(state.estadoCita) >= 0 || [
+      PAYMENT_STATUS.COMPROBANTE_RECIBIDO, PAYMENT_STATUS.PAGO_RECHAZADO, PAYMENT_STATUS.REEMBOLSADO
+    ].indexOf(state.estadoPago) >= 0;
+    if (blocked) { skipped++; continue; }
+    if (state.estadoPago === PAYMENT_STATUS.PAGO_APROBADO || state.estadoPago === PAYMENT_STATUS.NO_REQUIERE_PAGO) continue;
+
+    sheet.getRange(i + 1, 11).setValue('Pago verificado');
+    sheet.getRange(i + 1, 15).setValue('Pago automático al día siguiente');
+    if (map.EstadoPago) sheet.getRange(i + 1, map.EstadoPago).setValue(PAYMENT_STATUS.PAGO_APROBADO);
+    recordAppointmentStatusHistory_(
+      '' + row[0],
+      state.estadoPago + ' / ' + state.estadoCita,
+      PAYMENT_STATUS.PAGO_APROBADO + ' / ' + state.estadoCita,
+      user,
+      'Pago confirmado automáticamente al día siguiente. No estaba marcada como deuda.'
+    );
+    confirmed++;
+  }
+  return {ok:true, date:targetDate, confirmed:confirmed, skipped:skipped};
+}
+
 function runAutomationMorning() {
   var cfg=getAutomationConfig(), results={ok:true,job:'morning'};
   var props=PropertiesService.getScriptProperties(), todayKey=fmtDate(new Date());
   if(props.getProperty('AUTO_LAST_MORNING')===todayKey)return{ok:true,job:'morning',skipped:true,reason:'Ya se ejecutÃ³ hoy'};
   try { if(cfg.emailReminders) { sendReminders(); results.reminders=true; } } catch(e) { results.remindersError=e.message; }
+  try { results.autoPayments=autoConfirmPreviousDayPayments_(); } catch(e0) { results.autoPaymentsError=e0.message; }
   try { if(cfg.followups) results.followups=queuePostSessionFollowups_(); } catch(e2) { results.followupsError=e2.message; }
   try { if(cfg.paymentAlerts) results.paymentAlerts=sendPendingPaymentsSummary_(); } catch(e3) { results.paymentError=e3.message; }
   automationLog_('morning',JSON.stringify(results),results.remindersError?'error':'ok');
