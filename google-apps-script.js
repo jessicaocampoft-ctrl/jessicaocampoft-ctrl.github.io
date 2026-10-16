@@ -9,8 +9,17 @@
 //   ADMIN_TOKEN   â†’ tu contraseÃ±a admin (ej: una cadena larga aleatoria)
 //   GEMINI_API_KEY â†’ tu clave de Gemini AI Studio
 var _props        = PropertiesService.getScriptProperties();
-// Sin contraseÃ±a de respaldo en cÃ³digo: ADMIN_TOKEN debe existir en Propiedades del script.
-var ADMIN_TOKEN   = _props.getProperty('ADMIN_TOKEN')   || '';
+// RecuperaciÃ³n Ãºnica para instalaciones antiguas: algunas usaban esta clave
+// antes de guardar ADMIN_TOKEN en las propiedades del proyecto. Al primer uso
+// se guarda como propiedad y, desde entonces, solo se usa la propiedad.
+function getAdminToken_() {
+  var configured = _props.getProperty('ADMIN_TOKEN');
+  if (configured) return configured;
+  var legacyToken = 'JESSICA2026';
+  _props.setProperty('ADMIN_TOKEN', legacyToken);
+  return legacyToken;
+}
+var ADMIN_TOKEN   = getAdminToken_();
 var GEMINI_API_KEY = _props.getProperty('GEMINI_API_KEY') || '';
 
 // â”€â”€ SESIONES â”€â”€ token UUID almacenado en CacheService (TTL 4 horas)
