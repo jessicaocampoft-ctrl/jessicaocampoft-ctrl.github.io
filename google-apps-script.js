@@ -956,6 +956,15 @@ function doUpdateStatus(p) {
   return {ok: false, error: 'Cita no encontrada'};
 }
 
+// Lee un valor escrito como "$150000" o "$150.000" en el título/descripción.
+// Solo se usa para eventos personales de Calendar; las citas del sistema se omiten.
+function calendarEventAmount_(text) {
+  var match = String(text || '').match(/\$\s*([0-9][0-9.,\s]*)/);
+  if (!match) return 0;
+  var digits = match[1].replace(/\D/g, '');
+  return digits ? Number(digits) : 0;
+}
+
 // Devuelve eventos personales del Google Calendar (no citas) para un rango de fechas
 function getCalendarEvents(from, to) {
   try {
@@ -965,15 +974,18 @@ function getCalendarEvents(from, to) {
     var events = [];
     CalendarApp.getDefaultCalendar().getEvents(start, end).forEach(function(ev) {
       if (ev.getTitle().indexOf('[CITA]') === 0) return; // omitir citas del sistema
+      var title = ev.getTitle();
+      var valor = calendarEventAmount_(title + ' ' + ev.getDescription());
       if (ev.isAllDayEvent()) {
-        events.push({title: ev.getTitle(), fecha: fmtDate(ev.getStartTime()), hora: 'Todo el dÃ­a', allDay: true});
+        events.push({title: title, fecha: fmtDate(ev.getStartTime()), hora: 'Todo el dÃ­a', allDay: true, valor: valor});
       } else {
         events.push({
-          title:   ev.getTitle(),
+          title:   title,
           fecha:   fmtDate(ev.getStartTime()),
           hora:    pad(ev.getStartTime().getHours()) + ':' + pad(ev.getStartTime().getMinutes()),
           horaFin: pad(ev.getEndTime().getHours())   + ':' + pad(ev.getEndTime().getMinutes()),
-          allDay:  false
+          allDay:  false,
+          valor:   valor
         });
       }
     });
