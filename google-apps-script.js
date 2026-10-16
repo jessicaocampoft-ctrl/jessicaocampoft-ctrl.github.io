@@ -244,9 +244,29 @@ function doGet(e) {
 // -------------------------------------------------------------
 //  POST â€” Reservas de pacientes + EvaluaciÃ³n Express con fotos
 // -------------------------------------------------------------
+function parsePostBody_(e) {
+  var raw = '' + (((e || {}).postData || {}).contents || '');
+  if (!raw) throw new Error('Solicitud sin datos');
+  try { return JSON.parse(raw); } catch (jsonError) {}
+
+  // Algunos navegadores y mÃ³dulos antiguos envÃ­an el JSON dentro de un
+  // campo urlencoded (payload=... o data=...). Aceptamos ambos formatos
+  // para no rechazar reservas ni acciones del panel durante una migraciÃ³n.
+  var pairs = raw.split('&'), form = {};
+  for (var i = 0; i < pairs.length; i++) {
+    var eq = pairs[i].indexOf('=');
+    var key = decodeURIComponent((eq < 0 ? pairs[i] : pairs[i].slice(0, eq)).replace(/\+/g, ' '));
+    var value = decodeURIComponent((eq < 0 ? '' : pairs[i].slice(eq + 1)).replace(/\+/g, ' '));
+    form[key] = value;
+  }
+  var packed = form.payload || form.data || form.json;
+  if (!packed) throw new Error('Formato de solicitud no reconocido');
+  return JSON.parse(packed);
+}
+
 function doPost(e) {
   try {
-    var d = JSON.parse(e.postData.contents);
+    var d = parsePostBody_(e);
     if (d.action === 'professionalLogin') {
       return js(professionalLogin_(d.user, d.password));
     }
