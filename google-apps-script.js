@@ -120,6 +120,12 @@ function doGet(e) {
     return js(getAvailability(p.date, p.service, p.modality));
   }
 
+  // Agenda exclusiva para la tablet del consultorio. No expone datos de
+  // pacientes ni requiere sesión administrativa.
+  if (p.action === 'tabletAvailability' && p.date) {
+    return js(getTabletAvailability_(p.date, p.service));
+  }
+
   // Pasaporte — lectura pública segura (requiere id + token)
   if (p.action === 'getPassportSecure') {
     return js(getPassportSecure_(p.id, p.token));
@@ -333,6 +339,9 @@ function doPost(e) {
     if (d.action === 'generateEval') {
       if (!validateSession(d.token)) return js({ok: false, error: 'Sin permiso'});
       return js(generateEvalReport(d.data, d.photos || {}));
+    }
+    if (d.action === 'tabletBooking') {
+      return js(createTabletBooking_(d));
     }
     return js(createBooking(d, false));
   } catch(err) {
@@ -951,6 +960,222 @@ function checkAvailability(date, time, modality, service) {
   }
 
   return {available: true};
+}
+
+// -------------------------------------------------------------
+// AGENDA DE TABLET DEL CONSULTORIO
+// -------------------------------------------------------------
+// Esta agenda no reutiliza los horarios de la web pública: tiene reglas
+// propias para la operación presencial y conserva el panel administrativo
+// como fuente de verdad para los bloqueos y las citas creadas manualmente.
+var TABLET_RESOURCE_JESSICA_ = 'JESSICA';
+var TABLET_RESOURCE_NATALIA_ = 'NATALIA';
+
+function tabletService_(service) {
+  // Se usa una normalización local en Unicode para que los nombres escritos
+  // desde la tablet funcionen igual con o sin tildes, aun si el archivo
+  // histórico contiene texto con otra codificación.
+  var key = ('' + (service || '')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  if (key.indexOf('valoracion') >= 0) return {key:'valoracion', label:'Valoración funcional', duration:40, price:'$80.000'};
+  if (key.indexOf('rehabilitacion') >= 0 || key.indexOf('readaptacion') >= 0) return {key:'rehabilitacion', label:'Rehabilitación / Readaptación', duration:40, price:'$70.000'};
+  if (key.indexOf('completa') >= 0) return {key:'descarga_completa', label:'Descarga muscular completa', duration:80, price:'$110.000'};
+  if (key.indexOf('cuello') >= 0 || key.indexOf('espalda') >= 0) return {key:'descarga_cuello', label:'Descarga muscular cuello y espalda', duration:50, price:'$75.000'};
+  return null;
+}
+
+function tabletDate_(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test('' + (value || ''))) return null;
+  var p = value.split('-');
+  var date = new Date(+p[0], +p[1]-1, +p[2], 12, 0, 0);
+  return isNaN(date.getTime()) ? null : date;
+}
+
+function tabletCandidateSlots_(date, service) {
+  var d = tabletDate_(date);
+  if (!d || d.getDay() === 0 || d.getDay() === 6) return [];
+  if (service.key === 'valoracion') return ['10:00','10:40','11:20'];
+  if (service.key === 'rehabilitacion') return ['15:00','16:00','17:00'];
+
+  var ranges = service.key === 'descarga_completa'
+    ? [['10:00','12:00'],['18:00','20:00']]
+    : [['10:00','12:00'],['14:00','15:00'],['18:00','20:00']];
+  var slots = [];
+  ranges.forEach(function(range) {
+    var start = minutesFromTime_(range[0]), end = minutesFromTime_(range[1]);
+    for (var m = start; m + service.duration <= end; m += 10) slots.push(timeFromMinutes_(m));
+  });
+  return slots;
+}
+
+function tabletResourceLabel_(resource) {
+  return resource === TABLET_RESOURCE_NATALIA_ ? 'Natalia Rodríguez' : 'Jessica Ocampo';
+}
+
+function tabletNataliaId_() {
+  var pros = getProfessionals_();
+  for (var i = 0; i < pros.length; i++) {
+    if (normalizeKey_(pros[i].nombre).indexOf('natalia rodriguez') >= 0) return '' + pros[i].id;
+  }
+  return '';
+}
+
+function tabletCancelled_(status) {
+  var value = normalizeKey_(status);
+  return value.indexOf('cancel') >= 0 || value.indexOf('no asist') >= 0 || value.indexOf('reserva vencida') >= 0;
+}
+
+function tabletMeta_(note) {
+  var text = '' + (note || '');
+  var resource = /\[TABLET RECURSO: (JESSICA|NATALIA)\]/.exec(text);
+  var duration = /\[TABLET DURACION: (\d+)\]/.exec(text);
+  return {isTablet:text.indexOf('[TABLET CONSULTORIO]') >= 0, resource:resource ? resource[1] : '', duration:duration ? Number(duration[1]) : 0};
+}
+
+function tabletAssignments_() {
+  var map = {};
+  try {
+    var rows = teamSheet_('CitaEquipo').getDataRange().getValues();
+    var nataliaId = tabletNataliaId_();
+    for (var i = 1; i < rows.length; i++) {
+      if (!rows[i][0]) continue;
+      if (nataliaId && ('' + rows[i][1]) === nataliaId) map['' + rows[i][0]] = TABLET_RESOURCE_NATALIA_;
+    }
+  } catch(e) {}
+  return map;
+}
+
+function tabletState_(date) {
+  var state = {busy:{JESSICA:[],NATALIA:[]}, rehab:{JESSICA:{},NATALIA:{}}, global:[]};
+  var ss = getOrCreateSheet();
+  var cRows = ss.getSheetByName('Citas').getDataRange().getValues();
+  var assignments = tabletAssignments_();
+
+  for (var i = 1; i < cRows.length; i++) {
+    var row = cRows[i];
+    if (!row[0] || tabletCancelled_(row[10]) || sd(row[7]) !== date) continue;
+    var service = tabletService_(row[5]);
+    var meta = tabletMeta_(row[13]);
+    var start = parseDT(date, st(row[8]));
+    var duration = meta.duration || (service ? service.duration : getServiceDuration(row[5]));
+    var end = new Date(start.getTime() + duration * 60000);
+    var resource = meta.resource || assignments['' + row[0]] || (service && service.key === 'valoracion' ? TABLET_RESOURCE_JESSICA_ : '');
+
+    if (service && service.key === 'rehabilitacion' && resource) {
+      var slot = st(row[8]);
+      state.rehab[resource][slot] = (state.rehab[resource][slot] || 0) + 1;
+    } else if (resource) {
+      state.busy[resource].push([start,end]);
+    } else {
+      // Una cita manual sin profesional no se puede atribuir con seguridad:
+      // bloquea ambos recursos para evitar prometer un cupo inexistente.
+      state.global.push([start,end]);
+    }
+  }
+
+  var bRows = ss.getSheetByName('Bloqueos').getDataRange().getValues();
+  for (var j = 1; j < bRows.length; j++) {
+    if (sd(bRows[j][0]) !== date) continue;
+    state.global.push([parseDT(date, st(bRows[j][1])), parseDT(date, st(bRows[j][2]))]);
+  }
+
+  try {
+    var d = tabletDate_(date);
+    var events = CalendarApp.getDefaultCalendar().getEvents(new Date(d.getFullYear(),d.getMonth(),d.getDate(),0,0), new Date(d.getFullYear(),d.getMonth(),d.getDate(),23,59,59));
+    for (var k = 0; k < events.length; k++) {
+      var title = events[k].getTitle() || '';
+      if (title.indexOf('[CITA]') === 0 || title.indexOf('[TABLET]') === 0 || events[k].isAllDayEvent()) continue;
+      state.global.push([events[k].getStartTime(),events[k].getEndTime()]);
+    }
+  } catch(e2) {}
+  return state;
+}
+
+function tabletOverlaps_(intervals, start, end) {
+  for (var i = 0; i < intervals.length; i++) if (start < intervals[i][1] && end > intervals[i][0]) return true;
+  return false;
+}
+
+function tabletSlotAvailability_(date, time, service, state) {
+  var start = parseDT(date, time), end = new Date(start.getTime() + service.duration * 60000);
+  if (tabletOverlaps_(state.global, start, end)) return {available:false, capacity:0};
+
+  if (service.key === 'rehabilitacion') {
+    var availableResources = [];
+    [TABLET_RESOURCE_JESSICA_, TABLET_RESOURCE_NATALIA_].forEach(function(resource) {
+      var busy = tabletOverlaps_(state.busy[resource], start, end);
+      var used = state.rehab[resource][time] || 0;
+      if (!busy && used < 2) availableResources.push({resource:resource, slots:2-used});
+    });
+    var capacity = availableResources.reduce(function(total, item){ return total + item.slots; }, 0);
+    return {available:capacity > 0, capacity:capacity, resources:availableResources};
+  }
+
+  var choices = service.key === 'valoracion' ? [TABLET_RESOURCE_JESSICA_] : [TABLET_RESOURCE_JESSICA_, TABLET_RESOURCE_NATALIA_];
+  var free = choices.filter(function(resource) { return !tabletOverlaps_(state.busy[resource], start, end); });
+  return {available:free.length > 0, capacity:free.length, resources:free.map(function(resource){ return {resource:resource,slots:1}; })};
+}
+
+function getTabletAvailability_(date, serviceName) {
+  var service = tabletService_(serviceName);
+  var day = tabletDate_(date);
+  if (!service || !day) return {ok:false,error:'Selecciona un servicio y una fecha válidos.'};
+  var today = Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM-dd');
+  if (date < today) return {ok:false,error:'Selecciona una fecha de hoy en adelante.'};
+  var state = tabletState_(date), slots = [];
+  tabletCandidateSlots_(date, service).forEach(function(time) {
+    var item = tabletSlotAvailability_(date, time, service, state);
+    if (item.available) slots.push({time:time, capacity:item.capacity});
+  });
+  return {ok:true, date:date, service:service.label, duration:service.duration, slots:slots};
+}
+
+function createTabletBooking_(data) {
+  var service = tabletService_(data.service);
+  var date = '' + (data.date || ''), time = '' + (data.time || '');
+  var name = ('' + (data.name || '')).trim().replace(/\s+/g,' ').slice(0,100);
+  var phone = ('' + (data.phone || '')).replace(/\D/g,'');
+  if (!service || !tabletDate_(date) || !/^\d{2}:\d{2}$/.test(time) || !name || (phone.length !== 10 && !(phone.length === 12 && phone.indexOf('57') === 0))) {
+    return {ok:false,error:'Revisa el servicio, fecha, hora, nombre y teléfono.'};
+  }
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(15000); } catch(e) { return {ok:false,error:'La agenda está ocupada. Intenta nuevamente.'}; }
+  try {
+    var state = tabletState_(date);
+    var availability = tabletSlotAvailability_(date, time, service, state);
+    if (!availability.available) return {ok:false,error:'Ese horario acaba de ocuparse. Elige otro cupo.'};
+    var resource = availability.resources.sort(function(a,b){ return b.slots-a.slots; })[0].resource;
+    var start = parseDT(date,time), end = new Date(start.getTime() + service.duration * 60000);
+    var ss = getOrCreateSheet(), sheet = ss.getSheetByName('Citas');
+    ensureCitasStateColumns_();
+    var id = 'T' + new Date().getTime() + Math.floor(Math.random()*1000);
+    var note = '[TABLET CONSULTORIO] [TABLET RECURSO: ' + resource + '] [TABLET DURACION: ' + service.duration + ']';
+    sheet.appendRow([id, new Date().toLocaleString('es-CO'), name, phone, '',
+      service.key === 'rehabilitacion' ? 'Readaptación Funcional' : service.label,
+      'Presencial', date, time, service.price, 'Confirmada', '', '', note]);
+    var map = ensureCitasStateColumns_(), row = sheet.getLastRow();
+    sheet.getRange(row, map.EstadoPago).setValue(PAYMENT_STATUS.PENDIENTE_PAGO);
+    sheet.getRange(row, map.EstadoCita).setValue(APPOINTMENT_STATUS.RESERVADA);
+    sheet.getRange(row, map.EstadoMigracionOrigen).setValue('TABLET_CONSULTORIO');
+    sheet.getRange(row, map.FechaMigracionEstado).setValue(new Date());
+    if (map.VenceReserva) sheet.getRange(row, map.VenceReserva).setValue('');
+    sheet.getRange(row,4).setNumberFormat('@').setValue(phone);
+    upsertPaciente(name, phone, '');
+
+    if (resource === TABLET_RESOURCE_NATALIA_) {
+      var nataliaId = tabletNataliaId_();
+      if (nataliaId) teamSheet_('CitaEquipo').appendRow([id,nataliaId,'','', '',new Date(),'Tablet consultorio']);
+    }
+    try {
+      CalendarApp.getDefaultCalendar().createEvent('[TABLET] ' + service.label + ' - ' + name + ' (' + tabletResourceLabel_(resource) + ')', start, end, {
+        description:'Cita agendada desde tablet del consultorio. Pendiente de pago.\nPaciente: ' + name + '\nTeléfono: ' + phone,
+        location:'Cra. 19A, Av. Sta. Mónica #17-24, Dosquebradas, Risaralda'
+      });
+    } catch(calendarError) {}
+    try { GmailApp.sendEmail(JESSICA_EMAIL, 'Nueva cita desde tablet: ' + name + ' - ' + service.label, 'Fecha: ' + date + ' ' + time + '\nAsignada a: ' + tabletResourceLabel_(resource) + '\nEstado: Confirmada · Pendiente de pago\nID: ' + id); } catch(emailError) {}
+    return {ok:true,id:id,resource:tabletResourceLabel_(resource),status:'Confirmada · Pendiente de pago'};
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // -------------------------------------------------------------

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10b9ae">
+  <title>Agenda tu cita | Cuidándote Fisioterapia</title>
+  <style>
+    :root{--ink:#172534;--muted:#657583;--teal:#10b9ae;--teal-dark:#068f89;--line:#ccefed;--soft:#f1fbfa;--danger:#b42318}
+    *{box-sizing:border-box} body{margin:0;min-height:100vh;background:linear-gradient(145deg,#f6fbfb,#e3f7f5);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+    main{width:min(850px,100%);margin:auto;padding:30px 22px 46px}.brand{text-align:center;margin:0 auto 25px}.brand img{width:min(220px,64vw);height:auto}.eyebrow{color:var(--teal-dark);font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin:18px 0 7px}.intro{font-size:20px;line-height:1.4;margin:0 auto;max-width:620px}.card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(10,97,100,.12);border-radius:22px;padding:24px;margin-top:22px}.step{display:none}.step.active{display:block}.step h2{font-family:Georgia,serif;font-size:26px;margin:0 0 8px}.help{color:var(--muted);line-height:1.5;margin:0 0 20px}.services{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.service{width:100%;min-height:115px;text-align:left;border:1.5px solid #b7e8e5;border-radius:16px;background:#fff;padding:16px;cursor:pointer;color:var(--ink)}.service:hover,.service.selected{border-color:var(--teal);background:var(--soft);box-shadow:0 0 0 3px rgba(16,185,174,.12)}.service strong{display:block;font-size:17px}.service span{display:block;color:var(--muted);font-size:14px;margin-top:7px;line-height:1.35}.choice-row{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-bottom:19px}.field{flex:1;min-width:220px}.field label{display:block;font-size:13px;color:#4f6270;font-weight:700;margin-bottom:7px}.field input{width:100%;border:1px solid #bde5e4;background:#fbffff;border-radius:10px;padding:13px;font-size:17px;color:var(--ink)}.slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.slot{border:1.5px solid #9cddd9;background:#fff;color:#087f7a;border-radius:12px;padding:14px 8px;font-size:17px;font-weight:800;cursor:pointer}.slot small{display:block;font-size:11px;font-weight:600;color:#607380;margin-top:5px}.slot:hover,.slot.selected{background:var(--teal);border-color:var(--teal);color:#fff}.slot.selected small{color:#e9ffff}.notice{padding:13px 15px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a4d08;line-height:1.4}.error{color:var(--danger);font-weight:700;min-height:22px;margin-top:14px}.summary{padding:16px;border-radius:14px;background:var(--soft);border:1px solid #baeae7;line-height:1.65;margin-bottom:18px}.actions{display:flex;justify-content:space-between;gap:12px;margin-top:24px}.btn{border:0;border-radius:12px;padding:14px 18px;font-size:16px;font-weight:800;cursor:pointer}.primary{background:var(--teal);color:#063e3b;box-shadow:0 8px 16px rgba(16,185,174,.25)}.primary:hover{background:#42cec5}.secondary{background:#fff;border:1px solid #bae3e1;color:#48606e}.success{text-align:center;padding:25px 12px}.success .mark{font-size:55px}.success h2{color:#087f7a}.privacy{margin-top:24px;text-align:center;color:#71808a;font-size:13px}.loading{color:var(--muted);padding:22px 0;text-align:center}@media(max-width:580px){main{padding:22px 14px}.card{padding:19px}.services{grid-template-columns:1fr}.slots{grid-template-columns:repeat(2,minmax(0,1fr))}.intro{font-size:18px}.step h2{font-size:23px}}
+  </style>
+</head>
+<body>
+  <main>
+    <header class="brand">
+      <img src="LogoCuidandote/logo-horizontal.png" alt="Cuidándote Fisioterapia">
+      <div class="eyebrow">Agenda en el consultorio</div>
+      <p class="intro">Elige tu servicio y un horario disponible. Tu cita quedará confirmada y podrás realizar el pago en recepción.</p>
+    </header>
+
+    <section class="card" aria-live="polite">
+      <div class="step active" id="stepService">
+        <h2>¿Qué necesitas hoy?</h2>
+        <p class="help">Selecciona el servicio que vas a recibir.</p>
+        <div class="services" id="services"></div>
+      </div>
+
+      <div class="step" id="stepTime">
+        <h2>Elige el día y la hora</h2>
+        <p class="help" id="timeHelp"></p>
+        <div class="choice-row"><div class="field"><label for="date">Fecha</label><input id="date" type="date"></div></div>
+        <div id="slots" class="slots"></div>
+        <div id="timeMessage" class="error"></div>
+        <div class="actions"><button class="btn secondary" type="button" data-back="stepService">Volver</button><button class="btn primary" type="button" id="continue" disabled>Continuar</button></div>
+      </div>
+
+      <div class="step" id="stepDetails">
+        <h2>Confirma tus datos</h2>
+        <p class="help">Los usaremos únicamente para registrar tu cita.</p>
+        <div class="summary" id="summary"></div>
+        <div class="field"><label for="name">Nombre completo</label><input id="name" autocomplete="name" maxlength="100" placeholder="Escribe tu nombre"></div>
+        <div class="field" style="margin-top:14px"><label for="phone">Número de WhatsApp</label><input id="phone" inputmode="tel" autocomplete="tel" maxlength="14" placeholder="Ej. 313 646 7945"></div>
+        <div id="detailsMessage" class="error"></div>
+        <div class="actions"><button class="btn secondary" type="button" data-back="stepTime">Volver</button><button class="btn primary" type="button" id="book">Confirmar cita</button></div>
+      </div>
+
+      <div class="step" id="stepSuccess">
+        <div class="success"><div class="mark">✓</div><h2>Tu cita quedó agendada</h2><p id="successText" class="help"></p><button class="btn primary" type="button" id="restart">Agendar otra cita</button></div>
+      </div>
+    </section>
+    <p class="privacy">Por privacidad, esta pantalla se reinicia automáticamente después de un minuto sin actividad.</p>
+  </main>
+  <script>
+  (function(){
+    'use strict';
+    var ENDPOINT='https://script.google.com/macros/s/AKfycbx7biQkVS9l1nU4AYQeOmQzbPcKebOUJ5UmX97vCJDaXg5s-9y0-mgSrE0ANZXZJ8Hd/exec';
+    var SERVICES=[
+      {id:'Valoración Funcional',name:'Valoración funcional',detail:'40 minutos · solo con Jessica'},
+      {id:'Readaptación Funcional',name:'Rehabilitación / Readaptación',detail:'40 minutos · cupos con Jessica y Natalia'},
+      {id:'Descarga Muscular — Cuello y Espalda',name:'Descarga de cuello y espalda',detail:'50 minutos'},
+      {id:'Descarga Muscular Completa',name:'Descarga muscular completa',detail:'1 hora y 20 minutos'}
+    ];
+    var state={service:null,date:'',time:''}, idleTimer=null, loading=false;
+    var el=function(id){return document.getElementById(id)};
+    function localDate(){var d=new Date(),p=function(n){return String(n).padStart(2,'0')};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
+    function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+    function labelDate(value){return new Intl.DateTimeFormat('es-CO',{weekday:'long',day:'numeric',month:'long'}).format(new Date(value+'T12:00:00'))}
+    function labelTime(value){var p=value.split(':');var h=Number(p[0]),suffix=h>=12?'p. m.':'a. m.';h=h%12||12;return h+':'+p[1]+' '+suffix}
+    function show(step){document.querySelectorAll('.step').forEach(function(node){node.classList.remove('active')});el(step).classList.add('active');resetIdle()}
+    function reset(){state={service:null,date:localDate(),time:''};el('date').value=state.date;el('name').value='';el('phone').value='';el('detailsMessage').textContent='';el('timeMessage').textContent='';renderServices();show('stepService')}
+    function resetIdle(){clearTimeout(idleTimer);idleTimer=setTimeout(reset,60000)}
+    function renderServices(){el('services').innerHTML=SERVICES.map(function(s){return '<button class="service '+(state.service&&state.service.id===s.id?'selected':'')+'" type="button" data-service="'+esc(s.id)+'"><strong>'+esc(s.name)+'</strong><span>'+esc(s.detail)+'</span></button>'}).join('')}
+    function loadSlots(){
+      state.time='';el('continue').disabled=true;el('slots').innerHTML='<div class="loading">Consultando los cupos disponibles…</div>';el('timeMessage').textContent='';
+      var url=ENDPOINT+'?action=tabletAvailability&date='+encodeURIComponent(state.date)+'&service='+encodeURIComponent(state.service.id)+'&_='+Date.now();
+      fetch(url,{cache:'no-store'}).then(function(r){return r.json()}).then(function(data){
+        if(!data.ok) throw new Error(data.error||'No fue posible consultar la agenda.');
+        if(!data.slots.length){el('slots').innerHTML='<div class="notice">No hay cupos disponibles para este día. Prueba otra fecha.</div>';return}
+        el('slots').innerHTML=data.slots.map(function(slot){return '<button class="slot" type="button" data-time="'+slot.time+'">'+labelTime(slot.time)+(state.service.id==='Readaptación Funcional'?'<small>'+slot.capacity+' cupo'+(slot.capacity===1?'':'s')+' disponible'+(slot.capacity===1?'':'s')+'</small>':'')+'</button>'}).join('');
+      }).catch(function(error){el('slots').innerHTML='';el('timeMessage').textContent=error.message||'No fue posible consultar la agenda.'});
+    }
+    function selectService(id){state.service=SERVICES.filter(function(s){return s.id===id})[0];el('timeHelp').textContent=state.service.name+' · '+state.service.detail+'. Solo se muestran los cupos disponibles.';show('stepTime');loadSlots()}
+    function submit(){
+      if(loading) return;var name=el('name').value.trim(),phone=el('phone').value.replace(/\D/g,'');
+      if(!name){el('detailsMessage').textContent='Escribe tu nombre completo.';return}
+      if(phone.length!==10){el('detailsMessage').textContent='Escribe un número de WhatsApp de 10 dígitos.';return}
+      loading=true;el('book').disabled=true;el('book').textContent='Agendando…';el('detailsMessage').textContent='';
+      fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'tabletBooking',service:state.service.id,date:state.date,time:state.time,name:name,phone:phone})})
+      .then(function(r){return r.json()}).then(function(data){if(!data.ok)throw new Error(data.error||'No se pudo registrar la cita.');el('successText').textContent=state.service.name+' · '+labelDate(state.date)+' · '+labelTime(state.time)+'. Estado: '+data.status+'.';show('stepSuccess')})
+      .catch(function(error){el('detailsMessage').textContent=error.message||'No se pudo registrar la cita. Intenta otro horario.';show('stepTime');loadSlots()})
+      .finally(function(){loading=false;el('book').disabled=false;el('book').textContent='Confirmar cita'})
+    }
+    el('date').min=localDate();el('date').value=localDate();state.date=localDate();
+    el('services').addEventListener('click',function(e){var b=e.target.closest('[data-service]');if(b)selectService(b.dataset.service)});
+    el('slots').addEventListener('click',function(e){var b=e.target.closest('[data-time]');if(!b)return;state.time=b.dataset.time;document.querySelectorAll('.slot').forEach(function(x){x.classList.toggle('selected',x===b)});el('continue').disabled=false;resetIdle()});
+    el('date').addEventListener('change',function(){state.date=this.value;loadSlots();resetIdle()});
+    el('continue').addEventListener('click',function(){if(!state.time)return;el('summary').innerHTML='<strong>'+esc(state.service.name)+'</strong><br>'+esc(labelDate(state.date))+' · '+esc(labelTime(state.time))+'<br><span style="color:#55717a">Cita presencial en Cuidándote Fisioterapia</span>';show('stepDetails')});
+    el('book').addEventListener('click',submit);el('restart').addEventListener('click',reset);
+    document.querySelectorAll('[data-back]').forEach(function(b){b.addEventListener('click',function(){show(b.dataset.back)})});
+    ['click','touchstart','keydown','input'].forEach(function(type){document.addEventListener(type,resetIdle,{passive:true})});
+    reset();
+  })();
+  </script>
+</body>
+</html>
