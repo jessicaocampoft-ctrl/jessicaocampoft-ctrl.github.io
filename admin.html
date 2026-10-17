@@ -1780,6 +1780,11 @@ button:disabled{cursor:not-allowed;opacity:.58}
       Equipo clínico
     </button>
 
+    <a class="sb-link" id="sb-agenda-tablet" data-tooltip="Agenda de tablet" href="https://cuidandotefisioterapia.com/agenda-consultorio.html?v=ff5282d" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 15h8"/><path d="M12 12v6"/></svg>
+      Ver agenda actualizada
+    </a>
+
     <button class="sb-link" id="sb-basedatos" data-tooltip="Base de datos" onclick="showView('basedatos')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
       Base de datos
@@ -7503,7 +7508,7 @@ function initAdminUX2026() {
   sidebar.dataset.uxReady = '1';
 
   // Destinos cotidianos visibles; Google Calendar queda como primera opción del menú.
-  const principales = new Set(['sb-calendario','sb-dashboard','sb-tareas','sb-agenda','sb-nueva','sb-pacientes','sb-finanzas']);
+  const principales = new Set(['sb-calendario','sb-dashboard','sb-tareas','sb-agenda','sb-nueva','sb-pacientes','sb-equipo','sb-agenda-tablet','sb-finanzas']);
   sidebar.querySelectorAll(':scope > .sb-link').forEach(link => {
     if (!principales.has(link.id) && link.id !== 'darkModeBtn' && !link.classList.contains('sb-signout')) {
       link.classList.add('sb-secondary');
