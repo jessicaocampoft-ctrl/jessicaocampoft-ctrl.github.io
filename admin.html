@@ -12820,6 +12820,10 @@ function _segCard(p) {
   const tel   = String(p.telefono||'').replace(/\D/g,'');
   const phone = tel.length<=10 ? '57'+tel : tel;
   const hasWA = tel.length >= 7;
+  const semanasSinDescarga = Math.floor(Number(p.dias || 0) / 7);
+  const tiempoSinDescarga = semanasSinDescarga >= 1
+    ? `${semanasSinDescarga} semana${semanasSinDescarga === 1 ? '' : 's'} sin descarga muscular`
+    : `${p.dias} día${p.dias === 1 ? '' : 's'} sin descarga muscular`;
 
   // Mensajes WA — personalizados según tipo de descarga y nota de relación
   const primero = p.nombre.split(' ')[0];
@@ -12856,7 +12860,7 @@ function _segCard(p) {
       <div class="seg-days-bar" style="width:180px">
         <div class="seg-days-fill" style="width:${pct}%;background:${reagendado?'var(--ok)':fillColor}"></div>
       </div>
-      <div style="font-family:var(--font-m);font-size:.7rem;color:${reagendado?'var(--ok)':color};margin-top:2px;font-weight:600">${p.dias} días sin descarga muscular</div>
+      <div style="font-family:var(--font-m);font-size:.7rem;color:${reagendado?'var(--ok)':color};margin-top:2px;font-weight:600">${tiempoSinDescarga}</div>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0">
       ${reagendado ? `
