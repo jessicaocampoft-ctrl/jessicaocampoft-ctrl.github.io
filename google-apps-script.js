@@ -1984,8 +1984,10 @@ function professionalMarkAttended_(token, citaId) {
   if (teamStateKey_(found.cita.estado) === 'sesion atendida') return {ok:false,error:'Esta sesi\u00f3n ya fue marcada como atendida'};
   if (!canProfessionalAttend_(found.raw, assignment)) return {ok:false,error:'Solo puedes marcar la sesi\u00f3n cuando llegue la fecha y hora de la cita'};
   var prev = found.cita.estado;
-  getOrCreateSheet().getSheetByName('Citas').getRange(found.row, 11).setValue(attendedStatus);
-  setCitaStates_(citaId, null, APPOINTMENT_STATUS.ATENDIDA, {id:sess.id, nombre:sess.nombre, rol:'Fisioterapeuta'}, 'Sesion atendida desde portal profesional');
+  // Usar la misma transición que el administrador para que un paquete también
+  // consuma la sesión cuando el fisioterapeuta la marca como atendida.
+  var attendedUpdate = doUpdateStatus({id:citaId, status:attendedStatus, manualAudit:true, note:'Sesion atendida desde portal profesional'}, {id:sess.id, nombre:sess.nombre, rol:'Fisioterapeuta'});
+  if (!attendedUpdate.ok) return attendedUpdate;
   var linkSh = teamSheet_('CitaEquipo'), links = linkSh.getDataRange().getValues();
   for (var i = 1; i < links.length; i++) {
     if ('' + links[i][0] === citaId) {
