@@ -1873,6 +1873,11 @@ button:disabled{cursor:not-allowed;opacity:.58}
       Evaluación
     </a>
 
+    <a class="sb-link" href="ficha-clinica.html" target="_blank" style="color:#0f8d82">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+      Ficha clínica
+    </a>
+
     <button class="sb-link" id="sb-evalexpress" onclick="openEvalExpress()" style="color:#1BBFB0;font-weight:600">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
       Eval. Express ⚡
@@ -2834,15 +2839,22 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
         <div class="form-grid">
           <div class="field">
             <label>Nombre del paciente *</label>
-            <input type="text" id="ncName" placeholder="Nombre completo">
+            <input type="text" id="ncName" placeholder="Nombre completo" oninput="refreshBookingPackageOptions()">
           </div>
           <div class="field">
             <label>Teléfono</label>
-            <input type="tel" id="ncPhone" placeholder="+57 300 000 0000">
+            <input type="tel" id="ncPhone" placeholder="+57 300 000 0000" oninput="refreshBookingPackageOptions()">
           </div>
           <div class="field">
             <label>Email</label>
             <input type="email" id="ncEmail" placeholder="correo@email.com">
+          </div>
+          <div class="field" id="ncPackageWrap">
+            <label>Paquete del paciente</label>
+            <select id="ncPackageId" onchange="onBookingPackageChange()">
+              <option value="">Pago por sesión / sin paquete</option>
+            </select>
+            <div id="ncPackageHint" style="display:none;margin-top:6px;padding:7px 9px;border-radius:7px;background:rgba(27,191,176,.08);font-size:.76rem;color:var(--muted)"></div>
           </div>
           <div class="field">
             <label>Servicio *</label>
@@ -7903,7 +7915,7 @@ function showView(v) {
   if (v === 'seguimiento')    renderSeguimiento();
   if (v === 'tareas')         renderTareas();
   if (v === 'tareasConfig')   initTareasConfig();
-  if (v === 'paquetes')       renderPaquetes();
+  if (v === 'paquetes')       { renderPaquetes(); loadPackageMemberships().then(renderPaquetes); }
   if (v === 'mensajes')       renderMensajes();
   if (v === 'empresas')       renderEmpresas();
   if (v === 'codigos')        renderCodigos();
@@ -8940,6 +8952,7 @@ async function submitAdminBookingMulti() {
     notes:     document.getElementById('ncNotes').value.trim(),
     notaAdmin: (() => { const p=(document.getElementById('ncParaQuien').value||'').trim(); const ab=getAbonoNota(); return [p?'[PARA: '+p+']':'',ab].filter(Boolean).join(' '); })(),
     canal:     document.getElementById('nuevaCitaCanal').value || 'Directo',
+    packageId: document.getElementById('ncPackageId').value || '',
     ...gimnasioData
   };
 
@@ -11152,6 +11165,7 @@ async function submitAdminBooking() {
     ...gimnasioData
   };
 
+  data.packageId = document.getElementById('ncPackageId').value || '';
   const isRecurring   = document.getElementById('ncRecurring').checked;
   const totalSessions = isRecurring ? (parseInt(document.getElementById('ncSessions').value) || 1) : 1;
 
@@ -11261,6 +11275,7 @@ function fillPatient(p) {
   document.getElementById('pacDropdown').style.display = 'none';
   toast('Datos de ' + p.nombre + ' cargados');
   updateSesionesInfo();
+  refreshBookingPackageOptions();
 }
 
 // Cerrar dropdown al hacer clic fuera
@@ -11276,6 +11291,8 @@ function clearNuevaCita() {
     const el = document.getElementById(id); if(el) el.value='';
   });
   document.getElementById('ncService').value='';
+  const packageSel = document.getElementById('ncPackageId'); if (packageSel) packageSel.value='';
+  onBookingPackageChange();
   document.getElementById('ncServiceMain').selectedIndex=0;
   _selectedServices = [];
   _renderServiceChips();
@@ -18314,7 +18331,68 @@ function omitirTarea(key) {
 function _getPkPlantillas() { try { return JSON.parse(kvGet('pk_plantillas')||'[]'); } catch(e){ return []; } }
 function _getPkAsignados()  { try { return JSON.parse(kvGet('pk_asignados') ||'[]'); } catch(e){ return []; } }
 function _savePkPlantillas(a) { kvSet('pk_plantillas', JSON.stringify(a)); }
-function _savePkAsignados(a)  { kvSet('pk_asignados',  JSON.stringify(a)); }
+function _packageId() { return 'PK-' + Date.now() + '-' + Math.random().toString(36).slice(2,8).toUpperCase(); }
+function _normalizePk(p) {
+  if (!p) return null;
+  p.id = p.id || _packageId();
+  p.sesiones = Math.max(0, Number(p.sesiones||0));
+  p.consumidas = Math.max(0, Math.min(p.sesiones, Number(p.consumidas||0)));
+  p.movimientos = Array.isArray(p.movimientos) ? p.movimientos : [];
+  return p;
+}
+function _setPkLocal(a) {
+  const value = JSON.stringify(a.map(_normalizePk).filter(Boolean));
+  _gasKV.pk_asignados = value;
+  localStorage.setItem('pk_asignados', value);
+}
+async function _savePkAsignados(a, deletedIds=[]) {
+  const records = a.map(_normalizePk).filter(Boolean);
+  const r = await fetch(APPS_SCRIPT_URL, {method:'POST', body:JSON.stringify({action:'savePackageMemberships', token:TOKEN, data:{records, deletedIds}})}).then(x=>x.json());
+  if (!r.ok) throw new Error(r.error || 'No se pudo guardar el paquete');
+  _setPkLocal(records);
+  // Se mantiene la copia compatible para no perder la información en pantallas antiguas.
+  kvSet('pk_asignados', JSON.stringify(records));
+  return records;
+}
+async function loadPackageMemberships() {
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=packageMembershipData&token=${encodeURIComponent(TOKEN)}`).then(x=>x.json());
+    if (!r.ok) throw new Error(r.error || 'No fue posible leer los paquetes');
+    const remote = Array.isArray(r.records) ? r.records.map(_normalizePk).filter(Boolean) : [];
+    const legacy = _getPkAsignados().map(_normalizePk).filter(Boolean);
+    // Migración de una sola vez: los paquetes que ya existían en la copia anterior
+    // pasan a la hoja PaquetesSesiones sin borrar ni alterar sus datos.
+    if (!remote.length && legacy.length) await _savePkAsignados(legacy);
+    else _setPkLocal(remote);
+  } catch(e) { console.warn('Paquetes no sincronizados', e); }
+}
+
+function refreshBookingPackageOptions() {
+  const sel = document.getElementById('ncPackageId');
+  if (!sel) return;
+  const name = (document.getElementById('ncName')?.value||'').trim().toLowerCase();
+  const phone = (document.getElementById('ncPhone')?.value||'').replace(/\D/g,'').slice(-10);
+  const hoy = today(); const current = sel.value;
+  const options = _getPkAsignados().map(_normalizePk).filter(p => {
+    const sameName = name && (p.paciente||'').trim().toLowerCase() === name;
+    const samePhone = phone && (p.telefono||'').replace(/\D/g,'').slice(-10) === phone;
+    return (sameName || samePhone) && (!p.vencimiento || p.vencimiento >= hoy) && p.consumidas < p.sesiones;
+  });
+  sel.innerHTML = '<option value="">Pago por sesión / sin paquete</option>' + options.map(p => {
+    const next = p.consumidas + 1;
+    return `<option value="${esc(p.id)}">${esc(p.nombre||'Paquete')} — próxima sesión ${next} de ${p.sesiones}</option>`;
+  }).join('');
+  if (options.some(p=>p.id===current)) sel.value=current;
+  onBookingPackageChange();
+}
+function onBookingPackageChange() {
+  const hint = document.getElementById('ncPackageHint');
+  const id = document.getElementById('ncPackageId')?.value;
+  const p = _getPkAsignados().map(_normalizePk).find(x=>x.id===id);
+  if (!hint) return;
+  hint.style.display = p ? 'block' : 'none';
+  if (p) hint.textContent = `Se consumirá al marcar la cita como atendida: sesión ${p.consumidas+1} de ${p.sesiones}.`;
+}
 
 function renderPaquetes() {
   const search   = ((document.getElementById('pkSearch')||{}).value||'').toLowerCase();
@@ -18351,13 +18429,13 @@ function renderPaquetes() {
 
   const pkListaEl = document.getElementById('pkLista');
   if (!pkListaEl) return;
-  let lista = asignados;
-  if (search) lista = lista.filter(p => (p.paciente||'').toLowerCase().includes(search));
+  let lista = asignados.map((p, idx) => ({p, idx}));
+  if (search) lista = lista.filter(({p}) => (p.paciente||'').toLowerCase().includes(search));
   if (!lista.length) {
     pkListaEl.innerHTML = '<div class="empty" style="padding:30px 0"><p>Sin paquetes asignados</p></div>';
     return;
   }
-  pkListaEl.innerHTML = lista.map((p, i) => {
+  pkListaEl.innerHTML = lista.map(({p, idx}) => {
     const rest = (p.sesiones||0) - (p.consumidas||0);
     const pct  = p.sesiones > 0 ? Math.round((p.consumidas||0)/p.sesiones*100) : 0;
     const agotado   = rest <= 0;
@@ -18402,9 +18480,9 @@ function renderPaquetes() {
       <div style="margin:10px 0 4px;background:var(--s2);border-radius:99px;height:8px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${barC};border-radius:99px;transition:width .5s"></div></div>
       ${alerta}
       <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
-        <button class="btn btn-teal btn-sm" onclick="usarSesion(${i})" ${agotado?'disabled':''}>➕ Usar sesión</button>
-        <button class="btn btn-ghost btn-sm" onclick="ajustarSesiones(${i})">✏️ Ajustar sesiones</button>
-        <button class="btn btn-ghost btn-sm" onclick="borrarPaqueteAsignado(${i})">🗑️ Eliminar</button>
+        <button class="btn btn-teal btn-sm" onclick="usarSesion(${idx})" ${(agotado||vencido)?'disabled':''}>${vencido?'Paquete vencido':'➕ Usar sesión'}</button>
+        <button class="btn btn-ghost btn-sm" onclick="ajustarSesiones(${idx})">✏️ Ajustar sesiones</button>
+        <button class="btn btn-ghost btn-sm" onclick="borrarPaqueteAsignado(${idx})">🗑️ Eliminar</button>
       </div>
     </div>`;
   }).join('');
@@ -18423,7 +18501,7 @@ function abrirModalPaquete(plIdxPre) {
   const fi = document.getElementById('pkFechaCompra'); if (fi) fi.value = today();
   const pkModal = document.getElementById('modalPaquete'); if (pkModal) pkModal.style.display = 'flex';
 }
-function guardarPaqueteAsignado() {
+async function guardarPaqueteAsignado() {
   const paciente = (document.getElementById('pkPaciente').value||'').trim();
   const plIdx    = document.getElementById('pkPlantillaSel').value;
   const fechaC   = document.getElementById('pkFechaCompra').value || today();
@@ -18435,30 +18513,34 @@ function guardarPaqueteAsignado() {
   const vigD = new Date(fechaC+'T12:00:00');
   vigD.setDate(vigD.getDate() + (+pl.vigencia||60));
   const asignados = _getPkAsignados();
-  asignados.push({ paciente, telefono:tel, nombre:pl.nombre, sesiones:+pl.sesiones, consumidas:0, precio:pl.precio, fechaCompra:fechaC, vencimiento:vigD.toLocalDateStr(), notas });
-  _savePkAsignados(asignados);
+  asignados.push({ id:_packageId(), paciente, telefono:tel, nombre:pl.nombre, sesiones:+pl.sesiones, consumidas:0, precio:pl.precio, fechaCompra:fechaC, vencimiento:vigD.toLocalDateStr(), notas, movimientos:[] });
+  try { await _savePkAsignados(asignados); } catch(e) { toast(e.message,'err'); return; }
   document.getElementById('modalPaquete').style.display='none';
   renderPaquetes(); toast('Paquete asignado ✓');
 }
-function usarSesion(idx) {
+async function usarSesion(idx) {
   const a = _getPkAsignados(); const p = a[idx]; if (!p) return;
-  if ((p.consumidas||0) >= p.sesiones) { toast('Paquete agotado','err'); return; }
-  p.consumidas = (p.consumidas||0)+1; _savePkAsignados(a);
+  if ((p.consumidas||0) >= p.sesiones || (p.vencimiento && p.vencimiento < today())) { toast('El paquete está agotado o vencido','err'); return; }
+  p.consumidas = (p.consumidas||0)+1; p.movimientos=(p.movimientos||[]); p.movimientos.push({tipo:'AJUSTE_MANUAL',fecha:today(),numero:p.consumidas,at:new Date().toISOString()});
+  try { await _savePkAsignados(a); } catch(e) { toast(e.message,'err'); return; }
   renderPaquetes(); toast(`Sesión registrada: ${p.consumidas}/${p.sesiones}`);
 }
-function ajustarSesiones(idx) {
+async function ajustarSesiones(idx) {
   const a = _getPkAsignados(); const p = a[idx]; if (!p) return;
   const val = prompt(`Sesiones consumidas de "${p.nombre}" (${p.paciente})\nActual: ${p.consumidas||0} de ${p.sesiones}`, p.consumidas||0);
   if (val === null) return;
   const n = parseInt(val, 10);
   if (isNaN(n) || n < 0) { toast('Número inválido','err'); return; }
   if (n > p.sesiones) { toast(`No puede superar el total (${p.sesiones})`, 'err'); return; }
-  p.consumidas = n; _savePkAsignados(a);
+  p.consumidas = n; p.movimientos=(p.movimientos||[]); p.movimientos.push({tipo:'AJUSTE_MANUAL',fecha:today(),numero:n,at:new Date().toISOString()});
+  try { await _savePkAsignados(a); } catch(e) { toast(e.message,'err'); return; }
   renderPaquetes(); toast(`Sesiones actualizadas: ${n}/${p.sesiones}`);
 }
-function borrarPaqueteAsignado(idx) {
+async function borrarPaqueteAsignado(idx) {
   if (!confirm('¿Eliminar este paquete?')) return;
-  const a = _getPkAsignados(); a.splice(idx,1); _savePkAsignados(a); renderPaquetes();
+  const a = _getPkAsignados(); const removed=a[idx]; a.splice(idx,1);
+  try { await _savePkAsignados(a, removed?.id?[removed.id]:[]); } catch(e) { toast(e.message,'err'); return; }
+  renderPaquetes();
 }
 function abrirModalPlantillaPaquete() { const m = document.getElementById('modalPlantillaPaquete'); if (m) m.style.display='flex'; }
 function guardarPlantillaPaquete() {

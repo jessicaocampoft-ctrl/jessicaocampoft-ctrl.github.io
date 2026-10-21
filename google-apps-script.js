@@ -384,13 +384,65 @@ function getPackageMembershipData_() {
   for (var i = 1; i < rows.length; i++) {
     if (!rows[i][0] || !rows[i][1]) continue;
     try {
-      var record = JSON.parse('' + rows[i][1]);
+      var record = normalizePackageMembership_(JSON.parse('' + rows[i][1]));
       if (record && record.id) records.push(record);
     } catch (e) {
       // Un registro dañado no debe impedir leer los demás paquetes.
     }
   }
   return {ok:true, records:records};
+}
+
+// Normaliza los paquetes antiguos y mantiene un historial auditable de cada
+// sesión consumida. El paquete es la fuente de verdad, no el navegador.
+function normalizePackageMembership_(record) {
+  if (!record || !record.id) return null;
+  record.id = '' + record.id;
+  record.sesiones = Math.max(0, Number(record.sesiones || 0));
+  record.consumidas = Math.max(0, Math.min(record.sesiones, Number(record.consumidas || 0)));
+  record.movimientos = Array.isArray(record.movimientos) ? record.movimientos : [];
+  return record;
+}
+
+function updatePackageMembership_(record) {
+  var normalized = normalizePackageMembership_(record);
+  if (!normalized) return {ok:false, error:'Paquete inválido'};
+  return savePackageMemberships_({records:[normalized]});
+}
+
+function findPackageMembership_(id) {
+  var records = getPackageMembershipData_().records;
+  for (var i = 0; i < records.length; i++) if (records[i].id === '' + id) return records[i];
+  return null;
+}
+
+function consumePackageMembershipSession_(packageId, citaId, fecha, user) {
+  var record = findPackageMembership_(packageId);
+  if (!record) return {ok:false, error:'No se encontró el paquete asociado a esta cita'};
+  var already = record.movimientos.some(function(m) { return m && m.tipo === 'SESION_ATENDIDA' && ('' + m.citaId) === ('' + citaId); });
+  if (already) return {ok:true, already:true, sessionNumber:record.consumidas, total:record.sesiones};
+  var todayStr = Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM-dd');
+  if (record.vencimiento && record.vencimiento < todayStr) return {ok:false, error:'El paquete está vencido y no puede consumir otra sesión'};
+  if (record.consumidas >= record.sesiones) return {ok:false, error:'El paquete ya no tiene sesiones disponibles'};
+  record.consumidas += 1;
+  record.movimientos.push({tipo:'SESION_ATENDIDA', citaId:'' + citaId, fecha:fecha || todayStr, numero:record.consumidas, at:new Date().toISOString(), usuario:(user && user.nombre) || 'Administración'});
+  var saved = updatePackageMembership_(record);
+  if (!saved.ok) return saved;
+  return {ok:true, sessionNumber:record.consumidas, total:record.sesiones, remaining:record.sesiones-record.consumidas};
+}
+
+function restorePackageMembershipSession_(packageId, citaId) {
+  var record = findPackageMembership_(packageId);
+  if (!record) return {ok:false, error:'No se encontró el paquete asociado'};
+  var index = -1;
+  for (var i = record.movimientos.length - 1; i >= 0; i--) {
+    if (record.movimientos[i] && record.movimientos[i].tipo === 'SESION_ATENDIDA' && ('' + record.movimientos[i].citaId) === ('' + citaId)) { index = i; break; }
+  }
+  if (index < 0) return {ok:true, restored:false};
+  record.movimientos.splice(index, 1);
+  record.consumidas = Math.max(0, record.consumidas - 1);
+  var saved = updatePackageMembership_(record);
+  return saved.ok ? {ok:true, restored:true} : saved;
 }
 
 function savePackageMemberships_(data) {
@@ -412,7 +464,8 @@ function savePackageMemberships_(data) {
   });
 
   records.forEach(function(record) {
-    if (!record || !record.id || deletedIds.indexOf('' + record.id) >= 0) return;
+    record = normalizePackageMembership_(record);
+    if (!record || deletedIds.indexOf('' + record.id) >= 0) return;
     var values = [['' + record.id, JSON.stringify(record), new Date()]];
     if (positions['' + record.id]) sheet.getRange(positions['' + record.id], 1, 1, 3).setValues(values);
     else {
@@ -510,6 +563,7 @@ function createBooking(d, isAdmin) {
   cSheet.getRange(lastRow, stateMap.EstadoMigracionOrigen).setValue(isAdmin ? 'CREADA_ADMIN' : 'RESERVA_PUBLICA');
   cSheet.getRange(lastRow, stateMap.FechaMigracionEstado).setValue(new Date());
   if (stateMap.VenceReserva) cSheet.getRange(lastRow, stateMap.VenceReserva).setValue(isAdmin ? '' : reservationExpiresAt);
+  if (stateMap.PlanClienteID && d.packageId) cSheet.getRange(lastRow, stateMap.PlanClienteID).setValue('' + d.packageId);
   // Forzar columna Telefono como texto para evitar #ERROR! en Sheets
   cSheet.getRange(lastRow, 4).setNumberFormat('@').setValue(phoneClean);
 
@@ -2130,7 +2184,7 @@ var APPOINTMENT_STATUS = {
 
 var CITA_STATE_HEADERS = [
   'EstadoPago','EstadoCita','EstadoMigracionOrigen','FechaMigracionEstado',
-  'Reprogramaciones','UltimaReprogramacion','RequiereCierreAdmin','VenceReserva'
+  'Reprogramaciones','UltimaReprogramacion','RequiereCierreAdmin','VenceReserva','PlanClienteID'
 ];
 
 function normalizeKey_(v) {
@@ -2584,6 +2638,17 @@ function doUpdateStatus(p, user) {
         nextPago = PAYMENT_STATUS.PAGO_APROBADO;
         nextCita = APPOINTMENT_STATUS.AUTORIZADA;
       }
+      var packageId = map.PlanClienteID ? ('' + (rows[i][map.PlanClienteID - 1] || '')).trim() : '';
+      // Una cita vinculada consume exactamente una sesión solo al marcarse atendida.
+      // Primero validamos el paquete para no dejar una cita atendida sin consumo.
+      if (packageId && state.estadoCita !== APPOINTMENT_STATUS.ATENDIDA && nextCita === APPOINTMENT_STATUS.ATENDIDA) {
+        var packageCheck = findPackageMembership_(packageId);
+        var nowDate = Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM-dd');
+        if (!packageCheck) return {ok:false, error:'La cita está vinculada a un paquete que ya no existe'};
+        if ((packageCheck.vencimiento && packageCheck.vencimiento < nowDate) || packageCheck.consumidas >= packageCheck.sesiones) {
+          return {ok:false, error:'No se puede marcar atendida: el paquete está vencido o no tiene sesiones disponibles'};
+        }
+      }
       if (map.EstadoPago) sheet.getRange(i+1, map.EstadoPago).setValue(nextPago);
       if (map.EstadoCita) sheet.getRange(i+1, map.EstadoCita).setValue(nextCita);
       if (nextCita === APPOINTMENT_STATUS.ATENDIDA && !p.manualAudit) {
@@ -2593,6 +2658,12 @@ function doUpdateStatus(p, user) {
       var nextRow = rows[i].slice();
       if (map.EstadoPago) nextRow[map.EstadoPago - 1] = nextPago;
       if (map.EstadoCita) nextRow[map.EstadoCita - 1] = nextCita;
+      if (packageId && state.estadoCita !== APPOINTMENT_STATUS.ATENDIDA && nextCita === APPOINTMENT_STATUS.ATENDIDA) {
+        var consumed = consumePackageMembershipSession_(packageId, p.id, sd(rows[i][7]), user);
+        if (!consumed.ok) return consumed;
+      } else if (packageId && state.estadoCita === APPOINTMENT_STATUS.ATENDIDA && nextCita !== APPOINTMENT_STATUS.ATENDIDA) {
+        restorePackageMembershipSession_(packageId, p.id);
+      }
       try { passportSyncAppointment_(nextRow, map, user || {id:'admin', nombre:'Administracion', rol:'Superadministradora'}); } catch(passportErr) {
         try { auditGeneral_(user, 'Error sincronizando Pasaporte', 'Cita', p.id, '', passportErr.message, p.note || ''); } catch(auditErr) {}
       }
