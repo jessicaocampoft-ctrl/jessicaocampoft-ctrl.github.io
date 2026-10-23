@@ -3747,6 +3747,30 @@ Primero evaluamos cómo está el cuerpo ahora, luego tratamos, luego te enseñam
           <div id="citasResumenStats" style="margin-bottom:20px"></div>
           <div id="ingresosDetalleResult"></div>
           <div id="ingresosAnalisis" style="margin-top:20px"></div>
+          <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+              <div>
+                <div style="font-family:var(--font-m);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)">Comparar facturación entre períodos</div>
+                <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Compara meses, semanas o cualquier par de rangos de fechas.</div>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-ghost btn-sm" onclick="presetComparacionFacturacion('mes')">Mes vs. mes anterior</button>
+                <button class="btn btn-ghost btn-sm" onclick="presetComparacionFacturacion('semana')">Semana vs. semana anterior</button>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end">
+              <div style="padding:10px 12px;background:var(--s2);border-radius:9px">
+                <div style="font-size:.72rem;font-family:var(--font-m);color:var(--primary);margin-bottom:7px">PERÍODO A</div>
+                <div style="display:flex;gap:7px;align-items:center"><input type="date" id="compDesdeA" aria-label="Inicio período A" style="min-width:0;flex:1"><span style="font-size:.76rem;color:var(--muted)">a</span><input type="date" id="compHastaA" aria-label="Fin período A" style="min-width:0;flex:1"></div>
+              </div>
+              <div style="padding:10px 12px;background:var(--s2);border-radius:9px">
+                <div style="font-size:.72rem;font-family:var(--font-m);color:#6366f1;margin-bottom:7px">PERÍODO B</div>
+                <div style="display:flex;gap:7px;align-items:center"><input type="date" id="compDesdeB" aria-label="Inicio período B" style="min-width:0;flex:1"><span style="font-size:.76rem;color:var(--muted)">a</span><input type="date" id="compHastaB" aria-label="Fin período B" style="min-width:0;flex:1"></div>
+              </div>
+              <button class="btn btn-teal" onclick="renderComparacionFacturacion()" style="white-space:nowrap">Comparar</button>
+            </div>
+            <div id="comparacionFacturacionResult" style="margin-top:14px"></div>
+          </div>
         </div>
       </div>
 
@@ -13427,6 +13451,8 @@ function renderFinanzas() {
   renderEgresosList();
   renderKPITablero();
   renderEstructuraFinanciera();
+  initComparacionFacturacion();
+  renderComparacionFacturacion();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -17560,6 +17586,77 @@ function setModoIngresos(modo) {
   // En modo mes el input de fecha solo necesita año-mes; mostramos un mes-picker alternativo
   renderCitasResumen();
   renderIngresosDetalle();
+}
+
+function _compDateStr(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function _setComparacionFechas(aDesde, aHasta, bDesde, bHasta) {
+  const values = {compDesdeA:aDesde, compHastaA:aHasta, compDesdeB:bDesde, compHastaB:bHasta};
+  Object.entries(values).forEach(([id,value]) => { const el=document.getElementById(id); if(el) el.value=value; });
+}
+function initComparacionFacturacion() {
+  const a = document.getElementById('compDesdeA');
+  if (!a || a.value) return;
+  presetComparacionFacturacion('mes', false);
+}
+function presetComparacionFacturacion(tipo, render=true) {
+  const refRaw = document.getElementById('ingresosFechaInput')?.value || today();
+  const ref = new Date(refRaw+'T12:00:00');
+  if (tipo === 'semana') {
+    const day = ref.getDay();
+    const monday = new Date(ref); monday.setDate(ref.getDate() - (day === 0 ? 6 : day - 1));
+    const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+    const prevMonday = new Date(monday); prevMonday.setDate(monday.getDate()-7);
+    const prevSunday = new Date(monday); prevSunday.setDate(monday.getDate()-1);
+    _setComparacionFechas(_compDateStr(monday),_compDateStr(sunday),_compDateStr(prevMonday),_compDateStr(prevSunday));
+  } else {
+    const first = new Date(ref.getFullYear(), ref.getMonth(), 1);
+    const last = new Date(ref.getFullYear(), ref.getMonth()+1, 0);
+    const prevFirst = new Date(ref.getFullYear(), ref.getMonth()-1, 1);
+    const prevLast = new Date(ref.getFullYear(), ref.getMonth(), 0);
+    _setComparacionFechas(_compDateStr(first),_compDateStr(last),_compDateStr(prevFirst),_compDateStr(prevLast));
+  }
+  if (render) renderComparacionFacturacion();
+}
+function _facturacionEnRango(desde, hasta) {
+  const inRange = f => { const d=normDate(f); return d && d >= desde && d <= hasta; };
+  const citas = citasReales().filter(c => inRange(c.fecha));
+  const eventos = (allData.eventos||[]).filter(e => inRange(e.fecha));
+  const paquetes = _getPkAsignados().filter(p => p.fechaCompra && inRange(p.fechaCompra));
+  return {
+    citas: citas.reduce((sum,c)=>sum+parsePrecio(c.precio),0),
+    eventos: eventos.reduce((sum,e)=>sum+parsePrecio(e.cobro),0),
+    paquetes: paquetes.reduce((sum,p)=>sum+parsePrecio(p.precio),0),
+    citasN:citas.length, eventosN:eventos.length, paquetesN:paquetes.length,
+    total:0
+  };
+}
+function _compRangeLabel(desde, hasta) {
+  const fmt = d => new Date(d+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'});
+  return fmt(desde) + ' — ' + fmt(hasta);
+}
+function renderComparacionFacturacion() {
+  const out = document.getElementById('comparacionFacturacionResult');
+  const da = document.getElementById('compDesdeA')?.value, ha = document.getElementById('compHastaA')?.value;
+  const db = document.getElementById('compDesdeB')?.value, hb = document.getElementById('compHastaB')?.value;
+  if (!out || !da || !ha || !db || !hb) return;
+  if (da > ha || db > hb) { out.innerHTML='<div style="font-size:.82rem;color:#dc2626">Revisa las fechas: cada inicio debe ser anterior o igual al final.</div>'; return; }
+  const a = _facturacionEnRango(da,ha), b = _facturacionEnRango(db,hb);
+  a.total = a.citas+a.eventos+a.paquetes; b.total = b.citas+b.eventos+b.paquetes;
+  const diff = a.total-b.total, pct = b.total ? Math.round(diff/b.total*100) : null;
+  const color = diff > 0 ? 'var(--ok)' : diff < 0 ? '#dc2626' : 'var(--muted)';
+  const amount = n => '$'+n.toLocaleString('es-CO');
+  const details = p => [p.citasN ? p.citasN+' cita'+(p.citasN===1?'':'s') : '', p.eventosN ? p.eventosN+' evento'+(p.eventosN===1?'':'s') : '', p.paquetesN ? p.paquetesN+' paquete'+(p.paquetesN===1?'':'s') : ''].filter(Boolean).join(' · ') || 'Sin movimientos registrados';
+  out.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">
+    <div style="padding:13px;background:rgba(27,191,176,.07);border:1px solid rgba(27,191,176,.28);border-radius:10px">
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px">PERÍODO A · ${_compRangeLabel(da,ha)}</div><div style="font-family:var(--font-h);font-size:1.25rem;font-weight:700;color:var(--primary)">${amount(a.total)}</div><div style="font-size:.73rem;color:var(--muted);margin-top:4px">${details(a)}</div>
+    </div>
+    <div style="padding:13px;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.25);border-radius:10px">
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px">PERÍODO B · ${_compRangeLabel(db,hb)}</div><div style="font-family:var(--font-h);font-size:1.25rem;font-weight:700;color:#6366f1">${amount(b.total)}</div><div style="font-size:.73rem;color:var(--muted);margin-top:4px">${details(b)}</div>
+    </div>
+    <div style="padding:13px;background:var(--s2);border-radius:10px;border-left:3px solid ${color}">
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px">DIFERENCIA A VS. B</div><div style="font-family:var(--font-h);font-size:1.25rem;font-weight:700;color:${color}">${diff>=0?'+':'−'}${amount(Math.abs(diff))}</div><div style="font-size:.73rem;color:var(--muted);margin-top:4px">${pct===null?'No hay base para porcentaje':(pct>=0?'+':'')+pct+'%'}</div>
+    </div>
+  </div><div style="font-size:.72rem;color:var(--muted);margin-top:9px">Incluye valores registrados en citas no canceladas, eventos cobrados y paquetes vendidos dentro de cada período.</div>`;
 }
 
 function _ingFmt(d) { return d.toLocalDateStr(); }
