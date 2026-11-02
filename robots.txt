@@ -4,3 +4,5 @@ Disallow: /google-apps-script.js
 Disallow: /appsscript.json
 
 Allow: /
+
+Sitemap: https://cuidandotefisioterapia.com/sitemap.xml
