@@ -2401,6 +2401,8 @@
   .btn-solid:hover { background:#096b66; box-shadow:0 10px 28px rgba(11,125,119,.18); }
   .btn-outline { border-radius:8px; color:var(--primary-dark); border-color:rgba(11,125,119,.28); background:#fff; padding:13px 24px; }
   .hero-trust-note { color:#596663; margin:14px 0 24px; max-width:620px; line-height:1.55; }
+  .hero-trust-note { display:flex; flex-wrap:wrap; align-items:center; gap:4px 9px; }
+  .hero-trust-separator { color:var(--primary-dark); }
   .hero-stats { gap:24px; }
   .stat-value { color:var(--primary-dark); font-size:1.55rem; }
   .hero-photo-frame { max-width:520px; border-radius:0; border:0; box-shadow:none; background:transparent; }
@@ -3120,6 +3122,18 @@
     .hero-trust-note {
       margin-top:12px!important;
     }
+    .hero-trust-note {
+      display:grid;
+      grid-template-columns:1fr;
+      gap:3px;
+      max-width:100%;
+      text-align:center;
+      font-size:clamp(.6rem,2.7vw,.72rem);
+      line-height:1.35;
+      letter-spacing:0;
+    }
+    .hero-trust-note span { white-space:nowrap; }
+    .hero-trust-separator { display:none; }
     .hero-photo-frame {
       height:320px!important;
       width:min(100%,370px)!important;
@@ -3487,7 +3501,7 @@
         <li><a href="#experiencias">Masajes y bienestar</a></li>
         <li><a href="#equipo">Equipo</a></li>
         <li><a href="#agenda">Agenda</a></li>
-        <li><a href="#agenda" class="nav-cta">Agendar cita</a></li>
+        <li><a href="https://wa.me/573136467945?text=Hola%2C%20me%20gustar%C3%ADa%20agendar%20una%20cita%20en%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="nav-cta" aria-label="Agenda por WhatsApp con Cuidándote Fisioterapia">Agenda por WhatsApp</a></li>
       </ul>
       <button class="hamburger" id="hamburger" aria-label="Menú de navegación" aria-expanded="false">
         <span></span><span></span><span></span>
@@ -3500,23 +3514,23 @@
     <div class="container">
       <div class="hero-grid">
         <div class="hero-content fade-up">
-          <div class="hero-badge hero-enabled-badge">Fisioterapia en Pereira y Dosquebradas</div>
+          <div class="hero-badge hero-enabled-badge">Sede en Santa Mónica · Atención en Pereira y Dosquebradas</div>
           <h1>Recupera tu movimiento con <span class="hero-accent">atención fisioterapéutica personalizada.</span></h1>
           <p class="hero-subtitle">Realizamos valoración fisioterapéutica, rehabilitación funcional y ejercicio terapéutico, con atención en nuestra sede única de Santa Mónica, Dosquebradas, y a domicilio en Pereira y Dosquebradas.</p>
           <div class="hero-buttons">
-            <a href="#agenda" class="btn-solid">
+            <a href="https://wa.me/573136467945?text=Hola%2C%20me%20gustar%C3%ADa%20agendar%20una%20cita%20en%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-solid btn-wa-hero" aria-label="Agenda por WhatsApp con Cuidándote Fisioterapia">
+              💬 Agenda por WhatsApp
+            </a>
+            <a href="#agenda" class="btn-outline">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               Agendar valoración
             </a>
-            <a href="https://wa.me/573136467945" target="_blank" rel="noopener" class="btn-outline btn-wa-hero" aria-label="Agenda por WhatsApp con Cuidándote Fisioterapia">
-              💬 Agenda por WhatsApp
-            </a>
           </div>
+          <p class="hero-trust-note"><span>★ 5,0 en Google · 58 opiniones</span><span class="hero-trust-separator" aria-hidden="true">|</span><span>Sede Santa Mónica, Dosquebradas · Atención a domicilio en Pereira y Dosquebradas</span></p>
           <div class="hero-urgency" id="heroUrgency" style="display:none">
             <span class="urgency-dot"></span>
             <span id="heroUrgencyText">Cargando cupos...</span>
           </div>
-          <p class="hero-trust-note">Atención fisioterapéutica habilitada en sede y modalidad domiciliaria · Sede Santa Mónica, Dosquebradas · Domicilios en Pereira y Dosquebradas</p>
           <div class="hero-stats">
             <div class="stat">
               <span class="stat-value">4+</span>
