@@ -6,6 +6,14 @@
   <title>Cuidándote Fisioterapia | Fisioterapia en Dosquebradas y Pereira</title>
   <meta name="description" content="Cuidándote Fisioterapia en Santa Mónica, Dosquebradas. Valoración, rehabilitación, ejercicio terapéutico y atención domiciliaria en Pereira y Dosquebradas.">
 
+  <!-- Google Tag Manager: único contenedor de medición del sitio. -->
+  <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TRPNDKVF"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+  </script>
+
   <!-- Open Graph -->
   <meta property="og:type"        content="website">
   <meta property="og:url"         content="https://cuidandotefisioterapia.com/">
@@ -4384,7 +4392,7 @@
           <div class="contact-icon">
             <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           </div>
-          <h4>+57 313 646 7945</h4>
+          <h4><a href="tel:+573136467945" style="color:inherit;text-decoration:none">+57 313 646 7945</a></h4>
           <div class="divider"></div>
           <p><a href="https://wa.me/573136467945" target="_blank" rel="noopener">Escríbenos por WhatsApp</a></p>
         </div>
@@ -4463,6 +4471,44 @@
   </footer>
 
   <script>
+    // Eventos preparados para Google Tag Manager. Solo se envían nombres de
+    // eventos: nunca datos de contacto, salud, reserva, URL ni formularios.
+    const measurement = (() => {
+      let bookingStarted = false;
+      const completedReservations = new Set();
+
+      function push(eventName) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: eventName });
+      }
+
+      return {
+        whatsappClick() { push('whatsapp_click'); },
+        phoneClick() { push('phone_click'); },
+        bookingStart() {
+          if (bookingStarted) return;
+          bookingStarted = true;
+          push('booking_start');
+        },
+        bookingCompleted(reservationId) {
+          const safeId = String(reservationId || '').trim();
+          if (!safeId || completedReservations.has(safeId)) return;
+          completedReservations.add(safeId);
+          push('booking_completed');
+        }
+      };
+    })();
+
+    // Delegación global: cubre enlaces actuales y futuros sin leer ni
+    // transmitir los parámetros de WhatsApp, formularios o URLs.
+    document.addEventListener('click', event => {
+      const link = event.target.closest('a[href]');
+      if (!link) return;
+      const href = link.getAttribute('href') || '';
+      if (/^https:\/\/(?:wa\.me|api\.whatsapp\.com)\//i.test(href)) measurement.whatsappClick();
+      if (/^tel:\+?573136467945$/i.test(href)) measurement.phoneClick();
+    });
+
     // ─── Nav scroll compact ───
     const nav = document.getElementById('nav');
     window.addEventListener('scroll', () => {
@@ -4565,6 +4611,7 @@
       bk.time = '';
       bk.reservationCode = '';
       bk.clientTimestamp = '';
+      measurement.bookingStart();
       updateVenueButtons();
       document.getElementById('bkDate').value = '';
       document.getElementById('timeGrid').innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;grid-column:1/-1;margin:0">Selecciona primero una fecha para ver los horarios disponibles.</p>';
@@ -4883,7 +4930,7 @@
       if (n === 3) buildSummary(document.getElementById('bkSummary'));
     }
 
-    function submitBooking() {
+    async function submitBooking() {
       bk.name      = document.getElementById('bkName').value.trim();
       bk.phone     = document.getElementById('bkPhone').value.trim();
       bk.email     = document.getElementById('bkEmail').value.trim();
@@ -4912,10 +4959,12 @@
 
       function enc(v){ return encodeURIComponent(v||''); }
 
-      // Enviar en background — no-cors no permite leer respuesta de todas formas
-      fetch(APPS_SCRIPT_URL, {
+      try {
+        // Petición simple para poder validar la respuesta del backend. Nunca se
+        // incluyen datos del formulario en la medición; solo se usa la respuesta
+        // para decidir si la reserva fue creada de verdad.
+        const response = await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({
           service: bk.service, modality: bk.modality,
@@ -4936,9 +4985,18 @@
           codigoReserva: bk.reservationCode,
           notaAdmin: '[CODIGO RESERVA: ' + bk.reservationCode + ']' + (bk.paraQuien ? ' [PARA: ' + bk.paraQuien + ']' : '')
         })
-      }).catch(() => {});
-      // Mostrar éxito de inmediato sin esperar al servidor
-      showSuccess();
+        });
+        if (!response.ok) throw new Error('La reserva no pudo confirmarse.');
+        const data = await response.json();
+        const reservationId = data && String(data.id || '').trim();
+        if (!data || data.ok !== true || !reservationId) {
+          throw new Error((data && data.error) || 'La reserva no pudo confirmarse.');
+        }
+        measurement.bookingCompleted(reservationId);
+        showSuccess();
+      } catch (error) {
+        showError();
+      }
     }
 
     function showSuccess() {
