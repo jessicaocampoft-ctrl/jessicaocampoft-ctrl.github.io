@@ -3480,6 +3480,117 @@
   }
 </style>
 
+<style id="wellness-experience-update-2026-11">
+  /* Actualización puntual de las experiencias de bienestar. */
+  #experiencias .experience-card {
+    display:flex;
+    flex-direction:column;
+  }
+  #experiencias .experience-details {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+    margin:4px 0 17px;
+  }
+  #experiencias .experience-details div {
+    min-width:0;
+    padding:9px 8px;
+    border:1px solid rgba(92,201,190,.24);
+    border-radius:10px;
+    background:#F7FCFB;
+  }
+  #experiencias .experience-details dt {
+    margin:0 0 4px;
+    color:#697572;
+    font-family:var(--font-body);
+    font-size:.62rem;
+    font-weight:700;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+  #experiencias .experience-details dd {
+    margin:0;
+    color:var(--primary-dark);
+    font-family:var(--font-body);
+    font-size:.78rem;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  #experiencias .experience-description {
+    margin:0 0 18px;
+  }
+  #experiencias .experience-card .btn-outline,
+  #experiencias .experience-card .btn-solid {
+    margin-top:auto;
+  }
+  #experiencias .ritual-promo {
+    display:grid;
+    grid-template-columns:minmax(0,1.45fr) minmax(280px,.9fr) auto;
+    align-items:center;
+    gap:24px;
+    margin-top:24px;
+    padding:27px 30px;
+    border:1px solid rgba(201,165,90,.48);
+    border-radius:16px;
+    background:linear-gradient(120deg,rgba(255,255,255,.96),rgba(250,246,236,.92));
+    box-shadow:0 16px 40px rgba(79,67,38,.08);
+  }
+  #experiencias .ritual-promo-eyebrow {
+    margin-bottom:7px;
+    color:#9A722C;
+    font-family:var(--font-body);
+    font-size:.68rem;
+    font-weight:800;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+  }
+  #experiencias .ritual-promo h3 {
+    margin:0 0 8px;
+    color:#165b56;
+    font-size:clamp(1.75rem,2.4vw,2.25rem);
+    line-height:1;
+  }
+  #experiencias .ritual-promo p { margin:0; color:#596663; font-size:.88rem; line-height:1.58; }
+  #experiencias .ritual-promo-prices {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px;
+  }
+  #experiencias .ritual-promo-price {
+    padding:10px 11px;
+    border-radius:10px;
+    background:rgba(255,255,255,.84);
+    text-align:center;
+  }
+  #experiencias .ritual-promo-price span,
+  #experiencias .ritual-promo-price del {
+    display:block;
+    font-family:var(--font-body);
+  }
+  #experiencias .ritual-promo-price span { color:#697572; font-size:.67rem; font-weight:700; }
+  #experiencias .ritual-promo-price strong { display:block; margin:3px 0; color:#277e76; font-family:var(--font-body); font-size:1.05rem; }
+  #experiencias .ritual-promo-price del { color:#7e8784; font-size:.68rem; }
+  #experiencias .ritual-promo .btn-solid { justify-content:center; white-space:nowrap; }
+  #experiencias .ritual-promo-terms {
+    grid-column:1 / -1;
+    padding-top:3px;
+    color:#6d746f!important;
+    font-size:.72rem!important;
+  }
+  @media (max-width:1020px) {
+    #experiencias .ritual-promo { grid-template-columns:1fr; gap:18px; }
+    #experiencias .ritual-promo .btn-solid { width:max-content; }
+  }
+  @media (max-width:560px) {
+    #experiencias .experience-details { gap:6px; }
+    #experiencias .experience-details div { padding:8px 5px; }
+    #experiencias .experience-details dt { font-size:.56rem; }
+    #experiencias .experience-details dd { font-size:.7rem; }
+    #experiencias .ritual-promo { padding:22px 18px; }
+    #experiencias .ritual-promo .btn-solid { width:100%; }
+  }
+</style>
+
 </head>
 <body>
 
@@ -3787,51 +3898,53 @@
           <div class="eyebrow">Pausa Cuidándote</div>
           <h3>Pausa Cuidándote</h3>
           <span class="soon-pill">Próximamente</span>
-          <div class="experience-price">40 minutos · $85.000</div>
-          <p>Una experiencia localizada para quienes tienen poco tiempo, pero necesitan desconectarse del estrés y disfrutar un momento de calma.</p>
-          <ul>
-            <li>Bienvenida aromática.</li>
-            <li>Elección de aroma, sonido y presión.</li>
-            <li>Masaje en cuello, hombros, espalda, brazos y manos.</li>
-            <li>Aceite tibio y audio relajante.</li>
-            <li>Bebida de cierre.</li>
-          </ul>
-          <p class="ideal"><span>Ideal para:</span> jornadas exigentes, cansancio cotidiano o una pausa rápida.</p>
-          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Pausa%20Cuid%C3%A1ndote%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-outline">Recibir información por WhatsApp</a>
+          <dl class="experience-details">
+            <div><dt>Duración</dt><dd>40 minutos</dd></div>
+            <div><dt>Individual</dt><dd>$85.000</dd></div>
+            <div><dt>Para dos</dt><dd>$160.000</dd></div>
+          </dl>
+          <p class="experience-description">Una experiencia de relajación localizada para desconectarte de la rutina y disfrutar un momento de calma. Incluye masaje relajante de espalda, cuello, hombros, brazos y manos, acompañado de aromaterapia y música relajante.</p>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Pausa%20Cuid%C3%A1ndote%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-outline" aria-label="Solicitar información por WhatsApp sobre Pausa Cuidándote">Solicitar información por WhatsApp</a>
         </article>
         <article class="experience-card featured fade-up">
           <div class="eyebrow">Ritual Cuidándote</div>
           <h3>Ritual Cuidándote</h3>
           <span class="soon-pill">Próximamente</span>
-          <div class="experience-price">60 minutos · $125.000</div>
-          <p>Un ritual pensado para descansar todo el cuerpo y desconectarse del ritmo diario.</p>
-          <ul>
-            <li>Baño de pies tibio.</li>
-            <li>Exfoliación.</li>
-            <li>Masaje especial de pies.</li>
-            <li>Masaje relajante de cuerpo completo.</li>
-          </ul>
-          <p class="ideal"><span>Ideal para:</span> descanso completo, autocuidado y relajación corporal.</p>
-          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Ritual%20Cuid%C3%A1ndote%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-solid">Recibir información por WhatsApp</a>
+          <dl class="experience-details">
+            <div><dt>Duración</dt><dd>50 minutos</dd></div>
+            <div><dt>Individual</dt><dd>$125.000</dd></div>
+            <div><dt>Para dos</dt><dd>$230.000</dd></div>
+          </dl>
+          <p class="experience-description">Una experiencia de bienestar que combina baño de pies tibio, masaje exfoliante de pies, masaje corporal relajante, masaje cráneo-facial y aromaterapia. Diseñada para desconectarte de la rutina, relajar el cuerpo y disfrutar un momento especial de cuidado.</p>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Ritual%20Cuid%C3%A1ndote%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-solid" aria-label="Solicitar información por WhatsApp sobre Ritual Cuidándote">Solicitar información por WhatsApp</a>
         </article>
         <article class="experience-card premium fade-up">
           <div class="eyebrow">Experiencia premium</div>
           <h3>Cuidándote Profundo Premium</h3>
           <span class="soon-pill">Próximamente</span>
-          <div class="experience-price">90 minutos · $175.000</div>
-          <p>Una experiencia sensorial prolongada que incluye todo lo de Ritual Cuidándote y detalles adicionales para desconectarte profundamente.</p>
-          <ul>
-            <li>Baño de pies tibio, exfoliación y masaje especial de pies.</li>
-            <li>Masaje relajante de cuerpo completo y masaje corporal prolongado.</li>
-            <li>Piedras volcánicas y manta térmica.</li>
-            <li>Botas de compresión según valoración.</li>
-            <li>Masaje facial relajante, aceite tibio y aromaterapia.</li>
-            <li>Bebida aromática, snack, detalle especial y toalla facial caliente.</li>
-          </ul>
-          <p class="ideal"><span>Ideal para:</span> celebraciones, regalos especiales o una desconexión premium.</p>
-          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Cuid%C3%A1ndote%20Profundo%20Premium%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-outline">Recibir información por WhatsApp</a>
+          <dl class="experience-details">
+            <div><dt>Duración</dt><dd>90 minutos</dd></div>
+            <div><dt>Individual</dt><dd>$175.000</dd></div>
+            <div><dt>Para dos</dt><dd>$320.000</dd></div>
+          </dl>
+          <p class="experience-description">Nuestra experiencia más completa de relajación y bienestar. Incluye ritual de pies con exfoliación, masaje corporal con aceite tibio, piedras volcánicas calientes, manta térmica, masaje cráneo-facial, botas de compresión según valoración y toalla facial caliente. Finaliza con bebida aromática, snack y un detalle especial Cuidándote.</p>
+          <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Cuid%C3%A1ndote%20Profundo%20Premium%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-outline" aria-label="Solicitar información por WhatsApp sobre Cuidándote Profundo Premium">Solicitar información por WhatsApp</a>
         </article>
       </div>
+
+      <aside class="ritual-promo fade-up" aria-labelledby="ritualPromoTitle">
+        <div>
+          <div class="ritual-promo-eyebrow">Horarios seleccionados</div>
+          <h3 id="ritualPromoTitle">Noches para desconectarte</h3>
+          <p><strong>Ritual Cuidándote · 50 minutos.</strong> Un momento para desconectarte de la rutina y disfrutar una experiencia de relajación y bienestar. Cupos limitados en horarios seleccionados.</p>
+        </div>
+        <div class="ritual-promo-prices" aria-label="Precios promocionales de Ritual Cuidándote">
+          <div class="ritual-promo-price"><span>Individual</span><strong>$100.000</strong><del>$125.000</del></div>
+          <div class="ritual-promo-price"><span>Para dos</span><strong>$175.000</strong><del>$230.000</del></div>
+        </div>
+        <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20reservar%20la%20promoci%C3%B3n%20Noches%20para%20desconectarte%20de%20Ritual%20Cuid%C3%A1ndote%20%2850%20minutos%29.%20%C2%BFQu%C3%A9%20horarios%20est%C3%A1n%20habilitados%3F" target="_blank" rel="noopener" class="btn-solid" aria-label="Reservar por WhatsApp la promoción Noches para desconectarte de Ritual Cuidándote">Quiero reservar mi Ritual</a>
+        <p class="ritual-promo-terms">Válida únicamente en horarios habilitados por Cuidándote; no es permanente ni acumulable con otras promociones.</p>
+      </aside>
 
       <div class="experience-options fade-up">
         <h3>Elige cómo quieres vivir tu experiencia</h3>
