@@ -3482,6 +3482,15 @@
 
 <style id="wellness-experience-update-2026-11">
   /* Actualización puntual de las experiencias de bienestar. */
+  /* Sustituye solo estas tres URLs cuando se suban fotografías reales de bienestar. */
+  #experiencias {
+    --wellness-pause-image:url('Ventosas.jpg');
+    --wellness-ritual-image:url('Pistola%20percutora.jpg');
+    --wellness-premium-image:url('Liberacion%20instrumental%20trapecio.jpg');
+  }
+  #experiencias .experience-card:nth-child(1)::before { background-image:var(--wellness-pause-image); }
+  #experiencias .experience-card:nth-child(2)::before { background-image:var(--wellness-ritual-image); }
+  #experiencias .experience-card:nth-child(3)::before { background-image:var(--wellness-premium-image); }
   #experiencias .experience-card {
     display:flex;
     flex-direction:column;
@@ -3577,9 +3586,54 @@
     color:#6d746f!important;
     font-size:.72rem!important;
   }
+  #experiencias .experience-journey {
+    margin-top:24px;
+    padding:24px 26px;
+    border:1px solid rgba(92,201,190,.25);
+    border-radius:16px;
+    background:rgba(255,255,255,.78);
+  }
+  #experiencias .experience-journey-header { max-width:620px; margin-bottom:18px; }
+  #experiencias .experience-journey-header h3 {
+    margin:0 0 7px;
+    color:#165b56;
+    font-size:clamp(1.55rem,2.2vw,2rem);
+    line-height:1.05;
+  }
+  #experiencias .experience-journey-header p { margin:0; color:#63706d; font-size:.86rem; line-height:1.55; }
+  #experiencias .experience-journey-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
+  #experiencias .experience-step { display:grid; grid-template-columns:38px minmax(0,1fr); column-gap:11px; align-items:start; }
+  #experiencias .experience-step-icon {
+    display:grid;
+    place-items:center;
+    width:38px;
+    height:38px;
+    border:1px solid rgba(92,201,190,.34);
+    border-radius:50%;
+    color:#27877f;
+    background:#F2FBF9;
+  }
+  #experiencias .experience-step-icon svg { width:18px; height:18px; }
+  #experiencias .experience-step-number {
+    display:block;
+    margin:1px 0 4px;
+    color:#9A722C;
+    font-family:var(--font-body);
+    font-size:.68rem;
+    font-weight:800;
+    letter-spacing:.08em;
+  }
+  #experiencias .experience-step h4 { margin:0 0 5px; color:#165b56; font-size:1.05rem; line-height:1.15; }
+  #experiencias .experience-step p { margin:0; color:#63706d; font-size:.79rem; line-height:1.55; }
+  #servicios .training-functional-picture,
+  .about-photo-wrap .team-photo-picture,
+  .clinic-space-photo .clinic-space-picture { display:block; width:100%; height:100%; }
   @media (max-width:1020px) {
     #experiencias .ritual-promo { grid-template-columns:1fr; gap:18px; }
     #experiencias .ritual-promo .btn-solid { width:max-content; }
+  }
+  @media (max-width:680px) {
+    #experiencias .experience-journey-grid { grid-template-columns:1fr; gap:16px; }
   }
   @media (max-width:560px) {
     #experiencias .experience-details { gap:6px; }
@@ -3732,7 +3786,10 @@
     <div class="container">
       <div class="about-grid">
         <div class="about-photo-wrap fade-up">
-          <img src="Equipo-Cuidandote.png" alt="Equipo de Cuidándote Fisioterapia" loading="lazy" decoding="async">
+          <picture class="team-photo-picture">
+            <source type="image/webp" srcset="Equipo-Cuidandote-1200.webp">
+            <img src="Equipo-Cuidandote.png" alt="Equipo de Cuidándote Fisioterapia" loading="lazy" decoding="async" width="1200" height="1200">
+          </picture>
           <div class="about-badge about-badge-team">
             <span class="big">✓</span>
             <span class="small">Atención profesional</span>
@@ -3831,7 +3888,10 @@
         <!-- Entrenamiento Funcional -->
         <div class="service-card fade-up">
           <div class="service-card-img">
-            <img src="Entrenamiento-funcional-2.jpg" alt="Entrenamiento funcional con acompañamiento profesional" loading="lazy" decoding="async">
+            <picture class="training-functional-picture">
+              <source type="image/webp" srcset="Entrenamiento-funcional-800.webp 800w, Entrenamiento-funcional-1600.webp 1600w" sizes="(max-width: 680px) calc(100vw - 40px), 33vw">
+              <img src="Entrenamiento-funcional-2.jpg" alt="Entrenamiento funcional con acompañamiento profesional" loading="lazy" decoding="async" width="1600" height="1600">
+            </picture>
           </div>
           <div class="service-card-body">
             <h3>Entrenamiento Funcional</h3>
@@ -3930,6 +3990,27 @@
           <p class="experience-description">Nuestra experiencia más completa de relajación y bienestar. Incluye ritual de pies con exfoliación, masaje corporal con aceite tibio, piedras volcánicas calientes, manta térmica, masaje cráneo-facial, botas de compresión según valoración y toalla facial caliente. Finaliza con bebida aromática, snack y un detalle especial Cuidándote.</p>
           <a href="https://wa.me/573136467945?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Cuid%C3%A1ndote%20Profundo%20Premium%20de%20Cuid%C3%A1ndote%20Fisioterapia." target="_blank" rel="noopener" class="btn-outline" aria-label="Solicitar información por WhatsApp sobre Cuidándote Profundo Premium">Solicitar información por WhatsApp</a>
         </article>
+      </div>
+
+      <div class="experience-journey fade-up" role="region" aria-labelledby="experienceJourneyTitle">
+        <div class="experience-journey-header">
+          <h3 id="experienceJourneyTitle">Así es tu experiencia</h3>
+          <p>Un momento cuidado de principio a fin, pensado para que puedas bajar el ritmo.</p>
+        </div>
+        <div class="experience-journey-grid">
+          <article class="experience-step">
+            <span class="experience-step-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="#F2FBF9"/><circle cx="15" cy="12" r="2" fill="#F2FBF9"/><circle cx="7" cy="18" r="2" fill="#F2FBF9"/></svg></span>
+            <div><span class="experience-step-number">01</span><h4>Personaliza tu momento</h4><p>Elige el aroma, la música y la presión que prefieras.</p></div>
+          </article>
+          <article class="experience-step">
+            <span class="experience-step-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/></svg></span>
+            <div><span class="experience-step-number">02</span><h4>Desconéctate</h4><p>Disfruta una experiencia de relajación diseñada para brindarte calma y bienestar.</p></div>
+          </article>
+          <article class="experience-step">
+            <span class="experience-step-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg></span>
+            <div><span class="experience-step-number">03</span><h4>Déjate cuidar</h4><p>Finaliza tu experiencia con un momento especial de cierre.</p></div>
+          </article>
+        </div>
       </div>
 
       <aside class="ritual-promo fade-up" aria-labelledby="ritualPromoTitle">
@@ -4474,7 +4555,10 @@
   <section class="clinic-space" id="sede">
     <div class="container clinic-space-grid">
       <div class="clinic-space-photo fade-up">
-        <img src="Sede-Cuidandote.png" alt="Sede de Cuidándote Fisioterapia en Dosquebradas" loading="lazy" decoding="async">
+        <picture class="clinic-space-picture">
+          <source type="image/webp" srcset="Sede-Cuidandote-1200.webp">
+          <img src="Sede-Cuidandote.png" alt="Sede de Cuidándote Fisioterapia en Dosquebradas" loading="lazy" decoding="async" width="901" height="1200">
+        </picture>
       </div>
       <div class="clinic-space-content fade-up">
         <div class="section-tag">Nuestra sede</div>
