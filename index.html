@@ -3843,6 +3843,11 @@
     .footer-links { gap:12px 18px!important; }
     .wa-float { right:16px!important; bottom:max(16px,env(safe-area-inset-bottom))!important; }
     .wa-float-btn { min-width:52px; min-height:52px; justify-content:center; }
+    .wa-float.is-hero-visible {
+      opacity:0;
+      pointer-events:none;
+      transform:translateY(12px);
+    }
   }
 
   @media (max-width:375px) {
@@ -4953,6 +4958,34 @@
         if (navLinks.classList.contains('open')) toggleMenu();
       });
     });
+
+    // En móvil, el CTA del hero ya ofrece WhatsApp: así el flotante no cubre el segundo botón.
+    const initialiseFloatingWhatsApp = () => {
+      const floatingWhatsApp = document.querySelector('.wa-float');
+      const heroActions = document.querySelector('.hero-buttons');
+      if (!floatingWhatsApp || !heroActions || !window.matchMedia('(max-width: 768px)').matches) return;
+
+      const setFloatingWhatsAppVisibility = () => {
+        const heroActionsBounds = heroActions.getBoundingClientRect();
+        const actionsAreVisible = heroActionsBounds.bottom > 0 && heroActionsBounds.top < window.innerHeight;
+        floatingWhatsApp.classList.toggle('is-hero-visible', actionsAreVisible);
+      };
+
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(([entry]) => {
+          floatingWhatsApp.classList.toggle('is-hero-visible', entry.isIntersecting);
+        }, { threshold: 0.2 }).observe(heroActions);
+      } else {
+        setFloatingWhatsAppVisibility();
+        window.addEventListener('scroll', setFloatingWhatsAppVisibility, { passive: true });
+        window.addEventListener('resize', setFloatingWhatsAppVisibility);
+      }
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initialiseFloatingWhatsApp, { once: true });
+    } else {
+      initialiseFloatingWhatsApp();
+    }
 
     // ─── Active section highlight ───
     const sections = document.querySelectorAll('section[id]');
