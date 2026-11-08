@@ -3645,6 +3645,214 @@
   }
 </style>
 
+<style id="responsive-audit-2026-11">
+  /* Consolidación responsive: evita que las capas visuales heredadas compitan en pantallas pequeñas. */
+  html,
+  body {
+    max-width:100%;
+    overflow-x:clip;
+  }
+  img,
+  picture,
+  video,
+  iframe,
+  svg { max-width:100%; }
+  .container,
+  .hero-grid,
+  .hero-content,
+  .hero-photo-wrap,
+  .about-grid,
+  .clinic-space-grid,
+  .bk-shell { min-width:0; }
+
+  /* En tabletas el menú pasa a panel lateral antes de que los enlaces compitan por espacio. */
+  @media (max-width:1120px) {
+    .nav,
+    .nav.scrolled {
+      position:relative!important;
+      padding:12px 0!important;
+    }
+    .nav-inner {
+      flex-direction:row!important;
+      justify-content:space-between!important;
+      gap:16px!important;
+    }
+    .brand-logo,
+    .nav.scrolled .brand-logo {
+      width:clamp(155px,24vw,210px)!important;
+      max-width:62vw!important;
+      flex:0 1 auto!important;
+    }
+    .hamburger {
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      width:44px;
+      height:44px;
+      padding:8px!important;
+      flex:0 0 44px;
+    }
+    .nav-links {
+      position:fixed!important;
+      top:0!important;
+      right:-110%!important;
+      width:min(86vw,330px)!important;
+      max-width:330px!important;
+      height:100dvh!important;
+      min-height:0!important;
+      display:flex!important;
+      flex-direction:column!important;
+      align-items:stretch!important;
+      justify-content:center!important;
+      gap:14px!important;
+      margin:0!important;
+      padding:76px 24px 30px!important;
+      background:rgba(255,255,255,.99)!important;
+      border:0!important;
+      border-left:1px solid var(--border)!important;
+      overflow-y:auto;
+      transition:right .3s ease!important;
+      z-index:999!important;
+    }
+    .nav-links.open { right:0!important; }
+    .nav-links li,
+    .nav-links li:last-child { width:100%; padding:0!important; border:0!important; }
+    .nav-links a {
+      display:flex!important;
+      align-items:center!important;
+      min-height:44px;
+      padding:8px 0!important;
+      font-size:1rem!important;
+      line-height:1.25!important;
+      white-space:normal!important;
+    }
+    .nav-links .nav-cta {
+      justify-content:center!important;
+      padding:12px 16px!important;
+      text-align:center;
+    }
+    .hero-grid {
+      grid-template-columns:minmax(0,1fr)!important;
+      width:100%!important;
+    }
+    .hero-content,
+    .hero-photo-wrap {
+      width:100%!important;
+      min-width:0!important;
+    }
+    .hero-photo-wrap { order:initial!important; }
+    .hero-photo-frame { margin:0 auto!important; }
+  }
+
+  @media (max-width:768px) {
+    .container { padding-left:20px!important; padding-right:20px!important; }
+    .brand-logo,
+    .nav.scrolled .brand-logo { width:155px!important; align-items:center!important; }
+    .brand-logo .logo-byline {
+      position:absolute!important;
+      top:69%!important;
+      left:71%!important;
+      margin:0!important;
+      font-size:.58rem!important;
+      line-height:1.1!important;
+      white-space:nowrap!important;
+    }
+    .hero {
+      padding:30px 0 48px!important;
+      overflow:hidden!important;
+    }
+    .hero-grid { gap:28px!important; }
+    .hero-content { padding:0!important; text-align:left!important; }
+    .hero-enabled-badge {
+      width:auto!important;
+      max-width:100%!important;
+      margin:0 0 16px!important;
+      padding:8px 12px!important;
+      text-align:left!important;
+      line-height:1.35!important;
+      white-space:normal!important;
+    }
+    .hero h1 {
+      max-width:100%!important;
+      margin:0 0 16px!important;
+      font-size:clamp(2.35rem,12vw,3.2rem)!important;
+      line-height:1.02!important;
+    }
+    .hero-subtitle {
+      max-width:100%!important;
+      margin:0 0 20px!important;
+      font-size:.96rem!important;
+      line-height:1.65!important;
+      text-align:left!important;
+    }
+    .hero-buttons {
+      display:grid!important;
+      grid-template-columns:minmax(0,1fr)!important;
+      width:100%;
+      gap:12px!important;
+    }
+    .hero-buttons .btn-solid,
+    .hero-buttons .btn-outline {
+      width:100%!important;
+      min-height:52px!important;
+      justify-content:center!important;
+    }
+    .hero-trust-note {
+      display:grid!important;
+      gap:4px!important;
+      max-width:100%!important;
+      margin-top:14px!important;
+      font-size:.72rem!important;
+      line-height:1.45!important;
+      text-align:left!important;
+    }
+    .hero-trust-note span { white-space:normal!important; }
+    .hero-photo-wrap { padding:0!important; }
+    .hero-photo-frame {
+      width:min(100%,370px)!important;
+      height:clamp(270px,88vw,340px)!important;
+      max-width:100%!important;
+    }
+
+    .services-header h2,
+    .experiences-header h2,
+    .reviews-header h2,
+    .clinic-space-content h2 { font-size:clamp(2rem,10vw,2.7rem)!important; }
+    .about-grid,
+    .about-facts-v2,
+    .clinic-space-grid,
+    .contact-cards { grid-template-columns:minmax(0,1fr)!important; }
+    .about-photo-wrap { max-width:100%!important; }
+    .about-photo-wrap img { width:100%!important; }
+
+    .booking { overflow:hidden!important; }
+    .bk-shell { border-radius:16px!important; }
+    .bk-progress { padding:18px 16px 0!important; }
+    .bk-steps { padding:22px 16px 24px!important; }
+    .bk-modality,
+    .bk-actions { flex-wrap:wrap!important; }
+    .bk-mod-btn,
+    .bk-btn-back,
+    .bk-btn-next,
+    .bk-svc,
+    .bk-time { min-height:44px; }
+    .bk-actions > * { flex:1 1 140px; justify-content:center!important; }
+    .bk-summary-row { align-items:flex-start!important; gap:12px!important; }
+    .bk-summary-row span:last-child { text-align:right; overflow-wrap:anywhere; }
+
+    .footer-links { gap:12px 18px!important; }
+    .wa-float { right:16px!important; bottom:max(16px,env(safe-area-inset-bottom))!important; }
+    .wa-float-btn { min-width:52px; min-height:52px; justify-content:center; }
+  }
+
+  @media (max-width:375px) {
+    .container { padding-left:16px!important; padding-right:16px!important; }
+    .nav-links { width:min(90vw,320px)!important; padding-left:20px!important; padding-right:20px!important; }
+    .hero h1 { font-size:clamp(2.2rem,11.5vw,2.75rem)!important; }
+    #experiencias .experience-details dd { white-space:normal!important; }
+  }
+</style>
+
 </head>
 <body>
 
