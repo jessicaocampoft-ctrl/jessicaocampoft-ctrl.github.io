@@ -136,13 +136,18 @@
     }
 
     /* Fade-up animation */
+    /* El contenido es visible por defecto: las animaciones nunca deben ocultarlo. */
     .fade-up {
+      opacity: 1;
+      transform: none;
+    }
+    .has-reveal .fade-up {
       opacity: 0;
       transform: translateY(30px);
       transition: opacity 0.7s ease, transform 0.7s ease;
       will-change: opacity, transform;
     }
-    .fade-up.visible {
+    .has-reveal .fade-up.visible {
       opacity: 1;
       transform: translateY(0);
       will-change: auto;
@@ -3858,6 +3863,54 @@
   }
 </style>
 
+<style id="visual-polish-2026-11">
+  /* Contraste y jerarquía: se conservan los colores de marca, con tonos de texto más sólidos. */
+  :root {
+    --primary-dark:#147b74;
+    --text:#223330;
+    --text-muted:#4d5d59;
+  }
+
+  /* El hero se muestra completo desde el primer render; no depende de IntersectionObserver. */
+  .hero .fade-up {
+    opacity:1!important;
+    transform:none!important;
+    transition:none!important;
+    will-change:auto!important;
+  }
+  .hero h1 { color:#202927!important; }
+  .hero-accent { color:var(--primary-dark)!important; }
+  .hero-subtitle { color:#42534f!important; }
+  .hero-trust-note { color:#4d5d59!important; }
+  .hero-enabled-badge { color:#146d67!important; }
+  .hero-enabled-badge::before { background:#31aaa1!important; }
+  .btn-solid { box-shadow:0 10px 24px rgba(20,123,116,.18)!important; }
+  .btn-outline { color:#146d67!important; border-color:rgba(20,123,116,.48)!important; }
+  .btn-outline:hover { background:#f1fbf9!important; border-color:#147b74!important; }
+
+  @media (min-width:1121px) {
+    .hero { padding:54px 0 64px!important; }
+    .hero-grid { gap:62px!important; }
+    .hero h1 {
+      max-width:690px!important;
+      font-size:clamp(3.45rem,4.55vw,4.85rem)!important;
+      line-height:1!important;
+      margin-bottom:20px!important;
+    }
+    .hero-subtitle { margin-bottom:24px!important; }
+    .hero-photo-wrap { padding:16px 0!important; }
+    .hero-photo-frame { height:408px!important; }
+  }
+
+  @media (max-width:768px) {
+    .hero { padding:26px 0 40px!important; }
+    .hero-grid { gap:24px!important; }
+    .hero h1 { font-size:clamp(2.25rem,11.2vw,3rem)!important; }
+    .hero-subtitle { margin-bottom:18px!important; color:#42534f!important; }
+    .hero-trust-note { margin-top:12px!important; }
+  }
+</style>
+
 </head>
 <body>
 
@@ -5012,16 +5065,24 @@
     }, { passive: true });
 
     // ─── Intersection Observer fade-up ───
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    // El contenido parte visible. Solo activamos la animación si el navegador puede completarla.
+    let observer = { observe: (element) => element.classList.add('visible') };
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if ('IntersectionObserver' in window && !reduceMotion) {
+      document.documentElement.classList.add('has-reveal');
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+      document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    } else {
+      document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
+    }
 
     // ─── Time slot selection via event delegation ───
     document.getElementById('timeGrid').addEventListener('click', e => {
