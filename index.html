@@ -5659,7 +5659,7 @@
     async function loadReviews() {
       const grid = document.getElementById('reviewsGrid');
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 4500);
+      const timeout = setTimeout(() => controller.abort(), 15000);
       try {
         const res = await fetch(APPS_SCRIPT_URL + '?action=getReviews', { signal: controller.signal });
         const json = await res.json();
